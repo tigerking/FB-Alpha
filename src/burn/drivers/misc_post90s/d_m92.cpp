@@ -1235,13 +1235,8 @@ inline static unsigned int CalcCol(int offs)
 
 static void m92YM2151IRQHandler(int nStatus)
 {
-//	if (nStatus) {
-//		VezRunEnd();
-		VezSetIRQLineAndVector(NEC_INPUT_LINE_INTP0, 0xff/*default*/, nStatus ? VEZ_IRQSTATUS_ACK : VEZ_IRQSTATUS_NONE);
-//		VezRun(1000);
-//		nStatus = 0;
-//		VezSetIRQLineAndVector(NEC_INPUT_LINE_INTP0, 0xff/*default*/, nStatus ? VEZ_IRQSTATUS_ACK : VEZ_IRQSTATUS_NONE);
-//	}
+	VezSetIRQLineAndVector(NEC_INPUT_LINE_INTP0, 0xff/*default*/, nStatus ? VEZ_IRQSTATUS_ACK : VEZ_IRQSTATUS_NONE);
+	VezRun(100);
 }
 
 unsigned char __fastcall m92ReadByte(unsigned int address)
@@ -1363,6 +1358,9 @@ void __fastcall m92WritePort(unsigned int port, unsigned char data)
 			VezClose();
 			VezOpen(1);
 			VezSetIRQLineAndVector(NEC_INPUT_LINE_INTP1, 0xff/*default*/, VEZ_IRQSTATUS_ACK);
+			VezRun(10);
+			VezSetIRQLineAndVector(NEC_INPUT_LINE_INTP1, 0xff/*default*/, VEZ_IRQSTATUS_NONE);
+			VezRun(10);
 			VezClose();
 			VezOpen(0);
 			return;
@@ -1458,7 +1456,7 @@ unsigned char __fastcall m92SndReadByte(unsigned int address)
 			return BurnYM2151ReadStatus();
 
 		case 0xa8044:
-			VezSetIRQLineAndVector(NEC_INPUT_LINE_INTP1, 0xff/*default*/, VEZ_IRQSTATUS_NONE);
+//			VezSetIRQLineAndVector(NEC_INPUT_LINE_INTP1, 0xff/*default*/, VEZ_IRQSTATUS_NONE);
 			return sound_latch[0];
 
 		case 0xa8045:
@@ -1495,7 +1493,7 @@ void __fastcall m92SndWriteByte(unsigned int address, unsigned char data)
 
 		case 0xa8044:
 	//	case 0xa8045:
-			VezSetIRQLineAndVector(NEC_INPUT_LINE_INTP1, 0xff/*default*/, VEZ_IRQSTATUS_NONE);
+//			VezSetIRQLineAndVector(NEC_INPUT_LINE_INTP1, 0xff/*default*/, VEZ_IRQSTATUS_NONE);
 			return;
 
 		case 0xa8046:
@@ -1780,7 +1778,7 @@ static int DrvExit()
 		free(Mem);
 		Mem = NULL;
 	}
-
+	
 	nPrevScreenPos = 0;
 	m92_kludge = 0;
 	nScreenOffsets[0] = nScreenOffsets[1] = 0;
@@ -2058,7 +2056,7 @@ static int DrvFrame()
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
 	if (pBurnSoundOut) {
-		memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(int));
+		memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(INT16));
 	}
 
 	for (int i = 0; i < nInterleave; i++)
@@ -2077,6 +2075,15 @@ static int DrvFrame()
 		while (VezTotalCycles() < segment) {
 			nCyclesDone[1] += VezRun(segment - VezTotalCycles());
 		}
+		if (pBurnSoundOut) {
+			int nSegmentLength = nBurnSoundLen / nInterleave;
+			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			iremga20_update(0, pSoundBuf, nSegmentLength);
+			
+			nSoundBufferPos += nSegmentLength;
+		}
 		VezClose();
 	}
 
@@ -2090,7 +2097,7 @@ static int DrvFrame()
 			iremga20_update(0, pSoundBuf, nSegmentLength);
 		}
 	}
-
+	
 	VezClose();
 
 	return 0;
