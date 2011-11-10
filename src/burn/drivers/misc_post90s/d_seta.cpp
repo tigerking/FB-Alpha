@@ -9002,6 +9002,38 @@ struct BurnDriver BurnDrvJjsquawk = {
 };
 
 
+// J. J. Squawkers (Alternate set)
+
+static struct BurnRomInfo jjsquawkaRomDesc[] = {
+	{ "u3.3a",		   0x080000, 0xf94c913b, 0x01 | BRF_PRG | BRF_ESS }, //  0 68k Code
+	{ "u4.4a",		   0x080000, 0x0227a2be, 0x01 | BRF_PRG | BRF_ESS }, //  1
+
+	{ "u64.3l",		   0x100000, 0x11d8713a, 0x03 | BRF_GRA },           //  2 Sprites
+	{ "u63.2l",		   0x100000, 0x7a385ef0, 0x03 | BRF_GRA },           //  3
+	
+	{ "u66.5l",		   0x100000, 0xbbaf40c5, 0x04 | BRF_GRA },           //  4 Layer 1 tiles
+	{ "u65.4l",		   0x080000, 0x160646f6, 0x1c | BRF_GRA },           //  5
+
+	{ "u68.7l",		   0x100000, 0xae9ae01f, 0x05 | BRF_GRA },           //  9 Layer 2 tiles
+	{ "u67.6l",	           0x080000, 0xa235488e, 0x1d | BRF_GRA },		     // 10
+
+	{ "u70.10l",	   0x100000, 0x181a55b8, 0x06 | BRF_SND },           // 11 x1-010 Samples
+};
+
+STD_ROM_PICK(jjsquawka)
+STD_ROM_FN(jjsquawka)
+
+struct BurnDriver BurnDrvJjsquawka = {
+	"jjsquawka", "jjsquawk", NULL, NULL, "1999",
+	"J. J. Squawkers (Alternate set)\0", NULL, "Athena / Able", "Seta",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_MISC, 0,
+	NULL, jjsquawkaRomInfo, jjsquawkaRomName, NULL, NULL, JjsquawkInputInfo, JjsquawkDIPInfo,
+	jjsquawkInit, DrvExit, DrvFrame, seta2layerDraw, DrvScan, &DrvRecalc, 0x1200,
+	384, 240, 4, 3
+};
+
+
 // J. J. Squawkers (bootleg)
 
 static struct BurnRomInfo jjsquawkbRomDesc[] = {
