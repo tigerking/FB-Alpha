@@ -77,6 +77,7 @@ static int Dec0Game = 0;
 
 #define DEC0_GAME_BADDUDES	1
 #define DEC0_GAME_HBARREL	2
+#define DEC0_GAME_BIRDTRY	3
 
 static struct BurnInputInfo Dec0InputList[] =
 {
@@ -245,6 +246,59 @@ static struct BurnDIPInfo HbarrelDIPList[]=
 
 STDDIPINFO(Hbarrel)
 
+static struct BurnDIPInfo HippodrmDIPList[]=
+{
+	// Default Values
+	{0x18, 0xff, 0xff, 0xff, NULL                     },
+	{0x19, 0xff, 0xff, 0xff, NULL                     },
+	
+	// Dip 1
+	{0   , 0xfe, 0   , 4   , "Coin A"                 },
+	{0x18, 0x01, 0x03, 0x00, "3 Coins 1 Play"         },
+	{0x18, 0x01, 0x03, 0x01, "2 Coins 1 Play"         },
+	{0x18, 0x01, 0x03, 0x03, "1 Coin  1 Play"         },
+	{0x18, 0x01, 0x03, 0x02, "1 Coin  2 Plays"        },
+	
+	{0   , 0xfe, 0   , 4   , "Coin B"                 },
+	{0x18, 0x01, 0x0c, 0x00, "3 Coins 1 Play"         },
+	{0x18, 0x01, 0x0c, 0x04, "2 Coins 1 Play"         },
+	{0x18, 0x01, 0x0c, 0x0c, "1 Coin  1 Play"         },
+	{0x18, 0x01, 0x0c, 0x08, "1 Coin  2 Plays"        },
+	
+	{0   , 0xfe, 0   , 2   , "Demo Sounds"            },
+	{0x18, 0x01, 0x20, 0x00, "Off"                    },
+	{0x18, 0x01, 0x20, 0x20, "On"                     },
+	
+	{0   , 0xfe, 0   , 2   , "Flip Screen"            },
+	{0x18, 0x01, 0x40, 0x40, "Off"                    },
+	{0x18, 0x01, 0x40, 0x00, "On"                     },
+	
+	// Dip 2
+	{0   , 0xfe, 0   , 4   , "Lives"                  },
+	{0x19, 0x01, 0x03, 0x01, "1"                      },
+	{0x19, 0x01, 0x03, 0x03, "2"                      },
+	{0x19, 0x01, 0x03, 0x02, "3"                      },
+	{0x19, 0x01, 0x03, 0x00, "5"                      },
+	
+	{0   , 0xfe, 0   , 4   , "Difficulty"             },
+	{0x19, 0x01, 0x0c, 0x08, "Easy"                   },
+	{0x19, 0x01, 0x0c, 0x0c, "Normal"                 },
+	{0x19, 0x01, 0x0c, 0x04, "Hard"                   },
+	{0x19, 0x01, 0x0c, 0x00, "Hardest"                },
+	
+	{0   , 0xfe, 0   , 4   , "Player & Enemy Energy"  },
+	{0x19, 0x01, 0x30, 0x10, "Very Low"               },
+	{0x19, 0x01, 0x30, 0x20, "Low"                    },
+	{0x19, 0x01, 0x30, 0x30, "Medium"                 },
+	{0x19, 0x01, 0x30, 0x00, "High"                   },
+	
+	{0   , 0xfe, 0   , 2   , "Energy Power Decrease on Continue"},
+	{0x19, 0x01, 0x40, 0x40, "2 Dots"                 },
+	{0x19, 0x01, 0x40, 0x00, "3 Dots"                 },
+};
+
+STDDIPINFO(Hippodrm)
+
 static struct BurnDIPInfo RobocopDIPList[]=
 {
 	// Default Values
@@ -384,8 +438,7 @@ static struct BurnRomInfo HbarrelRomDesc[] = {
 	{ "hb06.bin",           0x10000, 0xda4e3fbc, BRF_ESS | BRF_PRG },	//  4
 	{ "hb03.bin",           0x10000, 0x7fed7c46, BRF_ESS | BRF_PRG },	//  5
 	
-	{ "hb07.bin",           0x08000, 0xa127f0f7, BRF_ESS | BRF_PRG },	//  6	6502 Program 
-	
+	{ "hb07.bin",           0x08000, 0xa127f0f7, BRF_ESS | BRF_PRG },	//  6	6502 Program 	
 	
 	{ "hb25.bin",           0x10000, 0x8649762c, BRF_GRA },			//  7	Characters
 	{ "hb26.bin",           0x10000, 0xf8189bbd, BRF_GRA },			//  8
@@ -420,6 +473,88 @@ static struct BurnRomInfo HbarrelRomDesc[] = {
 
 STD_ROM_PICK(Hbarrel)
 STD_ROM_FN(Hbarrel)
+
+static struct BurnRomInfo HbarrelwRomDesc[] = {
+	{ "hb_ec04.rom",        0x10000, 0xd01bc3db, BRF_ESS | BRF_PRG },	//  0	68000 Program Code
+	{ "hb_ec01.rom",        0x10000, 0x6756f8ae, BRF_ESS | BRF_PRG },	//  1
+	{ "hb05.bin",           0x10000, 0x2087d570, BRF_ESS | BRF_PRG },	//  2
+	{ "hb02.bin",           0x10000, 0x815536ae, BRF_ESS | BRF_PRG },	//  3
+	{ "hb_ec06.rom",        0x10000, 0x61ec20d8, BRF_ESS | BRF_PRG },	//  4
+	{ "hb_ec03.rom",        0x10000, 0x720c6b13, BRF_ESS | BRF_PRG },	//  5
+	
+	{ "hb_ec07.rom",        0x08000, 0x16a5a1aa, BRF_ESS | BRF_PRG },	//  6	6502 Program 
+
+	{ "hb_ec25.rom",        0x10000, 0x2e5732a2, BRF_GRA },			//  7	Characters
+	{ "hb_ec26.rom",        0x10000, 0x161a2c4d, BRF_GRA },			//  8
+	
+	{ "hb18.bin",           0x10000, 0xef664373, BRF_GRA },			//  9	Tiles 1
+	{ "hb17.bin",           0x10000, 0xa4f186ac, BRF_GRA },			// 10
+	{ "hb20.bin",           0x10000, 0x2fc13be0, BRF_GRA },			// 11
+	{ "hb19.bin",           0x10000, 0xd6b47869, BRF_GRA },			// 12
+	{ "hb22.bin",           0x10000, 0x50d6a1ad, BRF_GRA },			// 13
+	{ "hb21.bin",           0x10000, 0xf01d75c5, BRF_GRA },			// 14
+	{ "hb24.bin",           0x10000, 0xae377361, BRF_GRA },			// 15
+	{ "hb23.bin",           0x10000, 0xbbdaf771, BRF_GRA },			// 16
+	
+	{ "hb29.bin",           0x10000, 0x5514b296, BRF_GRA },			// 17	Tiles 2
+	{ "hb30.bin",           0x10000, 0x5855e8ef, BRF_GRA },			// 18
+	{ "hb27.bin",           0x10000, 0x99db7b9c, BRF_GRA },			// 19
+	{ "hb28.bin",           0x10000, 0x33ce2b1a, BRF_GRA },			// 20
+	
+	{ "hb15.bin",           0x10000, 0x21816707, BRF_GRA },			// 21	Sprites
+	{ "hb16.bin",           0x10000, 0xa5684574, BRF_GRA },			// 22
+	{ "hb11.bin",           0x10000, 0x5c768315, BRF_GRA },			// 23
+	{ "hb12.bin",           0x10000, 0x8b64d7a4, BRF_GRA },			// 24
+	{ "hb13.bin",           0x10000, 0x56e3ed65, BRF_GRA },			// 25
+	{ "hb14.bin",           0x10000, 0xbedfe7f3, BRF_GRA },			// 26
+	{ "hb09.bin",           0x10000, 0x26240ea0, BRF_GRA },			// 27
+	{ "hb10.bin",           0x10000, 0x47d95447, BRF_GRA },			// 28
+	
+	{ "hb_ec08.rom",        0x10000, 0x2159a609, BRF_SND },			// 29	Samples
+	
+	{ "ec31.9a",            0x01000, 0xaa14a2ae, BRF_PRG | BRF_OPT },		// 30	I8751
+};
+
+STD_ROM_PICK(Hbarrelw)
+STD_ROM_FN(Hbarrelw)
+
+static struct BurnRomInfo HippodrmRomDesc[] = {
+	{ "ew02",               0x10000, 0xdf0d7dc6, BRF_ESS | BRF_PRG },	//  0	68000 Program Code
+	{ "ew01",               0x10000, 0xd5670aa7, BRF_ESS | BRF_PRG },	//  1
+	{ "ew05",               0x10000, 0xc76d65ec, BRF_ESS | BRF_PRG },	//  2
+	{ "ew00",               0x10000, 0xe9b427a6, BRF_ESS | BRF_PRG },	//  3
+	
+	{ "ew04",               0x08000, 0x9871b98d, BRF_ESS | BRF_PRG },	//  4	6502 Program 
+	
+	{ "ew08",               0x10000, 0x53010534, BRF_ESS | BRF_PRG },	//  5	HuC6280 Program
+	
+	{ "ew14",               0x10000, 0x71ca593d, BRF_GRA },			//  6	Characters
+	{ "ew13",               0x10000, 0x86be5fa7, BRF_GRA },			//  7
+
+	{ "ew19",               0x08000, 0x6b80d7a3, BRF_GRA },			//  8	Tiles 1
+	{ "ew18",               0x08000, 0x78d3d764, BRF_GRA },			//  9
+	{ "ew20",               0x08000, 0xce9f5de3, BRF_GRA },			// 10
+	{ "ew21",               0x08000, 0x487a7ba2, BRF_GRA },			// 11
+	
+	{ "ew24",               0x08000, 0x4e1bc2a4, BRF_GRA },			// 12	Tiles 2
+	{ "ew25",               0x08000, 0x9eb47dfb, BRF_GRA },			// 13
+	{ "ew23",               0x08000, 0x9ecf479e, BRF_GRA },			// 14
+	{ "ew22",               0x08000, 0xe55669aa, BRF_GRA },			// 15
+	
+	{ "ew15",               0x10000, 0x95423914, BRF_GRA },			// 16	Sprites
+	{ "ew16",               0x10000, 0x96233177, BRF_GRA },			// 17
+	{ "ew10",               0x10000, 0x4c25dfe8, BRF_GRA },			// 18
+	{ "ew11",               0x10000, 0xf2e007fc, BRF_GRA },			// 19
+	{ "ew06",               0x10000, 0xe4bb8199, BRF_GRA },			// 20
+	{ "ew07",               0x10000, 0x470b6989, BRF_GRA },			// 21
+	{ "ew17",               0x10000, 0x8c97c757, BRF_GRA },			// 22
+	{ "ew12",               0x10000, 0xa2d244bc, BRF_GRA },			// 23
+	
+	{ "ew03",               0x10000, 0xb606924d, BRF_SND },			// 24	Samples
+};
+
+STD_ROM_PICK(Hippodrm)
+STD_ROM_FN(Hippodrm)
 
 static struct BurnRomInfo RobocopRomDesc[] = {
 	{ "ep05-4.11c",         0x10000, 0x29c35379, BRF_ESS | BRF_PRG },	//  0	68000 Program Code
@@ -861,16 +996,17 @@ void __fastcall Dec068KWriteWord(unsigned int a, unsigned short d)
 			return;
 		}
 		
-		case 0x30c018: {
-			return;
-		}
-		
 		case 0x30c016: {
 			if (Dec0Game == DEC0_GAME_BADDUDES) BaddudesI8751Write(d);
 			if (Dec0Game == DEC0_GAME_HBARREL) HbarrelI8751Write(d);
 			
 			SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
 			
+			return;
+		}
+		
+		case 0x30c018: {
+			SekSetIRQLine(6, SEK_IRQSTATUS_NONE);
 			return;
 		}
 		
@@ -883,6 +1019,30 @@ void __fastcall Dec068KWriteWord(unsigned int a, unsigned short d)
 			bprintf(PRINT_NORMAL, _T("68K Write word => %06X, %04X\n"), a, d);
 		}
 	}
+}
+
+unsigned char __fastcall HippodrmShared68KReadByte(unsigned int a)
+{
+	int Offset = (a - 0x180000) >> 1;
+	return DrvSharedRam[Offset];
+}
+
+void __fastcall HippodrmShared68KWriteByte(unsigned int a, unsigned char d)
+{
+	int Offset = (a - 0x180000) >> 1;
+	DrvSharedRam[Offset] = d;
+}
+
+unsigned short __fastcall HippodrmShared68KReadWord(unsigned int a)
+{
+	int Offset = (a - 0x180000) >> 1;
+	return DrvSharedRam[Offset];
+}
+
+void __fastcall HippodrmShared68KWriteWord(unsigned int a, unsigned short d)
+{
+	int Offset = (a - 0x180000) >> 1;
+	DrvSharedRam[Offset] = d & 0xff;
 }
 
 unsigned char __fastcall RobocopShared68KReadByte(unsigned int a)
@@ -966,6 +1126,25 @@ void Dec0SoundWriteByte(unsigned short a, unsigned char d)
 			bprintf(PRINT_NORMAL, _T("M6502 Write Byte %04X, %02X\n"), a, d);
 		}
 	}
+}
+
+void HippodrmH6280WriteIo(unsigned char Port, unsigned char Data)
+{
+	bprintf(PRINT_NORMAL, _T("H6280 Write Port %x, %x\n"), Port, Data);
+}
+
+unsigned char HippodrmH6280ReadProg(unsigned int Address)
+{
+	bprintf(PRINT_NORMAL, _T("H6280 Read Prog %x\n"), Address);
+	
+	return 0;
+}
+
+void HippodrmH6280WriteProg(unsigned int Address, unsigned char Data)
+{
+	if (Address <= 0x00ffff) return;
+	
+	bprintf(PRINT_NORMAL, _T("H6280 Write Prog %x, %x\n"), Address, Data);
 }
 
 void RobocopH6280WriteIo(unsigned char Port, unsigned char Data)
@@ -1225,6 +1404,92 @@ static int HbarrelInit()
 
 	// Reset the driver
 	DrvDoReset();
+
+	return 0;
+}
+
+static int HippodrmInit()
+{
+	int nRet = 0;
+
+	Dec0MachineInit();
+	
+	// Load 68000 Program Roms
+	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(Drv68KRom + 0x00000, 1, 2); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(Drv68KRom + 0x20001, 2, 2); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(Drv68KRom + 0x20000, 3, 2); if (nRet != 0) return 1;
+	
+	// Load M6502 Program Rom
+	nRet = BurnLoadRom(DrvM6502Rom, 4, 1); if (nRet != 0) return 1;
+	
+	nRet = BurnLoadRom(DrvH6280Rom, 5, 1); if (nRet != 0) return 1;
+	
+	// Load and decode chars
+	nRet = BurnLoadRom(DrvTempRom + 0x00000,  6, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x10000,  7, 1); if (nRet != 0) return 1;
+	GfxDecode(0x1000, 4, 8, 8, RobocopCharPlaneOffsets, CharXOffsets, CharYOffsets, 0x40, DrvTempRom, DrvChars);
+	
+	// Load and decode tiles1
+	memset(DrvTempRom, 0, 0x80000);
+	nRet = BurnLoadRom(DrvTempRom + 0x00000,  8, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x08000,  9, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x10000, 10, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x18000, 11, 1); if (nRet != 0) return 1;
+	GfxDecode(0x400, 4, 16, 16, Tile1PlaneOffsets, TileXOffsets, TileYOffsets, 0x100, DrvTempRom, DrvTiles1);
+	
+	// Load and decode tiles2
+	memset(DrvTempRom, 0, 0x80000);
+	nRet = BurnLoadRom(DrvTempRom + 0x00000, 12, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x08000, 13, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x10000, 14, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x18000, 15, 1); if (nRet != 0) return 1;
+	GfxDecode(0x400, 4, 16, 16, Tile2PlaneOffsets, TileXOffsets, TileYOffsets, 0x100, DrvTempRom, DrvTiles2);
+	
+	// Load and decode sprites
+	memset(DrvTempRom, 0, 0x80000);
+	nRet = BurnLoadRom(DrvTempRom + 0x00000, 16, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x10000, 17, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x20000, 18, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x30000, 19, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x40000, 20, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x50000, 21, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x60000, 22, 1); if (nRet != 0) return 1;
+	nRet = BurnLoadRom(DrvTempRom + 0x70000, 23, 1); if (nRet != 0) return 1;
+	GfxDecode(0x1000, 4, 16, 16, SpritePlaneOffsets, TileXOffsets, TileYOffsets, 0x100, DrvTempRom, DrvSprites);
+	
+	// Load the samples
+	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 24, 1); if (nRet != 0) return 1;
+
+	if (DrvTempRom) {
+		free(DrvTempRom);
+		DrvTempRom = NULL;
+	}
+	
+	Dec0DrawFunction = RobocopDraw;
+	
+	SekOpen(0);
+//	SekMapMemory(DrvSharedRam, 0x180000, 0x180fff, SM_RAM);
+	SekMapHandler(1, 0x180000, 0x180fff, SM_RAM);
+	SekSetReadByteHandler(1, HippodrmShared68KReadByte);
+	SekSetWriteByteHandler(1, HippodrmShared68KWriteByte);
+	SekSetReadWordHandler(1, HippodrmShared68KReadWord);
+	SekSetWriteWordHandler(1, HippodrmShared68KWriteWord);	
+	SekClose();
+	
+	h6280Init(1);
+	h6280Open(0);
+	h6280MapMemory(DrvH6280Rom , 0x000000, 0x00ffff, H6280_ROM);
+//	h6280MapMemory(DrvH6280Ram , 0x1f0000, 0x1f1fff, H6280_RAM);
+//	h6280MapMemory(DrvSharedRam, 0x1f2000, 0x1f3fff, H6280_RAM);
+//	h6280MapMemory(DrvH6280Rom , 0x1fe000, 0x1fffff, H6280_ROM);
+	h6280SetWritePortHandler(HippodrmH6280WriteIo);
+	h6280SetReadHandler(HippodrmH6280ReadProg);
+	h6280SetWriteHandler(HippodrmH6280WriteProg);
+	h6280Close();
+
+	// Reset the driver
+	RobocopDoReset();
 
 	return 0;
 }
@@ -2009,7 +2274,7 @@ static void RobocopDraw()
 
 static int DrvFrame()
 {
-	int nInterleave = 262;
+	int nInterleave = 264;
 
 	if (DrvReset) DrvDoReset();
 
@@ -2028,11 +2293,9 @@ static int DrvFrame()
 		nCurrentCPU = 0;
 		SekOpen(0);
 		BurnTimerUpdate(i * (nCyclesTotal[nCurrentCPU] / nInterleave));
-		if (i == 11) DrvVBlank = 0;
-		if (i == 251) {
-			DrvVBlank = 1;
-			SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
-		}
+		if (i == 8) DrvVBlank = 0;
+		if (i == 248) DrvVBlank = 1;
+		if (i == 263) SekSetIRQLine(6, SEK_IRQSTATUS_ACK);
 		SekClose();
 
 		nCurrentCPU = 1;
@@ -2066,9 +2329,9 @@ static int DrvFrame()
 
 static int RobocopFrame()
 {
-	int nInterleave = 262;
+	int nInterleave = 264;
 
-	if (DrvReset) DrvDoReset();
+	if (DrvReset) RobocopDoReset();
 
 	DrvMakeInputs();
 
@@ -2086,11 +2349,9 @@ static int RobocopFrame()
 		nCurrentCPU = 0;
 		SekOpen(0);
 		BurnTimerUpdate(i * (nCyclesTotal[nCurrentCPU] / nInterleave));
-		if (i == 11) DrvVBlank = 0;
-		if (i == 251) {
-			DrvVBlank = 1;
-			SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
-		}
+		if (i == 8) DrvVBlank = 0;
+		if (i == 248) DrvVBlank = 1;
+		if (i == 263) SekSetIRQLine(6, SEK_IRQSTATUS_ACK);
 		SekClose();
 		
 		nCurrentCPU = 2;
@@ -2149,7 +2410,7 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-struct BurnDriverD BurnDrvBaddudes = {
+struct BurnDriver BurnDrvBaddudes = {
 	"baddudes", NULL, NULL, NULL, "1988",
 	"Bad Dudes vs. Dragonninja (US)\0", NULL, "Data East USA", "DEC0",
 	NULL, NULL, NULL, NULL,
@@ -2159,7 +2420,7 @@ struct BurnDriverD BurnDrvBaddudes = {
 	NULL, 0x400, 256, 240, 4, 3
 };
 
-struct BurnDriverD BurnDrvDrgninja = {
+struct BurnDriver BurnDrvDrgninja = {
 	"drgninja", "baddudes", NULL, NULL, "1988",
 	"Dragonninja (Japan)\0", NULL, "Data East Corporation", "DEC0",
 	NULL, NULL, NULL, NULL,
@@ -2169,7 +2430,7 @@ struct BurnDriverD BurnDrvDrgninja = {
 	NULL, 0x400, 256, 240, 4, 3
 };
 
-struct BurnDriverD BurnDrvHbarrel = {
+struct BurnDriver BurnDrvHbarrel = {
 	"hbarrel", NULL, NULL, NULL, "1987",
 	"Heavy Barrel (US)\0", NULL, "Data East USA", "DEC0",
 	NULL, NULL, NULL, NULL,
@@ -2179,7 +2440,27 @@ struct BurnDriverD BurnDrvHbarrel = {
 	NULL, 0x400, 240, 256, 3, 4
 };
 
-struct BurnDriverD BurnDrvRobocop = {
+struct BurnDriver BurnDrvHbarrelw = {
+	"hbarrelw", "hbarrel", NULL, NULL, "1987",
+	"Heavy Barrel (World)\0", NULL, "Data East USA", "DEC0",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	NULL, HbarrelwRomInfo, HbarrelwRomName, NULL, NULL, Dec0InputInfo, HbarrelDIPInfo,
+	HbarrelInit, DrvExit, DrvFrame, NULL, DrvScan,
+	NULL, 0x400, 240, 256, 3, 4
+};
+
+struct BurnDriverD BurnDrvHippodrm = {
+	"hippodrm", NULL, NULL, NULL, "1989",
+	"Hippodrome (US)\0", NULL, "Data East USA", "DEC0",
+	NULL, NULL, NULL, NULL,
+	0, 2, HARDWARE_MISC_PRE90S, GBF_VSFIGHT, 0,
+	NULL, HippodrmRomInfo, HippodrmRomName, NULL, NULL, Dec0InputInfo, HippodrmDIPInfo,
+	HippodrmInit, DrvExit, RobocopFrame, NULL, DrvScan,
+	NULL, 0x400, 256, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvRobocop = {
 	"robocop", NULL, NULL, NULL, "1988",
 	"Robocop (World revision 4)\0", NULL, "Data East Corporation", "DEC0",
 	NULL, NULL, NULL, NULL,
@@ -2189,7 +2470,7 @@ struct BurnDriverD BurnDrvRobocop = {
 	NULL, 0x400, 256, 240, 4, 3
 };
 
-struct BurnDriverD BurnDrvRobocopb = {
+struct BurnDriver BurnDrvRobocopb = {
 	"robocopb", "robocop", NULL, NULL, "1988",
 	"Robocop (World bootleg)\0", NULL, "bootleg", "DEC0",
 	NULL, NULL, NULL, NULL,
