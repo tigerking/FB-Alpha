@@ -1,4 +1,3 @@
-
 #include "burnint.h"
 #include "arm7_intf.h"
 
@@ -16,22 +15,22 @@
 #define WRITE	1
 #define FETCH	2
 
-static unsigned char **membase[3]; // 0 read, 1, write, 2 opcode
+static UINT8 **membase[3]; // 0 read, 1, write, 2 opcode
 
-static void (*pWriteLongHandler)(unsigned int, unsigned int  ) = NULL;
-static void (*pWriteWordHandler)(unsigned int, unsigned short) = NULL;
-static void (*pWriteByteHandler)(unsigned int, unsigned char ) = NULL;
+static void (*pWriteLongHandler)(UINT32, UINT32) = NULL;
+static void (*pWriteWordHandler)(UINT32, UINT16) = NULL;
+static void (*pWriteByteHandler)(UINT32, UINT8 ) = NULL;
 
-static unsigned short (*pReadWordHandler)(unsigned int) = NULL;
-static unsigned int   (*pReadLongHandler)(unsigned int) = NULL;
-static unsigned char  (*pReadByteHandler)(unsigned int) = NULL;
+static UINT16 (*pReadWordHandler)(UINT32) = NULL;
+static UINT32 (*pReadLongHandler)(UINT32) = NULL;
+static UINT8  (*pReadByteHandler)(UINT32) = NULL;
 
-static unsigned int Arm7IdleLoop = ~0;
+static UINT32 Arm7IdleLoop = ~0;
 
-void Arm7Init( int num ) // only one cpu supported
+void Arm7Init( INT32 num ) // only one cpu supported
 {
-	for (int i = 0; i < 3; i++) {
-		membase[i] = (unsigned char**)malloc(PAGE_COUNT * sizeof(unsigned char*));
+	for (INT32 i = 0; i < 3; i++) {
+		membase[i] = (UINT8**)malloc(PAGE_COUNT * sizeof(UINT8*));
 	}
 
 	CpuCheatRegister(0x000a, num);
@@ -39,7 +38,7 @@ void Arm7Init( int num ) // only one cpu supported
 
 void Arm7Exit() // only one cpu supported
 {
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		if (membase[i]) {
 			free (membase[i]);
 			membase[i] = NULL;
@@ -49,50 +48,50 @@ void Arm7Exit() // only one cpu supported
 	Arm7IdleLoop = ~0;
 }
 
-void Arm7MapMemory(unsigned char *src, int start, int finish, int type)
+void Arm7MapMemory(UINT8 *src, INT32 start, INT32 finish, INT32 type)
 {
-	unsigned int len = (finish-start) >> PAGE_SHIFT;
+	UINT32 len = (finish-start) >> PAGE_SHIFT;
 
-	for (unsigned int i = 0; i < len+1; i++)
+	for (UINT32 i = 0; i < len+1; i++)
 	{
-		unsigned int offset = i + (start >> PAGE_SHIFT);
+		UINT32 offset = i + (start >> PAGE_SHIFT);
 		if (type & (1 <<  READ)) membase[ READ][offset] = src + (i << PAGE_SHIFT);
 		if (type & (1 << WRITE)) membase[WRITE][offset] = src + (i << PAGE_SHIFT);
 		if (type & (1 << FETCH)) membase[FETCH][offset] = src + (i << PAGE_SHIFT);
 	}
 }
 
-void Arm7SetWriteByteHandler(void (*write)(unsigned int, unsigned char))
+void Arm7SetWriteByteHandler(void (*write)(UINT32, UINT8))
 {
 	pWriteByteHandler = write;
 }
 
-void Arm7SetWriteWordHandler(void (*write)(unsigned int, unsigned short))
+void Arm7SetWriteWordHandler(void (*write)(UINT32, UINT16))
 {
 	pWriteWordHandler = write;
 }
 
-void Arm7SetWriteLongHandler(void (*write)(unsigned int, unsigned int))
+void Arm7SetWriteLongHandler(void (*write)(UINT32, UINT32))
 {
 	pWriteLongHandler = write;
 }
 
-void Arm7SetReadByteHandler(unsigned char (*read)(unsigned int))
+void Arm7SetReadByteHandler(UINT8 (*read)(UINT32))
 {
 	pReadByteHandler = read;
 }
 
-void Arm7SetReadWordHandler(unsigned short (*read)(unsigned int))
+void Arm7SetReadWordHandler(UINT16 (*read)(UINT32))
 {
 	pReadWordHandler = read;
 }
 
-void Arm7SetReadLongHandler(unsigned int (*read)(unsigned int))
+void Arm7SetReadLongHandler(UINT32 (*read)(UINT32))
 {
 	pReadLongHandler = read;
 }
 
-void Arm7_program_write_byte_32le(unsigned int addr, unsigned char data)
+void Arm7_program_write_byte_32le(UINT32 addr, UINT8 data)
 {
 #ifdef DEBUG_LOG
 	bprintf (PRINT_NORMAL, _T("%5.5x, %2.2x wb\n"), addr, data);
@@ -108,14 +107,14 @@ void Arm7_program_write_byte_32le(unsigned int addr, unsigned char data)
 	}
 }
 
-void Arm7_program_write_word_32le(unsigned int addr, unsigned short data)
+void Arm7_program_write_word_32le(UINT32 addr, UINT16 data)
 {
 #ifdef DEBUG_LOG
 	bprintf (PRINT_NORMAL, _T("%5.5x, %8.8x wd\n"), addr, data);
 #endif
 
 	if (membase[WRITE][addr >> PAGE_SHIFT] != NULL) {
-		*((unsigned short*)(membase[WRITE][addr >> PAGE_SHIFT] + (addr & PAGE_WORD_AND))) = data;
+		*((UINT16*)(membase[WRITE][addr >> PAGE_SHIFT] + (addr & PAGE_WORD_AND))) = data;
 		return;
 	}
 
@@ -124,14 +123,14 @@ void Arm7_program_write_word_32le(unsigned int addr, unsigned short data)
 	}
 }
 
-void Arm7_program_write_dword_32le(unsigned int addr, unsigned int data)
+void Arm7_program_write_dword_32le(UINT32 addr, UINT32 data)
 {
 #ifdef DEBUG_LOG
 	bprintf (PRINT_NORMAL, _T("%5.5x, %8.8x wd\n"), addr, data);
 #endif
 
 	if (membase[WRITE][addr >> PAGE_SHIFT] != NULL) {
-		*((unsigned int*)(membase[WRITE][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND))) = data;
+		*((UINT32*)(membase[WRITE][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND))) = data;
 		return;
 	}
 
@@ -141,7 +140,7 @@ void Arm7_program_write_dword_32le(unsigned int addr, unsigned int data)
 }
 
 
-unsigned char Arm7_program_read_byte_32le(unsigned int addr)
+UINT8 Arm7_program_read_byte_32le(UINT32 addr)
 {
 #ifdef DEBUG_LOG
 	bprintf (PRINT_NORMAL, _T("%5.5x, rb\n"), addr);
@@ -158,14 +157,14 @@ unsigned char Arm7_program_read_byte_32le(unsigned int addr)
 	return 0;
 }
 
-unsigned short Arm7_program_read_word_32le(unsigned int addr)
+UINT16 Arm7_program_read_word_32le(UINT32 addr)
 {
 #ifdef DEBUG_LOG
 	bprintf (PRINT_NORMAL, _T("%5.5x, rl\n"), addr);
 #endif
 
 	if (membase[ READ][addr >> PAGE_SHIFT] != NULL) {
-		return *((unsigned short*)(membase[ READ][addr >> PAGE_SHIFT] + (addr & PAGE_WORD_AND)));
+		return *((UINT16*)(membase[ READ][addr >> PAGE_SHIFT] + (addr & PAGE_WORD_AND)));
 	}
 
 	if (pReadWordHandler) {
@@ -175,14 +174,14 @@ unsigned short Arm7_program_read_word_32le(unsigned int addr)
 	return 0;
 }
 
-unsigned int Arm7_program_read_dword_32le(unsigned int addr)
+UINT32 Arm7_program_read_dword_32le(UINT32 addr)
 {
 #ifdef DEBUG_LOG
 	bprintf (PRINT_NORMAL, _T("%5.5x, rl\n"), addr);
 #endif
 
 	if (membase[ READ][addr >> PAGE_SHIFT] != NULL) {
-		return *((unsigned int*)(membase[ READ][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND)));
+		return *((UINT32*)(membase[ READ][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND)));
 	}
 
 	if (pReadLongHandler) {
@@ -192,7 +191,7 @@ unsigned int Arm7_program_read_dword_32le(unsigned int addr)
 	return 0;
 }
 
-unsigned short Arm7_program_opcode_word_32le(unsigned int addr)
+UINT16 Arm7_program_opcode_word_32le(UINT32 addr)
 {
 #ifdef DEBUG_LOG
 	bprintf (PRINT_NORMAL, _T("%5.5x, rwo\n"), addr);
@@ -204,7 +203,7 @@ unsigned short Arm7_program_opcode_word_32le(unsigned int addr)
 	}
 
 	if (membase[FETCH][addr >> PAGE_SHIFT] != NULL) {
-		return *((unsigned short*)(membase[FETCH][addr >> PAGE_SHIFT] + (addr & PAGE_WORD_AND)));
+		return *((UINT16*)(membase[FETCH][addr >> PAGE_SHIFT] + (addr & PAGE_WORD_AND)));
 	}
 
 	// good enough for now...
@@ -215,7 +214,7 @@ unsigned short Arm7_program_opcode_word_32le(unsigned int addr)
 	return 0;
 }
 
-unsigned int Arm7_program_opcode_dword_32le(unsigned int addr)
+UINT32 Arm7_program_opcode_dword_32le(UINT32 addr)
 {
 #ifdef DEBUG_LOG
 	bprintf (PRINT_NORMAL, _T("%5.5x, rlo\n"), addr);
@@ -227,7 +226,7 @@ unsigned int Arm7_program_opcode_dword_32le(unsigned int addr)
 	}
 
 	if (membase[FETCH][addr >> PAGE_SHIFT] != NULL) {
-		return *((unsigned int*)(membase[FETCH][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND)));
+		return *((UINT32*)(membase[FETCH][addr >> PAGE_SHIFT] + (addr & PAGE_LONG_AND)));
 	}
 
 	// good enough for now...
@@ -238,7 +237,7 @@ unsigned int Arm7_program_opcode_dword_32le(unsigned int addr)
 	return 0;
 }
 
-void Arm7SetIRQLine(int line, int state)
+void Arm7SetIRQLine(INT32 line, INT32 state)
 {
 	if (state == ARM7_CLEAR_LINE || state == ARM7_ASSERT_LINE) {
 		arm7_set_irq_line(line, state);
@@ -251,7 +250,7 @@ void Arm7SetIRQLine(int line, int state)
 }
 
 // Set address of idle loop start - speed hack
-void Arm7SetIdleLoopAddress(unsigned int address)
+void Arm7SetIdleLoopAddress(UINT32 address)
 {
 	Arm7IdleLoop = address;
 }
@@ -259,7 +258,7 @@ void Arm7SetIdleLoopAddress(unsigned int address)
 
 // For cheats/etc
 
-void Arm7_write_rom_byte(unsigned int addr, unsigned char data)
+void Arm7_write_rom_byte(UINT32 addr, UINT8 data)
 {
 	// write to rom & ram
 	if (membase[WRITE][addr >> PAGE_SHIFT] != NULL) {

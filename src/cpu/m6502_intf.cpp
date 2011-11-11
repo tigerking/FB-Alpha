@@ -3,47 +3,47 @@
 
 #define MAX_CPU		8
 
-int nM6502Count = 0;
-static int nActiveCPU = 0;
+INT32 nM6502Count = 0;
+static INT32 nActiveCPU = 0;
 
 static M6502Ext m6502CPUContext[MAX_CPU];
 static M6502Ext *pCurrentCPU;
-static int nM6502CyclesDone[MAX_CPU];
-int nM6502CyclesTotal;
+static INT32 nM6502CyclesDone[MAX_CPU];
+INT32 nM6502CyclesTotal;
 
-static unsigned char M6502ReadPortDummyHandler(unsigned short)
+static UINT8 M6502ReadPortDummyHandler(UINT16)
 {
 	return 0;
 }
 
-static void M6502WritePortDummyHandler(unsigned short, unsigned char)
+static void M6502WritePortDummyHandler(UINT16, UINT8)
 {
 }
 
-static unsigned char M6502ReadByteDummyHandler(unsigned short)
-{
-	return 0;
-}
-
-static void M6502WriteByteDummyHandler(unsigned short, unsigned char)
-{
-}
-
-static unsigned char M6502ReadMemIndexDummyHandler(unsigned short)
+static UINT8 M6502ReadByteDummyHandler(UINT16)
 {
 	return 0;
 }
 
-static void M6502WriteMemIndexDummyHandler(unsigned short, unsigned char)
+static void M6502WriteByteDummyHandler(UINT16, UINT8)
 {
 }
 
-static unsigned char M6502ReadOpDummyHandler(unsigned short)
+static UINT8 M6502ReadMemIndexDummyHandler(UINT16)
 {
 	return 0;
 }
 
-static unsigned char M6502ReadOpArgDummyHandler(unsigned short)
+static void M6502WriteMemIndexDummyHandler(UINT16, UINT8)
+{
+}
+
+static UINT8 M6502ReadOpDummyHandler(UINT16)
+{
+	return 0;
+}
+
+static UINT8 M6502ReadOpArgDummyHandler(UINT16)
 {
 	return 0;
 }
@@ -55,13 +55,13 @@ void M6502Reset()
 
 void M6502NewFrame()
 {
-	for (int i = 0; i < nM6502Count; i++) {
+	for (INT32 i = 0; i < nM6502Count; i++) {
 		nM6502CyclesDone[i] = 0;
 	}
 	nM6502CyclesTotal = 0;
 }
 
-int M6502Init(int cpu, int type)
+INT32 M6502Init(INT32 cpu, INT32 type)
 {
 	nActiveCPU = cpu;
 	nM6502Count++;
@@ -130,7 +130,7 @@ int M6502Init(int cpu, int type)
 	
 	nM6502CyclesDone[cpu] = 0;
 	
-	for (int j = 0; j < (0x0100 * 3); j++) {
+	for (INT32 j = 0; j < (0x0100 * 3); j++) {
 		pCurrentCPU->pMemMap[j] = NULL;
 	}
 	
@@ -148,7 +148,7 @@ void M6502Exit()
 	nM6502Count = 0;
 }
 
-void M6502Open(int num)
+void M6502Open(INT32 num)
 {
 	nActiveCPU = num;
 
@@ -170,12 +170,12 @@ void M6502Close()
 	nActiveCPU = -1;
 }
 
-int M6502GetActive()
+INT32 M6502GetActive()
 {
 	return nActiveCPU;
 }
 
-void M6502SetIRQ(int vector, int status)
+void M6502SetIRQ(INT32 vector, INT32 status)
 {
 	if (status == M6502_IRQSTATUS_NONE) {
 		pCurrentCPU->set_irq_line(vector, 0);
@@ -193,7 +193,7 @@ void M6502SetIRQ(int vector, int status)
 	}
 }
 
-int M6502Run(int cycles)
+INT32 M6502Run(INT32 cycles)
 {
 	cycles = pCurrentCPU->execute(cycles);
 	
@@ -207,12 +207,12 @@ void M6502RunEnd()
 
 }
 
-int M6502MapMemory(unsigned char* pMemory, unsigned short nStart, unsigned short nEnd, int nType)
+INT32 M6502MapMemory(UINT8* pMemory, UINT16 nStart, UINT16 nEnd, INT32 nType)
 {
-	unsigned char cStart = (nStart >> 8);
-	unsigned char **pMemMap = pCurrentCPU->pMemMap;
+	UINT8 cStart = (nStart >> 8);
+	UINT8 **pMemMap = pCurrentCPU->pMemMap;
 
-	for (unsigned short i = cStart; i <= (nEnd >> 8); i++) {
+	for (UINT16 i = cStart; i <= (nEnd >> 8); i++) {
 		if (nType & M6502_READ)	{
 			pMemMap[0     + i] = pMemory + ((i - cStart) << 8);
 		}
@@ -227,47 +227,47 @@ int M6502MapMemory(unsigned char* pMemory, unsigned short nStart, unsigned short
 
 }
 
-void M6502SetReadPortHandler(unsigned char (*pHandler)(unsigned short))
+void M6502SetReadPortHandler(UINT8 (*pHandler)(UINT16))
 {
 	pCurrentCPU->ReadPort = pHandler;
 }
 
-void M6502SetWritePortHandler(void (*pHandler)(unsigned short, unsigned char))
+void M6502SetWritePortHandler(void (*pHandler)(UINT16, UINT8))
 {
 	pCurrentCPU->WritePort = pHandler;
 }
 
-void M6502SetReadByteHandler(unsigned char (*pHandler)(unsigned short))
+void M6502SetReadByteHandler(UINT8 (*pHandler)(UINT16))
 {
 	pCurrentCPU->ReadByte = pHandler;
 }
 
-void M6502SetWriteByteHandler(void (*pHandler)(unsigned short, unsigned char))
+void M6502SetWriteByteHandler(void (*pHandler)(UINT16, UINT8))
 {
 	pCurrentCPU->WriteByte = pHandler;
 }
 
-void M6502SetReadMemIndexHandler(unsigned char (*pHandler)(unsigned short))
+void M6502SetReadMemIndexHandler(UINT8 (*pHandler)(UINT16))
 {
 	pCurrentCPU->ReadMemIndex = pHandler;
 }
 
-void M6502SetWriteMemIndexHandler(void (*pHandler)(unsigned short, unsigned char))
+void M6502SetWriteMemIndexHandler(void (*pHandler)(UINT16, UINT8))
 {
 	pCurrentCPU->WriteMemIndex = pHandler;
 }
 
-void M6502SetReadOpHandler(unsigned char (*pHandler)(unsigned short))
+void M6502SetReadOpHandler(UINT8 (*pHandler)(UINT16))
 {
 	pCurrentCPU->ReadOp = pHandler;
 }
 
-void M6502SetReadOpArgHandler(unsigned char (*pHandler)(unsigned short))
+void M6502SetReadOpArgHandler(UINT8 (*pHandler)(UINT16))
 {
 	pCurrentCPU->ReadOpArg = pHandler;
 }
 
-unsigned char M6502ReadPort(unsigned short Address)
+UINT8 M6502ReadPort(UINT16 Address)
 {
 	// check handler
 	if (pCurrentCPU->ReadPort != NULL) {
@@ -277,7 +277,7 @@ unsigned char M6502ReadPort(unsigned short Address)
 	return 0;
 }
 
-void M6502WritePort(unsigned short Address, unsigned char Data)
+void M6502WritePort(UINT16 Address, UINT8 Data)
 {
 	// check handler
 	if (pCurrentCPU->WritePort != NULL) {
@@ -286,10 +286,10 @@ void M6502WritePort(unsigned short Address, unsigned char Data)
 	}
 }
 
-unsigned char M6502ReadByte(unsigned short Address)
+UINT8 M6502ReadByte(UINT16 Address)
 {
 	// check mem map
-	unsigned char * pr = pCurrentCPU->pMemMap[0x000 | (Address >> 8)];
+	UINT8 * pr = pCurrentCPU->pMemMap[0x000 | (Address >> 8)];
 	if (pr != NULL) {
 		return pr[Address & 0xff];
 	}
@@ -302,10 +302,10 @@ unsigned char M6502ReadByte(unsigned short Address)
 	return 0;
 }
 
-void M6502WriteByte(unsigned short Address, unsigned char Data)
+void M6502WriteByte(UINT16 Address, UINT8 Data)
 {
 	// check mem map
-	unsigned char * pr = pCurrentCPU->pMemMap[0x100 | (Address >> 8)];
+	UINT8 * pr = pCurrentCPU->pMemMap[0x100 | (Address >> 8)];
 	if (pr != NULL) {
 		pr[Address & 0xff] = Data;
 		return;
@@ -318,10 +318,10 @@ void M6502WriteByte(unsigned short Address, unsigned char Data)
 	}
 }
 
-unsigned char M6502ReadMemIndex(unsigned short Address)
+UINT8 M6502ReadMemIndex(UINT16 Address)
 {
 	// check mem map
-	unsigned char * pr = pCurrentCPU->pMemMap[0x000 | (Address >> 8)];
+	UINT8 * pr = pCurrentCPU->pMemMap[0x000 | (Address >> 8)];
 	if (pr != NULL) {
 		return pr[Address & 0xff];
 	}
@@ -334,10 +334,10 @@ unsigned char M6502ReadMemIndex(unsigned short Address)
 	return 0;
 }
 
-void M6502WriteMemIndex(unsigned short Address, unsigned char Data)
+void M6502WriteMemIndex(UINT16 Address, UINT8 Data)
 {
 	// check mem map
-	unsigned char * pr = pCurrentCPU->pMemMap[0x100 | (Address >> 8)];
+	UINT8 * pr = pCurrentCPU->pMemMap[0x100 | (Address >> 8)];
 	if (pr != NULL) {
 		pr[Address & 0xff] = Data;
 		return;
@@ -350,10 +350,10 @@ void M6502WriteMemIndex(unsigned short Address, unsigned char Data)
 	}
 }
 
-unsigned char M6502ReadOp(unsigned short Address)
+UINT8 M6502ReadOp(UINT16 Address)
 {
 	// check mem map
-	unsigned char * pr = pCurrentCPU->pMemMap[0x200 | (Address >> 8)];
+	UINT8 * pr = pCurrentCPU->pMemMap[0x200 | (Address >> 8)];
 	if (pr != NULL) {
 		return pr[Address & 0xff];
 	}
@@ -366,10 +366,10 @@ unsigned char M6502ReadOp(unsigned short Address)
 	return 0;
 }
 
-unsigned char M6502ReadOpArg(unsigned short Address)
+UINT8 M6502ReadOpArg(UINT16 Address)
 {
 	// check mem map
-	unsigned char * pr = pCurrentCPU->pMemMap[0x000 | (Address >> 8)];
+	UINT8 * pr = pCurrentCPU->pMemMap[0x000 | (Address >> 8)];
 	if (pr != NULL) {
 		return pr[Address & 0xff];
 	}
@@ -382,11 +382,11 @@ unsigned char M6502ReadOpArg(unsigned short Address)
 	return 0;
 }
 
-void M6502WriteRom(unsigned short Address, unsigned char Data)
+void M6502WriteRom(UINT16 Address, UINT8 Data)
 {
-	unsigned char * pr = pCurrentCPU->pMemMap[0x000 | (Address >> 8)];
-	unsigned char * pw = pCurrentCPU->pMemMap[0x100 | (Address >> 8)];
-	unsigned char * pf = pCurrentCPU->pMemMap[0x200 | (Address >> 8)];
+	UINT8 * pr = pCurrentCPU->pMemMap[0x000 | (Address >> 8)];
+	UINT8 * pw = pCurrentCPU->pMemMap[0x100 | (Address >> 8)];
+	UINT8 * pf = pCurrentCPU->pMemMap[0x200 | (Address >> 8)];
 
 	if (pr != NULL) {
 		pr[Address & 0xff] = Data;
@@ -412,7 +412,7 @@ UINT32 M6502GetPC()
 	return m6502_get_pc();
 }
 
-int M6502Scan(int nAction)
+INT32 M6502Scan(INT32 nAction)
 {
 	struct BurnArea ba;
 	
@@ -420,11 +420,11 @@ int M6502Scan(int nAction)
 		return 1;
 	}
 
-	for (int i = 0; i < nM6502Count; i++) {
+	for (INT32 i = 0; i < nM6502Count; i++) {
 
 		M6502Ext *ptr = &m6502CPUContext[i];
 
-		int (*Callback)(int irqline);
+		INT32 (*Callback)(INT32 irqline);
 
 		Callback = ptr->reg.irq_callback;
 

@@ -1,4 +1,3 @@
-
 #include "burnint.h"
 #include "konami_intf.h"
 
@@ -12,49 +11,49 @@
 #define WRITE		1
 #define FETCH		2
 
-int nKonamiCpuCount = 0;
-static int nKonamiCpuActive = -1;
+INT32 nKonamiCpuCount = 0;
+static INT32 nKonamiCpuActive = -1;
 
-static unsigned char *mem[3][PAGE_COUNT];
+static UINT8 *mem[3][PAGE_COUNT];
 
-static unsigned char (*konamiRead)(unsigned short address);
-static void (*konamiWrite)(unsigned short address, unsigned char data);
-static int (*irqcallback)(int);
+static UINT8 (*konamiRead)(UINT16 address);
+static void (*konamiWrite)(UINT16 address, UINT8 data);
+static INT32 (*irqcallback)(INT32);
 
-void konamiMapMemory(unsigned char *src, unsigned short start, unsigned short finish, int type)
+void konamiMapMemory(UINT8 *src, UINT16 start, UINT16 finish, INT32 type)
 {
-	unsigned short len = (finish-start) >> PAGE_SHIFT;
+	UINT16 len = (finish-start) >> PAGE_SHIFT;
 
-	for (unsigned short i = 0; i < len+1; i++)
+	for (UINT16 i = 0; i < len+1; i++)
 	{
-		unsigned int offset = i + (start >> PAGE_SHIFT);
+		UINT32 offset = i + (start >> PAGE_SHIFT);
 		if (type & (1 <<  READ)) mem[ READ][offset] = src + (i << PAGE_SHIFT);
 		if (type & (1 << WRITE)) mem[WRITE][offset] = src + (i << PAGE_SHIFT);
 		if (type & (1 << FETCH)) mem[FETCH][offset] = src + (i << PAGE_SHIFT);
 	}
 }
 
-int konamiDummyIrqCallback(int)
+INT32 konamiDummyIrqCallback(INT32)
 {
 	return 0;
 }
 
-void konamiSetIrqCallbackHandler(int (*callback)(int))
+void konamiSetIrqCallbackHandler(INT32 (*callback)(INT32))
 {
 	irqcallback = callback;
 }
 
-void konamiSetWriteHandler(void (*write)(unsigned short, unsigned char))
+void konamiSetWriteHandler(void (*write)(UINT16, UINT8))
 {
 	konamiWrite = write;
 }
 
-void konamiSetReadHandler(unsigned char (*read)(unsigned short))
+void konamiSetReadHandler(UINT8 (*read)(UINT16))
 {
 	konamiRead = read;
 }
 
-void konami_write_rom(unsigned short address, unsigned char data)
+void konami_write_rom(UINT16 address, UINT8 data)
 {
 	if (mem[READ][address >> PAGE_SHIFT] != NULL) {
 		mem[READ][address >> PAGE_SHIFT][address & PAGE_MASK] = data;
@@ -73,7 +72,7 @@ void konami_write_rom(unsigned short address, unsigned char data)
 	}
 }
 
-void konami_write(unsigned short address, unsigned char data)
+void konami_write(UINT16 address, UINT8 data)
 {
 	if (mem[WRITE][address >> PAGE_SHIFT] != NULL) {
 		mem[WRITE][address >> PAGE_SHIFT][address & PAGE_MASK] = data;
@@ -88,7 +87,7 @@ void konami_write(unsigned short address, unsigned char data)
 	return;
 }
 
-unsigned char konami_read(unsigned short address)
+UINT8 konami_read(UINT16 address)
 {
 	if (mem[ READ][address >> PAGE_SHIFT] != NULL) {
 		return mem[ READ][address >> PAGE_SHIFT][address & PAGE_MASK];
@@ -101,7 +100,7 @@ unsigned char konami_read(unsigned short address)
 	return 0;
 }
 
-unsigned char konami_fetch(unsigned short address)
+UINT8 konami_fetch(UINT16 address)
 {
 	if (mem[FETCH][address >> PAGE_SHIFT] != NULL) {
 		return mem[FETCH][address >> PAGE_SHIFT][address & PAGE_MASK];
@@ -114,7 +113,7 @@ unsigned char konami_fetch(unsigned short address)
 	return 0;
 }
 
-void konamiSetIrqLine(int line, int state)
+void konamiSetIrqLine(INT32 line, INT32 state)
 {
 	if (state == KONAMI_HOLD_LINE) {
 		konami_set_irq_line(line, KONAMI_HOLD_LINE);
@@ -126,13 +125,13 @@ void konamiSetIrqLine(int line, int state)
 	}
 }
 
-void konamiInit(int num) // only 1 cpu (No examples exist of multi-cpu konami games)
+void konamiInit(INT32 num) // only 1 cpu (No examples exist of multi-cpu konami games)
 {
 	nKonamiCpuCount = 1;
 	konami_init(konamiDummyIrqCallback);
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < (MEMORY_SPACE / PAGE_SIZE); j++) {
+	for (INT32 i = 0; i < 3; i++) {
+		for (INT32 j = 0; j < (MEMORY_SPACE / PAGE_SIZE); j++) {
 			mem[i][j] = NULL;
 		}
 	}
@@ -147,7 +146,7 @@ void konamiExit()
 	konamiRead = NULL;
 }
 
-void konamiOpen(int num)
+void konamiOpen(INT32 num)
 {
 	nKonamiCpuActive = num;
 }
@@ -157,7 +156,7 @@ void konamiClose()
 	nKonamiCpuActive = -1;
 }
 
-int konamiGetActive()
+INT32 konamiGetActive()
 {
 	return nKonamiCpuActive;
 }

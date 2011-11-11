@@ -1,25 +1,24 @@
-
 #include "burnint.h"
 #include "m6805_intf.h"
 
-static int ADDRESS_MAX;
-static int ADDRESS_MASK;
-static int PAGE;
-static int PAGE_MASK;
-static int PAGE_SHIFT;
+static INT32 ADDRESS_MAX;
+static INT32 ADDRESS_MASK;
+static INT32 PAGE;
+static INT32 PAGE_MASK;
+static INT32 PAGE_SHIFT;
 
 #define READ		0
 #define WRITE		1
 #define FETCH		2
 
-static unsigned char (*m6805Read)(unsigned short address);
-static void (*m6805Write)(unsigned short address, unsigned char data);
+static UINT8 (*m6805Read)(UINT16 address);
+static void (*m6805Write)(UINT16 address, UINT8 data);
 
-static unsigned char *mem[3][0x100];
+static UINT8 *mem[3][0x100];
 
-void m6805MapMemory(unsigned char *ptr, int nStart, int nEnd, int nType)
+void m6805MapMemory(UINT8 *ptr, INT32 nStart, INT32 nEnd, INT32 nType)
 {
-	for (int i = nStart / PAGE; i < (nEnd / PAGE) + 1; i++)
+	for (INT32 i = nStart / PAGE; i < (nEnd / PAGE) + 1; i++)
 	{
 		if (nType & (1 <<  READ)) mem[ READ][i] = ptr + ((i * PAGE) - nStart);
 		if (nType & (1 << WRITE)) mem[WRITE][i] = ptr + ((i * PAGE) - nStart);
@@ -27,17 +26,17 @@ void m6805MapMemory(unsigned char *ptr, int nStart, int nEnd, int nType)
 	}
 }
 
-void m6805SetWriteHandler(void (*write)(unsigned short, unsigned char))
+void m6805SetWriteHandler(void (*write)(UINT16, UINT8))
 {
 	m6805Write = write;
 }
 
-void m6805SetReadHandler(unsigned char (*read)(unsigned short))
+void m6805SetReadHandler(UINT8 (*read)(UINT16))
 {
 	m6805Read = read;
 }
 
-void m6805_write(unsigned short address, unsigned char data)
+void m6805_write(UINT16 address, UINT8 data)
 {
 	address &= ADDRESS_MASK;
 
@@ -54,7 +53,7 @@ void m6805_write(unsigned short address, unsigned char data)
 	return;
 }
 
-unsigned char m6805_read(unsigned short address)
+UINT8 m6805_read(UINT16 address)
 {
 	address &= ADDRESS_MASK;
 
@@ -69,7 +68,7 @@ unsigned char m6805_read(unsigned short address)
 	return 0;
 }
 
-unsigned char m6805_fetch(unsigned short address)
+UINT8 m6805_fetch(UINT16 address)
 {
 	address &= ADDRESS_MASK;
 
@@ -80,7 +79,7 @@ unsigned char m6805_fetch(unsigned short address)
 	return m6805_read(address);
 }
 
-void m6805_write_rom(unsigned short address, unsigned char data)
+void m6805_write_rom(UINT16 address, UINT8 data)
 {
 	address &= ADDRESS_MASK;
 
@@ -104,7 +103,7 @@ void m6805_write_rom(unsigned short address, unsigned char data)
 	return;
 }
 
-void m6805Init(int num, int max)
+void m6805Init(INT32 num, INT32 max)
 {
 	ADDRESS_MAX  = max;
 	ADDRESS_MASK = ADDRESS_MAX - 1;
@@ -113,11 +112,11 @@ void m6805Init(int num, int max)
 	PAGE_SHIFT   = 0;
 	for (PAGE_SHIFT = 0; (1 << PAGE_SHIFT) < PAGE; PAGE_SHIFT++) {}
 
-	memset (mem[0], 0, PAGE * sizeof(char *));
-	memset (mem[1], 0, PAGE * sizeof(char *));
-	memset (mem[2], 0, PAGE * sizeof(char *));
+	memset (mem[0], 0, PAGE * sizeof(UINT8 *));
+	memset (mem[1], 0, PAGE * sizeof(UINT8 *));
+	memset (mem[2], 0, PAGE * sizeof(UINT8 *));
 
-	for (int i = 0; i < num; i++)
+	for (INT32 i = 0; i < num; i++)
 		CpuCheatRegister(0x0b, i);
 }
 
@@ -130,7 +129,7 @@ void m6805Exit()
 	PAGE_SHIFT	= 0;
 }
 
-void m6805Open(int )
+void m6805Open(INT32)
 {
 
 }

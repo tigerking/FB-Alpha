@@ -8,65 +8,65 @@
 
 //----------------------------------------------------------------------------------
 // nec.cpp
-void necInit(int cpu, int type);
-void necCpuOpen(int cpu);
+void necInit(INT32 cpu, INT32 type);
+void necCpuOpen(INT32 cpu);
 void necCpuClose();
-int nec_reset();
-int nec_execute(int cycles);
-void nec_set_irq_line_and_vector(int irqline, int vector, int state);
-unsigned int nec_total_cycles();
+INT32 nec_reset();
+INT32 nec_execute(INT32 cycles);
+void nec_set_irq_line_and_vector(INT32 irqline, INT32 vector, INT32 state);
+UINT32 nec_total_cycles();
 void nec_new_frame();
-int necGetPC(int n);
-void necScan(int cpu, int nAction);
+INT32 necGetPC(INT32 n);
+void necScan(INT32 cpu, INT32 nAction);
 void necRunEnd();
-void necIdle(int cycles);
+void necIdle(INT32 cycles);
 
 // v25.cpp
-int v25_reset();
-void v25_open(int cpu);
+INT32 v25_reset();
+void v25_open(INT32 cpu);
 void v25_close();
-void v25_set_irq_line_and_vector(int irqline, int vector, int state);
-int v25_execute(int cycles);
-void v25Init(int cpu, int type, int clock);
-void v25_set_decode(unsigned char *table);
-unsigned int v25_total_cycles();
+void v25_set_irq_line_and_vector(INT32 irqline, INT32 vector, INT32 state);
+INT32 v25_execute(INT32 cycles);
+void v25Init(INT32 cpu, INT32 type, INT32 clock);
+void v25_set_decode(UINT8 *table);
+UINT32 v25_total_cycles();
 void v25_new_frame();
-int v25GetPC(int n);
-void v25Scan(int cpu, int nAction);
+INT32 v25GetPC(INT32 n);
+void v25Scan(INT32 cpu, INT32 nAction);
 void v25RunEnd();
-void v25Idle(int cycles);
+void v25Idle(INT32 cycles);
 
 //----------------------------------------------------------------------------------
 
 struct VezContext {
-	void (*cpu_open)(int);
+	void (*cpu_open)(INT32);
 	void (*cpu_close)();
-	int (*cpu_reset)();
-	int (*cpu_execute)(int);
-	void (*cpu_set_irq_line)(int, int, int);
-	void (*decode)(unsigned char*);
-	unsigned int (*total_cycles)();
-	int (*get_pc)(int);
-	void (*scan)(int, int);
+	INT32 (*cpu_reset)();
+	INT32 (*cpu_execute)(INT32);
+	void (*cpu_set_irq_line)(INT32, INT32, INT32);
+	void (*decode)(UINT8*);
+	UINT32 (*total_cycles)();
+	INT32 (*get_pc)(INT32);
+	void (*scan)(INT32, INT32);
 	void (*runend)();
-	void (*idle)(int);
+	void (*idle)(INT32);
 
-	unsigned char * ppMemRead[512];
-	unsigned char * ppMemWrite[512];
-	unsigned char * ppMemFetch[512];
-	unsigned char * ppMemFetchData[512];
+	UINT8 * ppMemRead[512];
+	UINT8 * ppMemWrite[512];
+	UINT8 * ppMemFetch[512];
+	UINT8 * ppMemFetchData[512];
 
 	// Handlers
  #ifdef FASTCALL
-	unsigned char (__fastcall *ReadHandler)(unsigned int a);
-	void (__fastcall *WriteHandler)(unsigned int a, unsigned char d);
-	unsigned char (__fastcall *ReadPort)(unsigned int a);
-	void (__fastcall *WritePort)(unsigned int a, unsigned char d);
+	UINT8 (__fastcall *ReadHandler)(UINT32 a);
+	void (__fastcall *WriteHandler)(UINT32 a, UINT8 d);
+	UINT8 (__fastcall *ReadPort)(UINT32 a);
+	void (__fastcall *WritePort)(UINT32 a, UINT8 d);
  #else
-	unsigned char (__cdecl *ReadHandler)(unsigned int a);
-	void (__cdecl *WriteHandler)(unsigned int a, unsigned char d);
-	unsigned char (__cdecl *ReadPort)(unsigned int a);
-	void (__cdecl *WritePort)(unsigned int a, unsigned char d);
+	UINT8 (__cdecl *ReadHandler)(UINT32 a);
+	void (__cdecl *WriteHandler)(UINT32 a, UINT8 d);
+	UINT8 (__cdecl *ReadPort)(UINT32 a);
+	void (__cdecl *WritePort)(UINT32 a, UINT8 d);
  #endif
 };
 
@@ -76,99 +76,99 @@ struct VezContext *VezCurrentCPU = 0;
 #define VEZ_MEM_SHIFT	11
 #define VEZ_MEM_MASK	((1 << VEZ_MEM_SHIFT) - 1)
 
-static int nCPUCount = 0;
-static int nOpenedCPU = -1;
-int nVezCount;
+static INT32 nCPUCount = 0;
+static INT32 nOpenedCPU = -1;
+INT32 nVezCount;
 
-unsigned char __fastcall VezDummyReadHandler(unsigned int) { return 0; }
-void __fastcall VezDummyWriteHandler(unsigned int, unsigned char) { }
-unsigned char __fastcall VezDummyReadPort(unsigned int) { return 0; }
-void __fastcall VezDummyWritePort(unsigned int, unsigned char) { }
+UINT8 __fastcall VezDummyReadHandler(UINT32) { return 0; }
+void __fastcall VezDummyWriteHandler(UINT32, UINT8) { }
+UINT8 __fastcall VezDummyReadPort(UINT32) { return 0; }
+void __fastcall VezDummyWritePort(UINT32, UINT8) { }
 
-unsigned char cpu_readport(unsigned int p)
+UINT8 cpu_readport(UINT32 p)
 {
 	p &= 0x100ff; // ?
 
 	return VezCurrentCPU->ReadPort(p);
 }
 
-void cpu_writeport(unsigned int p,unsigned int d)
+void cpu_writeport(UINT32 p,UINT32 d)
 {
 	VezCurrentCPU->WritePort(p, d);
 }
 
-unsigned char cpu_readmem20(unsigned int a)
+UINT8 cpu_readmem20(UINT32 a)
 {
 	a &= 0xFFFFF;
 	
-	unsigned char * p = VezCurrentCPU->ppMemRead[ a >> VEZ_MEM_SHIFT ];
+	UINT8 * p = VezCurrentCPU->ppMemRead[ a >> VEZ_MEM_SHIFT ];
 	if ( p )
 		return *(p + a);
 	else
 		return VezCurrentCPU->ReadHandler(a);
 }
 
-unsigned char cpu_readmem20_op(unsigned int a)
+UINT8 cpu_readmem20_op(UINT32 a)
 {
 	a &= 0xFFFFF;
 	
-	unsigned char * p = VezCurrentCPU->ppMemFetch[ a >> VEZ_MEM_SHIFT ];
+	UINT8 * p = VezCurrentCPU->ppMemFetch[ a >> VEZ_MEM_SHIFT ];
 	if ( p )
 		return *(p + a);
 	else
 		return VezCurrentCPU->ReadHandler(a);
 }
 
-unsigned char cpu_readmem20_arg(unsigned int a)
+UINT8 cpu_readmem20_arg(UINT32 a)
 {
 	a &= 0xFFFFF;
 	
-	unsigned char * p = VezCurrentCPU->ppMemFetchData[ a >> VEZ_MEM_SHIFT ];
+	UINT8 * p = VezCurrentCPU->ppMemFetchData[ a >> VEZ_MEM_SHIFT ];
 	if ( p )
 		return *(p + a);
 	else
 		return VezCurrentCPU->ReadHandler(a);
 }
 
-void cpu_writemem20(unsigned int a, unsigned char d)
+void cpu_writemem20(UINT32 a, UINT8 d)
 {
 	a &= 0xFFFFF;
 	
-	unsigned char * p = VezCurrentCPU->ppMemWrite[ a >> VEZ_MEM_SHIFT ];
+	UINT8 * p = VezCurrentCPU->ppMemWrite[ a >> VEZ_MEM_SHIFT ];
 	if ( p )
 		*(p + a) = d;
 	else
 		VezCurrentCPU->WriteHandler(a, d);
 }
 
-void VezSetReadHandler(unsigned char (__fastcall *pHandler)(unsigned int))
+void VezSetReadHandler(UINT8 (__fastcall *pHandler)(UINT32))
 {
 	VezCurrentCPU->ReadHandler = pHandler;
 }
 
-void VezSetWriteHandler(void (__fastcall *pHandler)(unsigned int, unsigned char))
+void VezSetWriteHandler(void (__fastcall *pHandler)(UINT32, UINT8))
 {
 	VezCurrentCPU->WriteHandler = pHandler;
 }
 
-void VezSetReadPort(unsigned char (__fastcall *pHandler)(unsigned int))
+void VezSetReadPort(UINT8 (__fastcall *pHandler)(UINT32))
 {
 	VezCurrentCPU->ReadPort = pHandler;
 }
 
-void VezSetWritePort(void (__fastcall *pHandler)(unsigned int, unsigned char))
+void VezSetWritePort(void (__fastcall *pHandler)(UINT32, UINT8))
 {
 	VezCurrentCPU->WritePort = pHandler;
 }
 
-void VezSetDecode(unsigned char *table)
+void VezSetDecode(UINT8 *table)
 {
 	if (VezCurrentCPU->decode) {
 		VezCurrentCPU->decode(table);
 	}
 }
 
-int VezInit(int cpu, int type, int clock)
+INT32 VezInit(INT32 cpu, INT32 type, INT32 clock)
 {
 	nOpenedCPU = cpu;
 	VezCurrentCPU = &VezCPUContext[cpu];
@@ -223,7 +223,7 @@ int VezInit(int cpu, int type, int clock)
 	VezCurrentCPU->ReadPort = VezDummyReadPort;
 	VezCurrentCPU->WritePort = VezDummyWritePort;
 
-	int nCount = nVezCount+1;
+	INT32 nCount = nVezCount+1;
 
 	nVezCount = nCPUCount = nCount;
 
@@ -232,7 +232,7 @@ int VezInit(int cpu, int type, int clock)
 	return 0;
 }
 
-int VezInit(int cpu, int type)
+INT32 VezInit(INT32 cpu, INT32 type)
 {
 	return VezInit(cpu, type, 0);
 }
@@ -246,7 +246,7 @@ void VezExit()
 	nOpenedCPU = -1;
 }
 
-void VezOpen(int nCPU)
+void VezOpen(INT32 nCPU)
 {
 	nOpenedCPU = nCPU;
 	VezCurrentCPU = &VezCPUContext[nCPU];
@@ -272,28 +272,28 @@ void VezRunEnd()
 	VezCurrentCPU->runend();
 }
 
-void VezIdle(int cycles)
+void VezIdle(INT32 cycles)
 {
 	VezCurrentCPU->idle(cycles);
 }
 
-unsigned int VezTotalCycles()
+UINT32 VezTotalCycles()
 {
 	return VezCurrentCPU->total_cycles();
 }
 
-int VezGetActive()
+INT32 VezGetActive()
 {
 	return nOpenedCPU;
 }
 
-int VezMemCallback(int nStart,int nEnd,int nMode)
+INT32 VezMemCallback(INT32 nStart,INT32 nEnd,INT32 nMode)
 {
 	nStart >>= VEZ_MEM_SHIFT;
 	nEnd += VEZ_MEM_MASK;
 	nEnd >>= VEZ_MEM_SHIFT;
 
-	for (int i = nStart; i < nEnd; i++) {
+	for (INT32 i = nStart; i < nEnd; i++) {
 		switch (nMode) {
 			case 0:
 				VezCurrentCPU->ppMemRead[i] = NULL;
@@ -310,12 +310,12 @@ int VezMemCallback(int nStart,int nEnd,int nMode)
 	return 0;
 }
 
-int VezMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem)
+INT32 VezMapArea(INT32 nStart, INT32 nEnd, INT32 nMode, UINT8 *Mem)
 {
-	int s = nStart >> VEZ_MEM_SHIFT;
-	int e = (nEnd + VEZ_MEM_MASK) >> VEZ_MEM_SHIFT;
+	INT32 s = nStart >> VEZ_MEM_SHIFT;
+	INT32 e = (nEnd + VEZ_MEM_MASK) >> VEZ_MEM_SHIFT;
 
-	for (int i = s; i < e; i++) {
+	for (INT32 i = s; i < e; i++) {
 		switch (nMode) {
 			case 0:
 				VezCurrentCPU->ppMemRead[i] = Mem - nStart;
@@ -333,33 +333,33 @@ int VezMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem)
 	return 0;
 }
 
-int VezMapArea(int nStart, int nEnd, int nMode, unsigned char *Mem1, unsigned char *Mem2)
+INT32 VezMapArea(INT32 nStart, INT32 nEnd, INT32 nMode, UINT8 *Mem1, UINT8 *Mem2)
 {
-	int s = nStart >> VEZ_MEM_SHIFT;
-	int e = (nEnd + VEZ_MEM_MASK) >> VEZ_MEM_SHIFT;
+	INT32 s = nStart >> VEZ_MEM_SHIFT;
+	INT32 e = (nEnd + VEZ_MEM_MASK) >> VEZ_MEM_SHIFT;
 	
 	if (nMode != 2) return 1;
 	
-	for (int i = s; i < e; i++) {
+	for (INT32 i = s; i < e; i++) {
 		VezCurrentCPU->ppMemFetch[i] = Mem1 - nStart;
 		VezCurrentCPU->ppMemFetchData[i] = Mem2 - nStart;
 	}
 	return 0;
 }
 
-int VezReset()
+INT32 VezReset()
 {
 	return VezCurrentCPU->cpu_reset();
 }
 
-int VezRun(int nCycles)
+INT32 VezRun(INT32 nCycles)
 {
 	if (nCycles <= 0) return 0;
 
 	return VezCurrentCPU->cpu_execute(nCycles);
 }
 
-int VezPc(int n)
+INT32 VezPc(INT32 n)
 {
 	if (n == -1) {
 		return VezCurrentCPU->get_pc(-1);
@@ -371,12 +371,12 @@ int VezPc(int n)
 	return 0;
 }
 
-int VezScan(int nAction)
+INT32 VezScan(INT32 nAction)
 {
 	if ((nAction & ACB_DRIVER_DATA) == 0)
 		return 0;
 
-	for (int i = 0; i < nCPUCount; i++) {
+	for (INT32 i = 0; i < nCPUCount; i++) {
 		struct VezContext *CPU = &VezCPUContext[i];
 		if (CPU->scan) {
 			CPU->scan(i, nAction);
@@ -386,7 +386,7 @@ int VezScan(int nAction)
 	return 0;
 }
 
-void VezSetIRQLineAndVector(const int line, const int vector, const int status)
+void VezSetIRQLineAndVector(const INT32 line, const INT32 vector, const INT32 status)
 {
 	VezCurrentCPU->cpu_set_irq_line(line, vector, status);
 }

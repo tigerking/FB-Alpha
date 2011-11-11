@@ -3,29 +3,29 @@
 
 #define MAX_CPU		8
 
-int nM6809Count = 0;
-static int nActiveCPU = 0;
+INT32 nM6809Count = 0;
+static INT32 nActiveCPU = 0;
 
 static M6809Ext *m6809CPUContext;
 
-static int nM6809CyclesDone[MAX_CPU];
-int nM6809CyclesTotal;
+static INT32 nM6809CyclesDone[MAX_CPU];
+INT32 nM6809CyclesTotal;
 
-static unsigned char M6809ReadByteDummyHandler(unsigned short)
+static UINT8 M6809ReadByteDummyHandler(UINT16)
 {
 	return 0;
 }
 
-static void M6809WriteByteDummyHandler(unsigned short, unsigned char)
+static void M6809WriteByteDummyHandler(UINT16, UINT8)
 {
 }
 
-static unsigned char M6809ReadOpDummyHandler(unsigned short)
+static UINT8 M6809ReadOpDummyHandler(UINT16)
 {
 	return 0;
 }
 
-static unsigned char M6809ReadOpArgDummyHandler(unsigned short)
+static UINT8 M6809ReadOpArgDummyHandler(UINT16)
 {
 	return 0;
 }
@@ -37,13 +37,13 @@ void M6809Reset()
 
 void M6809NewFrame()
 {
-	for (int i = 0; i < nM6809Count; i++) {
+	for (INT32 i = 0; i < nM6809Count; i++) {
 		nM6809CyclesDone[i] = 0;
 	}
 	nM6809CyclesTotal = 0;
 }
 
-int M6809Init(int num)
+INT32 M6809Init(INT32 num)
 {
 	nActiveCPU = -1;
 	nM6809Count = num % MAX_CPU;
@@ -55,7 +55,7 @@ int M6809Init(int num)
 
 	memset(m6809CPUContext, 0, num * sizeof(M6809Ext));
 	
-	for (int i = 0; i < num; i++) {
+	for (INT32 i = 0; i < num; i++) {
 		m6809CPUContext[i].ReadByte = M6809ReadByteDummyHandler;
 		m6809CPUContext[i].WriteByte = M6809WriteByteDummyHandler;
 		m6809CPUContext[i].ReadOp = M6809ReadOpDummyHandler;
@@ -63,7 +63,7 @@ int M6809Init(int num)
 		
 		nM6809CyclesDone[i] = 0;
 	
-		for (int j = 0; j < (0x0100 * 3); j++) {
+		for (INT32 j = 0; j < (0x0100 * 3); j++) {
 			m6809CPUContext[i].pMemMap[j] = NULL;
 		}
 	}
@@ -72,7 +72,7 @@ int M6809Init(int num)
 	
 	m6809_init(NULL);
 
-	for (int i = 0; i < num; i++)
+	for (INT32 i = 0; i < num; i++)
 		CpuCheatRegister(0x0005, i);
 
 	return 0;
@@ -88,7 +88,7 @@ void M6809Exit()
 	}
 }
 
-void M6809Open(int num)
+void M6809Open(INT32 num)
 {
 	nActiveCPU = num;
 	
@@ -106,12 +106,12 @@ void M6809Close()
 	nActiveCPU = -1;
 }
 
-int M6809GetActive()
+INT32 M6809GetActive()
 {
 	return nActiveCPU;
 }
 
-void M6809SetIRQ(int vector, int status)
+void M6809SetIRQ(INT32 vector, INT32 status)
 {
 	if (status == M6809_IRQSTATUS_NONE) {
 		m6809_set_irq_line(vector, 0);
@@ -129,7 +129,7 @@ void M6809SetIRQ(int vector, int status)
 	}
 }
 
-int M6809Run(int cycles)
+INT32 M6809Run(INT32 cycles)
 {
 	cycles = m6809_execute(cycles);
 	
@@ -143,12 +143,12 @@ void M6809RunEnd()
 
 }
 
-int M6809MapMemory(unsigned char* pMemory, unsigned short nStart, unsigned short nEnd, int nType)
+INT32 M6809MapMemory(UINT8* pMemory, UINT16 nStart, UINT16 nEnd, INT32 nType)
 {
-	unsigned char cStart = (nStart >> 8);
-	unsigned char **pMemMap = m6809CPUContext[nActiveCPU].pMemMap;
+	UINT8 cStart = (nStart >> 8);
+	UINT8 **pMemMap = m6809CPUContext[nActiveCPU].pMemMap;
 
-	for (unsigned short i = cStart; i <= (nEnd >> 8); i++) {
+	for (UINT16 i = cStart; i <= (nEnd >> 8); i++) {
 		if (nType & M6809_READ)	{
 			pMemMap[0     + i] = pMemory + ((i - cStart) << 8);
 		}
@@ -163,30 +163,30 @@ int M6809MapMemory(unsigned char* pMemory, unsigned short nStart, unsigned short
 
 }
 
-void M6809SetReadByteHandler(unsigned char (*pHandler)(unsigned short))
+void M6809SetReadByteHandler(UINT8 (*pHandler)(UINT16))
 {
 	m6809CPUContext[nActiveCPU].ReadByte = pHandler;
 }
 
-void M6809SetWriteByteHandler(void (*pHandler)(unsigned short, unsigned char))
+void M6809SetWriteByteHandler(void (*pHandler)(UINT16, UINT8))
 {
 	m6809CPUContext[nActiveCPU].WriteByte = pHandler;
 }
 
-void M6809SetReadOpHandler(unsigned char (*pHandler)(unsigned short))
+void M6809SetReadOpHandler(UINT8 (*pHandler)(UINT16))
 {
 	m6809CPUContext[nActiveCPU].ReadOp = pHandler;
 }
 
-void M6809SetReadOpArgHandler(unsigned char (*pHandler)(unsigned short))
+void M6809SetReadOpArgHandler(UINT8 (*pHandler)(UINT16))
 {
 	m6809CPUContext[nActiveCPU].ReadOpArg = pHandler;
 }
 
-unsigned char M6809ReadByte(unsigned short Address)
+UINT8 M6809ReadByte(UINT16 Address)
 {
 	// check mem map
-	unsigned char * pr = m6809CPUContext[nActiveCPU].pMemMap[0x000 | (Address >> 8)];
+	UINT8 * pr = m6809CPUContext[nActiveCPU].pMemMap[0x000 | (Address >> 8)];
 	if (pr != NULL) {
 		return pr[Address & 0xff];
 	}
@@ -199,10 +199,10 @@ unsigned char M6809ReadByte(unsigned short Address)
 	return 0;
 }
 
-void M6809WriteByte(unsigned short Address, unsigned char Data)
+void M6809WriteByte(UINT16 Address, UINT8 Data)
 {
 	// check mem map
-	unsigned char * pr = m6809CPUContext[nActiveCPU].pMemMap[0x100 | (Address >> 8)];
+	UINT8 * pr = m6809CPUContext[nActiveCPU].pMemMap[0x100 | (Address >> 8)];
 	if (pr != NULL) {
 		pr[Address & 0xff] = Data;
 		return;
@@ -215,10 +215,10 @@ void M6809WriteByte(unsigned short Address, unsigned char Data)
 	}
 }
 
-unsigned char M6809ReadOp(unsigned short Address)
+UINT8 M6809ReadOp(UINT16 Address)
 {
 	// check mem map
-	unsigned char * pr = m6809CPUContext[nActiveCPU].pMemMap[0x200 | (Address >> 8)];
+	UINT8 * pr = m6809CPUContext[nActiveCPU].pMemMap[0x200 | (Address >> 8)];
 	if (pr != NULL) {
 		return pr[Address & 0xff];
 	}
@@ -231,10 +231,10 @@ unsigned char M6809ReadOp(unsigned short Address)
 	return 0;
 }
 
-unsigned char M6809ReadOpArg(unsigned short Address)
+UINT8 M6809ReadOpArg(UINT16 Address)
 {
 	// check mem map
-	unsigned char * pr = m6809CPUContext[nActiveCPU].pMemMap[0x000 | (Address >> 8)];
+	UINT8 * pr = m6809CPUContext[nActiveCPU].pMemMap[0x000 | (Address >> 8)];
 	if (pr != NULL) {
 		return pr[Address & 0xff];
 	}
@@ -247,11 +247,11 @@ unsigned char M6809ReadOpArg(unsigned short Address)
 	return 0;
 }
 
-void M6809WriteRom(unsigned short Address, unsigned char Data)
+void M6809WriteRom(UINT16 Address, UINT8 Data)
 {
-	unsigned char * pr = m6809CPUContext[nActiveCPU].pMemMap[0x000 | (Address >> 8)];
-	unsigned char * pw = m6809CPUContext[nActiveCPU].pMemMap[0x100 | (Address >> 8)];
-	unsigned char * pf = m6809CPUContext[nActiveCPU].pMemMap[0x200 | (Address >> 8)];
+	UINT8 * pr = m6809CPUContext[nActiveCPU].pMemMap[0x000 | (Address >> 8)];
+	UINT8 * pw = m6809CPUContext[nActiveCPU].pMemMap[0x100 | (Address >> 8)];
+	UINT8 * pf = m6809CPUContext[nActiveCPU].pMemMap[0x200 | (Address >> 8)];
 
 	if (pr != NULL) {
 		pr[Address & 0xff] = Data;
@@ -272,7 +272,7 @@ void M6809WriteRom(unsigned short Address, unsigned char Data)
 	}
 }
 
-int M6809Scan(int nAction)
+INT32 M6809Scan(INT32 nAction)
 {
 	struct BurnArea ba;
 	
@@ -280,11 +280,11 @@ int M6809Scan(int nAction)
 		return 1;
 	}
 
-	for (int i = 0; i < nM6809Count; i++) {
+	for (INT32 i = 0; i < nM6809Count; i++) {
 
 		M6809Ext *ptr = &m6809CPUContext[i];
 
-		int (*Callback)(int irqline);
+		INT32 (*Callback)(INT32 irqline);
 
 		Callback = ptr->reg.irq_callback;
 
