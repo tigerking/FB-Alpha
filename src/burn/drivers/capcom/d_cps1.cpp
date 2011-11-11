@@ -11,7 +11,7 @@
 //#define INCLUDE_DUPLICATES		1
 //#define INCLUDE_CPS1_PHOENIX		1
 
-static unsigned char ForgottnAltGfx;
+static UINT8 ForgottnAltGfx;
 
 // Input Definitions
 
@@ -349,7 +349,7 @@ static struct BurnInputInfo FfightInputList[] =
 
 STDINPUTINFO(Ffight)
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo ForgottnInputList[] =
 {
@@ -9665,13 +9665,13 @@ STD_ROM_FN(Cps1frog)
 typedef void (*KabukiDecode)();
 static KabukiDecode KabukiDecodeFunction;
 
-static int GameHasStars = 0;
+static INT32 GameHasStars = 0;
 
 struct GameConfig {
 	const char *DriverName;
-	int CpsBId;
-	int CpsMapperId;
-	int CpsStars;
+	INT32 CpsBId;
+	INT32 CpsMapperId;
+	INT32 CpsStars;
 	KabukiDecode DecodeFunction;
 };
 
@@ -9924,22 +9924,22 @@ static void SetGameConfig()
 
 // Driver functions
 
-static unsigned int nCps68KByteswapRomNum = 0;
-static unsigned int nCps68KNoByteswapRomNum = 0;
-static unsigned int nCpsZ80RomNum = 0;
-static unsigned int nCpsTilesRomNum = 0;
-static unsigned int nCpsOkim6295RomNum = 0;
-static unsigned int nCpsQsoundRomNum = 0;
-static unsigned int nCpsPicRomNum = 0;
+static UINT32 nCps68KByteswapRomNum = 0;
+static UINT32 nCps68KNoByteswapRomNum = 0;
+static UINT32 nCpsZ80RomNum = 0;
+static UINT32 nCpsTilesRomNum = 0;
+static UINT32 nCpsOkim6295RomNum = 0;
+static UINT32 nCpsQsoundRomNum = 0;
+static UINT32 nCpsPicRomNum = 0;
 
-static int Cps1LoadRoms(int bLoad)
+static INT32 Cps1LoadRoms(INT32 bLoad)
 {
 	struct BurnRomInfo ri;
 	ri.nType = 0;
 	ri.nLen = 0;
-	int nOffset = -1;
-	unsigned int i = 0;
-	int nRet = 0;
+	INT32 nOffset = -1;
+	UINT32 i = 0;
+	INT32 nRet = 0;
 	
 	if (!bLoad) {
 		do {
@@ -9993,7 +9993,7 @@ static int Cps1LoadRoms(int bLoad)
 	}
 
 	if (bLoad) {
-		int Offset = 0;
+		INT32 Offset = 0;
 		
 		i = 0;
 		while (i < nCps68KByteswapRomNum + nCps68KNoByteswapRomNum) {
@@ -10124,7 +10124,7 @@ static int Cps1LoadRoms(int bLoad)
 		if (nCpsQSamLen) {
 			Offset = 0;
 			for (i = nCps68KByteswapRomNum + nCps68KNoByteswapRomNum + nCpsTilesRomNum + nCpsZ80RomNum; i < nCps68KByteswapRomNum + nCps68KNoByteswapRomNum + nCpsTilesRomNum + nCpsZ80RomNum + nCpsQsoundRomNum; i++) {
-				BurnLoadRom((unsigned char*)CpsQSam + Offset, i, 1);
+				BurnLoadRom((UINT8*)CpsQSam + Offset, i, 1);
 			
 				BurnDrvGetRomInfo(&ri, i);
 				Offset += ri.nLen;
@@ -10138,9 +10138,9 @@ static int Cps1LoadRoms(int bLoad)
 typedef void (*AmendProgRom)();
 static AmendProgRom AmendProgRomCallback;
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	SetGameConfig();
     
@@ -10164,16 +10164,16 @@ static int DrvInit()
 	return 0;
 }
 
-static int TwelveMhzInit()
+static INT32 TwelveMhzInit()
 {
 	nCPS68KClockspeed = 12000000;
 	
 	return DrvInit();
 }
 
-static int CaptcommbInit()
+static INT32 CaptcommbInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	CpsLayer1XOffs = -8;
 	CpsLayer2XOffs = -11;
@@ -10187,38 +10187,38 @@ static int CaptcommbInit()
 	return nRet;
 }
 
-unsigned char __fastcall CawingbInputRead(unsigned int a)
+UINT8 __fastcall CawingbInputRead(UINT32 a)
 {
-	unsigned char d = 0xff;
+	UINT8 d = 0xff;
 	
 	switch (a) {
 		case 0x882000: {
-			d = (unsigned char)~Inp000;
+			d = (UINT8)~Inp000;
 			return d;
 		}
 		
 		case 0x882001: {
-			d = (unsigned char)~Inp001;
+			d = (UINT8)~Inp001;
 			return d;
 		}
 		
 		case 0x882008: {
-			d = (unsigned char)~Inp008;
+			d = (UINT8)~Inp008;
 			return d;
 		}
 		
 		case 0x88200a: {
-			d = (unsigned char)~Cpi01A;
+			d = (UINT8)~Cpi01A;
 			return d;
 		}
 		
 		case 0x88200c: {
-			d = (unsigned char)~Cpi01C;
+			d = (UINT8)~Cpi01C;
 			return d;
 		}
 		
 		case 0x88200e: {
-			d = (unsigned char)~Cpi01E;
+			d = (UINT8)~Cpi01E;
 			return d;
 		}
 	}
@@ -10226,11 +10226,11 @@ unsigned char __fastcall CawingbInputRead(unsigned int a)
 	return 0;
 }
 
-void __fastcall CawingbInputWrite(unsigned int a, unsigned char d)
+void __fastcall CawingbInputWrite(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x882006: {
-			PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
+			PsndSyncZ80((INT64)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
 			
 			PsndCode = d;
 			return;
@@ -10239,9 +10239,9 @@ void __fastcall CawingbInputWrite(unsigned int a, unsigned char d)
 
 }
 
-static int CawingbInit()
+static INT32 CawingbInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	CpsLayer1XOffs = 0xffc0;
 //	CpsLayer2XOffs = 0xffc0;
@@ -10258,7 +10258,7 @@ static int CawingbInit()
 	return 0;
 }
 
-void __fastcall DinopicScrollWrite(unsigned int a, unsigned short d)
+void __fastcall DinopicScrollWrite(UINT32 a, UINT16 d)
 {
 	if (a == 0x980000) {
 		CpsLayer1YOffs = d;
@@ -10291,9 +10291,9 @@ void __fastcall DinopicScrollWrite(unsigned int a, unsigned short d)
 	}
 }
 
-static int DinopicInit()
+static INT32 DinopicInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	Dinopic = 1;
 	CpsDrawSpritesInReverse = 1;
@@ -10304,7 +10304,7 @@ static int DinopicInit()
 	CpsLoadTilesBootleg(CpsGfx + 0x000000, 4);
 	CpsLoadTilesBootleg(CpsGfx + 0x200000, 8);
 	
-	BootlegSpriteRam = (unsigned char*)malloc(0x2000);
+	BootlegSpriteRam = (UINT8*)malloc(0x2000);
 	
 	SekOpen(0);
 	SekMapMemory(BootlegSpriteRam, 0x990000, 0x991FFF, SM_RAM);
@@ -10318,10 +10318,10 @@ static int DinopicInit()
 static void DinohCallback()
 {
 	// Patch Q-Sound Test ???
-	*((unsigned short*)(CpsRom + 0xaacf4)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xaacf4)) = 0x4e71;
 }
 
-static int DinohInit()
+static INT32 DinohInit()
 {
 	Cps1QsHack = 1;
 	AmendProgRomCallback = DinohCallback;
@@ -10331,7 +10331,7 @@ static int DinohInit()
 
 static void DinohaCallback()
 {
-	unsigned char *TempRom = (unsigned char*)malloc(0x200000);
+	UINT8 *TempRom = (UINT8*)malloc(0x200000);
 	if (TempRom) {
 		memcpy(TempRom, CpsRom, 0x200000);
 		memset(CpsRom, 0, 0x200000);
@@ -10344,12 +10344,12 @@ static void DinohaCallback()
 	}
 	
 	// Patch Q-Sound Test ???
-	*((unsigned short*)(CpsRom + 0xaacf4)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xaacf4)) = 0x4e71;
 }
 
-static int DinohaInit()
+static INT32 DinohaInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	Cps1QsHack = 1;
 	AmendProgRomCallback = DinohaCallback;
@@ -10362,9 +10362,9 @@ static int DinohaInit()
 	return nRet;
 }
 
-static int DinohbInit()
+static INT32 DinohbInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	Dinopic = 1;
 	Cps1Pic = 1;
@@ -10375,7 +10375,7 @@ static int DinohbInit()
 	memset(CpsGfx, 0, nCpsGfxLen);
 	CpsLoadTilesHack160(CpsGfx, 2);
 	
-	BootlegSpriteRam = (unsigned char*)malloc(0x2000);
+	BootlegSpriteRam = (UINT8*)malloc(0x2000);
 	
 	SekOpen(0);
 	SekMapMemory(BootlegSpriteRam, 0x990000, 0x991FFF, SM_RAM);
@@ -10386,14 +10386,14 @@ static int DinohbInit()
 	return nRet;
 }
 
-unsigned char __fastcall DinohuntQSharedRamRead(unsigned int /*a*/)
+UINT8 __fastcall DinohuntQSharedRamRead(UINT32 /*a*/)
 {
 	return 0xff;
 }
 
-static int DinohuntInit()
+static INT32 DinohuntInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	Dinohunt = 1;
 	
@@ -10407,9 +10407,9 @@ static int DinohuntInit()
 	return nRet;
 }
 
-static int ForgottnInit()
+static INT32 ForgottnInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	Forgottn = 1;
 
@@ -10422,9 +10422,9 @@ static int ForgottnInit()
 	return nRet;
 }
 
-static int ForgottnAltGfxInit()
+static INT32 ForgottnAltGfxInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	Forgottn = 1;
 	ForgottnAltGfx = 1;
@@ -10443,7 +10443,7 @@ static void GhoulsCallback()
 	BurnByteswap(CpsRom + 0x080000, 0x080000);
 }
 
-static int GhoulsInit()
+static INT32 GhoulsInit()
 {
 	Ghouls = 1;
 	AmendProgRomCallback = GhoulsCallback;
@@ -10451,14 +10451,14 @@ static int GhoulsInit()
 	return DrvInit();
 }
 
-static int DaimakaiInit()
+static INT32 DaimakaiInit()
 {
 	Ghouls = 1;
 	
 	return DrvInit();
 }
 
-static int DaimakbInit()
+static INT32 DaimakbInit()
 {
 	Ghouls = 1;
 	Port6SoundWrite = 1;	
@@ -10466,9 +10466,9 @@ static int DaimakbInit()
 	return DrvInit();
 }
 
-static int KodbInit()
+static INT32 KodbInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 
 	Kodb = 1;
 	
@@ -10480,21 +10480,21 @@ static int KodbInit()
 	return nRet;
 }
 
-static int KodhInit()
+static INT32 KodhInit()
 {
 	Kodh = 1;
 	
 	return DrvInit();
 }
 
-static int MercsInit()
+static INT32 MercsInit()
 {
 	Mercs = 1;
 
 	return DrvInit();
 }
 
-static int Pang3nInit()
+static INT32 Pang3nInit()
 {
 	PangEEP = 1;
 
@@ -10503,9 +10503,9 @@ static int Pang3nInit()
 
 static void Pang3Callback()
 {
-	for (int i = 0x80000; i < 0x100000; i += 2) {
-		int src = CpsRom[i];
-		int dst = src & 0xff00;
+	for (INT32 i = 0x80000; i < 0x100000; i += 2) {
+		INT32 src = CpsRom[i];
+		INT32 dst = src & 0xff00;
 		if ( src & 0x01) dst ^= 0x04;
 		if ( src & 0x02) dst ^= 0x21;
 		if ( src & 0x04) dst ^= 0x01;
@@ -10514,20 +10514,20 @@ static void Pang3Callback()
 		if ( src & 0x20) dst ^= 0x06;
 		if ( src & 0x40) dst ^= 0x08;
 		if (~src & 0x80) dst ^= 0x88;
-		CpsRom[i] = (unsigned char)dst;
+		CpsRom[i] = (UINT8)dst;
   	}
 }
 
-static int Pang3Init()
+static INT32 Pang3Init()
 {
 	AmendProgRomCallback = Pang3Callback;
 	
 	return Pang3nInit();
 }
 
-static int PunipicInit()
+static INT32 PunipicInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	nRet = TwelveMhzInit();
 	
@@ -10538,9 +10538,9 @@ static int PunipicInit()
 	return nRet;
 }
 
-static int Punipic2Init()
+static INT32 Punipic2Init()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	nRet = TwelveMhzInit();
 	
@@ -10550,9 +10550,9 @@ static int Punipic2Init()
 	return nRet;
 }
 
-static int Punipic3Init()
+static INT32 Punipic3Init()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	Cps1Pic = 1;
 	
@@ -10564,16 +10564,16 @@ static int Punipic3Init()
 	return nRet;
 }
 
-static int QadInit()
+static INT32 QadInit()
 {
 	Qad = 1;
 
 	return TwelveMhzInit();
 }
 
-static int Sf2ebblInit()
+static INT32 Sf2ebblInit()
 {
-	int nRet = DrvInit();
+	INT32 nRet = DrvInit();
 	
 	memset(CpsGfx + 0x400000, 0, 0x80000);
 	CpsLoadTilesSf2ebbl(CpsGfx + 0x400000, 19);
@@ -10588,7 +10588,7 @@ static int Sf2ebblInit()
 	return nRet;
 }
 
-static int Sf2jcInit()
+static INT32 Sf2jcInit()
 {
 	Sf2jc = 1;
 
@@ -10597,7 +10597,7 @@ static int Sf2jcInit()
 
 static void Sf2qp1Callback()
 {
-	unsigned char *TempRom = (unsigned char*)malloc(0x100000);
+	UINT8 *TempRom = (UINT8*)malloc(0x100000);
 	if (TempRom) {
 		memcpy(TempRom, CpsRom, 0x100000);
 		memset(CpsRom, 0, 0x100000);
@@ -10610,21 +10610,21 @@ static void Sf2qp1Callback()
 	}
 }
 
-static int Sf2qp1Init()
+static INT32 Sf2qp1Init()
 {
 	AmendProgRomCallback = Sf2qp1Callback;
 	
 	return DrvInit();
 }
 
-static int Sf2thndrInit()
+static INT32 Sf2thndrInit()
 {
 	Sf2thndr = 1;
 	
 	return DrvInit();
 }
 
-static int Sf2ceInit()
+static INT32 Sf2ceInit()
 {
 	nCPS68KClockspeed = 7000000;
 	
@@ -10637,16 +10637,16 @@ static void Sf2accp2Callback()
 	CpsRom[0x11756] = 0x71;
 }
 
-static int Sf2accp2Init()
+static INT32 Sf2accp2Init()
 {
 	AmendProgRomCallback = Sf2accp2Callback;
 	
 	return Sf2ceInit();
 }
 
-static int Sf2dkot2Init()
+static INT32 Sf2dkot2Init()
 {
-	int nRet;
+	INT32 nRet;
 
 	nRet = Sf2ceInit();
 
@@ -10665,7 +10665,7 @@ static void Sf2rbCallback()
 	CpsRom[0xe5464] = 0x12;
 }
 
-static int Sf2rbInit()
+static INT32 Sf2rbInit()
 {
 	AmendProgRomCallback = Sf2rbCallback;
 	
@@ -10679,16 +10679,16 @@ static void Sf2rb2Callback()
 	CpsRom[0xe5332] = 0x14;
 }
 
-static int Sf2rb2Init()
+static INT32 Sf2rb2Init()
 {
 	AmendProgRomCallback = Sf2rb2Callback;
 	
 	return Sf2ceInit();
 }
 
-static int Sf2thInit()
+static INT32 Sf2thInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	Sf2Hack = 1;
 	
@@ -10706,24 +10706,24 @@ static void Sf2yycCallback()
 {
 	memcpy(CpsRom + 0x140000, CpsRom + 0x100000, 0x40000);
         
-        *((unsigned short*)(CpsRom + 0xe55be)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55ca)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55cc)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55ce)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55d0)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55d2)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55d4)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55d6)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55d8)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55da)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55de)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55e2)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55e4)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55e6)) = 0x4e71;
-	*((unsigned short*)(CpsRom + 0xe55e8)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55be)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55ca)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55cc)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55ce)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55d0)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55d2)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55d4)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55d6)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55d8)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55da)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55de)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55e2)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55e4)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55e6)) = 0x4e71;
+	*((UINT16*)(CpsRom + 0xe55e8)) = 0x4e71;
 }
 
-static int Sf2yycInit()
+static INT32 Sf2yycInit()
 {
 	nCpsRomLen = 0x40000;
 	
@@ -10743,7 +10743,7 @@ static void Sf2koryuCallback()
 	BurnByteswap(CpsRom, 0x140000);
 }
 
-static int Sf2koryuInit()
+static INT32 Sf2koryuInit()
 {
 	Sf2Hack = 1;
 	AmendProgRomCallback = Sf2koryuCallback;
@@ -10756,7 +10756,7 @@ static int Sf2koryuInit()
 	return Sf2ceInit();
 }
 
-static int Sf2m4Init()
+static INT32 Sf2m4Init()
 {
 	Sf2Hack = 1;
 	
@@ -10768,7 +10768,7 @@ static int Sf2m4Init()
 	return Sf2ceInit();
 }
 
-void __fastcall Sf2m1ScrollWrite(unsigned int a, unsigned short d)
+void __fastcall Sf2m1ScrollWrite(UINT32 a, UINT16 d)
 {
 	if (a == 0x980000) {
 		CpsReg[0x0e] = d & 0xff;
@@ -10822,9 +10822,9 @@ void __fastcall Sf2m1ScrollWrite(unsigned int a, unsigned short d)
 	}
 }
 
-static int Sf2m1Init()
+static INT32 Sf2m1Init()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	CpsLayer2XOffs = 4;
 	Port6SoundWrite = 1;
@@ -10841,12 +10841,12 @@ static int Sf2m1Init()
 
 static void Sf2m2Callback()
 {
-	*((unsigned short*)(CpsRom + 0xC0680)) = 0x4E71;
-	*((unsigned short*)(CpsRom + 0xC0682)) = 0x4E71;
-	*((unsigned short*)(CpsRom + 0xC0684)) = 0x4E71;
+	*((UINT16*)(CpsRom + 0xC0680)) = 0x4E71;
+	*((UINT16*)(CpsRom + 0xC0682)) = 0x4E71;
+	*((UINT16*)(CpsRom + 0xC0684)) = 0x4E71;
 }
 
-static int Sf2m2Init()
+static INT32 Sf2m2Init()
 {
 	Sf2Hack = 1;
 	AmendProgRomCallback = Sf2m2Callback;
@@ -10859,43 +10859,43 @@ static int Sf2m2Init()
 	return Sf2ceInit();
 }
 
-unsigned char __fastcall Sf2m3ReadByte(unsigned int a)
+UINT8 __fastcall Sf2m3ReadByte(UINT32 a)
 {
-	unsigned char d = 0xff;
+	UINT8 d = 0xff;
 	
 	switch (a) {
 		case 0x800010: {
-			d = (unsigned char)~Inp010;
+			d = (UINT8)~Inp010;
 			return d;
 		}
 		
 		case 0x800011: {
-			d = (unsigned char)~Inp011;
+			d = (UINT8)~Inp011;
 			return d;
 		}
 		
 		case 0x800029: {
-			d = (unsigned char)~Inp029;
+			d = (UINT8)~Inp029;
 			return d;
 		}
 		
 		case 0x800186: {
-			d = (unsigned char)~Inp186;
+			d = (UINT8)~Inp186;
 			return d;
 		}
 		
 		case 0x80002a: {
-			d = (unsigned char)~Cpi01A;
+			d = (UINT8)~Cpi01A;
 			return d;
 		}
 		
 		case 0x80002c: {
-			d = (unsigned char)~Cpi01C;
+			d = (UINT8)~Cpi01C;
 			return d;
 		}
 		
 		case 0x80002e: {
-			d = (unsigned char)~Cpi01E;
+			d = (UINT8)~Cpi01E;
 			return d;
 		}
 	}
@@ -10905,11 +10905,11 @@ unsigned char __fastcall Sf2m3ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Sf2m3WriteByte(unsigned int a, unsigned char d)
+void __fastcall Sf2m3WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x800191: {
-			PsndSyncZ80((long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
+			PsndSyncZ80((INT64)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles);
 
 			PsndCode = d;
 			return;
@@ -10919,7 +10919,7 @@ void __fastcall Sf2m3WriteByte(unsigned int a, unsigned char d)
 //	bprintf(PRINT_NORMAL, _T("Write byte %x, %x\n"), a, d);
 }
 
-void __fastcall Sf2m3WriteWord(unsigned int a, unsigned short d)
+void __fastcall Sf2m3WriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x800100: {
@@ -11046,9 +11046,9 @@ void __fastcall Sf2m3WriteWord(unsigned int a, unsigned short d)
 //	bprintf(PRINT_NORMAL, _T("Write word %x, %x\n"), a, d);
 }
 
-static int Sf2m3Init()
+static INT32 Sf2m3Init()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	CpsLayer1XOffs = -16;
 	CpsLayer2XOffs = -16;
@@ -11068,7 +11068,7 @@ static int Sf2m3Init()
 	return nRet;
 }
 
-static int Sf2m8Init()
+static INT32 Sf2m8Init()
 {
 	Scroll1TileMask = 0x4fff;
 	Scroll3TileMask = 0x1fff;
@@ -11081,7 +11081,7 @@ static void Sf2m13Callback()
 	CpsRom[0x1d22a] = 0x20;	// Fix scroll
 }
 
-static int Sf2m13Init()
+static INT32 Sf2m13Init()
 {
 	CpsLayer1XOffs = -12;
 	CpsLayer2XOffs = -14;
@@ -11093,9 +11093,9 @@ static int Sf2m13Init()
 	return Sf2ceInit();
 }
 
-static int SfzchInit()
+static INT32 SfzchInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	nRet = DrvInit();
 	
@@ -11104,9 +11104,9 @@ static int SfzchInit()
 	return nRet;
 }
 
-static int StriderInit()
+static INT32 StriderInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	nRet = DrvInit();
 	
@@ -11117,9 +11117,9 @@ static int StriderInit()
 	return nRet;
 }
 
-static int StriderjrInit()
+static INT32 StriderjrInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	nRet = TwelveMhzInit();
 	
@@ -11130,9 +11130,9 @@ static int StriderjrInit()
 	return nRet;
 }
 
-static int StriderjInit()
+static INT32 StriderjInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	nRet = DrvInit();
 	
@@ -11143,9 +11143,9 @@ static int StriderjInit()
 	return nRet;
 }
 
-static int WofbInit()
+static INT32 WofbInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	nRet = TwelveMhzInit();
 	
@@ -11162,16 +11162,16 @@ static void Wof3jsCallback()
 	memset(CpsRom + 0x100000, 0, 0x40000);
 }
 
-static int Wof3jsInit()
+static INT32 Wof3jsInit()
 {
 	AmendProgRomCallback = Wof3jsCallback;
 	
 	return TwelveMhzInit();
 }
 
-static int Wof3sjInit()
+static INT32 Wof3sjInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	nRet = TwelveMhzInit();
 	
@@ -11181,9 +11181,9 @@ static int Wof3sjInit()
 	return nRet;
 }
 
-static int Wof3sjaInit()
+static INT32 Wof3sjaInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	nRet = TwelveMhzInit();
 	
@@ -11193,9 +11193,9 @@ static int Wof3sjaInit()
 	return nRet;
 }
 
-static int WofchInit()
+static INT32 WofchInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 
 	Cps1Qs = 1;
 	
@@ -11215,9 +11215,9 @@ static void WofhCallback()
 	CpsRom[0xf11ee] = 0x71;
 }
 
-static int WofhInit()
+static INT32 WofhInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	AmendProgRomCallback = WofhCallback;
 	
@@ -11233,9 +11233,9 @@ static int WofhInit()
 	return nRet;
 }
 
-static int WofhaInit()
+static INT32 WofhaInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	AmendProgRomCallback = WofhCallback;
 	
@@ -11251,7 +11251,7 @@ static int WofhaInit()
 	return nRet;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	CpsRunExit();
 	CpsExit();
@@ -13819,9 +13819,9 @@ static struct BurnRomInfo Sf2tloncRomDesc[] = {
 STD_ROM_PICK(Sf2tlonc)
 STD_ROM_FN(Sf2tlonc)
 
-static int Sf2tloncInit()
+static INT32 Sf2tloncInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
 	nRet = Sf2m4Init();
 	

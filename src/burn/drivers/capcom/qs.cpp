@@ -1,9 +1,9 @@
 #include "cps.h"
 // QSound
 
-static int nQsndCyclesExtra;
+static INT32 nQsndCyclesExtra;
 
-static int qsndTimerOver(int, int)
+static INT32 qsndTimerOver(INT32, INT32)
 {
 //	bprintf(PRINT_NORMAL, _T("  - IRQ -> 1.\n"));
 	ZetSetIRQLine(0xFF, ZET_IRQSTATUS_AUTO);
@@ -11,10 +11,10 @@ static int qsndTimerOver(int, int)
 	return 0;
 }
 
-int QsndInit()
+INT32 QsndInit()
 {
-	int nVolumeShift;
-	int nRate;
+	INT32 nVolumeShift;
+	INT32 nRate;
 
 	// Init QSound z80
 	if (QsndZInit()) {
@@ -87,7 +87,7 @@ void QsndExit()
 	QsndZExit();
 }
 
-int QsndScan(int nAction)
+INT32 QsndScan(INT32 nAction)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		QsndZScan(nAction);				// Scan Z80
@@ -118,7 +118,7 @@ void QsndEndFrame()
 
 void QsndSyncZ80()
 {
-	int nCycles = (long long)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles;
+	int nCycles = (INT64)SekTotalCycles() * nCpsZ80Cycles / nCpsCycles;
 
 	if (nCycles <= ZetTotalCycles()) {
 		return;

@@ -1,17 +1,17 @@
 #include "cps.h"
 // CPS (palette)
 
-static unsigned char* CpsPalSrc = NULL;			// Copy of current input palette
+static UINT8* CpsPalSrc = NULL;			// Copy of current input palette
 
-unsigned int* CpsPal = NULL;					// Hicolor version of palette
-unsigned int* CpsObjPal = NULL;
+UINT32* CpsPal = NULL;					// Hicolor version of palette
+UINT32* CpsObjPal = NULL;
 
-int nLagObjectPalettes;
+INT32 nLagObjectPalettes;
 
-inline static unsigned int CalcColCPS1(unsigned short a)
+inline static UINT32 CalcColCPS1(UINT16 a)
 {
-	int r, g, b, f;
-	const int F_OFFSET = 0x0F;
+	INT32 r, g, b, f;
+	const INT32 F_OFFSET = 0x0F;
 
 	// Format is FFFF RRRR GGGG BBBB
 	f = (a & 0xF000) >> 12;
@@ -31,10 +31,10 @@ inline static unsigned int CalcColCPS1(unsigned short a)
 	return BurnHighCol(r, g, b, 0);
 }
 
-static unsigned int CalcColCPS2(unsigned short a)
+static UINT32 CalcColCPS2(UINT16 a)
 {
-	int r, g, b, f;
-	const int F_OFFSET = 0x0F;
+	INT32 r, g, b, f;
+	const INT32 F_OFFSET = 0x0F;
 
 	// Format is FFFF RRRR GGGG BBBB
 	f = (a & 0xF000) >> 12;
@@ -54,32 +54,32 @@ static unsigned int CalcColCPS2(unsigned short a)
 	return BurnHighCol(r, g, b, 0);
 }
 
-static int CalcAll()
+static INT32 CalcAll()
 {
-	unsigned short* ps;
+	UINT16* ps;
 
 	if (Cps == 2) {
 		if (nLagObjectPalettes) {
-			ps = (unsigned short*)CpsPalSrc + 0x0C00;
-			for (int i = 0x0C00; i < 0x0E00; i++, ps++) {
+			ps = (UINT16*)CpsPalSrc + 0x0C00;
+			for (INT32 i = 0x0C00; i < 0x0E00; i++, ps++) {
 				CpsPal[i ^ 15] = CalcColCPS2(*ps);
 			}
-			ps = (unsigned short*)CpsPalSrc + 0x0200;
-			for (int i = 0x0200; i < 0x0800; i++, ps++) {
+			ps = (UINT16*)CpsPalSrc + 0x0200;
+			for (INT32 i = 0x0200; i < 0x0800; i++, ps++) {
 				CpsPal[i ^ 15] = CalcColCPS2(*ps);
 			}
 
 			memcpy(CpsPal + 0x0E00, CpsPal + 0x0C00, 0x0200 << 2);
 		} else {
-			ps = (unsigned short*)CpsPalSrc;
-			for (int i = 0x0000; i < 0x0800; i++, ps++) {
+			ps = (UINT16*)CpsPalSrc;
+			for (INT32 i = 0x0000; i < 0x0800; i++, ps++) {
 				CpsPal[i ^ 15] = CalcColCPS2(*ps);
 			}
 		}
 
 	} else {
-		ps = (unsigned short*)CpsPalSrc;
-		for (int i = 0x0000; i < 0x0c00; i++, ps++) {
+		ps = (UINT16*)CpsPalSrc;
+		for (INT32 i = 0x0000; i < 0x0c00; i++, ps++) {
 			CpsPal[i ^ 15] = CalcColCPS1(*ps);
 		}
 	}
@@ -87,30 +87,30 @@ static int CalcAll()
 	return 0;
 }
 
-static void CalcAllStar(int nLayer)
+static void CalcAllStar(INT32 nLayer)
 {
-	unsigned short* ps = (unsigned short*)CpsPalSrc;
-	int nOffset = 0x0800 + (nLayer << 9);
+	UINT16* ps = (UINT16*)CpsPalSrc;
+	INT32 nOffset = 0x0800 + (nLayer << 9);
 	
-	for (int i = 0; i < 128; i++, ps++) {
+	for (INT32 i = 0; i < 128; i++, ps++) {
 		CpsPal[(i + nOffset) ^ 15] = CalcColCPS1(*(ps + nOffset));
 	}
 }
 
-int CpsPalInit()
+INT32 CpsPalInit()
 {
-	int nLen = 0;
+	INT32 nLen = 0;
 
-	nLen = 0x1000 * sizeof(short);
-	CpsPalSrc = (unsigned char*)malloc(nLen);
+	nLen = 0x1000 * sizeof(UINT16);
+	CpsPalSrc = (UINT8*)malloc(nLen);
 	if (CpsPalSrc == NULL) {
 		return 1;
 	}
 	memset(CpsPalSrc, 0, nLen);
 
 	// The star layer palettes are at the end of the normal palette, so double the size
-	nLen = 0x1000 * sizeof(int);
-	CpsPal = (unsigned int*)malloc(nLen);
+	nLen = 0x1000 * sizeof(UINT32);
+	CpsPal = (UINT32*)malloc(nLen);
 	if (CpsPal == NULL) {
 		return 1;
 	}
@@ -131,7 +131,7 @@ int CpsPalInit()
 	return 0;
 }
 
-int CpsPalExit()
+INT32 CpsPalExit()
 {
 	if (CpsPal) {
 		free(CpsPal);
@@ -145,19 +145,19 @@ int CpsPalExit()
 }
 
 // Update CpsPal with the new palette at pNewPal (length 0x1000 bytes)
-int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
+INT32 CpsPalUpdate(UINT8* pNewPal, INT32 bRecalcAll)
 {
-	int i;
-	unsigned short *ps, *pn;
+	INT32 i;
+	UINT16 *ps, *pn;
 
 	// If we are recalculating the whole palette, just copy to CpsPalSrc
 	// and recalculate it all
 	if (bRecalcAll) {
-		ps = (unsigned short*)CpsPalSrc;
-		pn = (unsigned short*)pNewPal;
+		ps = (UINT16*)CpsPalSrc;
+		pn = (UINT16*)pNewPal;
 
 		if (nLagObjectPalettes) {
-			int nBuffer = 0x0C00 + ((GetCurrentFrame() & 1) << 9);
+			INT32 nBuffer = 0x0C00 + ((GetCurrentFrame() & 1) << 9);
 
 			memcpy(ps + 0x0200, pn + 0x0200, 0x0600 << 1);
 			memcpy(ps + nBuffer, pn, 0x0200 << 1);
@@ -175,14 +175,14 @@ int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
 
 	if (Cps == 2) {
 		if (nLagObjectPalettes) {
-			int nBuffer = 0x0C00 + ((GetCurrentFrame() & 1) << 9);
+			INT32 nBuffer = 0x0C00 + ((GetCurrentFrame() & 1) << 9);
 
-			ps = (unsigned short*)CpsPalSrc + (nBuffer ^ 0x0200);
-			pn = (unsigned short*)pNewPal;
+			ps = (UINT16*)CpsPalSrc + (nBuffer ^ 0x0200);
+			pn = (UINT16*)pNewPal;
 			CpsObjPal = CpsPal + (nBuffer ^ 0x0200);
 
 			for (i = 0; i < 0x0200; i++, ps++, pn++) {
-				unsigned short n;
+				UINT16 n;
 				n = *pn;
 				if (*ps == n) {
 					continue;								// Colour hasn't changed - great!
@@ -193,11 +193,11 @@ int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
 				CpsObjPal[i ^ 15] = CalcColCPS2(n);
 			}
 
-			ps = (unsigned short*)CpsPalSrc + 0x0200;
-			pn = (unsigned short*)pNewPal + 0x0200;
+			ps = (UINT16*)CpsPalSrc + 0x0200;
+			pn = (UINT16*)pNewPal + 0x0200;
 
 			for (i = 0x0200; i < 0x0800; i++, ps++, pn++) {
-				unsigned short n;
+				UINT16 n;
 				n = *pn;
 				if (*ps == n) {
 					continue;								// Colour hasn't changed - great!
@@ -210,11 +210,11 @@ int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
 
 			CpsObjPal = CpsPal + nBuffer;
 		} else {
-			ps = (unsigned short*)CpsPalSrc;
-			pn = (unsigned short*)pNewPal;
+			ps = (UINT16*)CpsPalSrc;
+			pn = (UINT16*)pNewPal;
 
 			for (i = 0x0000; i < 0x0800; i++, ps++, pn++) {
-				unsigned short n = *pn;
+				UINT16 n = *pn;
 				if (*ps == n) {
 					continue;								// Colour hasn't changed - great!
 				}
@@ -225,11 +225,11 @@ int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
 			}
 		}
 	} else {
-		ps = (unsigned short*)CpsPalSrc;
-		pn = (unsigned short*)pNewPal;
+		ps = (UINT16*)CpsPalSrc;
+		pn = (UINT16*)pNewPal;
 
 		for (i = 0x0000; i < 0x0c00; i++, ps++, pn++) {
-			unsigned short n = *pn;
+			UINT16 n = *pn;
 			if (*ps == n) {
                 continue;								// Colour hasn't changed - great!
 			}
@@ -243,14 +243,14 @@ int CpsPalUpdate(unsigned char* pNewPal, int bRecalcAll)
 	return 0;
 }
 
-int CpsStarPalUpdate(unsigned char* pNewPal, int nLayer, int bRecalcAll)
+INT32 CpsStarPalUpdate(UINT8* pNewPal, INT32 nLayer, INT32 bRecalcAll)
 {
-	int i;
-	unsigned short *ps, *pn;
+	INT32 i;
+	UINT16 *ps, *pn;
 
 	if (nLayer == 0) {
-		ps = (unsigned short*)CpsPalSrc + 0x0800;
-		pn = (unsigned short*)pNewPal + 0x0800;
+		ps = (UINT16*)CpsPalSrc + 0x0800;
+		pn = (UINT16*)pNewPal + 0x0800;
 
 		if (bRecalcAll) {
 			memcpy(ps, pn, 256);
@@ -260,7 +260,7 @@ int CpsStarPalUpdate(unsigned char* pNewPal, int nLayer, int bRecalcAll)
 
 		// Star layer 0
 		for (i = 0x0800; i < 0x0880; i++, ps++, pn++) {
-			unsigned short n = *pn;
+			UINT16 n = *pn;
 			if (*ps == n) {
 				   continue;					// Colour hasn't changed - great!
 			}
@@ -270,8 +270,8 @@ int CpsStarPalUpdate(unsigned char* pNewPal, int nLayer, int bRecalcAll)
 			CpsPal[i ^ 15] = CalcColCPS1(n);
 		}
 	} else {
-		ps = (unsigned short*)CpsPalSrc + 0x0A00;
-		pn = (unsigned short*)pNewPal + 0x0A00;
+		ps = (UINT16*)CpsPalSrc + 0x0A00;
+		pn = (UINT16*)pNewPal + 0x0A00;
 
 		if (bRecalcAll) {
 			memcpy(ps, pn, 256);
@@ -281,7 +281,7 @@ int CpsStarPalUpdate(unsigned char* pNewPal, int nLayer, int bRecalcAll)
 
 		// Star layer 1
 		for (i = 0x0A00; i < 0x0A80; i++, ps++, pn++) {
-			unsigned short n = *pn;
+			UINT16 n = *pn;
 			if (*ps == n) {
 				   continue;					// Colour hasn't changed - great!
 			}

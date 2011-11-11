@@ -2,23 +2,23 @@
 #include "cps.h"
 
 // Inputs:
-unsigned char CpsReset = 0;
-unsigned char Cpi01A = 0, Cpi01C = 0, Cpi01E = 0;
+UINT8 CpsReset = 0;
+UINT8 Cpi01A = 0, Cpi01C = 0, Cpi01E = 0;
 
-static int nInterrupt;
-static int nIrqLine, nIrqCycles;
+static INT32 nInterrupt;
+static INT32 nIrqLine, nIrqCycles;
 static bool bEnableAutoIrq50, bEnableAutoIrq52;				// Trigger an interrupt every 32 scanlines
 
-static const int nFirstLine = 0x0C;							// The first scanline of the display
-static const int nVBlank = 0x0106 - 0x0C;					// The scanline at which the vblank interrupt is triggered
+static const INT32 nFirstLine = 0x0C;							// The first scanline of the display
+static const INT32 nVBlank = 0x0106 - 0x0C;					// The scanline at which the vblank interrupt is triggered
 
-static int nCpsCyclesExtra;
+static INT32 nCpsCyclesExtra;
 
-int CpsDrawSpritesInReverse = 0;
+INT32 CpsDrawSpritesInReverse = 0;
 
-int nIrqLine50, nIrqLine52;
+INT32 nIrqLine50, nIrqLine52;
 
-static int DrvReset()
+static INT32 DrvReset()
 {
 	// Reset machine
 	if (Cps == 2 || PangEEP || Cps1Qs == 1) EEPROMReset();
@@ -35,9 +35,9 @@ static int DrvReset()
 
 	if (Cps == 2) {
 		// Disable beam-synchronized interrupts
-		*((unsigned short*)(CpsReg + 0x4E)) = 0x0200;
-		*((unsigned short*)(CpsReg + 0x50)) = 0x0106;
-		*((unsigned short*)(CpsReg + 0x52)) = 0x0106;
+		*((UINT16*)(CpsReg + 0x4E)) = 0x0200;
+		*((UINT16*)(CpsReg + 0x50)) = 0x0106;
+		*((UINT16*)(CpsReg + 0x52)) = 0x0106;
 	}
 
 	CpsMapObjectBanks(0);
@@ -79,7 +79,7 @@ static const eeprom_interface cps2_eeprom_interface =
 	0
 };
 
-int CpsRunInit()
+INT32 CpsRunInit()
 {
 	nLagObjectPalettes = 0;
 
@@ -131,7 +131,7 @@ int CpsRunInit()
 	return 0;
 }
 
-int CpsRunExit()
+INT32 CpsRunExit()
 {
 	if (Cps == 2 || PangEEP || Cps1Qs == 1) EEPROMExit();
 
@@ -156,12 +156,12 @@ int CpsRunExit()
 }
 
 // nStart = 0-3, nCount=1-4
-inline static void GetPalette(int nStart, int nCount)
+inline static void GetPalette(INT32 nStart, INT32 nCount)
 {
 	// Update Palette (Ghouls points to the wrong place on boot up I think)
-	int nPal = (*((unsigned short*)(CpsReg + 0x0A)) << 8) & 0xFFF800;
+	INT32 nPal = (*((UINT16*)(CpsReg + 0x0A)) << 8) & 0xFFF800;
 
-	unsigned char* Find = CpsFindGfxRam(nPal, 0x1000);
+	UINT8* Find = CpsFindGfxRam(nPal, 0x1000);
 	if (Find) {
 		memcpy(CpsSavePal + (nStart << 10), Find + (nStart << 10), nCount << 10);
 	}
@@ -169,21 +169,21 @@ inline static void GetPalette(int nStart, int nCount)
 
 static void GetStarPalette()
 {
-	int nPal = (*((unsigned short*)(CpsReg + 0x0A)) << 8) & 0xFFF800;
+	INT32 nPal = (*((UINT16*)(CpsReg + 0x0A)) << 8) & 0xFFF800;
 
-	unsigned char* Find = CpsFindGfxRam(nPal, 256);
+	UINT8* Find = CpsFindGfxRam(nPal, 256);
 	if (Find) {
 		memcpy(CpsSavePal + 4096, Find + 4096, 256);
 		memcpy(CpsSavePal + 5120, Find + 5120, 256);
 	}
 }
 
-inline static void CopyCpsReg(int i)
+inline static void CopyCpsReg(INT32 i)
 {
 	memcpy(CpsSaveReg[i], CpsReg, 0x0100);
 }
 
-inline static void CopyCpsFrg(int i)
+inline static void CopyCpsFrg(INT32 i)
 {
 	memcpy(CpsSaveFrg[i], CpsFrg, 0x0010);
 }
@@ -191,7 +191,7 @@ inline static void CopyCpsFrg(int i)
 // Schedule a beam-synchronized interrupt
 static void ScheduleIRQ()
 {
-	int nLine = 0x0106;
+	INT32 nLine = 0x0106;
 
 	if (nIrqLine50 <= nLine) {
 		nLine = nIrqLine50;
@@ -258,9 +258,9 @@ static void DoIRQ()
 	return;
 }
 
-int Cps1Frame()
+INT32 Cps1Frame()
 {
-	int nDisplayEnd, nNext, i;
+	INT32 nDisplayEnd, nNext, i;
 
 	if (CpsReset) {
 		DrvReset();
@@ -276,7 +276,7 @@ int Cps1Frame()
 		}
 	}
 
-	nCpsCycles = (int)((long long)nCPS68KClockspeed * nBurnCPUSpeedAdjust >> 8);
+	nCpsCycles = (INT32)((INT64)nCPS68KClockspeed * nBurnCPUSpeedAdjust >> 8);
 
 	CpsRwGetInp();												// Update the input port values
 
@@ -340,22 +340,22 @@ int Cps1Frame()
 	return 0;
 }
 
-int Cps2Frame()
+INT32 Cps2Frame()
 {
-	int nDisplayEnd, nNext;									// variables to keep track of executed 68K cyles
-	int i;
+	INT32 nDisplayEnd, nNext;									// variables to keep track of executed 68K cyles
+	INT32 i;
 
 	if (CpsReset) {
 		DrvReset();
 	}
 
-//	extern int prevline;
+//	extern INT32 prevline;
 //	prevline = -1;
 
 	SekNewFrame();
 	QsndNewFrame();
 
-	nCpsCycles = (int)(((long long)nCPS68KClockspeed * nBurnCPUSpeedAdjust) / 0x0100);
+	nCpsCycles = (INT32)(((INT64)nCPS68KClockspeed * nBurnCPUSpeedAdjust) / 0x0100);
 	SekSetCyclesScanline(nCpsCycles / 262);
 
 	CpsRwGetInp();											// Update the input port values
@@ -370,17 +370,17 @@ int Cps2Frame()
 	// Determine which (if any) of the line counters generates the first IRQ
 	bEnableAutoIrq50 = bEnableAutoIrq52 = false;
 	nIrqLine50 = nIrqLine52 = 0x0106;
-	if (*((unsigned short*)(CpsReg + 0x50)) & 0x8000) {
+	if (*((UINT16*)(CpsReg + 0x50)) & 0x8000) {
 		bEnableAutoIrq50 = true;
 	}
-	if (bEnableAutoIrq50 || (*((unsigned short*)(CpsReg + 0x4E)) & 0x0200) == 0) {
-		nIrqLine50 = (*((unsigned short*)(CpsReg + 0x50)) & 0x01FF);
+	if (bEnableAutoIrq50 || (*((UINT16*)(CpsReg + 0x4E)) & 0x0200) == 0) {
+		nIrqLine50 = (*((UINT16*)(CpsReg + 0x50)) & 0x01FF);
 	}
-	if (*((unsigned short*)(CpsReg + 0x52)) & 0x8000) {
+	if (*((UINT16*)(CpsReg + 0x52)) & 0x8000) {
 		bEnableAutoIrq52 = true;
 	}
-	if (bEnableAutoIrq52 || (*((unsigned short*)(CpsReg + 0x4E)) & 0x0200) == 0) {
-		nIrqLine52 = (*((unsigned short*)(CpsReg + 0x52)) & 0x01FF);
+	if (bEnableAutoIrq52 || (*((UINT16*)(CpsReg + 0x4E)) & 0x0200) == 0) {
+		nIrqLine52 = (*((UINT16*)(CpsReg + 0x52)) & 0x01FF);
 	}
 	ScheduleIRQ();
 
@@ -399,9 +399,9 @@ int Cps2Frame()
 	CopyCpsReg(0);										// Get inititial copy of registers
 	CopyCpsFrg(0);										//
 
-	if (nIrqLine >= 0x0106 && (*((unsigned short*)(CpsReg + 0x4E)) & 0x0200) == 0) {
-		nIrqLine50 = *((unsigned short*)(CpsReg + 0x50)) & 0x01FF;
-		nIrqLine52 = *((unsigned short*)(CpsReg + 0x52)) & 0x01FF;
+	if (nIrqLine >= 0x0106 && (*((UINT16*)(CpsReg + 0x4E)) & 0x0200) == 0) {
+		nIrqLine50 = *((UINT16*)(CpsReg + 0x50)) & 0x01FF;
+		nIrqLine52 = *((UINT16*)(CpsReg + 0x52)) & 0x01FF;
 		ScheduleIRQ();
 	}
 
@@ -443,7 +443,7 @@ int Cps2Frame()
 		bprintf(PRINT_NORMAL, _T("Beam synchronized interrupt disabled.   \r"));
 	}
 
-	extern int counter;
+	extern INT32 counter;
 	if (counter) {
 		bprintf(PRINT_NORMAL, _T("\n\nSlices start at: "));
 		for (i = 0; i < MAX_RASTER + 2; i++) {
@@ -451,8 +451,8 @@ int Cps2Frame()
 		}
 		bprintf(PRINT_NORMAL, _T("\n"));
 		for (i = 0; i < 0x80; i++) {
-			if (*((unsigned short*)(CpsSaveReg[0] + i * 2)) != *((unsigned short*)(CpsSaveReg[nInterrupt] + i * 2))) {
-				bprintf(PRINT_NORMAL, _T("Register %2X: %4X -> %4X\n"), i * 2, *((unsigned short*)(CpsSaveReg[0] + i * 2)), *((unsigned short*)(CpsSaveReg[nInterrupt] + i * 2)));
+			if (*((UINT16*)(CpsSaveReg[0] + i * 2)) != *((UINT16*)(CpsSaveReg[nInterrupt] + i * 2))) {
+				bprintf(PRINT_NORMAL, _T("Register %2X: %4X -> %4X\n"), i * 2, *((UINT16*)(CpsSaveReg[0] + i * 2)), *((UINT16*)(CpsSaveReg[nInterrupt] + i * 2)));
 			}
 		}
 		bprintf(PRINT_NORMAL, _T("\n"));
@@ -467,7 +467,7 @@ int Cps2Frame()
 		}
 
 		bprintf(PRINT_NORMAL, _T("\n"));
-		for (int j = 0; j <= nInterrupt; j++) {
+		for (INT32 j = 0; j <= nInterrupt; j++) {
 			if (j) {
 				bprintf(PRINT_NORMAL, _T("IRQ : %i (triggered at line %3i)\n\n"), j, nRasterline[j]);
 			} else {
@@ -475,7 +475,7 @@ int Cps2Frame()
 			}
 
 			for (i = 0; i < 0x080; i+= 8) {
-				bprintf(PRINT_NORMAL, _T("%2X: %4X %4X %4X %4X %4X %4X %4X %4X\n"), i * 2, *((unsigned short*)(CpsSaveReg[j] + 0 + i * 2)), *((unsigned short*)(CpsSaveReg[j] + 2 + i * 2)), *((unsigned short*)(CpsSaveReg[j] + 4 + i * 2)), *((unsigned short*)(CpsSaveReg[j] + 6 + i * 2)), *((unsigned short*)(CpsSaveReg[j] + 8 + i * 2)), *((unsigned short*)(CpsSaveReg[j] + 10 + i * 2)), *((unsigned short*)(CpsSaveReg[j] + 12 + i * 2)), *((unsigned short*)(CpsSaveReg[j] + 14 + i * 2)));
+				bprintf(PRINT_NORMAL, _T("%2X: %4X %4X %4X %4X %4X %4X %4X %4X\n"), i * 2, *((UINT16*)(CpsSaveReg[j] + 0 + i * 2)), *((UINT16*)(CpsSaveReg[j] + 2 + i * 2)), *((UINT16*)(CpsSaveReg[j] + 4 + i * 2)), *((UINT16*)(CpsSaveReg[j] + 6 + i * 2)), *((UINT16*)(CpsSaveReg[j] + 8 + i * 2)), *((UINT16*)(CpsSaveReg[j] + 10 + i * 2)), *((UINT16*)(CpsSaveReg[j] + 12 + i * 2)), *((UINT16*)(CpsSaveReg[j] + 14 + i * 2)));
 			}
 
 			bprintf(PRINT_NORMAL, _T("\nFRG: "));
@@ -486,7 +486,7 @@ int Cps2Frame()
 
 		}
 
-		extern int bRunPause;
+		extern INT32 bRunPause;
 		bRunPause = 1;
 		counter = 0;
 	}

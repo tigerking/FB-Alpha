@@ -1,14 +1,14 @@
 #include "cps.h"
 
 struct GfxRange {
-	int Type;
-	int Start;
-	int End;
-	int Bank;
+	INT32 Type;
+	INT32 Start;
+	INT32 End;
+	INT32 Bank;
 };
 
 static const struct GfxRange *GfxBankMapper = NULL;
-static int GfxBankSizes[4] = { 0, 0, 0, 0 };
+static INT32 GfxBankSizes[4] = { 0, 0, 0, 0 };
 
 static const struct GfxRange mapper_LWCHR_table[] = {
 	{ GFXTYPE_SPRITES, 0x00000, 0x07fff, 0 },
@@ -399,7 +399,7 @@ static const struct GfxRange mapper_frog_table[] = {
 	{ 0                                                                    ,       0,       0, 0 }
 };
 
-void SetGfxMapper(int MapperId)
+void SetGfxMapper(INT32 MapperId)
 {
 	switch (MapperId) {
 		case mapper_LWCHR: {
@@ -782,10 +782,10 @@ void SetGfxMapper(int MapperId)
 	}
 }
 
-int GfxRomBankMapper(int Type, int Code)
+INT32 GfxRomBankMapper(INT32 Type, INT32 Code)
 {
 	const struct GfxRange *Range = GfxBankMapper;
-	int Shift = 0;
+	INT32 Shift = 0;
 
 	switch (Type) {
 		case GFXTYPE_SPRITES: Shift = 1; break;
@@ -799,8 +799,8 @@ int GfxRomBankMapper(int Type, int Code)
 	while (Range->Type) {
 		if (Code >= Range->Start && Code <= Range->End)	{
 			if (Range->Type & Type)	{
-				int Base = 0;
-				int i;
+				INT32 Base = 0;
+				INT32 i;
 
 				for (i = 0; i < Range->Bank; ++i)
 					Base += GfxBankSizes[i];
@@ -817,7 +817,7 @@ int GfxRomBankMapper(int Type, int Code)
 	return -1;
 }
 
-void SetCpsBId(int CpsBId, int bStars)
+void SetCpsBId(INT32 CpsBId, INT32 bStars)
 {
 	switch (CpsBId) {
 		case CPS_B_01: {

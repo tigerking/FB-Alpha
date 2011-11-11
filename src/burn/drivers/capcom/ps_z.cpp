@@ -2,16 +2,16 @@
 #include "burn_ym2151.h"
 
 // PSound - Z80
-static int nPsndZBank = 0;
-static unsigned char *PsndZRam = NULL;
+static INT32 nPsndZBank = 0;
+static UINT8 *PsndZRam = NULL;
 
-int Kodb = 0;
+INT32 Kodb = 0;
 
 // Map in the memory for the current 0x8000-0xc000 bank
-static int PsndZBankMap()
+static INT32 PsndZBankMap()
 {
-	unsigned char *Bank;
-	unsigned int nOff = (nPsndZBank << 14) + 0x8000;
+	UINT8 *Bank;
+	UINT32 nOff = (nPsndZBank << 14) + 0x8000;
 
 	if (nOff + 0x4000 > nCpsZRomLen) {		// End of bank in out of range
 		nOff = 0;
@@ -27,7 +27,7 @@ static int PsndZBankMap()
 }
 
 // PSound Z80 memory write
-void __fastcall PsndZWrite(unsigned short a, unsigned char d)
+void __fastcall PsndZWrite(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xF000:
@@ -42,7 +42,7 @@ void __fastcall PsndZWrite(unsigned short a, unsigned char d)
 			MSM6295Command(0, d);
 			break;
 		case 0xF004: {
-			int nNewBank = d & 0x0f;
+			INT32 nNewBank = d & 0x0f;
 			if (nPsndZBank != nNewBank) {
 				nPsndZBank = nNewBank;
 				PsndZBankMap();
@@ -61,7 +61,7 @@ void __fastcall PsndZWrite(unsigned short a, unsigned char d)
 	return;
 }
 
-void __fastcall kodbZWrite(unsigned short a, unsigned char d)
+void __fastcall kodbZWrite(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xE000:
@@ -84,7 +84,7 @@ void __fastcall kodbZWrite(unsigned short a, unsigned char d)
 }
 
 // PSound Z80 memory read
-unsigned char __fastcall PsndZRead(unsigned short a)
+UINT8 __fastcall PsndZRead(UINT16 a)
 {
 	switch (a) {
 		case 0xF001:
@@ -106,7 +106,7 @@ unsigned char __fastcall PsndZRead(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall kodbZRead(unsigned short a)
+UINT8 __fastcall kodbZRead(UINT16 a)
 {
 	switch (a) {
 		case 0xE001:
@@ -125,7 +125,7 @@ unsigned char __fastcall kodbZRead(unsigned short a)
 	return 0;
 }
 
-int PsndZInit()
+INT32 PsndZInit()
 {
 	if (nCpsZRomLen < 0x8000) {					// Not enough Z80 Data
 		return 1;
@@ -134,7 +134,7 @@ int PsndZInit()
 		return 1;
 	}
 
-	PsndZRam = (unsigned char *)malloc(0x800);
+	PsndZRam = (UINT8 *)malloc(0x800);
 	if (PsndZRam == NULL) {
 		return 1;
 	}
@@ -175,7 +175,7 @@ int PsndZInit()
 	return 0;
 }
 
-int PsndZExit()
+INT32 PsndZExit()
 {
 	if (PsndZRam) {
 		free(PsndZRam);
@@ -187,7 +187,7 @@ int PsndZExit()
 }
 
 // Scan the current PSound z80 state
-int PsndZScan(int nAction)
+INT32 PsndZScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	ZetScan(nAction);

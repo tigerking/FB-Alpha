@@ -2,17 +2,17 @@
 #include "m6502_intf.h"
 #include "burn_ym2151.h"
 
-unsigned char *Drv68KRom = NULL;
-static unsigned char *DrvEEPROM            = NULL;
+UINT8 *Drv68KRom = NULL;
+static UINT8 *DrvEEPROM            = NULL;
 
 struct slapstic_params
 {
-	int reset;
-	int bank0, bank1, bank2, bank3;
-	int disable;
-	int ignore;
-	int senable;
-	int sbank0, sbank1, sbank2, sbank3;
+	INT32 reset;
+	INT32 bank0, bank1, bank2, bank3;
+	INT32 disable;
+	INT32 ignore;
+	INT32 senable;
+	INT32 sbank0, sbank1, sbank2, sbank3;
 };
 
 
@@ -108,7 +108,7 @@ static INT8 current_bank;
 static UINT8 version;
 
 #if LOG_SLAPSTIC
-	static void slapstic_log(int offset);
+	static void slapstic_log(INT32 offset);
 	static FILE *slapsticlog;
 #else
 	#define slapstic_log(o)
@@ -122,7 +122,7 @@ static UINT8 version;
  *
  *************************************/
 
-void slapstic_init(int chip)
+void slapstic_init(INT32 chip)
 {
 	/* only a small number of chips are known to exist */
 	if (chip < 101 || chip > 118)
@@ -157,7 +157,7 @@ void slapstic_reset(void)
  *
  *************************************/
 
-int slapstic_bank(void)
+INT32 slapstic_bank(void)
 {
 	return current_bank;
 }
@@ -170,7 +170,7 @@ int slapstic_bank(void)
  *
  *************************************/
 
-int slapstic_tweak(int offset)
+INT32 slapstic_tweak(INT32 offset)
 {
 	/* switch banks now if one is pending */
 	if (next_bank != -1)
@@ -310,10 +310,10 @@ int slapstic_tweak(int offset)
 static UINT8 atarigen_slapstic_num;
 static UINT8 *atarigen_slapstic;
 
-unsigned char __fastcall atarigen_slapstic_r(unsigned int a)
+UINT8 __fastcall atarigen_slapstic_r(UINT32 a)
 {
-	int offset = (a - 0x38000);// >> 1;
-	int bank = slapstic_tweak(offset / 2) * 0x2000;
+	INT32 offset = (a - 0x38000);// >> 1;
+	INT32 bank = slapstic_tweak(offset / 2) * 0x2000;
 	//return READ_WORD(&atarigen_slapstic[bank + (offset & 0x1fff)]);
 	//return atarigen_slapstic[bank + (offset & 0x1fff)];
 	
@@ -334,7 +334,7 @@ unsigned char __fastcall atarigen_slapstic_r(unsigned int a)
 	return 0;
 }
 
-void __fastcall atarigen_slapstic_w(unsigned int a, unsigned char d)
+void __fastcall atarigen_slapstic_w(UINT32 a, UINT8 d)
 {
 	//slapstic_tweak(offset / 2);
 	
@@ -345,11 +345,11 @@ void __fastcall atarigen_slapstic_w(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall atarigen_slapstic_r_word(unsigned int a)
+UINT16 __fastcall atarigen_slapstic_r_word(UINT32 a)
 {
 //	UINT16 *Slapstic = (UINT16*)atarigen_slapstic;
-//	int Offset = (a - 0x38000);// >> 1;
-//	int Bank = slapstic_tweak(Offset / 2) * 0x2000;
+//	INT32 Offset = (a - 0x38000);// >> 1;
+//	INT32 Bank = slapstic_tweak(Offset / 2) * 0x2000;
 //	return Slapstic[Bank + ((Offset >> 1) & 0x1fff)];
 
 	SEK_DEF_READ_WORD(1, a);
@@ -364,9 +364,9 @@ unsigned short __fastcall atarigen_slapstic_r_word(unsigned int a)
 	return 0;
 }
 
-void __fastcall atarigen_slapstic_w_word(unsigned int a, unsigned short d)
+void __fastcall atarigen_slapstic_w_word(UINT32 a, UINT16 d)
 {
-	int offset = (a - 0x38000);// >> 1;
+	INT32 offset = (a - 0x38000);// >> 1;
 	slapstic_tweak(offset / 2);
 	return;
 	
@@ -383,7 +383,7 @@ void atarigen_slapstic_reset(void)
 		slapstic_reset();
 }
 
-void atarigen_slapstic_init(int base, int chipnum)
+void atarigen_slapstic_init(INT32 base, INT32 chipnum)
 {
 	atarigen_slapstic_num = chipnum;
 	atarigen_slapstic = NULL;
@@ -400,7 +400,7 @@ void atarigen_slapstic_init(int base, int chipnum)
 		SekSetWriteWordHandler(1, atarigen_slapstic_w_word);
 		SekClose();
 		
-		atarigen_slapstic = (unsigned char*)malloc(0x8000);
+		atarigen_slapstic = (UINT8*)malloc(0x8000);
 		memcpy(atarigen_slapstic, Drv68KRom + 0x38000, 0x8000);
 	}
 }
@@ -424,77 +424,77 @@ void atarigen_eeprom_init()
 
 
 
-static unsigned char DrvInputPort0[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort1[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort2[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort3[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort4[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort5[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6]           = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-static unsigned char DrvReset              = 0;
+static UINT8 DrvInputPort0[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort1[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort2[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort3[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort4[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort5[8]      = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6]           = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 DrvReset              = 0;
 
-static unsigned char *Mem                  = NULL;
-static unsigned char *MemEnd               = NULL;
-static unsigned char *RamStart             = NULL;
-static unsigned char *RamEnd               = NULL;
-//static unsigned char *Drv68KRom            = NULL;
-static unsigned char *Drv68KRam            = NULL;
-static unsigned char *DrvM6502Rom          = NULL;
-static unsigned char *DrvM6502Ram          = NULL;
-//static unsigned char *DrvEEPROM            = NULL;
-static unsigned char *DrvPlayfieldRam      = NULL;
-static unsigned char *DrvMOSpriteRam       = NULL;
-static unsigned char *DrvAlphaRam          = NULL;
-static unsigned char *DrvMOSlipRam         = NULL;
-static unsigned char *DrvPaletteRam        = NULL;
-static unsigned char *DrvChars             = NULL;
-static unsigned char *DrvMotionObjectTiles = NULL;
-static unsigned char *DrvTempRom           = NULL;
-static unsigned int  *DrvPalette           = NULL;
+static UINT8 *Mem                  = NULL;
+static UINT8 *MemEnd               = NULL;
+static UINT8 *RamStart             = NULL;
+static UINT8 *RamEnd               = NULL;
+//static UINT8 *Drv68KRom            = NULL;
+static UINT8 *Drv68KRam            = NULL;
+static UINT8 *DrvM6502Rom          = NULL;
+static UINT8 *DrvM6502Ram          = NULL;
+//static UINT8 *DrvEEPROM            = NULL;
+static UINT8 *DrvPlayfieldRam      = NULL;
+static UINT8 *DrvMOSpriteRam       = NULL;
+static UINT8 *DrvAlphaRam          = NULL;
+static UINT8 *DrvMOSlipRam         = NULL;
+static UINT8 *DrvPaletteRam        = NULL;
+static UINT8 *DrvChars             = NULL;
+static UINT8 *DrvMotionObjectTiles = NULL;
+static UINT8 *DrvTempRom           = NULL;
+static UINT32  *DrvPalette           = NULL;
 
-static unsigned char DrvVBlank;
-static unsigned short DrvSoundResetVal;
-static unsigned char DrvSoundCPUHalt;
-static unsigned char DrvCPUtoSoundReady;
-static unsigned char DrvSoundtoCPUReady;
-static unsigned char DrvCPUtoSound;
-static unsigned char DrvSoundtoCPU;
-static short DrvScrollX;
-static short DrvScrollY;
-static unsigned char DrvTileBank;
+static UINT8 DrvVBlank;
+static UINT16 DrvSoundResetVal;
+static UINT8 DrvSoundCPUHalt;
+static UINT8 DrvCPUtoSoundReady;
+static UINT8 DrvSoundtoCPUReady;
+static UINT8 DrvCPUtoSound;
+static UINT8 DrvSoundtoCPU;
+static INT16 DrvScrollX;
+static INT16 DrvScrollY;
+static UINT8 DrvTileBank;
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 #define GAME_GAUNTLET		0
 #define GAME_GAUNTLET2		1
 
-static unsigned char DrvGameType;
+static UINT8 DrvGameType;
 
 
 
 
 struct atarigen_modesc
 {
-	int maxmo;                              /* maximum number of MO's */
-	int moskip;                             /* number of bytes per MO entry */
-	int mowordskip;                         /* number of bytes between MO words */
-	int ignoreword;                         /* ignore an entry if this word == 0xffff */
-	int linkword, linkshift, linkmask;		/* link = (data[linkword >> linkshift) & linkmask */
-	int reverse;                            /* render in reverse link order */
+	INT32 maxmo;                              /* maximum number of MO's */
+	INT32 moskip;                             /* number of bytes per MO entry */
+	INT32 mowordskip;                         /* number of bytes between MO words */
+	INT32 ignoreword;                         /* ignore an entry if this word == 0xffff */
+	INT32 linkword, linkshift, linkmask;		/* link = (data[linkword >> linkshift) & linkmask */
+	INT32 reverse;                            /* render in reverse link order */
 };
 
 static struct atarigen_modesc *modesc;
 
-static unsigned short *displaylist;
-static unsigned short *displaylist_end;
-static unsigned short *displaylist_last;
+static UINT16 *displaylist;
+static UINT16 *displaylist_end;
+static UINT16 *displaylist_last;
 
-static int atarigen_init_display_list (struct atarigen_modesc *_modesc)
+static INT32 atarigen_init_display_list (struct atarigen_modesc *_modesc)
 {
 	modesc = _modesc;
 
-	displaylist = (unsigned short*)malloc (modesc->maxmo * 10 * (/*Machine->drv->screen_height*/ 240 / 8) * sizeof(unsigned short));
+	displaylist = (UINT16*)malloc (modesc->maxmo * 10 * (/*Machine->drv->screen_height*/ 240 / 8) * sizeof(UINT16));
 	if (!displaylist)
 		return 1;
 
@@ -504,12 +504,12 @@ static int atarigen_init_display_list (struct atarigen_modesc *_modesc)
 	return 0;
 }
 
-static void atarigen_update_display_list (unsigned char *base, int start, int scanline)
+static void atarigen_update_display_list (UINT8 *base, INT32 start, INT32 scanline)
 {
-	int link = start, match = 0, moskip = modesc->moskip, wordskip = modesc->mowordskip;
-	int ignoreword = modesc->ignoreword;
-	unsigned short *d, *startd, *lastd;
-	unsigned char spritevisit[1024];
+	INT32 link = start, match = 0, moskip = modesc->moskip, wordskip = modesc->mowordskip;
+	INT32 ignoreword = modesc->ignoreword;
+	UINT16 *d, *startd, *lastd;
+	UINT8 spritevisit[1024];
 
 	/* scanline 0 means first update */
 	if (scanline <= 0)
@@ -535,8 +535,8 @@ static void atarigen_update_display_list (unsigned char *base, int start, int sc
 	memset (spritevisit, 0, sizeof (spritevisit));
 	while (!spritevisit[link])
 	{
-		unsigned char *modata = &base[link * moskip];
-		unsigned short data[4];
+		UINT8 *modata = &base[link * moskip];
+		UINT16 data[4];
 
 		/* bounds checking */
 		if (d - displaylist >= modesc->maxmo * 5 * (/*Machine->drv->screen_height*/ 240 / 8))
@@ -590,29 +590,29 @@ static void atarigen_update_display_list (unsigned char *base, int start, int sc
 
 static void atarigen_render_display_list (/*struct osd_bitmap *bitmap, atarigen_morender morender, void *param*/)
 {
-	unsigned short *base = displaylist;
-	int last_start_scan = -1;
+	UINT16 *base = displaylist;
+	INT32 last_start_scan = -1;
 //	struct rectangle clip;
 
-	int xscroll = DrvScrollX;
+	INT32 xscroll = DrvScrollX;
 	UINT16 *AlphaRam = (UINT16*)DrvAlphaRam;
-	int yscroll = AlphaRam[0xf6e >> 1] >> 7;
+	INT32 yscroll = AlphaRam[0xf6e >> 1] >> 7;
 	yscroll &= 0x1ff;
 
 	/* create a clipping rectangle so that only partial sections are updated at a time */
 //	clip.min_x = 0;
 //	clip.max_x = Machine->drv->screen_width - 1;
 
-//	int xMin = 0;
-//	int xMax = nScreenWidth - 1;
-	int yMin = 0;
-	int yMax = nScreenHeight - 1;
+//	INT32 xMin = 0;
+//	INT32 xMax = nScreenWidth - 1;
+	INT32 yMin = 0;
+	INT32 yMax = nScreenHeight - 1;
 
 	/* loop over the list until the end */
 	while (base < displaylist_end)
 	{
-		unsigned short *d, *first, *last;
-		int start_scan = base[0], step;
+		UINT16 *d, *first, *last;
+		INT32 start_scan = base[0], step;
 
 		last_start_scan = start_scan;
 //		clip.min_y = start_scan;
@@ -655,18 +655,18 @@ static void atarigen_render_display_list (/*struct osd_bitmap *bitmap, atarigen_
 		for (d = first; d != last; d += step) {
 			//(*morender)(bitmap, &clip, &d[1], param);
 			
-			unsigned short *data = &d[1];
+			UINT16 *data = &d[1];
 			
-			int sx, sy, x, y, xadv;
+			INT32 sx, sy, x, y, xadv;
 
 			/* extract data from the various words */
-			int pict = data[0] & 0x7fff;
-			int color = (data[1] & 0x0f) | 0x10;
-			int xpos = -xscroll + (data[1] >> 7);
-			int vsize = (data[2] & 7) + 1;
-			int hsize = ((data[2] >> 3) & 7) + 1;
-			int hflip = data[2] & 0x40;
-			int ypos = -yscroll - (data[2] >> 7) - vsize * 8;
+			INT32 pict = data[0] & 0x7fff;
+			INT32 color = (data[1] & 0x0f) | 0x10;
+			INT32 xpos = -xscroll + (data[1] >> 7);
+			INT32 vsize = (data[2] & 7) + 1;
+			INT32 hsize = ((data[2] >> 3) & 7) + 1;
+			INT32 hflip = data[2] & 0x40;
+			INT32 ypos = -yscroll - (data[2] >> 7) - vsize * 8;
 
 			/* adjust for h flip */
 			if (hflip)
@@ -764,7 +764,7 @@ static struct BurnInputInfo GauntletInputList[] =
 
 STDINPUTINFO(Gauntlet)
 
-static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
+static inline void DrvClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x30) == 0x30) {
 		*nJoystickInputs &= ~0x30;
@@ -782,7 +782,7 @@ static inline void DrvMakeInputs()
 	if (DrvInputPort4[3]) DrvInput[4] -= 0x08;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvInputPort0[i] & 1) << i;
 		DrvInput[1] |= (DrvInputPort1[i] & 1) << i;
 		DrvInput[2] |= (DrvInputPort2[i] & 1) << i;
@@ -1577,9 +1577,9 @@ static struct BurnRomInfo Gaunt22pgRomDesc[] = {
 STD_ROM_PICK(Gaunt22pg)
 STD_ROM_FN(Gaunt22pg)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom              = Next; Next += 0x80000;
 	DrvM6502Rom            = Next; Next += 0x10000;
@@ -1599,14 +1599,14 @@ static int MemIndex()
 
 	DrvChars               = Next; Next += 0x0400 * 8 * 8;
 	DrvMotionObjectTiles   = Next; Next += /*0x2000*/0x3000 * 8 * 8;
-	DrvPalette             = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -1632,17 +1632,17 @@ static int DrvDoReset()
 	return 0;
 }
 
-unsigned char __fastcall Gauntlet68KReadByte(unsigned int a)
+UINT8 __fastcall Gauntlet68KReadByte(UINT32 a)
 {
 	if (a >= 0x802000 && a <= 0x802fff) {
 		UINT16 *Eeprom = (UINT16*)DrvEEPROM;
-		int Offset = (a - 0x802000) >> 1;
+		INT32 Offset = (a - 0x802000) >> 1;
 		return Eeprom[Offset] | 0xff00;
 	}
 	
 	switch (a) {
 		case 0x803009: {
-			unsigned char Res = DrvInput[4] | (DrvVBlank ? 0x40 : 0x00);
+			UINT8 Res = DrvInput[4] | (DrvVBlank ? 0x40 : 0x00);
 			if (DrvCPUtoSoundReady) Res ^= 0x20;
 			if (DrvSoundtoCPUReady) Res ^= 0x10;
 			return Res;
@@ -1662,13 +1662,13 @@ unsigned char __fastcall Gauntlet68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Gauntlet68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Gauntlet68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x802000 && a <= 0x802fff) {
 		if (!eeprom_unlocked) return;
 		
 		UINT16 *Eeprom = (UINT16*)DrvEEPROM;
-		int Offset = (a - 0x802000) >> 1;
+		INT32 Offset = (a - 0x802000) >> 1;
 		eeprom_unlocked = 0;
 		Eeprom[Offset] = d;
 		return;
@@ -1681,7 +1681,7 @@ void __fastcall Gauntlet68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Gauntlet68KReadWord(unsigned int a)
+UINT16 __fastcall Gauntlet68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x803000: {
@@ -1701,7 +1701,7 @@ unsigned short __fastcall Gauntlet68KReadWord(unsigned int a)
 		}
 		
 		case 0x803008: {
-			unsigned char Res = DrvInput[4] | (DrvVBlank ? 0x40 : 0x00);
+			UINT8 Res = DrvInput[4] | (DrvVBlank ? 0x40 : 0x00);
 			if (DrvCPUtoSoundReady) Res ^= 0x20;
 			if (DrvSoundtoCPUReady) Res ^= 0x10;
 			return 0xff00 | Res;
@@ -1721,7 +1721,7 @@ unsigned short __fastcall Gauntlet68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Gauntlet68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Gauntlet68KWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x803100: {
@@ -1731,7 +1731,7 @@ void __fastcall Gauntlet68KWriteWord(unsigned int a, unsigned short d)
 		
 		case 0x803120:
 		case 0x80312e: {
-			int OldVal = DrvSoundResetVal;
+			INT32 OldVal = DrvSoundResetVal;
 			DrvSoundResetVal = d;
 			if ((OldVal ^ DrvSoundResetVal) & 1) {
 				if (DrvSoundResetVal & 1) {
@@ -1781,7 +1781,7 @@ void __fastcall Gauntlet68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char GauntletSoundRead(unsigned short Address)
+UINT8 GauntletSoundRead(UINT16 Address)
 {
 	switch (Address) {
 		case 0x1010: {
@@ -1795,7 +1795,7 @@ unsigned char GauntletSoundRead(unsigned short Address)
 		
 		case 0x1030:
 		case 0x1031: {
-			/*int temp = 0x30;
+			/*INT32 temp = 0x30;
 
 			if (atarigen_cpu_to_sound_ready) temp ^= 0x80;
 			if (atarigen_sound_to_cpu_ready) temp ^= 0x40;
@@ -1804,8 +1804,8 @@ unsigned char GauntletSoundRead(unsigned short Address)
 
 			return temp;*/
 			
-			unsigned char Res = 0x30;
-			unsigned char Input = DrvInput[4] | (DrvVBlank ? 0x40 : 0x00);
+			UINT8 Res = 0x30;
+			UINT8 Input = DrvInput[4] | (DrvVBlank ? 0x40 : 0x00);
 			
 			if (DrvCPUtoSoundReady) Res ^= 0x80;
 			if (DrvSoundtoCPUReady) Res ^= 0x40;
@@ -1846,7 +1846,7 @@ unsigned char GauntletSoundRead(unsigned short Address)
 	return 0;
 }
 
-void GauntletSoundWrite(unsigned short Address, unsigned char Data)
+void GauntletSoundWrite(UINT16 Address, UINT8 Data)
 {
 	switch (Address) {
 		case 0x1000:
@@ -1929,38 +1929,38 @@ void GauntletSoundWrite(unsigned short Address, unsigned char Data)
 	}
 }
 
-void atarigen_swap_mem(void *ptr1, void *ptr2, int bytes)
+void atarigen_swap_mem(void *ptr1, void *ptr2, INT32 bytes)
 {
 	UINT8 *p1 = (UINT8 *)ptr1;
 	UINT8 *p2 = (UINT8 *)ptr2;
 	while (bytes--) {
-		int temp = *p1;
+		INT32 temp = *p1;
 		*p1++ = *p2;
 		*p2++ = temp;
 	}
 }
 
-static int CharPlaneOffsets[2]     = { 0, 4 };
-static int CharXOffsets[8]         = { 0, 1, 2, 3, 8, 9, 10, 11 };
-static int CharYOffsets[8]         = { 0, 16, 32, 48, 64, 80, 96, 112 };
-//static int MOPlaneOffsets[4]       = { 0x180000, 0x100000, 0x080000, 0x000000 };
-static int MOPlaneOffsets[4]       = { 3*8*0x18000, 2*8*0x18000, 1*8*0x18000, 0*8*0x18000 };
-static int MOXOffsets[8]           = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int MOYOffsets[8]           = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 CharPlaneOffsets[2]     = { 0, 4 };
+static INT32 CharXOffsets[8]         = { 0, 1, 2, 3, 8, 9, 10, 11 };
+static INT32 CharYOffsets[8]         = { 0, 16, 32, 48, 64, 80, 96, 112 };
+//static INT32 MOPlaneOffsets[4]       = { 0x180000, 0x100000, 0x080000, 0x000000 };
+static INT32 MOPlaneOffsets[4]       = { 3*8*0x18000, 2*8*0x18000, 1*8*0x18000, 0*8*0x18000 };
+static INT32 MOXOffsets[8]           = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 MOYOffsets[8]           = { 0, 8, 16, 24, 32, 40, 48, 56 };
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(/*0x40000*/0x60000);
+	DrvTempRom = (UINT8 *)malloc(/*0x40000*/0x60000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2002,7 +2002,7 @@ static int DrvInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x38000, 14, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x48000, 15, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x50000, 16, 1); if (nRet != 0) return 1;
-	for (unsigned int i = 0; i < /*0x40000*/0x60000; i++) DrvTempRom[i] ^= 0xff;
+	for (UINT32 i = 0; i < /*0x40000*/0x60000; i++) DrvTempRom[i] ^= 0xff;
 	GfxDecode(/*0x2000*/12288, 4, 8, 8, MOPlaneOffsets, MOXOffsets, MOYOffsets, 0x40, DrvTempRom, DrvMotionObjectTiles);
 	
 	if (DrvTempRom) {
@@ -2061,19 +2061,19 @@ static int DrvInit()
 	return 0;
 }
 
-static int Gaunt2pInit()
+static INT32 Gaunt2pInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(/*0x40000*/0x60000);
+	DrvTempRom = (UINT8 *)malloc(/*0x40000*/0x60000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2115,7 +2115,7 @@ static int Gaunt2pInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x38000, 14, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x48000, 15, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x50000, 16, 1); if (nRet != 0) return 1;
-	for (unsigned int i = 0; i < /*0x40000*/0x60000; i++) DrvTempRom[i] ^= 0xff;
+	for (UINT32 i = 0; i < /*0x40000*/0x60000; i++) DrvTempRom[i] ^= 0xff;
 	GfxDecode(/*0x2000*/12288, 4, 8, 8, MOPlaneOffsets, MOXOffsets, MOYOffsets, 0x40, DrvTempRom, DrvMotionObjectTiles);
 	
 	if (DrvTempRom) {
@@ -2174,19 +2174,19 @@ static int Gaunt2pInit()
 	return 0;
 }
 
-static int Gaunt2Init()
+static INT32 Gaunt2Init()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(/*0x40000*/0x60000);
+	DrvTempRom = (UINT8 *)malloc(/*0x40000*/0x60000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2238,7 +2238,7 @@ static int Gaunt2Init()
 	nRet = BurnLoadRom(DrvTempRom + 0x50000, 21, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x58000, 22, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x5c000, 22, 1); if (nRet != 0) return 1;
-	for (unsigned int i = 0; i < /*0x40000*/0x60000; i++) DrvTempRom[i] ^= 0xff;
+	for (UINT32 i = 0; i < /*0x40000*/0x60000; i++) DrvTempRom[i] ^= 0xff;
 	GfxDecode(/*0x2000*/12288, 4, 8, 8, MOPlaneOffsets, MOXOffsets, MOYOffsets, 0x40, DrvTempRom, DrvMotionObjectTiles);
 	
 	if (DrvTempRom) {
@@ -2297,7 +2297,7 @@ static int Gaunt2Init()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	SekExit();
 	M6502Exit();
@@ -2317,10 +2317,10 @@ static int DrvExit()
 	return 0;
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	static const unsigned char ztable[16] = { 0x0, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11 };
-	int i, r, g, b;
+	static const UINT8 ztable[16] = { 0x0, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11 };
+	INT32 i, r, g, b;
 
 	i = ztable[(nColour >> 12) & 15];
 	r = ((nColour >> 8) & 15) * i;
@@ -2332,11 +2332,11 @@ inline static unsigned int CalcCol(unsigned short nColour)
 
 static void DrvCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)DrvPaletteRam, pd = DrvPalette; i < 0x400; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)DrvPaletteRam, pd = DrvPalette; i < 0x400; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 }
@@ -2351,9 +2351,9 @@ static TILE_GET_INFO( get_playfield_tile_info )
 }
 #endif
 
-static void DrvRenderPlayfield(int PriorityDraw)
+static void DrvRenderPlayfield(INT32 PriorityDraw)
 {
-	int mx, my, Data, Code, Colour, x, y, TileIndex, Priority;
+	INT32 mx, my, Data, Code, Colour, x, y, TileIndex, Priority;
 	
 	UINT16 *VideoRam = (UINT16*)DrvPlayfieldRam;
 		
@@ -2397,7 +2397,7 @@ static void DrvRenderPlayfield(int PriorityDraw)
 #endif
 static void DrvRenderCharLayer()
 {
-	int mx, my, Code, Colour, x, y, Opaque, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, Opaque, TileIndex = 0;
 	
 	UINT16 *VideoRam = (UINT16*)DrvAlphaRam;
 
@@ -2435,10 +2435,10 @@ static void DrvDraw()
 	BurnTransferCopy(DrvPalette);
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 262;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 262;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) DrvDoReset();
 
@@ -2450,7 +2450,7 @@ static int DrvFrame()
 
 	SekNewFrame();
 	
-	int NextScanline = 0;
+	INT32 NextScanline = 0;
 	
 	UINT16 *AlphaRam = (UINT16*)DrvAlphaRam;	
 	DrvScrollY = AlphaRam[0xf6e >> 1];
@@ -2466,8 +2466,8 @@ static int DrvFrame()
 		if (DrvTileBank == 3) DrvTileBank = 0;
 	}
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -2481,7 +2481,7 @@ static int DrvFrame()
 		SekClose();
 		
 		if (i == NextScanline) {
-			int Link = (DrvMOSlipRam[2 * (((i + DrvScrollY) / 8) & 0x3f) + 0] | (DrvMOSlipRam[2 * (((i + DrvScrollY) / 8) & 0x3f) + 1] << 8)) & 0x3ff;
+			INT32 Link = (DrvMOSlipRam[2 * (((i + DrvScrollY) / 8) & 0x3f) + 0] | (DrvMOSlipRam[2 * (((i + DrvScrollY) / 8) & 0x3f) + 1] << 8)) & 0x3ff;
 			atarigen_update_display_list(DrvMOSpriteRam, Link, i);
 			
 			if (!NextScanline) {
@@ -2502,16 +2502,16 @@ static int DrvFrame()
 		}
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
 	
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -2523,7 +2523,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

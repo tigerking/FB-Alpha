@@ -1,34 +1,34 @@
 #include "cps.h"
 // CPS Objs (sprites)
 
-int nCpsObjectBank;
+INT32 nCpsObjectBank;
 
-unsigned char *BootlegSpriteRam = NULL;
+UINT8 *BootlegSpriteRam = NULL;
 
-int Sf2Hack = 0;
+INT32 Sf2Hack = 0;
 
 // Our copy of the sprite table
-static unsigned char *ObjMem = NULL;
+static UINT8 *ObjMem = NULL;
 
-static int nMax = 0;
-static int nGetNext = 0;
+static INT32 nMax = 0;
+static INT32 nGetNext = 0;
 
-static int nMaxZValue;
-static int nMaxZMask;
+static INT32 nMaxZValue;
+static INT32 nMaxZMask;
 
-static int nZOffset;
+static INT32 nZOffset;
 
 // Object frames, so you can lag the Objs by nFrameCount-1 frames
 struct ObjFrame {
-	int nShiftX, nShiftY;
-	unsigned char* Obj;
-	int nCount;
+	INT32 nShiftX, nShiftY;
+	UINT8* Obj;
+	INT32 nCount;
 };
 
-static int nFrameCount = 0;
+static INT32 nFrameCount = 0;
 static struct ObjFrame of[3];
 
-int CpsObjInit()
+INT32 CpsObjInit()
 {
 	nMax = 0x100;				// CPS1 has 256 sprites
 
@@ -39,13 +39,13 @@ int CpsObjInit()
 	nFrameCount = 2;			// CPS2 sprites lagged by 1 frame and double buffered
 								// CPS1 sprites lagged by 1 frame
 
-	ObjMem = (unsigned char*)malloc((nMax << 3) * nFrameCount);
+	ObjMem = (UINT8*)malloc((nMax << 3) * nFrameCount);
 	if (ObjMem == NULL) {
 		return 1;
 	}
 
 	// Set up the frame buffers
-	for (int i = 0; i < nFrameCount; i++) {
+	for (INT32 i = 0; i < nFrameCount; i++) {
 		of[i].Obj = ObjMem + (nMax << 3) * i;
 		of[i].nCount = 0;
 	}
@@ -61,9 +61,9 @@ int CpsObjInit()
 	return 0;
 }
 
-int CpsObjExit()
+INT32 CpsObjExit()
 {
-	for (int i = 0; i < nFrameCount; i++) {
+	for (INT32 i = 0; i < nFrameCount; i++) {
 		of[i].Obj = NULL;
 		of[i].nCount = 0;
 	}
@@ -80,12 +80,12 @@ int CpsObjExit()
 }
 
 // Get CPS sprites into Obj
-int CpsObjGet()
+INT32 CpsObjGet()
 {
-	int i;
-	unsigned char *pg, *po;
+	INT32 i;
+	UINT8 *pg, *po;
 	struct ObjFrame* pof;
-	unsigned char* Get = NULL;
+	UINT8* Get = NULL;
 
 	pof = of + nGetNext;
 
@@ -102,7 +102,7 @@ int CpsObjGet()
 		pof->nShiftX = -CpsSaveFrg[0][0x9];
 		pof->nShiftY = -CpsSaveFrg[0][0xB];
 	} else {
-		int nOff = *((unsigned short*)(CpsReg + 0x00)) << 8;
+		INT32 nOff = *((UINT16*)(CpsReg + 0x00)) << 8;
 		nOff &= 0xfff800;
 		Get = CpsFindGfxRam(nOff, 0x800);		
 		
@@ -119,7 +119,7 @@ int CpsObjGet()
 
 	// Make a copy of all active sprites in the list
 	for (pg = Get, i = 0; i < nMax; pg += 8, i++) {
-		unsigned short* ps = (unsigned short*)pg;
+		UINT16* ps = (UINT16*)pg;
 
 		if (Cps == 2) {
 			if (ps[1] & 0x8000)	{													// end of sprite list?
@@ -181,9 +181,9 @@ void CpsObjDrawInit()
 	return;
 }
 
-int Cps1ObjDraw(int nLevelFrom,int nLevelTo)
+INT32 Cps1ObjDraw(INT32 nLevelFrom,INT32 nLevelTo)
 {
-	int i; unsigned short *ps; int nPsAdd;
+	INT32 i; UINT16 *ps; INT32 nPsAdd;
 	struct ObjFrame *pof;
 	(void)nLevelFrom; (void)nLevelTo;
 
@@ -191,7 +191,7 @@ int Cps1ObjDraw(int nLevelFrom,int nLevelTo)
 	pof=of+nGetNext;
 
 	// Point to Obj list
-	ps=(unsigned short *)pof->Obj;
+	ps=(UINT16 *)pof->Obj;
 
 	if (!CpsDrawSpritesInReverse) {
 		ps+=(pof->nCount-1)<<2; nPsAdd=-4; // CPS1 is reversed
@@ -201,7 +201,7 @@ int Cps1ObjDraw(int nLevelFrom,int nLevelTo)
 
 	// Go through all the Objs
 	for (i=0; i<pof->nCount; i++,ps+=nPsAdd) {
-		int x,y,n,a,bx,by,dx,dy; int nFlip;
+		INT32 x,y,n,a,bx,by,dx,dy; INT32 nFlip;
 
 		if (Dinopic) {
 			n = ps[0]; a = ps[1]; x = ps[2] - 461; y = 0x2f0 - ps[3];
@@ -242,7 +242,7 @@ int Cps1ObjDraw(int nLevelFrom,int nLevelTo)
 		nCpstFlip=nFlip;
 		for (dy=0;dy<by;dy++) {
 			for (dx=0;dx<bx;dx++) {
-				int ex,ey;
+				INT32 ex,ey;
 				if (nFlip&1) ex=(bx-dx-1);
 				else ex=dx;
 				if (nFlip&2) ey=(by-dy-1);
@@ -261,14 +261,14 @@ int Cps1ObjDraw(int nLevelFrom,int nLevelTo)
 }
 
 // Delay sprite drawing by one frame
-int Cps2ObjDraw(int nLevelFrom, int nLevelTo)
+INT32 Cps2ObjDraw(INT32 nLevelFrom, INT32 nLevelTo)
 {
-	const int nPsAdd = 4;
+	const INT32 nPsAdd = 4;
 
-	unsigned short *ps;
+	UINT16 *ps;
 	struct ObjFrame *pof;
 	CpstOneDoFn pCpstOne;
-	int nCount;
+	INT32 nCount;
 
 	bool bMask = 0;
 
@@ -276,14 +276,14 @@ int Cps2ObjDraw(int nLevelFrom, int nLevelTo)
 	pof = of + nGetNext;
 
 	// Point to Obj list
-	ps = (unsigned short*)pof->Obj + nPsAdd * (nMaxZValue - nZOffset - 1);
+	ps = (UINT16*)pof->Obj + nPsAdd * (nMaxZValue - nZOffset - 1);
 	nCount = nZOffset + pof->nCount;
 
 	// Go through all the Objs
-	for (ZValue = (unsigned short)nMaxZValue; ZValue <= nCount; ZValue++, ps += nPsAdd) {
-		int x, y, n, a, bx, by, dx, dy;
-		int nFlip;
-		int v = ps[0] >> 13;
+	for (ZValue = (UINT16)nMaxZValue; ZValue <= nCount; ZValue++, ps += nPsAdd) {
+		INT32 x, y, n, a, bx, by, dx, dy;
+		INT32 nFlip;
+		INT32 v = ps[0] >> 13;
 
 		if ((nSpriteEnable & (1 << v)) == 0) {
 			continue;
@@ -327,7 +327,7 @@ int Cps2ObjDraw(int nLevelFrom, int nLevelTo)
 #if 0
 		// This *MAY* be needed to get correct sprite positions when raster interrups are used.
 		if (nRasterline[1]) {
-			for (int i = 1; i < MAX_RASTER; i++) {
+			for (INT32 i = 1; i < MAX_RASTER; i++) {
 				if ((y < nRasterline[i]) || (nRasterline[i] == 0)) {
 					x -= CpsSaveFrg[i - 1][0x09];
 					y -= CpsSaveFrg[i - 1][0x0B];
@@ -365,13 +365,13 @@ int Cps2ObjDraw(int nLevelFrom, int nLevelTo)
 		}
 
 //		if (v == 0) {
-//			bprintf(PRINT_IMPORTANT, _T("  - %4i: 0x%04X 0x%04X 0x%04X 0x%04X\n"), ZValue - (unsigned short)nMaxZValue, ps[0], ps[1], ps[2], ps[3]);
+//			bprintf(PRINT_IMPORTANT, _T("  - %4i: 0x%04X 0x%04X 0x%04X 0x%04X\n"), ZValue - (UINT16)nMaxZValue, ps[0], ps[1], ps[2], ps[3]);
 //		}
 
 		nCpstFlip = nFlip;
 		for (dy = 0; dy < by; dy++) {
 			for (dx = 0; dx < bx; dx++) {
-				int ex, ey;
+				INT32 ex, ey;
 
 				if (nFlip & 1) {
 					ex = (bx - dx - 1);

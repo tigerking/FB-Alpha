@@ -624,7 +624,7 @@ static struct BurnInputInfo ProgearInputList[] = {
 
 STDINPUTINFO(Progear)
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo Pzloop2InputList[] = {
 	{"P1 Coin"          , BIT_DIGITAL   , CpsInp020+4   , "p1 coin"     },
@@ -6958,32 +6958,32 @@ STD_ROM_FN(Xmvsfur1)
 
 // Driver functions
 
-static int Pzloop2Init()
+static INT32 Pzloop2Init()
 {
 	Pzloop2 = 1;
 	
 	return Cps2Init();
 }
 
-static int Ssf2Init()
+static INT32 Ssf2Init()
 {
-	int nRet = Cps2Init();
+	INT32 nRet = Cps2Init();
 	
 	nCpsGfxScroll[3] = 0;
 	
 	return nRet;
 }
 
-static int Ssf2tbInit()
+static INT32 Ssf2tbInit()
 {
 	Ssf2tb = 1;
 	
 	return Ssf2Init();
 }
 
-static int Ssf2tInit()
+static INT32 Ssf2tInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	Ssf2t = 1;
 	
@@ -6994,14 +6994,14 @@ static int Ssf2tInit()
 	return nRet;
 }
 
-static int XmcotaInit()
+static INT32 XmcotaInit()
 {
 	Xmcota = 1;
 	
 	return Cps2Init();
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	Pzloop2 = 0;
 	Ssf2t = 0;
@@ -10432,7 +10432,7 @@ static struct BurnRomInfo Xmvsfu1dRomDesc[] = {
 STD_ROM_PICK(Xmvsfu1d)
 STD_ROM_FN(Xmvsfu1d)
 
-void __fastcall PhoenixOutputWriteByte(unsigned int a,unsigned char d)
+void __fastcall PhoenixOutputWriteByte(UINT32 a,UINT8 d)
 {
 	if (a >= 0xfffff0 && a <= 0xfffffb) {
 		CpsFrg[a & 0x0f] = d;
@@ -10445,23 +10445,23 @@ void __fastcall PhoenixOutputWriteByte(unsigned int a,unsigned char d)
 	}
 }
 
-void __fastcall PhoenixSpriteWriteByte(unsigned int a,unsigned char d)
+void __fastcall PhoenixSpriteWriteByte(UINT32 a,UINT8 d)
 {
 	bprintf(PRINT_NORMAL, _T("Byte %x, %x\n"), a, d);
 }
 
-void __fastcall PhoenixSpriteWriteWord(unsigned int a,unsigned short d)
+void __fastcall PhoenixSpriteWriteWord(UINT32 a,UINT16 d)
 {
-	unsigned short *Ram = (unsigned short*)CpsRam708;
-	int Offset = (a - 0x700000) >> 1;
+	UINT16 *Ram = (UINT16*)CpsRam708;
+	INT32 Offset = (a - 0x700000) >> 1;
 	
 	Ram[Offset + 0x0000] = d;
 	Ram[Offset + 0x4000] = d;
 }
 
-static int PhoenixInit()
+static INT32 PhoenixInit()
 {
-	int nRet = Cps2Init();
+	INT32 nRet = Cps2Init();
 	
 	SekOpen(0);
 	SekMapHandler(3, 0xFF0000, 0xFFFFFF, SM_WRITE);
@@ -10474,9 +10474,9 @@ static int PhoenixInit()
 	return nRet;
 }
 
-static int Ssf2PhoenixInit()
+static INT32 Ssf2PhoenixInit()
 {
-	int nRet = PhoenixInit();
+	INT32 nRet = PhoenixInit();
 	
 	nCpsGfxScroll[3] = 0;
 	
@@ -10490,9 +10490,9 @@ static int Ssf2tbPhoenixInit()
 	return Ssf2PhoenixInit();
 }
 
-static int Ssf2tPhoenixInit()
+static INT32 Ssf2tPhoenixInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	Ssf2t = 1;
 	
