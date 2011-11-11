@@ -23,8 +23,12 @@ DEPEND = 1
 NAME = fba
 
 ifdef BUILD_X64_EXE
+ifdef BUILD_A68K
 undefine BUILD_A68K
+endif
+ifdef BUILD_X86_ASM
 undefine BUILD_X86_ASM
+endif
 endif
 
 ifndef	CPUTYPE
