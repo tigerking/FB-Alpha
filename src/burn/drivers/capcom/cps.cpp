@@ -1051,15 +1051,11 @@ int CpsExit()
 	Scroll2TileMask = 0;
 	Scroll3TileMask = 0;
 
-	if (CpsCode) {
-		free(CpsCode);
-		CpsCode = NULL;
-	}
-	
 	nCpsCodeLen = nCpsRomLen = nCpsGfxLen = nCpsZRomLen = nCpsQSamLen = nCpsAdLen = 0;
 	CpsCode = CpsRom = CpsZRom = CpsAd = CpsStar = NULL;
 	CpsQSam = NULL;
 
+	// All Memory is allocated to this (this is the only one we can free)
 	if (CpsGfx) {
 		free(CpsGfx);
 		CpsGfx  = NULL;
