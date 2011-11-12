@@ -42,18 +42,18 @@
 
 #if BPP == 16
  #define PLOTPIXEL(a) if (TESTCOLOUR(a)) {							\
-   	*((unsigned short*)pPixel) = (unsigned short)pTilePalette[a];	\
+   	*((UINT16*)pPixel) = (UINT16)pTilePalette[a];	\
  }
 #elif BPP == 24
  #define PLOTPIXEL(a) if (TESTCOLOUR(a)) {							\
-	unsigned int nRGB = pTilePalette[a];							\
-	pPixel[0] = (unsigned char)nRGB;								\
-	pPixel[1] = (unsigned char)(nRGB >> 8);							\
-	pPixel[2] = (unsigned char)(nRGB >> 16);						\
+	UINT32 nRGB = pTilePalette[a];							\
+	pPixel[0] = (UINT8)nRGB;								\
+	pPixel[1] = (UINT8)(nRGB >> 8);							\
+	pPixel[2] = (UINT8)(nRGB >> 16);						\
  }
 #elif BPP == 32
  #define PLOTPIXEL(a) if (TESTCOLOUR(a)) {							\
-	 *((unsigned int*)pPixel) = (unsigned int)pTilePalette[a];		\
+	 *((UINT32*)pPixel) = (UINT32)pTilePalette[a];		\
  }
 #else
  #error unsupported bitdepth specified.
@@ -93,11 +93,11 @@ static void FUNCTIONNAME(BPP,XSIZE,ROT,FLIP,SCROLL,SELECT,CLIP,DEPTH)()
 // Create an empty function if unsupported features are requested
 #if ROT == 0 && XFLIP == 0 && YFLIP == 0 && !(ROWSCROLL == 1 && ROWSELECT == 1) && EIGHTBIT == 1
 
-	unsigned char *pTileRow, *pPixel;
-	int nColour;
+	UINT8 *pTileRow, *pPixel;
+	INT32 nColour;
 
  #if ROWSELECT == 0
-	int y;
+	INT32 y;
  #endif
 
  #if ROWSELECT == 0

@@ -10,16 +10,16 @@
 #define SEGA_MD_ROM_OFFS_100001										0x06
 #define SEGA_MD_ROM_OFFS_200000										0x07
 
-extern unsigned char MegadriveReset;
-extern unsigned char bMegadriveRecalcPalette;
-extern unsigned char MegadriveJoy1[12];
-extern unsigned char MegadriveJoy2[12];
-extern unsigned char MegadriveJoy3[12];
-extern unsigned char MegadriveJoy4[12];
-extern unsigned char MegadriveDIP[2];
-extern unsigned short *MegadriveCurPal;
+extern UINT8 MegadriveReset;
+extern UINT8 bMegadriveRecalcPalette;
+extern UINT8 MegadriveJoy1[12];
+extern UINT8 MegadriveJoy2[12];
+extern UINT8 MegadriveJoy3[12];
+extern UINT8 MegadriveJoy4[12];
+extern UINT8 MegadriveDIP[2];
+extern UINT16 *MegadriveCurPal;
 
-int MegadriveInit();
-int MegadriveExit();
-int MegadriveFrame();
-int MegadriveScan(int nAction, int *pnMin);
+INT32 MegadriveInit();
+INT32 MegadriveExit();
+INT32 MegadriveFrame();
+INT32 MegadriveScan(INT32 nAction, INT32 *pnMin);

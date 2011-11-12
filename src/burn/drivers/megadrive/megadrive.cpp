@@ -32,135 +32,135 @@
 #define MAX_CARTRIDGE_SIZE	0xc00000
 #define MAX_SRAM_SIZE		0x010000
 
-static int cycles_68k, cycles_z80;
+static INT32 cycles_68k, cycles_z80;
 
 typedef void (*MegadriveCb)();
 static MegadriveCb MegadriveCallback;
 
 struct PicoVideo {
-	unsigned char reg[0x20];
-	unsigned int command;		// 32-bit Command
-	unsigned char pending;		// 1 if waiting for second half of 32-bit command
-	unsigned char type;			// Command type (v/c/vsram read/write)
-	unsigned short addr;		// Read/Write address
-	int status;					// Status bits
-	unsigned char pending_ints;	// pending interrupts: ??VH????
-	unsigned char pad[0x13];	//
+	UINT8 reg[0x20];
+	UINT32 command;		// 32-bit Command
+	UINT8 pending;		// 1 if waiting for second half of 32-bit command
+	UINT8 type;			// Command type (v/c/vsram read/write)
+	UINT16 addr;		// Read/Write address
+	INT32 status;					// Status bits
+	UINT8 pending_ints;	// pending interrupts: ??VH????
+	UINT8 pad[0x13];	//
 };
 
 struct PicoMisc {
-	unsigned int Z80Run;
-	unsigned int Bank68k;
-	unsigned char Rotate;
+	UINT32 Z80Run;
+	UINT32 Bank68k;
+	UINT8 Rotate;
 
-//	unsigned char Pad[3];
+//	UINT8 Pad[3];
 	
-//	unsigned int SRamReg;
-	unsigned int SRamStart;
-	unsigned int SRamEnd;
-	unsigned int SRamDetected;
-	unsigned int SRamActive;
-	unsigned int SRamHandlersInstalled;
-	unsigned int SRamReadOnly;
-	unsigned int SRamHasSerialEEPROM;
+//	UINT32 SRamReg;
+	UINT32 SRamStart;
+	UINT32 SRamEnd;
+	UINT32 SRamDetected;
+	UINT32 SRamActive;
+	UINT32 SRamHandlersInstalled;
+	UINT32 SRamReadOnly;
+	UINT32 SRamHasSerialEEPROM;
 	
-	unsigned char I2CMem;
-	unsigned char I2CClk;
+	UINT8 I2CMem;
+	UINT8 I2CClk;
 	
-	unsigned short JCartIOData[2];
+	UINT16 JCartIOData[2];
 	
-	unsigned char L3AltPDat;
-	unsigned char L3AltPCmd;
+	UINT8 L3AltPDat;
+	UINT8 L3AltPCmd;
 	
-	unsigned short SquirrelkingExtra;
+	UINT16 SquirrelkingExtra;
 	
-	unsigned short Lionk2ProtData;
-	unsigned short Lionk2ProtData2;
+	UINT16 Lionk2ProtData;
+	UINT16 Lionk2ProtData2;
 	
-	unsigned int RealtecBankAddr;
-	unsigned int RealtecBankSize;
+	UINT32 RealtecBankAddr;
+	UINT32 RealtecBankSize;
 };
 
 struct TileStrip
 {
-	int nametab; // Position in VRAM of name table (for this tile line)
-	int line;    // Line number in pixels 0x000-0x3ff within the virtual tilemap 
-	int hscroll; // Horizontal scroll value in pixels for the line
-	int xmask;   // X-Mask (0x1f - 0x7f) for horizontal wraparound in the tilemap
-	int *hc;     // cache for high tile codes and their positions
-	int cells;   // cells (tiles) to draw (32 col mode doesn't need to update whole 320)
+	INT32 nametab; // Position in VRAM of name table (for this tile line)
+	INT32 line;    // Line number in pixels 0x000-0x3ff within the virtual tilemap 
+	INT32 hscroll; // Horizontal scroll value in pixels for the line
+	INT32 xmask;   // X-Mask (0x1f - 0x7f) for horizontal wraparound in the tilemap
+	INT32 *hc;     // cache for high tile codes and their positions
+	INT32 cells;   // cells (tiles) to draw (32 col mode doesn't need to update whole 320)
 };
 
 struct MegadriveJoyPad {
-	unsigned short pad[4];
-	unsigned char  padTHPhase[4];
-	unsigned char  padDelay[4];
+	UINT16 pad[4];
+	UINT8  padTHPhase[4];
+	UINT8  padDelay[4];
 };
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
 
-static unsigned char *RomMain;
-static unsigned char *OriginalRom;
+static UINT8 *RomMain;
+static UINT8 *OriginalRom;
 
-static unsigned char *Ram68K;
-static unsigned char *RamZ80;
+static UINT8 *Ram68K;
+static UINT8 *RamZ80;
 
-static unsigned char *SRam;
-static unsigned char *RamIO;
+static UINT8 *SRam;
+static UINT8 *RamIO;
 
-static unsigned short *RamPal;
-static unsigned short *RamVid;
-static unsigned short *RamSVid;
+static UINT16 *RamPal;
+static UINT16 *RamVid;
+static UINT16 *RamSVid;
 static struct PicoVideo *RamVReg;
 static struct PicoMisc *RamMisc;
 static struct MegadriveJoyPad *JoyPad;
 
-unsigned short *MegadriveCurPal;
+UINT16 *MegadriveCurPal;
 
 static UINT16 *MegadriveBackupRam;
 
-static unsigned char *HighCol;
-static unsigned char *HighColFull;
+static UINT8 *HighCol;
+static UINT8 *HighColFull;
 
-static int *HighCacheA;
-static int *HighCacheB;
-static int *HighCacheS;
-static int *HighPreSpr;
-static char *HighSprZ;
+static INT32 *HighCacheA;
+static INT32 *HighCacheB;
+static INT32 *HighCacheS;
+static INT32 *HighPreSpr;
+static INT8 *HighSprZ;
 
-unsigned char MegadriveReset = 0;
-unsigned char bMegadriveRecalcPalette = 0;
+UINT8 MegadriveReset = 0;
+UINT8 bMegadriveRecalcPalette = 0;
 
-unsigned char MegadriveJoy1[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char MegadriveJoy2[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char MegadriveJoy3[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char MegadriveJoy4[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char MegadriveDIP[2] = {0, 0};
+UINT8 MegadriveJoy1[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+UINT8 MegadriveJoy2[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+UINT8 MegadriveJoy3[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+UINT8 MegadriveJoy4[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+UINT8 MegadriveDIP[2] = {0, 0};
 
-static unsigned int RomNum = 0;
-static unsigned int RomSize = 0;
-static unsigned int SRamSize = 0;
+static UINT32 RomNum = 0;
+static UINT32 RomSize = 0;
+static UINT32 SRamSize = 0;
 
-static int SpriteBlocks;
+static INT32 SpriteBlocks;
 
-static int Scanline = 0;
+static INT32 Scanline = 0;
 
-static int Z80HasBus = 0;
-static int MegadriveZ80Reset = 0;
-static int RomNoByteswap;
+static INT32 Z80HasBus = 0;
+static INT32 MegadriveZ80Reset = 0;
+static INT32 RomNoByteswap;
 
-static unsigned char Hardware;
-static unsigned char DrvSECAM = 0;	// NTSC 
+static UINT8 Hardware;
+static UINT8 DrvSECAM = 0;	// NTSC 
 
 void MegadriveCheckHardware()
 {
 	Hardware = MegadriveDIP[0] & 0xe0;
 	if (MegadriveDIP[0] & 0x01) {
 		// Auto Detect Region and SECAM
-		unsigned int support = 0;
-		for (int i = 0; i < 4; i++) {
-			unsigned int v = RomMain[0x1f0 + i];
+		UINT32 support = 0;
+		for (INT32 i = 0; i < 4; i++) {
+			UINT32 v = RomMain[0x1f0 + i];
 			if (v <= 0x20) continue;
 
 			switch (v) {
@@ -265,9 +265,9 @@ void MegadriveCheckHardware()
 
 //-----------------------------------------------------------------
 
-inline static void CalcCol(int index, unsigned short nColour)
+inline static void CalcCol(INT32 index, UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour & 0x000f) << 4;	// Red
 	g = (nColour & 0x00f0) << 0; 	// Green
@@ -292,9 +292,9 @@ inline static void CalcCol(int index, unsigned short nColour)
 	MegadriveCurPal[index + 0x80] = BurnHighCol(r, g, b, 0);
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	RomMain 	= Next; Next += MAX_CARTRIDGE_SIZE + sizeof(long);	// 68000 ROM, Max enough 
 	
 	RamStart	= Next;
@@ -304,24 +304,24 @@ static int MemIndex()
 	SRam		= Next; Next += MAX_SRAM_SIZE;		// SRam
 	RamIO		= Next; Next += 0x000010;			// I/O
 	
-	RamPal		= (unsigned short *) Next; Next += 0x000040 * sizeof(unsigned short);
-	RamSVid		= (unsigned short *) Next; Next += 0x000080;	// VSRam
-	RamVid		= (unsigned short *) Next; Next += 0x010000;	// Video Ram
+	RamPal		= (UINT16 *) Next; Next += 0x000040 * sizeof(UINT16);
+	RamSVid		= (UINT16 *) Next; Next += 0x000080;	// VSRam
+	RamVid		= (UINT16 *) Next; Next += 0x010000;	// Video Ram
 	
 	RamVReg		= (struct PicoVideo *)Next; Next += sizeof(struct PicoVideo);
 	RamMisc		= (struct PicoMisc *)Next; Next += sizeof(struct PicoMisc);
 	
 	RamEnd		= Next;
 
-	MegadriveCurPal		= (unsigned short *) Next; Next += 0x000040 * sizeof(unsigned short) * 4;
+	MegadriveCurPal		= (UINT16 *) Next; Next += 0x000040 * sizeof(UINT16) * 4;
 	
 	HighColFull	= Next; Next += (8 + 320 + 8) * 240;
 	
-	HighCacheA	= (int *) Next; Next += (41+1) * sizeof(int);	// caches for high layers
-	HighCacheB	= (int *) Next; Next += (41+1) * sizeof(int);
-	HighCacheS	= (int *) Next; Next += (80+1) * sizeof(int);	// and sprites
-	HighPreSpr	= (int *) Next; Next += (80*2+1) * sizeof(int);	// slightly preprocessed sprites
-	HighSprZ	= (char*) Next; Next += (320+8+8);				// Z-buffer for accurate sprites and shadow/hilight mode
+	HighCacheA	= (INT32 *) Next; Next += (41+1) * sizeof(INT32);	// caches for high layers
+	HighCacheB	= (INT32 *) Next; Next += (41+1) * sizeof(INT32);
+	HighCacheS	= (INT32 *) Next; Next += (80+1) * sizeof(INT32);	// and sprites
+	HighPreSpr	= (INT32 *) Next; Next += (80*2+1) * sizeof(INT32);	// slightly preprocessed sprites
+	HighSprZ	= (INT8*) Next; Next += (320+8+8);				// Z-buffer for accurate sprites and shadow/hilight mode
 	
 	JoyPad		= (struct MegadriveJoyPad *) Next; Next += sizeof(struct MegadriveJoyPad);
 
@@ -329,11 +329,11 @@ static int MemIndex()
 	return 0;
 }
 
-unsigned short __fastcall MegadriveReadWord(unsigned int sekAddress)
+UINT16 __fastcall MegadriveReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0xa11100: {
-			unsigned short retVal = rand() & 0xffff;
+			UINT16 retVal = rand() & 0xffff;
 			if (Z80HasBus || MegadriveZ80Reset) {
 				retVal |= 0x100;
 			} else {
@@ -349,7 +349,7 @@ unsigned short __fastcall MegadriveReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned char __fastcall MegadriveReadByte(unsigned int sekAddress)
+UINT8 __fastcall MegadriveReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0xa04000:
@@ -364,7 +364,7 @@ unsigned char __fastcall MegadriveReadByte(unsigned int sekAddress)
 		}
 				
 		case 0xa11100: {
-			unsigned char retVal = rand() & 0xff;
+			UINT8 retVal = rand() & 0xff;
 			if (Z80HasBus || MegadriveZ80Reset) {
 				retVal |= 0x01;
 			} else {
@@ -380,13 +380,13 @@ unsigned char __fastcall MegadriveReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall MegadriveWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall MegadriveWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if(sekAddress >= 0xA13004 && sekAddress < 0xA13040) {
 		// dumb 12-in-1 or 4-in-1 banking support
 		sekAddress &= 0x3f; 
 		sekAddress <<= 16;
-		int len = RomSize - sekAddress;
+		INT32 len = RomSize - sekAddress;
 		if (len <= 0) return; // invalid/missing bank
 		if (len > 0x200000) len = 0x200000; // 2 megs
 		// code which does this is in RAM so this is safe.
@@ -452,7 +452,7 @@ void __fastcall MegadriveWriteByte(unsigned int sekAddress, unsigned char byteVa
 	}
 }
 
-void __fastcall MegadriveWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall MegadriveWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0xa11100: {
@@ -490,13 +490,13 @@ void __fastcall MegadriveWriteWord(unsigned int sekAddress, unsigned short wordV
 // Megadrive Video Port Read Write
 //---------------------------------------------------------------
 
-static int rendstatus = 0;
+static INT32 rendstatus = 0;
 
 // calculate the number of cycles 68k->VDP dma operation would take
-static int DmaSlowBurn(int len)
+static INT32 DmaSlowBurn(INT32 len)
 {
 	// test: Legend of Galahad, Time Killers
-	int burn,maxlen,line=Scanline;
+	INT32 burn,maxlen,line=Scanline;
 	//if(line == -1) line=vcounts[SekCyclesDone()>>8];
 	maxlen = (224-line) * 18;
 	if(len <= maxlen)
@@ -508,9 +508,9 @@ static int DmaSlowBurn(int len)
 	return burn;
 }
 
-static int GetDmaLength()
+static INT32 GetDmaLength()
 {
-  int len = 0;
+  INT32 len = 0;
   // 16-bit words to transfer:
   len  = RamVReg->reg[0x13];
   len |= RamVReg->reg[0x14]<<8;
@@ -519,12 +519,12 @@ static int GetDmaLength()
   return len;
 }
 
-static void DmaSlow(int len)
+static void DmaSlow(INT32 len)
 {
-	unsigned short *pd=0, *pdend, *r;
-	unsigned int a = RamVReg->addr, a2, d;
-	unsigned char inc = RamVReg->reg[0xf];
-	unsigned int source, burn;
+	UINT16 *pd=0, *pdend, *r;
+	UINT32 a = RamVReg->addr, a2, d;
+	UINT8 inc = RamVReg->reg[0xf];
+	UINT32 source, burn;
 
 	source  = RamVReg->reg[0x15] <<  1;
 	source |= RamVReg->reg[0x16] <<  9;
@@ -534,11 +534,11 @@ static void DmaSlow(int len)
   //         (Pico.video.status&8)||!(Pico.video.reg[1]&0x40), Pico.m.scanline, SekCyclesDone());
 
 	if ((source & 0xe00000) == 0xe00000) { // RAM
-		pd    = (unsigned short *)(Ram68K + (source & 0xfffe));
-		pdend = (unsigned short *)(Ram68K + 0x10000); 
+		pd    = (UINT16 *)(Ram68K + (source & 0xfffe));
+		pdend = (UINT16 *)(Ram68K + 0x10000); 
 	} else if( source < RomSize) {	// ROM
-		pd    = (unsigned short *)(RomMain + (source & ~1)); 
-		pdend = (unsigned short *)(RomMain + RomSize); 
+		pd    = (UINT16 *)(RomMain + (source & ~1)); 
+		pdend = (UINT16 *)(RomMain + RomSize); 
 	} else return; // Invalid source address
 
 	// CPU is stopped during DMA, so we burn some cycles to compensate that
@@ -560,9 +560,9 @@ static void DmaSlow(int len)
 		for(; len; len--) {
 			d = *pd++;
 			if(a&1) d=(d<<8)|(d>>8);
-			r[a>>1] = (unsigned short)d; // will drop the upper bits
+			r[a>>1] = (UINT16)d; // will drop the upper bits
 			// AutoIncrement
-			a = (unsigned short)(a+inc);
+			a = (UINT16)(a+inc);
 			// didn't src overlap?
 			if(pd >= pdend) pd -= 0x8000; // should be good for RAM, bad for ROM
 		}
@@ -588,7 +588,7 @@ static void DmaSlow(int len)
 	case 5: // vsram[a&0x003f]=d;
 		r = RamSVid;
 		for(a2=a&0x7f; len; len--) {
-			r[a2>>1] = (unsigned short)*pd++;
+			r[a2>>1] = (UINT16)*pd++;
 			// AutoIncrement
 			a2+=inc;
 			// didn't src overlap?
@@ -600,16 +600,16 @@ static void DmaSlow(int len)
 		break;
 	}
 	// remember addr
-	RamVReg->addr = (unsigned short)a;
+	RamVReg->addr = (UINT16)a;
 }
 
-static void DmaCopy(int len)
+static void DmaCopy(INT32 len)
 {
-	unsigned char * vr = (unsigned char *) RamVid;
-	unsigned char * vrs;
-	//unsigned short a = Pico.video.addr;
-	//unsigned char inc = RamVReg->reg[0xf];
-	int source;
+	UINT8 * vr = (UINT8 *) RamVid;
+	UINT8 * vrs;
+	//UINT16 a = Pico.video.addr;
+	//UINT8 inc = RamVReg->reg[0xf];
+	INT32 source;
 	
 	//dprintf("DmaCopy len %i [%i|%i]", len, Pico.m.scanline, SekCyclesDone());
 
@@ -629,20 +629,20 @@ static void DmaCopy(int len)
 	rendstatus |= 0x10;
 }
 
-static void DmaFill(int data)
+static void DmaFill(INT32 data)
 {
-	int len = GetDmaLength();
-	unsigned char *vr = (unsigned char *) RamVid;
-	unsigned char high = (unsigned char) (data >> 8);
-	unsigned short a = RamVReg->addr;
-	unsigned char inc = RamVReg->reg[0xf];
+	INT32 len = GetDmaLength();
+	UINT8 *vr = (UINT8 *) RamVid;
+	UINT8 high = (UINT8) (data >> 8);
+	UINT16 a = RamVReg->addr;
+	UINT8 inc = RamVReg->reg[0xf];
   
 	//dprintf("DmaFill len %i inc %i [%i|%i]", len, inc, Pico.m.scanline, SekCyclesDone());
 
 	// from Charles MacDonald's genvdp.txt:
 	// Write lower byte to address specified
-	vr[a] = (unsigned char) data;
-	a = (unsigned short)(a+inc);
+	vr[a] = (UINT8) data;
+	a = (UINT16)(a+inc);
 
 	if(!inc) len=1;
 
@@ -651,7 +651,7 @@ static void DmaFill(int data)
 		// (here we are byteswapped, so address is already 'adjacent')
 		vr[a] = high;
 		// Increment address register
-		a = (unsigned short)(a+inc);
+		a = (UINT16)(a+inc);
 	}
 	// remember addr
 	RamVReg->addr = a;
@@ -664,23 +664,23 @@ static void DmaFill(int data)
 static void CommandChange()
 {
 	//struct PicoVideo *pvid=&Pico.video;
-	unsigned int cmd = RamVReg->command;
-	unsigned int addr = 0;
+	UINT32 cmd = RamVReg->command;
+	UINT32 addr = 0;
 
 	// Get type of transfer 0xc0000030 (v/c/vsram read/write)
-	RamVReg->type = (unsigned char)(((cmd >> 2) & 0xc) | (cmd >> 30));
+	RamVReg->type = (UINT8)(((cmd >> 2) & 0xc) | (cmd >> 30));
 
 	// Get address 0x3fff0003
 	addr  = (cmd >> 16) & 0x3fff;
 	addr |= (cmd << 14) & 0xc000;
-	RamVReg->addr = (unsigned short)addr;
+	RamVReg->addr = (UINT16)addr;
 	//dprintf("addr set: %04x", addr);
 
 	// Check for dma:
 	if (cmd & 0x80) {
 		// Command DMA
 		if ((RamVReg->reg[1] & 0x10) == 0) return; // DMA not enabled
-		int len = GetDmaLength();
+		INT32 len = GetDmaLength();
 		switch ( RamVReg->reg[0x17]>>6 ) {
 		case 0x00:
 		case 0x01:
@@ -698,7 +698,7 @@ static void CommandChange()
 
 // H-counter table for hvcounter reads in 40col mode
 // based on Gens code
-const unsigned char hcounts_40[] = {
+const UINT8 hcounts_40[] = {
 	0x07,0x07,0x08,0x08,0x08,0x09,0x09,0x0a,0x0a,0x0b,0x0b,0x0b,0x0c,0x0c,0x0d,0x0d,
 	0x0e,0x0e,0x0e,0x0f,0x0f,0x10,0x10,0x10,0x11,0x11,0x12,0x12,0x13,0x13,0x13,0x14,
 	0x14,0x15,0x15,0x15,0x16,0x16,0x17,0x17,0x18,0x18,0x18,0x19,0x19,0x1a,0x1a,0x1b,
@@ -734,7 +734,7 @@ const unsigned char hcounts_40[] = {
 };
 
 // H-counter table for hvcounter reads in 32col mode
-const unsigned char hcounts_32[] = {
+const UINT8 hcounts_32[] = {
 	0x05,0x05,0x05,0x06,0x06,0x07,0x07,0x07,0x08,0x08,0x08,0x09,0x09,0x09,0x0a,0x0a,
 	0x0a,0x0b,0x0b,0x0b,0x0c,0x0c,0x0c,0x0d,0x0d,0x0d,0x0e,0x0e,0x0f,0x0f,0x0f,0x10,
 	0x10,0x10,0x11,0x11,0x11,0x12,0x12,0x12,0x13,0x13,0x13,0x14,0x14,0x14,0x15,0x15,
@@ -769,7 +769,7 @@ const unsigned char hcounts_32[] = {
 	0x08,0x08,0x08,0x09,0x09,0x09,0x0a,0x0a,0x0a,0x0b,0x0b,0x0b,0x0c,0x0c,0x0c,0x0d,
 };
 
-unsigned short __fastcall MegadriveVideoReadWord(unsigned int sekAddress)
+UINT16 __fastcall MegadriveVideoReadWord(UINT32 sekAddress)
 {
 	//bprintf(PRINT_NORMAL, _T("Video Attempt to read word value of location %x\n"), sekAddress);
 	//return MegadriveVDPRead((sekAddress - 0xc00000) >> 1);
@@ -777,7 +777,7 @@ unsigned short __fastcall MegadriveVideoReadWord(unsigned int sekAddress)
 	if (sekAddress > 0xC0001F)
 		bprintf(PRINT_NORMAL, _T("Video Attempt to read word value of location %x\n"), sekAddress);
 	
-	unsigned short res = 0;
+	UINT16 res = 0;
 	
 	switch (sekAddress & 0x1c) {
 	case 0x00:	// data
@@ -800,9 +800,9 @@ unsigned short __fastcall MegadriveVideoReadWord(unsigned int sekAddress)
 	
 	case 0x08: 	// H-counter info
 		{
-			unsigned int hc = 50;
+			UINT32 hc = 50;
 	
-			int lineCycles = (cycles_68k - m68k_ICount) & 0x1ff;
+			INT32 lineCycles = (cycles_68k - m68k_ICount) & 0x1ff;
 			res = Scanline; // V-Counter
 	
 			if(RamVReg->reg[12]&1) 
@@ -838,15 +838,15 @@ unsigned short __fastcall MegadriveVideoReadWord(unsigned int sekAddress)
 	return res;
 }
 
-unsigned char __fastcall MegadriveVideoReadByte(unsigned int sekAddress)
+UINT8 __fastcall MegadriveVideoReadByte(UINT32 sekAddress)
 {
 	//bprintf(PRINT_NORMAL, _T("Video Attempt to read byte value of location %x\n"), sekAddress);
-	unsigned short res = MegadriveVideoReadWord(sekAddress & ~1);
+	UINT16 res = MegadriveVideoReadWord(sekAddress & ~1);
 	if ((sekAddress&1)==0) res >>= 8;
 	return res & 0xff;
 }
 
-void __fastcall MegadriveVideoWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall MegadriveVideoWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (sekAddress > 0xC0001F)
 		bprintf(PRINT_NORMAL, _T("Video Attempt to write word value %x to location %x\n"), wordValue, sekAddress);
@@ -861,7 +861,7 @@ void __fastcall MegadriveVideoWriteWord(unsigned int sekAddress, unsigned short 
 			DmaFill(wordValue);
 
 		} else {
-			//unsigned int a=Pico.video.addr;
+			//UINT32 a=Pico.video.addr;
 			switch (RamVReg->type) {
 			case 1: 
 				// If address is odd, bytes are swapped (which game needs this?)
@@ -896,7 +896,7 @@ void __fastcall MegadriveVideoWriteWord(unsigned int sekAddress, unsigned short 
 			CommandChange();
 		} else {
 			if((wordValue & 0xc000) == 0x8000) {
-				int num = (wordValue >> 8) & 0x1f;
+				INT32 num = (wordValue >> 8) & 0x1f;
 				RamVReg->reg[num] = wordValue & 0xff;
 				
 				// update IRQ level (Lemmings, Wiz 'n' Liz intro, ... )
@@ -904,8 +904,8 @@ void __fastcall MegadriveVideoWriteWord(unsigned int sekAddress, unsigned short 
 				// International Superstar Soccer Deluxe (crash), Street Racer (logos), Burning Force (gfx), Fatal Rewind (hang), Sesame Street Counting Cafe
 				if(num < 2) {
 					
-					int lines = (RamVReg->reg[1] & 0x20) | (RamVReg->reg[0] & 0x10);
-					int pints = (RamVReg->pending_ints & lines);
+					INT32 lines = (RamVReg->reg[1] & 0x20) | (RamVReg->reg[0] & 0x10);
+					INT32 pints = (RamVReg->pending_ints & lines);
 					if(pints & 0x20) SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
 					else if(pints & 0x10) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
 					else SekSetIRQLine(0, SEK_IRQSTATUS_NONE);
@@ -934,7 +934,7 @@ void __fastcall MegadriveVideoWriteWord(unsigned int sekAddress, unsigned short 
 	}
 }
 
-void __fastcall MegadriveVideoWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall MegadriveVideoWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	//bprintf(PRINT_NORMAL, _T("Video Attempt to write byte value %x to location %x\n"), byteValue, sekAddress);
 	MegadriveVideoWriteWord(sekAddress, (byteValue << 8) | byteValue);
@@ -942,7 +942,7 @@ void __fastcall MegadriveVideoWriteByte(unsigned int sekAddress, unsigned char b
 
 // -- Z80 Ram Read Write ------------------------------------------
 
-unsigned char __fastcall MegadriveZ80RamReadByte(unsigned int sekAddress)
+UINT8 __fastcall MegadriveZ80RamReadByte(UINT32 sekAddress)
 {
 	if (!Z80HasBus && !MegadriveZ80Reset) {
 		return RamZ80[sekAddress & 0x1fff];
@@ -951,13 +951,13 @@ unsigned char __fastcall MegadriveZ80RamReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall MegadriveZ80RamReadWord(unsigned int sekAddress)
+UINT16 __fastcall MegadriveZ80RamReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Z80Ram Attempt to read word value of location %x\n"), sekAddress);
 	return 0;
 }
 
-void __fastcall MegadriveZ80RamWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall MegadriveZ80RamWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (!Z80HasBus && !MegadriveZ80Reset) {
 		RamZ80[sekAddress & 0x1fff] = byteValue;
@@ -966,7 +966,7 @@ void __fastcall MegadriveZ80RamWriteByte(unsigned int sekAddress, unsigned char 
 	bprintf(PRINT_NORMAL, _T("Z80Ram Attempt to write byte value %x to location %x and didn't have the Bus!\n"), byteValue, sekAddress);
 }
 
-void __fastcall MegadriveZ80RamWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall MegadriveZ80RamWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (!Z80HasBus && !MegadriveZ80Reset) {
 		RamZ80[sekAddress & 0x1fff] = wordValue >> 8;
@@ -979,14 +979,14 @@ void __fastcall MegadriveZ80RamWriteWord(unsigned int sekAddress, unsigned short
 
 // -- I/O Read Write ------------------------------------------
 
-static int PadRead(int i)
+static INT32 PadRead(INT32 i)
 {
-	int pad=0,value=0,TH;
+	INT32 pad=0,value=0,TH;
 	pad = ~(JoyPad->pad[i]);					// Get inverse of pad MXYZ SACB RLDU
 	TH = RamIO[i+1] & 0x40;
 
 	/*if(PicoOpt & 0x20)*/ {					// 6 button gamepad enabled
-		int phase = JoyPad->padTHPhase[i];
+		INT32 phase = JoyPad->padTHPhase[i];
 
 		if(phase == 2 && !TH) {
 			value = (pad&0xc0)>>2;				// ?0SA 0000
@@ -1011,12 +1011,12 @@ end:
 	return value; // will mirror later
 }
 
-unsigned char __fastcall MegadriveIOReadByte(unsigned int sekAddress)
+UINT8 __fastcall MegadriveIOReadByte(UINT32 sekAddress)
 {
 	if (sekAddress > 0xA1001F)
 		bprintf(PRINT_NORMAL, _T("IO Attempt to read byte value of location %x\n"), sekAddress);
 
-	int offset = (sekAddress >> 1) & 0xf;
+	INT32 offset = (sekAddress >> 1) & 0xf;
 	switch (offset) {
 	case 0:	// Get Hardware 
 		return Hardware;
@@ -1031,21 +1031,21 @@ unsigned char __fastcall MegadriveIOReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall MegadriveIOReadWord(unsigned int sekAddress)
+UINT16 __fastcall MegadriveIOReadWord(UINT32 sekAddress)
 {
 	//if (sekAddress > 0xA1001F)
 	//	bprintf(PRINT_NORMAL, _T("IO Attempt to read word value of location %x\n"), sekAddress);
 
-	unsigned char res = MegadriveIOReadByte(sekAddress);
+	UINT8 res = MegadriveIOReadByte(sekAddress);
 	return res | (res << 8);
 }
 
-void __fastcall MegadriveIOWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall MegadriveIOWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (sekAddress > 0xA1001F)
 		bprintf(PRINT_NORMAL, _T("IO Attempt to byte byte value %x to location %x\n"), byteValue, sekAddress);
 
-	int offset = (sekAddress >> 1) & 0xf;
+	INT32 offset = (sekAddress >> 1) & 0xf;
 	// 6-Button Support
 	switch( offset ) {
 	case 1:
@@ -1062,7 +1062,7 @@ void __fastcall MegadriveIOWriteByte(unsigned int sekAddress, unsigned char byte
 	RamIO[offset] = byteValue;
 }
 
-void __fastcall MegadriveIOWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall MegadriveIOWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	//if (sekAddress > 0xA1001F)	
 	//	bprintf(PRINT_NORMAL, _T("IO Attempt to write word value %x to location %x\n"), wordValue, sekAddress);
@@ -1072,9 +1072,9 @@ void __fastcall MegadriveIOWriteWord(unsigned int sekAddress, unsigned short wor
 
 // -- YM2612/YM2612 FM Chip ----------------------------------------------------------
 
-inline static int MegadriveSynchroniseStream(int nSoundRate)
+inline static INT32 MegadriveSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)SekTotalCycles() * nSoundRate / (OSC_NTSC / 7);
+	return (INT64)SekTotalCycles() * nSoundRate / (OSC_NTSC / 7);
 }
 
 inline static double MegadriveGetTime()
@@ -1082,9 +1082,9 @@ inline static double MegadriveGetTime()
 	return (double)SekTotalCycles() / (OSC_NTSC / 7);
 }
 
-inline static int MegadriveSynchroniseStreamPAL(int nSoundRate)
+inline static INT32 MegadriveSynchroniseStreamPAL(INT32 nSoundRate)
 {
-	return (long long)SekTotalCycles() * nSoundRate / (OSC_PAL / 7);
+	return (INT64)SekTotalCycles() * nSoundRate / (OSC_PAL / 7);
 }
 
 inline static double MegadriveGetTimePAL()
@@ -1094,7 +1094,7 @@ inline static double MegadriveGetTimePAL()
 
 // ---------------------------------------------------------------
 
-static int MegadriveResetDo()
+static INT32 MegadriveResetDo()
 {
 	SekOpen(0);
 	SekReset();
@@ -1159,7 +1159,7 @@ static int MegadriveResetDo()
 	return 0;
 }
 
-int __fastcall MegadriveIrqCallback(int irq)
+INT32 __fastcall MegadriveIrqCallback(INT32 irq)
 {
 	switch ( irq ) {
 	case 4:	RamVReg->pending_ints  =  0x00; break;
@@ -1172,7 +1172,7 @@ int __fastcall MegadriveIrqCallback(int irq)
 // Z80 Read/Write
 // ----------------------------------------------------------------
 
-unsigned char __fastcall MegadriveZ80PortRead(unsigned short a)
+UINT8 __fastcall MegadriveZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -1185,7 +1185,7 @@ unsigned char __fastcall MegadriveZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall MegadriveZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall MegadriveZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1196,14 +1196,14 @@ void __fastcall MegadriveZ80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall MegadriveZ80ProgRead(unsigned short a)
+UINT8 __fastcall MegadriveZ80ProgRead(UINT16 a)
 {
 	if (a >= 0x6100 && a <= 0x7eff) {
 		return 0xff;
 	}
 	
 	if (a >= 0x8000) {
-		unsigned int addr68k = RamMisc->Bank68k;
+		UINT32 addr68k = RamMisc->Bank68k;
 		addr68k += a & 0x7fff;
 		if (addr68k <= 0x3fffff) return RomMain[addr68k ^ 1];
 		
@@ -1229,7 +1229,7 @@ unsigned char __fastcall MegadriveZ80ProgRead(unsigned short a)
 UINT32 Z80BankPartial = 0;
 UINT32 Z80BankPos = 0;
 
-void __fastcall MegadriveZ80ProgWrite(unsigned short a, unsigned char d)
+void __fastcall MegadriveZ80ProgWrite(UINT16 a, UINT8 d)
 {
 	if (a == 0x6000 || a == 0x6001) {
 		Z80BankPartial |= (d & 0x01) << 23;
@@ -1246,7 +1246,7 @@ void __fastcall MegadriveZ80ProgWrite(unsigned short a, unsigned char d)
 	}
 	
 	if (a >= 0x8000) {
-		unsigned int addr68k = RamMisc->Bank68k;
+		UINT32 addr68k = RamMisc->Bank68k;
 		addr68k += a & 0x7fff;
 		
 		if (addr68k <= 0x3fffff) return;
@@ -1258,7 +1258,7 @@ void __fastcall MegadriveZ80ProgWrite(unsigned short a, unsigned char d)
 		
 		if ((addr68k >= 0xe00000) && (addr68k <= 0xffffff)) {
 			addr68k &=0xffff;
-			unsigned short *Ram = (unsigned short*)Ram68K;
+			UINT16 *Ram = (UINT16*)Ram68K;
 			if (addr68k & 0x01) {
 				Ram[addr68k >> 1] = (Ram[addr68k >> 1] & 0xff00) | d;
 			} else {
@@ -1306,14 +1306,14 @@ void __fastcall MegadriveZ80ProgWrite(unsigned short a, unsigned char d)
 	}
 }
 
-static int MegadriveLoadRoms(bool bLoad)
+static INT32 MegadriveLoadRoms(bool bLoad)
 {
 	struct BurnRomInfo ri;
 	ri.nType = 0;
 	ri.nLen = 0;
-	int nOffset = -1;
-	unsigned int i;
-	int nRet = 0;
+	INT32 nOffset = -1;
+	UINT32 i;
+	INT32 nRet = 0;
 	
 	if (!bLoad) {
 		do {
@@ -1328,7 +1328,7 @@ static int MegadriveLoadRoms(bool bLoad)
 	}
 	
 	if (bLoad) {
-		int Offset = 0;
+		INT32 Offset = 0;
 		
 		for (i = 0; i < RomNum; i++) {
 			BurnDrvGetRomInfo(&ri, i);
@@ -1375,19 +1375,19 @@ static int MegadriveLoadRoms(bool bLoad)
 
 // Custom Cartridge Mapping
 
-unsigned char __fastcall JCartCtrlReadByte(unsigned int sekAddress)
+UINT8 __fastcall JCartCtrlReadByte(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("JCartCtrlRead Byte %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned short __fastcall JCartCtrlReadWord(unsigned int /*sekAddress*/)
+UINT16 __fastcall JCartCtrlReadWord(UINT32 /*sekAddress*/)
 {
 	UINT16 retData = 0;
 	
-	unsigned char JPad3 = ~(JoyPad->pad[2] & 0xff);
-	unsigned char JPad4 = ~(JoyPad->pad[3] & 0xff);
+	UINT8 JPad3 = ~(JoyPad->pad[2] & 0xff);
+	UINT8 JPad4 = ~(JoyPad->pad[3] & 0xff);
 	
 	if (RamMisc->JCartIOData[0] & 0x40) {
 		retData = (RamMisc->JCartIOData[0] & 0x40) | JPad3 | (JPad4 << 8);
@@ -1399,18 +1399,18 @@ unsigned short __fastcall JCartCtrlReadWord(unsigned int /*sekAddress*/)
 	return retData;
 }
 
-void __fastcall JCartCtrlWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall JCartCtrlWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	bprintf(PRINT_NORMAL, _T("JCartCtrlWrite byte  %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall JCartCtrlWriteWord(unsigned int /*sekAddress*/, unsigned short wordValue)
+void __fastcall JCartCtrlWriteWord(UINT32 /*sekAddress*/, UINT16 wordValue)
 {
 	RamMisc->JCartIOData[0] = (wordValue & 1) << 6;
 	RamMisc->JCartIOData[1] = (wordValue & 1) << 6;
 }
 
-void __fastcall Ssf2BankWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall Ssf2BankWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0xa130f1: {
@@ -1455,12 +1455,12 @@ void __fastcall Ssf2BankWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}	
 }
 
-unsigned char __fastcall LK3AltProtReadByte(unsigned int sekAddress)
+UINT8 __fastcall LK3AltProtReadByte(UINT32 sekAddress)
 {
-	int Offset = (sekAddress - 0x600000) >> 1;
+	INT32 Offset = (sekAddress - 0x600000) >> 1;
 	Offset &= 0x07;
 	
-	unsigned char retData = 0;
+	UINT8 retData = 0;
 	
 	switch (Offset) {
 		case 0x02: {
@@ -1494,16 +1494,16 @@ unsigned char __fastcall LK3AltProtReadByte(unsigned int sekAddress)
 	return retData;
 }
 
-unsigned short __fastcall LK3AltProtReadWord(unsigned int sekAddress)
+UINT16 __fastcall LK3AltProtReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("LK3AltProt Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-void __fastcall LK3AltProtWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall LK3AltProtWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
-	int Offset = (sekAddress - 0x600000) >> 1;
+	INT32 Offset = (sekAddress - 0x600000) >> 1;
 	Offset &= 0x07;
 	
 	switch (Offset) {
@@ -1519,14 +1519,14 @@ void __fastcall LK3AltProtWriteByte(unsigned int sekAddress, unsigned char byteV
 //	bprintf(PRINT_NORMAL, _T("LK3AltProt write byte  %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall LK3AltProtWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall LK3AltProtWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("LK3AltProt write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-void __fastcall LK3AltBankWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall LK3AltBankWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
-	int Offset = (sekAddress - 0x700000) >> 1;
+	INT32 Offset = (sekAddress - 0x700000) >> 1;
 	Offset &= 0x07;
 	
 	if (Offset == 0) {
@@ -1537,58 +1537,58 @@ void __fastcall LK3AltBankWriteByte(unsigned int sekAddress, unsigned char byteV
 	bprintf(PRINT_NORMAL, _T("LK3AltBank write byte  %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall LK3AltBankWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall LK3AltBankWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("LK3AltBank write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-unsigned char __fastcall RedclifProtReadByte(unsigned int /*sekAddress*/)
+UINT8 __fastcall RedclifProtReadByte(UINT32 /*sekAddress*/)
 {
-	return (unsigned char)-0x56;
+	return (UINT8)-0x56;
 }
 
-unsigned short __fastcall RedclifProtReadWord(unsigned int sekAddress)
+UINT16 __fastcall RedclifProtReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("RedclifeProt Read Word %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned char __fastcall RedclifProt2ReadByte(unsigned int /*sekAddress*/)
+UINT8 __fastcall RedclifProt2ReadByte(UINT32 /*sekAddress*/)
 {
 	return 0x55;
 }
 
-unsigned short __fastcall RedclifProt2ReadWord(unsigned int sekAddress)
+UINT16 __fastcall RedclifProt2ReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("RedclifeProt2 Read Word %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned char __fastcall RadicaBankSelectReadByte(unsigned int sekAddress)
+UINT8 __fastcall RadicaBankSelectReadByte(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("RadicaBankSelect Read Byte %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned short __fastcall RadicaBankSelectReadWord(unsigned int sekAddress)
+UINT16 __fastcall RadicaBankSelectReadWord(UINT32 sekAddress)
 {
-	int Bank = ((sekAddress - 0xa13000) >> 1) & 0x3f;
+	INT32 Bank = ((sekAddress - 0xa13000) >> 1) & 0x3f;
 	memcpy(RomMain, RomMain + 0x400000 + (Bank * 0x10000), 0x400000);
 	
 	return 0;
 }
 
-unsigned char __fastcall Kof99A13000ReadByte(unsigned int sekAddress)
+UINT8 __fastcall Kof99A13000ReadByte(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Kof99A13000 Read Byte %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned short __fastcall Kof99A13000ReadWord(unsigned int sekAddress)
+UINT16 __fastcall Kof99A13000ReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0xa13000: return 0x00;
@@ -1602,7 +1602,7 @@ unsigned short __fastcall Kof99A13000ReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned char __fastcall SoulbladReadByte(unsigned int sekAddress)
+UINT8 __fastcall SoulbladReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x400002: return 0x98;
@@ -1616,60 +1616,60 @@ unsigned char __fastcall SoulbladReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall SoulbladReadWord(unsigned int sekAddress)
+UINT16 __fastcall SoulbladReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Soulblad Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-unsigned char __fastcall MjloverProt1ReadByte(unsigned int /*sekAddress*/)
+UINT8 __fastcall MjloverProt1ReadByte(UINT32 /*sekAddress*/)
 {
 	return 0x90;
 }
 
-unsigned short __fastcall MjloverProt1ReadWord(unsigned int sekAddress)
+UINT16 __fastcall MjloverProt1ReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("MjloverProt1 Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-unsigned char __fastcall MjloverProt2ReadByte(unsigned int /*sekAddress*/)
+UINT8 __fastcall MjloverProt2ReadByte(UINT32 /*sekAddress*/)
 {
 	return 0xd3;
 }
 
-unsigned short __fastcall MjloverProt2ReadWord(unsigned int sekAddress)
+UINT16 __fastcall MjloverProt2ReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("MjloverProt2 Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-unsigned char __fastcall SquirrelKingExtraReadByte(unsigned int /*sekAddress*/)
+UINT8 __fastcall SquirrelKingExtraReadByte(UINT32 /*sekAddress*/)
 {
 	return RamMisc->SquirrelkingExtra;
 }
 
-unsigned short __fastcall SquirrelKingExtraReadWord(unsigned int sekAddress)
+UINT16 __fastcall SquirrelKingExtraReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("SquirrelKingExtra Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-void __fastcall SquirrelKingExtraWriteByte(unsigned int /*sekAddress*/, unsigned char byteValue)
+void __fastcall SquirrelKingExtraWriteByte(UINT32 /*sekAddress*/, UINT8 byteValue)
 {
 	RamMisc->SquirrelkingExtra = byteValue;
 }
 
-void __fastcall SquirrelKingExtraWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall SquirrelKingExtraWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("SquirrelKingExtra write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-unsigned char __fastcall SmouseProtReadByte(unsigned int sekAddress)
+UINT8 __fastcall SmouseProtReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x400000: return 0x55;
@@ -1681,50 +1681,50 @@ unsigned char __fastcall SmouseProtReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall SmouseProtReadWord(unsigned int sekAddress)
+UINT16 __fastcall SmouseProtReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("SmouseProt Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-unsigned char __fastcall SmbProtReadByte(unsigned int sekAddress)
+UINT8 __fastcall SmbProtReadByte(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Smbprot Read Byte %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned short __fastcall SmbProtReadWord(unsigned int /*sekAddress*/)
+UINT16 __fastcall SmbProtReadWord(UINT32 /*sekAddress*/)
 {
 	return 0x0c;
 }
 
-unsigned char __fastcall Smb2ProtReadByte(unsigned int sekAddress)
+UINT8 __fastcall Smb2ProtReadByte(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Smb2Prot Read Byte %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned short __fastcall Smb2ProtReadWord(unsigned int /*sekAddress*/)
+UINT16 __fastcall Smb2ProtReadWord(UINT32 /*sekAddress*/)
 {
 	return 0x0a;
 }
 
-void __fastcall KaijuBankWriteByte(unsigned int /*sekAddress*/, unsigned char byteValue)
+void __fastcall KaijuBankWriteByte(UINT32 /*sekAddress*/, UINT8 byteValue)
 {
 	memcpy(RomMain + 0x000000, RomMain + 0x400000 + (byteValue & 0x7f) * 0x8000, 0x8000);
 }
 
-void __fastcall KaijuBankWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall KaijuBankWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("KaijuBank write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-unsigned char __fastcall Chinfi3ProtReadByte(unsigned int /*sekAddress*/)
+UINT8 __fastcall Chinfi3ProtReadByte(UINT32 /*sekAddress*/)
 {
-	unsigned char retDat = 0;
+	UINT8 retDat = 0;
 	
 	if (SekGetPC(0) == 0x01782) // makes 'VS' screen appear
 	{
@@ -1768,18 +1768,18 @@ unsigned char __fastcall Chinfi3ProtReadByte(unsigned int /*sekAddress*/)
 	return 0;
 }
 
-unsigned short __fastcall Chinfi3ProtReadWord(unsigned int sekAddress)
+UINT16 __fastcall Chinfi3ProtReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Chinfi3Prot Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-void __fastcall Chinfi3BankWriteByte(unsigned int /*sekAddress*/, unsigned char byteValue)
+void __fastcall Chinfi3BankWriteByte(UINT32 /*sekAddress*/, UINT8 byteValue)
 {
 	if (byteValue == 0xf1) // *hit player
 	{
-		int x;
+		INT32 x;
 		for (x = 0; x < 0x100000; x += 0x10000)
 		{
 			memcpy(RomMain + x, RomMain + 0x410000, 0x10000);
@@ -1787,7 +1787,7 @@ void __fastcall Chinfi3BankWriteByte(unsigned int /*sekAddress*/, unsigned char 
 	}
 	else if (byteValue == 0xd7) // title screen..
 	{
-		int x;
+		INT32 x;
 		for (x = 0; x < 0x100000; x += 0x10000)
 		{
 			memcpy(RomMain + x, RomMain + 0x470000, 0x10000);
@@ -1795,7 +1795,7 @@ void __fastcall Chinfi3BankWriteByte(unsigned int /*sekAddress*/, unsigned char 
 	}
 	else if (byteValue == 0xd3) // character hits floor
 	{
-		int x;
+		INT32 x;
 		for (x = 0; x < 0x100000; x += 0x10000)
 		{
 			memcpy(RomMain + x, RomMain + 0x430000, 0x10000);
@@ -1803,7 +1803,7 @@ void __fastcall Chinfi3BankWriteByte(unsigned int /*sekAddress*/, unsigned char 
 	}
 	else if (byteValue == 0x00)
 	{
-		int x;
+		INT32 x;
 		for (x = 0; x < 0x100000; x += 0x10000)
 		{
 			memcpy(RomMain + x, RomMain + 0x400000 + x, 0x10000);
@@ -1811,12 +1811,12 @@ void __fastcall Chinfi3BankWriteByte(unsigned int /*sekAddress*/, unsigned char 
 	}
 }
 
-void __fastcall Chinfi3BankWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall Chinfi3BankWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("Chinfi3Bank write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-unsigned char __fastcall Lionk2ProtReadByte(unsigned int sekAddress)
+UINT8 __fastcall Lionk2ProtReadByte(UINT32 sekAddress)
 {
 	switch(sekAddress) {
 		case 0x400002: {
@@ -1833,14 +1833,14 @@ unsigned char __fastcall Lionk2ProtReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall Lionk2ProtReadWord(unsigned int sekAddress)
+UINT16 __fastcall Lionk2ProtReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Lion2Prot Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-void __fastcall Lionk2ProtWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall Lionk2ProtWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x400000: {
@@ -1857,24 +1857,24 @@ void __fastcall Lionk2ProtWriteByte(unsigned int sekAddress, unsigned char byteV
 	bprintf(PRINT_NORMAL, _T("Lion2Prot write byte  %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall Lionk2ProtWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall Lionk2ProtWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("Lion2Prot write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-unsigned char __fastcall BuglExtraReadByte(unsigned int sekAddress)
+UINT8 __fastcall BuglExtraReadByte(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("BuglExtra Read Byte %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned short __fastcall BuglExtraReadWord(unsigned int /*sekAddress*/)
+UINT16 __fastcall BuglExtraReadWord(UINT32 /*sekAddress*/)
 {
 	return 0x28;
 }
 
-unsigned char __fastcall Elfwor400000ReadByte(unsigned int sekAddress)
+UINT8 __fastcall Elfwor400000ReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x400000: return 0x55;
@@ -1888,26 +1888,26 @@ unsigned char __fastcall Elfwor400000ReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall Elfwor400000ReadWord(unsigned int sekAddress)
+UINT16 __fastcall Elfwor400000ReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Elfwor400000 Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-unsigned char __fastcall RockmanX3ExtraReadByte(unsigned int sekAddress)
+UINT8 __fastcall RockmanX3ExtraReadByte(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("RockmanX3Extra Read Byte %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned short __fastcall RockmanX3ExtraReadWord(unsigned int /*sekAddress*/)
+UINT16 __fastcall RockmanX3ExtraReadWord(UINT32 /*sekAddress*/)
 {
 	return 0x0c;
 }
 
-unsigned char __fastcall SbubExtraReadByte(unsigned int sekAddress)
+UINT8 __fastcall SbubExtraReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x400000: return 0x55;
@@ -1919,21 +1919,21 @@ unsigned char __fastcall SbubExtraReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall SbubExtraReadWord(unsigned int sekAddress)
+UINT16 __fastcall SbubExtraReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("SbubExtra Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-unsigned char __fastcall Kof98ReadByte(unsigned int sekAddress)
+UINT8 __fastcall Kof98ReadByte(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Kof98 Read Byte %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned short __fastcall Kof98ReadWord(unsigned int sekAddress)
+UINT16 __fastcall Kof98ReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x480000: return 0xaa00;
@@ -1949,11 +1949,11 @@ unsigned short __fastcall Kof98ReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall RealtecWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall RealtecWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x400000: {
-			int BankData = (byteValue >> 9) & 0x7;
+			INT32 BankData = (byteValue >> 9) & 0x7;
 
 			RamMisc->RealtecBankAddr = (RamMisc->RealtecBankAddr & 0x7) | BankData << 3;
 
@@ -1969,7 +1969,7 @@ void __fastcall RealtecWriteByte(unsigned int sekAddress, unsigned char byteValu
 		}
 		
 		case 0x404000: {
-			int BankData = (byteValue >> 8) & 0x3;
+			INT32 BankData = (byteValue >> 8) & 0x3;
 
 			RamMisc->RealtecBankAddr = (RamMisc->RealtecBankAddr & 0xf8) | BankData;
 
@@ -1982,60 +1982,60 @@ void __fastcall RealtecWriteByte(unsigned int sekAddress, unsigned char byteValu
 	bprintf(PRINT_NORMAL, _T("Realtec write byte  %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall RealtecWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall RealtecWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("Realtec write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-void __fastcall Sup19in1BankWriteByte(unsigned int sekAddress, unsigned char /*byteValue*/)
+void __fastcall Sup19in1BankWriteByte(UINT32 sekAddress, UINT8 /*byteValue*/)
 {
-	int Offset = (sekAddress - 0xa13000) >> 1;
+	INT32 Offset = (sekAddress - 0xa13000) >> 1;
 	
 	memcpy(RomMain + 0x000000, RomMain + 0x400000 + ((Offset << 1) * 0x10000), 0x80000);
 }
 
-void __fastcall Sup19in1BankWriteWord(unsigned int sekAddress, unsigned short /*wordValue*/)
+void __fastcall Sup19in1BankWriteWord(UINT32 sekAddress, UINT16 /*wordValue*/)
 {
-	int Offset = (sekAddress - 0xa13000) >> 1;
+	INT32 Offset = (sekAddress - 0xa13000) >> 1;
 	
 	memcpy(RomMain + 0x000000, RomMain + 0x400000 + ((Offset << 1) * 0x10000), 0x80000);
 }
 
-void __fastcall Mc12in1BankWriteByte(unsigned int sekAddress, unsigned char /*byteValue*/)
+void __fastcall Mc12in1BankWriteByte(UINT32 sekAddress, UINT8 /*byteValue*/)
 {
-	int Offset = (sekAddress - 0xa13000) >> 1;
+	INT32 Offset = (sekAddress - 0xa13000) >> 1;
 	memcpy(RomMain + 0x000000, OriginalRom + ((Offset & 0x3f) << 17), 0x100000);
 }
 
-void __fastcall Mc12in1BankWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall Mc12in1BankWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("Mc12in1Bank write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-unsigned char __fastcall TopfigReadByte(unsigned int sekAddress)
+UINT8 __fastcall TopfigReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x645b45: return 0x9f;
 		
 		case 0x6bd295: {
-			static int x = -1;
+			static INT32 x = -1;
 
 			if (SekGetPC(0) == 0x1771a2) {
 				return 0x50;
 			} else {
 				x++;
-				return (unsigned char)x;
+				return (UINT8)x;
 			}
 		}
 		
 		case 0x6f5345: {
-			static int x = -1;
+			static INT32 x = -1;
 
 			if (SekGetPC(0) == 0x4C94E) {
 				return SekDbgGetRegister(SEK_REG_D0) & 0xff;
 			} else {
 				x++;
-				return (unsigned char)x;
+				return (UINT8)x;
 			}
 		}
 	}
@@ -2045,14 +2045,14 @@ unsigned char __fastcall TopfigReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall TopfigReadWord(unsigned int sekAddress)
+UINT16 __fastcall TopfigReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Topfig Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-void __fastcall TopfigWriteByte(unsigned int /*sekAddress*/, unsigned char byteValue)
+void __fastcall TopfigWriteByte(UINT32 /*sekAddress*/, UINT8 byteValue)
 {
 	if (byteValue == 0x002a)
 	{
@@ -2075,7 +2075,7 @@ void __fastcall TopfigWriteByte(unsigned int /*sekAddress*/, unsigned char byteV
 	}
 }
 
-void __fastcall TopfigWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall TopfigWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("Topfig write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
@@ -2093,7 +2093,7 @@ static void SetupCustomCartridgeMappers()
 	}
 	
 	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_SSF2) {
-		OriginalRom = (unsigned char*)malloc(0x500000);
+		OriginalRom = (UINT8*)malloc(0x500000);
 		memcpy(OriginalRom, RomMain, 0x500000);
 		
 		memcpy(RomMain + 0x800000, OriginalRom + 0x400000, 0x100000);
@@ -2110,7 +2110,7 @@ static void SetupCustomCartridgeMappers()
 		RamMisc->L3AltPDat = 0;
 		RamMisc->L3AltPCmd = 0;
 		
-		OriginalRom = (unsigned char*)malloc(0x200000);
+		OriginalRom = (UINT8*)malloc(0x200000);
 		memcpy(OriginalRom, RomMain, 0x200000);
 		
 		memcpy(RomMain + 0x000000, OriginalRom + 0x000000, 0x200000);
@@ -2132,7 +2132,7 @@ static void SetupCustomCartridgeMappers()
 		RamMisc->L3AltPDat = 0;
 		RamMisc->L3AltPCmd = 0;
 		
-		OriginalRom = (unsigned char*)malloc(0x300000);
+		OriginalRom = (UINT8*)malloc(0x300000);
 		memcpy(OriginalRom, RomMain, 0x300000);
 		
 		memcpy(RomMain + 0x000000, OriginalRom + 0x000000, 0x300000);
@@ -2151,9 +2151,9 @@ static void SetupCustomCartridgeMappers()
 	}
 	
 	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_REDCL_EN) {
-		OriginalRom = (unsigned char*)malloc(0x200005);
+		OriginalRom = (UINT8*)malloc(0x200005);
 		memcpy(OriginalRom, RomMain, 0x200005);
-		for (unsigned int i = 0; i < RomSize; i++) {
+		for (UINT32 i = 0; i < RomSize; i++) {
 			OriginalRom[i] ^= 0x40;
 		}
 		
@@ -2170,7 +2170,7 @@ static void SetupCustomCartridgeMappers()
 	}
 	
 	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_RADICA) {
-		OriginalRom = (unsigned char*)malloc(RomSize);
+		OriginalRom = (UINT8*)malloc(RomSize);
 		memcpy(OriginalRom, RomMain, RomSize);
 		
 		memcpy(RomMain + 0x000000, OriginalRom + 0x000000, 0x400000);
@@ -2246,7 +2246,7 @@ static void SetupCustomCartridgeMappers()
 	}
 	
 	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_KAIJU) {
-		OriginalRom = (unsigned char*)malloc(RomSize);
+		OriginalRom = (UINT8*)malloc(RomSize);
 		memcpy(OriginalRom, RomMain, RomSize);
 		
 		memcpy(RomMain + 0x400000, OriginalRom, 0x200000);
@@ -2261,7 +2261,7 @@ static void SetupCustomCartridgeMappers()
 	}
 	
 	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_CHINFIGHT3) {
-		OriginalRom = (unsigned char*)malloc(RomSize);
+		OriginalRom = (UINT8*)malloc(RomSize);
 		memcpy(OriginalRom, RomMain, RomSize);
 		
 		memcpy(RomMain + 0x400000, OriginalRom + 0x000000, 0x200000);
@@ -2335,12 +2335,12 @@ static void SetupCustomCartridgeMappers()
 		RamMisc->RealtecBankAddr = 0;
 		RamMisc->RealtecBankSize = 0;
 		
-		OriginalRom = (unsigned char*)malloc(RomSize);
+		OriginalRom = (UINT8*)malloc(RomSize);
 		memcpy(OriginalRom, RomMain, RomSize);
 		
 		memcpy(RomMain + 0x400000, OriginalRom + 0x000000, 0x080000);
 		
-		for (int i = 0; i < 0x400000; i += 0x2000) {
+		for (INT32 i = 0; i < 0x400000; i += 0x2000) {
 			memcpy(RomMain + i, OriginalRom + 0x7e000, 0x2000);
 		}
 		
@@ -2352,7 +2352,7 @@ static void SetupCustomCartridgeMappers()
 	}
 	
 	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_MC_SUP19IN1) {
-		OriginalRom = (unsigned char*)malloc(RomSize);
+		OriginalRom = (UINT8*)malloc(RomSize);
 		memcpy(OriginalRom, RomMain, RomSize);
 		
 		memcpy(RomMain + 0x400000, OriginalRom + 0x000000, 0x400000);
@@ -2365,7 +2365,7 @@ static void SetupCustomCartridgeMappers()
 	}
 	
 	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_MC_SUP15IN1) {
-		OriginalRom = (unsigned char*)malloc(RomSize);
+		OriginalRom = (UINT8*)malloc(RomSize);
 		memcpy(OriginalRom, RomMain, RomSize);
 		
 		memcpy(RomMain + 0x400000, OriginalRom + 0x000000, 0x200000);
@@ -2378,7 +2378,7 @@ static void SetupCustomCartridgeMappers()
 	}
 	
 	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_12IN1) {
-		OriginalRom = (unsigned char*)malloc(RomSize);
+		OriginalRom = (UINT8*)malloc(RomSize);
 		memcpy(OriginalRom, RomMain, RomSize);
 		
 		memcpy(RomMain + 0x000000, OriginalRom + 0x000000, 0x200000);
@@ -2391,7 +2391,7 @@ static void SetupCustomCartridgeMappers()
 	}
 	
 	if ((BurnDrvGetHardwareCode() & 0xff) == HARDWARE_SEGA_MEGADRIVE_PCB_TOPFIGHTER) {
-		OriginalRom = (unsigned char*)malloc(RomSize);
+		OriginalRom = (UINT8*)malloc(RomSize);
 		memcpy(OriginalRom, RomMain, RomSize);
 		
 		memcpy(RomMain + 0x000000, OriginalRom + 0x000000, 0x200000);
@@ -2440,7 +2440,7 @@ static void SetupCustomCartridgeMappers()
 
 // SRAM and EEPROM Handling
 
-unsigned char __fastcall MegadriveSRAMReadByte(unsigned int sekAddress)
+UINT8 __fastcall MegadriveSRAMReadByte(UINT32 sekAddress)
 {
 	if (RamMisc->SRamActive) {
 		return SRam[(sekAddress - RamMisc->SRamStart) ^ 1];
@@ -2449,7 +2449,7 @@ unsigned char __fastcall MegadriveSRAMReadByte(unsigned int sekAddress)
 	}
 }
 
-unsigned short __fastcall MegadriveSRAMReadWord(unsigned int sekAddress)
+UINT16 __fastcall MegadriveSRAMReadWord(UINT32 sekAddress)
 {
 	if (RamMisc->SRamActive) {
 		UINT16 *Ram = (UINT16*)SRam;
@@ -2460,7 +2460,7 @@ unsigned short __fastcall MegadriveSRAMReadWord(unsigned int sekAddress)
 	}
 }
 
-void __fastcall MegadriveSRAMWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall MegadriveSRAMWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (RamMisc->SRamActive) {
 		if (!RamMisc->SRamReadOnly) {
@@ -2470,7 +2470,7 @@ void __fastcall MegadriveSRAMWriteByte(unsigned int sekAddress, unsigned char by
 	}
 }
 
-void __fastcall MegadriveSRAMWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall MegadriveSRAMWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (RamMisc->SRamActive) {
 		if (!RamMisc->SRamReadOnly) {
@@ -2499,7 +2499,7 @@ static void InstallSRAMHandlers(bool MaskAddr)
 	RamMisc->SRamHandlersInstalled = 1;	
 }
 
-unsigned char __fastcall Megadrive6658ARegReadByte(unsigned int sekAddress)
+UINT8 __fastcall Megadrive6658ARegReadByte(UINT32 sekAddress)
 {
 	if (sekAddress & 1) return RamMisc->SRamActive;
 	
@@ -2508,14 +2508,14 @@ unsigned char __fastcall Megadrive6658ARegReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall Megadrive6658ARegReadWord(unsigned int sekAddress)
+UINT16 __fastcall Megadrive6658ARegReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Megadrive6658AReg Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-void __fastcall Megadrive6658ARegWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall Megadrive6658ARegWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (sekAddress & 1) {
 		if (byteValue == 1) {
@@ -2532,12 +2532,12 @@ void __fastcall Megadrive6658ARegWriteByte(unsigned int sekAddress, unsigned cha
 	bprintf(PRINT_NORMAL, _T("6658A Reg write byte  %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall Megadrive6658ARegWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall Megadrive6658ARegWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("6658A Reg write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-unsigned char __fastcall WboyVEEPROMReadByte(unsigned int sekAddress)
+UINT8 __fastcall WboyVEEPROMReadByte(UINT32 sekAddress)
 {
 	if (sekAddress & 1) return ~RamMisc->I2CMem & 1;
 	
@@ -2546,14 +2546,14 @@ unsigned char __fastcall WboyVEEPROMReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall WboyVEEPROMReadWord(unsigned int sekAddress)
+UINT16 __fastcall WboyVEEPROMReadWord(UINT32 sekAddress)
 {	
 	bprintf(PRINT_NORMAL, _T("WboyVEEPROM Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-void __fastcall WboyVEEPROMWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall WboyVEEPROMWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (sekAddress & 1) {	
 		RamMisc->I2CClk = (byteValue & 0x0002) >> 1;
@@ -2564,35 +2564,35 @@ void __fastcall WboyVEEPROMWriteByte(unsigned int sekAddress, unsigned char byte
 	bprintf(PRINT_NORMAL, _T("WboyVEEPROM write byte value %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall WboyVEEPROMWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall WboyVEEPROMWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("WboyVEEPROM write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-unsigned char __fastcall NbajamEEPROMReadByte(unsigned int sekAddress)
+UINT8 __fastcall NbajamEEPROMReadByte(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Nbajam Read Byte %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned short __fastcall NbajamEEPROMReadWord(unsigned int /*sekAddress*/)
+UINT16 __fastcall NbajamEEPROMReadWord(UINT32 /*sekAddress*/)
 {
 	return RamMisc->I2CMem & 1;
 }
 
-void __fastcall NbajamEEPROMWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall NbajamEEPROMWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	bprintf(PRINT_NORMAL, _T("Nbajam write byte value %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall NbajamEEPROMWriteWord(unsigned int /*sekAddress*/, unsigned short wordValue)
+void __fastcall NbajamEEPROMWriteWord(UINT32 /*sekAddress*/, UINT16 wordValue)
 {
 	RamMisc->I2CClk = (wordValue & 0x0002) >> 1;
 	RamMisc->I2CMem = (wordValue & 0x0001);
 }
 
-unsigned char __fastcall NbajamteEEPROMReadByte(unsigned int sekAddress)
+UINT8 __fastcall NbajamteEEPROMReadByte(UINT32 sekAddress)
 {
 	if (sekAddress & 1) return RamMisc->I2CMem & 1;
 	
@@ -2601,14 +2601,14 @@ unsigned char __fastcall NbajamteEEPROMReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall NbajamteEEPROMReadWord(unsigned int sekAddress)
+UINT16 __fastcall NbajamteEEPROMReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Nbajamte Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-void __fastcall NbajamteEEPROMWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall NbajamteEEPROMWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (sekAddress & 1) {
 //		RamMisc->I2CClk = (wordValue & 0x0002) >> 1;
@@ -2619,35 +2619,35 @@ void __fastcall NbajamteEEPROMWriteByte(unsigned int sekAddress, unsigned char b
 	bprintf(PRINT_NORMAL, _T("Nbajamte write byte value %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall NbajamteEEPROMWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall NbajamteEEPROMWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("Nbajamte write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-unsigned char __fastcall EANhlpaEEPROMReadByte(unsigned int sekAddress)
+UINT8 __fastcall EANhlpaEEPROMReadByte(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("EANhlpa Read Byte %x\n"), sekAddress);
 	
 	return 0;
 }
 
-unsigned short __fastcall EANhlpaEEPROMReadWord(unsigned int /*sekAddress*/)
+UINT16 __fastcall EANhlpaEEPROMReadWord(UINT32 /*sekAddress*/)
 {
 	return (RamMisc->I2CMem & 1) << 7;
 }
 
-void __fastcall EANhlpaEEPROMWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall EANhlpaEEPROMWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	bprintf(PRINT_NORMAL, _T("EANhlpa write byte value %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall EANhlpaEEPROMWriteWord(unsigned int /*sekAddress*/, unsigned short wordValue)
+void __fastcall EANhlpaEEPROMWriteWord(UINT32 /*sekAddress*/, UINT16 wordValue)
 {
 	RamMisc->I2CClk = ((wordValue & 0x0040) >> 6);
 	RamMisc->I2CMem = ((wordValue & 0x0080) >> 7);
 }
 
-unsigned char __fastcall CodemastersEEPROMReadByte(unsigned int sekAddress)
+UINT8 __fastcall CodemastersEEPROMReadByte(UINT32 sekAddress)
 {
 	if (sekAddress & 1) return RamMisc->I2CMem & 1;
 	
@@ -2656,14 +2656,14 @@ unsigned char __fastcall CodemastersEEPROMReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall CodemastersEEPROMReadWord(unsigned int sekAddress)
+UINT16 __fastcall CodemastersEEPROMReadWord(UINT32 sekAddress)
 {
 	bprintf(PRINT_NORMAL, _T("Codemasters Read Word %x\n"), sekAddress);
 
 	return 0;
 }
 
-void __fastcall CodemastersEEPROMWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall CodemastersEEPROMWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (sekAddress & 1) {
 		RamMisc->I2CClk = (byteValue & 0x0002) >> 1;
@@ -2678,17 +2678,17 @@ void __fastcall CodemastersEEPROMWriteByte(unsigned int sekAddress, unsigned cha
 	bprintf(PRINT_NORMAL, _T("Codemasters write byte value %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall CodemastersEEPROMWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall CodemastersEEPROMWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("Codemasters write word value %04x to location %08x\n"), wordValue, sekAddress);
 }
 
-void __fastcall MegadriveSRAMToggleWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall MegadriveSRAMToggleWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	bprintf(PRINT_NORMAL, _T("SRam Toggle byte  %02x to location %08x\n"), byteValue, sekAddress);
 }
 
-void __fastcall MegadriveSRAMToggleWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall MegadriveSRAMToggleWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	bprintf(PRINT_NORMAL, _T("SRam Toggle word value %04x to location %08x\n"), wordValue, sekAddress);
 }
@@ -2866,12 +2866,12 @@ static void MegadriveSetupSRAM()
 	}
 }
 
-int MegadriveInit()
+INT32 MegadriveInit()
 {
 	Mem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();	
 
@@ -2954,14 +2954,14 @@ int MegadriveInit()
 	
 	if (MegadriveCallback) MegadriveCallback();
 	
-	pBurnDrvPalette = (unsigned int*)MegadriveCurPal;
+	pBurnDrvPalette = (UINT32*)MegadriveCurPal;
 	
 	MegadriveResetDo();	
 
 	return 0;
 }
 
-int MegadriveExit()
+INT32 MegadriveExit()
 {
 	SekExit();
 	ZetExit();
@@ -3001,43 +3001,43 @@ int MegadriveExit()
 // Megadrive Draw
 //---------------------------------------------------------------
 
-static int TileNorm(int sx,int addr,int pal)
+static INT32 TileNorm(INT32 sx,INT32 addr,INT32 pal)
 {
-	unsigned char *pd = HighCol+sx;
-	unsigned int pack=0; 
-	unsigned int t=0;
+	UINT8 *pd = HighCol+sx;
+	UINT32 pack=0; 
+	UINT32 t=0;
 
-	pack = *(unsigned int *)(RamVid + addr); // Get 8 pixels
+	pack = *(UINT32 *)(RamVid + addr); // Get 8 pixels
 	if (pack) {
-		t=pack&0x0000f000; if (t) pd[0]=(unsigned char)(pal|(t>>12));
-		t=pack&0x00000f00; if (t) pd[1]=(unsigned char)(pal|(t>> 8));
-		t=pack&0x000000f0; if (t) pd[2]=(unsigned char)(pal|(t>> 4));
-		t=pack&0x0000000f; if (t) pd[3]=(unsigned char)(pal|(t    ));
-		t=pack&0xf0000000; if (t) pd[4]=(unsigned char)(pal|(t>>28));
-		t=pack&0x0f000000; if (t) pd[5]=(unsigned char)(pal|(t>>24));
-		t=pack&0x00f00000; if (t) pd[6]=(unsigned char)(pal|(t>>20));
-		t=pack&0x000f0000; if (t) pd[7]=(unsigned char)(pal|(t>>16));
+		t=pack&0x0000f000; if (t) pd[0]=(UINT8)(pal|(t>>12));
+		t=pack&0x00000f00; if (t) pd[1]=(UINT8)(pal|(t>> 8));
+		t=pack&0x000000f0; if (t) pd[2]=(UINT8)(pal|(t>> 4));
+		t=pack&0x0000000f; if (t) pd[3]=(UINT8)(pal|(t    ));
+		t=pack&0xf0000000; if (t) pd[4]=(UINT8)(pal|(t>>28));
+		t=pack&0x0f000000; if (t) pd[5]=(UINT8)(pal|(t>>24));
+		t=pack&0x00f00000; if (t) pd[6]=(UINT8)(pal|(t>>20));
+		t=pack&0x000f0000; if (t) pd[7]=(UINT8)(pal|(t>>16));
 		return 0;
 	}
 	return 1; // Tile blank
 }
 
-static int TileFlip(int sx,int addr,int pal)
+static INT32 TileFlip(INT32 sx,INT32 addr,INT32 pal)
 {
-	unsigned char *pd = HighCol+sx;
-	unsigned int pack=0; 
-	unsigned int t=0;
+	UINT8 *pd = HighCol+sx;
+	UINT32 pack=0; 
+	UINT32 t=0;
 
-	pack = *(unsigned int *)(RamVid + addr); // Get 8 pixels
+	pack = *(UINT32 *)(RamVid + addr); // Get 8 pixels
 	if (pack) {
-		t=pack&0x000f0000; if (t) pd[0]=(unsigned char)(pal|(t>>16));
-		t=pack&0x00f00000; if (t) pd[1]=(unsigned char)(pal|(t>>20));
-		t=pack&0x0f000000; if (t) pd[2]=(unsigned char)(pal|(t>>24));
-		t=pack&0xf0000000; if (t) pd[3]=(unsigned char)(pal|(t>>28));
-		t=pack&0x0000000f; if (t) pd[4]=(unsigned char)(pal|(t    ));
-		t=pack&0x000000f0; if (t) pd[5]=(unsigned char)(pal|(t>> 4));
-		t=pack&0x00000f00; if (t) pd[6]=(unsigned char)(pal|(t>> 8));
-		t=pack&0x0000f000; if (t) pd[7]=(unsigned char)(pal|(t>>12));
+		t=pack&0x000f0000; if (t) pd[0]=(UINT8)(pal|(t>>16));
+		t=pack&0x00f00000; if (t) pd[1]=(UINT8)(pal|(t>>20));
+		t=pack&0x0f000000; if (t) pd[2]=(UINT8)(pal|(t>>24));
+		t=pack&0xf0000000; if (t) pd[3]=(UINT8)(pal|(t>>28));
+		t=pack&0x0000000f; if (t) pd[4]=(UINT8)(pal|(t    ));
+		t=pack&0x000000f0; if (t) pd[5]=(UINT8)(pal|(t>> 4));
+		t=pack&0x00000f00; if (t) pd[6]=(UINT8)(pal|(t>> 8));
+		t=pack&0x0000f000; if (t) pd[7]=(UINT8)(pal|(t>>12));
 		return 0;
 	}
 	return 1; // Tile blank
@@ -3046,16 +3046,16 @@ static int TileFlip(int sx,int addr,int pal)
 // tile renderers for hacky operator sprite support
 #define sh_pix(x) \
   if(!t); \
-  else if(t==0xe) pd[x]=(unsigned char)((pd[x]&0x3f)|0x80); /* hilight */ \
-  else if(t==0xf) pd[x]=(unsigned char)((pd[x]&0x3f)|0xc0); /* shadow  */ \
-  else pd[x]=(unsigned char)(pal|t);
+  else if(t==0xe) pd[x]=(UINT8)((pd[x]&0x3f)|0x80); /* hilight */ \
+  else if(t==0xf) pd[x]=(UINT8)((pd[x]&0x3f)|0xc0); /* shadow  */ \
+  else pd[x]=(UINT8)(pal|t);
 
-static int TileNormSH(int sx,int addr,int pal)
+static INT32 TileNormSH(INT32 sx,INT32 addr,INT32 pal)
 {
-	unsigned int pack=0; unsigned int t=0;
-	unsigned char *pd = HighCol+sx;
+	UINT32 pack=0; UINT32 t=0;
+	UINT8 *pd = HighCol+sx;
 
-	pack=*(unsigned int *)(RamVid+addr); // Get 8 pixels
+	pack=*(UINT32 *)(RamVid+addr); // Get 8 pixels
 	if (pack) {
 		t=(pack&0x0000f000)>>12; sh_pix(0);
 		t=(pack&0x00000f00)>> 8; sh_pix(1);
@@ -3070,12 +3070,12 @@ static int TileNormSH(int sx,int addr,int pal)
 	return 1; // Tile blank
 }
 
-static int TileFlipSH(int sx,int addr,int pal)
+static INT32 TileFlipSH(INT32 sx,INT32 addr,INT32 pal)
 {
-	unsigned int pack=0; unsigned int t=0;
-	unsigned char *pd = HighCol+sx;
+	UINT32 pack=0; UINT32 t=0;
+	UINT8 *pd = HighCol+sx;
 
-	pack=*(unsigned int *)(RamVid+addr); // Get 8 pixels
+	pack=*(UINT32 *)(RamVid+addr); // Get 8 pixels
 	if (pack) {
 		t=(pack&0x000f0000)>>16; sh_pix(0);
 		t=(pack&0x00f00000)>>20; sh_pix(1);
@@ -3090,48 +3090,48 @@ static int TileFlipSH(int sx,int addr,int pal)
 	return 1; // Tile blank
 }
 
-static int TileNormZ(int sx,int addr,int pal,int zval)
+static INT32 TileNormZ(INT32 sx,INT32 addr,INT32 pal,INT32 zval)
 {
-	unsigned int pack=0; 
-	unsigned int t=0;
-	unsigned char *pd = HighCol+sx;
-	char *zb = HighSprZ+sx;
-	int collision = 0, zb_s;
+	UINT32 pack=0; 
+	UINT32 t=0;
+	UINT8 *pd = HighCol+sx;
+	INT8 *zb = HighSprZ+sx;
+	INT32 collision = 0, zb_s;
 
-	pack=*(unsigned int *)(RamVid+addr); // Get 8 pixels
+	pack=*(UINT32 *)(RamVid+addr); // Get 8 pixels
 	if (pack) {
-		t=pack&0x0000f000; if(t) { zb_s=zb[0]; if(zb_s) collision=1; if(zval>zb_s) { pd[0]=(unsigned char)(pal|(t>>12)); zb[0]=(char)zval; } }
-		t=pack&0x00000f00; if(t) { zb_s=zb[1]; if(zb_s) collision=1; if(zval>zb_s) { pd[1]=(unsigned char)(pal|(t>> 8)); zb[1]=(char)zval; } }
-		t=pack&0x000000f0; if(t) { zb_s=zb[2]; if(zb_s) collision=1; if(zval>zb_s) { pd[2]=(unsigned char)(pal|(t>> 4)); zb[2]=(char)zval; } }
-		t=pack&0x0000000f; if(t) { zb_s=zb[3]; if(zb_s) collision=1; if(zval>zb_s) { pd[3]=(unsigned char)(pal|(t    )); zb[3]=(char)zval; } }
-		t=pack&0xf0000000; if(t) { zb_s=zb[4]; if(zb_s) collision=1; if(zval>zb_s) { pd[4]=(unsigned char)(pal|(t>>28)); zb[4]=(char)zval; } }
-		t=pack&0x0f000000; if(t) { zb_s=zb[5]; if(zb_s) collision=1; if(zval>zb_s) { pd[5]=(unsigned char)(pal|(t>>24)); zb[5]=(char)zval; } }
-		t=pack&0x00f00000; if(t) { zb_s=zb[6]; if(zb_s) collision=1; if(zval>zb_s) { pd[6]=(unsigned char)(pal|(t>>20)); zb[6]=(char)zval; } }
-		t=pack&0x000f0000; if(t) { zb_s=zb[7]; if(zb_s) collision=1; if(zval>zb_s) { pd[7]=(unsigned char)(pal|(t>>16)); zb[7]=(char)zval; } }
+		t=pack&0x0000f000; if(t) { zb_s=zb[0]; if(zb_s) collision=1; if(zval>zb_s) { pd[0]=(UINT8)(pal|(t>>12)); zb[0]=(INT8)zval; } }
+		t=pack&0x00000f00; if(t) { zb_s=zb[1]; if(zb_s) collision=1; if(zval>zb_s) { pd[1]=(UINT8)(pal|(t>> 8)); zb[1]=(INT8)zval; } }
+		t=pack&0x000000f0; if(t) { zb_s=zb[2]; if(zb_s) collision=1; if(zval>zb_s) { pd[2]=(UINT8)(pal|(t>> 4)); zb[2]=(INT8)zval; } }
+		t=pack&0x0000000f; if(t) { zb_s=zb[3]; if(zb_s) collision=1; if(zval>zb_s) { pd[3]=(UINT8)(pal|(t    )); zb[3]=(INT8)zval; } }
+		t=pack&0xf0000000; if(t) { zb_s=zb[4]; if(zb_s) collision=1; if(zval>zb_s) { pd[4]=(UINT8)(pal|(t>>28)); zb[4]=(INT8)zval; } }
+		t=pack&0x0f000000; if(t) { zb_s=zb[5]; if(zb_s) collision=1; if(zval>zb_s) { pd[5]=(UINT8)(pal|(t>>24)); zb[5]=(INT8)zval; } }
+		t=pack&0x00f00000; if(t) { zb_s=zb[6]; if(zb_s) collision=1; if(zval>zb_s) { pd[6]=(UINT8)(pal|(t>>20)); zb[6]=(INT8)zval; } }
+		t=pack&0x000f0000; if(t) { zb_s=zb[7]; if(zb_s) collision=1; if(zval>zb_s) { pd[7]=(UINT8)(pal|(t>>16)); zb[7]=(INT8)zval; } }
 		if(collision) RamVReg->status |= 0x20;
 		return 0;
 	}
 	return 1; // Tile blank
 }
 
-static int TileFlipZ(int sx,int addr,int pal,int zval)
+static INT32 TileFlipZ(INT32 sx,INT32 addr,INT32 pal,INT32 zval)
 {
-	unsigned int pack=0; 
-	unsigned int t=0;
-	unsigned char *pd = HighCol+sx;
-	char *zb = HighSprZ+sx;
-	int collision = 0, zb_s;
+	UINT32 pack=0; 
+	UINT32 t=0;
+	UINT8 *pd = HighCol+sx;
+	INT8 *zb = HighSprZ+sx;
+	INT32 collision = 0, zb_s;
 	
-	pack=*(unsigned int *)(RamVid+addr); // Get 8 pixels
+	pack=*(UINT32 *)(RamVid+addr); // Get 8 pixels
 	if (pack) {
-		t=pack&0x000f0000; if(t) { zb_s=zb[0]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[0]=(unsigned char)(pal|(t>>16)); zb[0]=(char)zval; } }
-		t=pack&0x00f00000; if(t) { zb_s=zb[1]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[1]=(unsigned char)(pal|(t>>20)); zb[1]=(char)zval; } }
-		t=pack&0x0f000000; if(t) { zb_s=zb[2]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[2]=(unsigned char)(pal|(t>>24)); zb[2]=(char)zval; } }
-		t=pack&0xf0000000; if(t) { zb_s=zb[3]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[3]=(unsigned char)(pal|(t>>28)); zb[3]=(char)zval; } }
-		t=pack&0x0000000f; if(t) { zb_s=zb[4]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[4]=(unsigned char)(pal|(t    )); zb[4]=(char)zval; } }
-		t=pack&0x000000f0; if(t) { zb_s=zb[5]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[5]=(unsigned char)(pal|(t>> 4)); zb[5]=(char)zval; } }
-		t=pack&0x00000f00; if(t) { zb_s=zb[6]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[6]=(unsigned char)(pal|(t>> 8)); zb[6]=(char)zval; } }
-		t=pack&0x0000f000; if(t) { zb_s=zb[7]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[7]=(unsigned char)(pal|(t>>12)); zb[7]=(char)zval; } }
+		t=pack&0x000f0000; if(t) { zb_s=zb[0]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[0]=(UINT8)(pal|(t>>16)); zb[0]=(INT8)zval; } }
+		t=pack&0x00f00000; if(t) { zb_s=zb[1]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[1]=(UINT8)(pal|(t>>20)); zb[1]=(INT8)zval; } }
+		t=pack&0x0f000000; if(t) { zb_s=zb[2]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[2]=(UINT8)(pal|(t>>24)); zb[2]=(INT8)zval; } }
+		t=pack&0xf0000000; if(t) { zb_s=zb[3]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[3]=(UINT8)(pal|(t>>28)); zb[3]=(INT8)zval; } }
+		t=pack&0x0000000f; if(t) { zb_s=zb[4]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[4]=(UINT8)(pal|(t    )); zb[4]=(INT8)zval; } }
+		t=pack&0x000000f0; if(t) { zb_s=zb[5]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[5]=(UINT8)(pal|(t>> 4)); zb[5]=(INT8)zval; } }
+		t=pack&0x00000f00; if(t) { zb_s=zb[6]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[6]=(UINT8)(pal|(t>> 8)); zb[6]=(INT8)zval; } }
+		t=pack&0x0000f000; if(t) { zb_s=zb[7]&0x1f; if(zb_s) collision=1; if(zval>zb_s) { pd[7]=(UINT8)(pal|(t>>12)); zb[7]=(INT8)zval; } }
 		if(collision) RamVReg->status |= 0x20;
 		return 0;
  	}
@@ -3143,21 +3143,21 @@ static int TileFlipZ(int sx,int addr,int pal,int zval)
   if(t) { \
     if(zb[x]) collision=1; \
     if(zval>zb[x]) { \
-      if     (t==0xe) { pd[x]=(unsigned char)((pd[x]&0x3f)|0x80); /* hilight */ } \
-      else if(t==0xf) { pd[x]=(unsigned char)((pd[x]&0x3f)|0xc0); /* shadow  */ } \
-      else            { zb[x]=(char)zval; pd[x]=(unsigned char)(pal|t); } \
+      if     (t==0xe) { pd[x]=(UINT8)((pd[x]&0x3f)|0x80); /* hilight */ } \
+      else if(t==0xf) { pd[x]=(UINT8)((pd[x]&0x3f)|0xc0); /* shadow  */ } \
+      else            { zb[x]=(INT8)zval; pd[x]=(UINT8)(pal|t); } \
     } \
   }
 
-static int TileNormZSH(int sx,int addr,int pal,int zval)
+static INT32 TileNormZSH(INT32 sx,INT32 addr,INT32 pal,INT32 zval)
 {
-	unsigned int pack=0; 
-	unsigned int t=0;
-	unsigned char *pd = HighCol+sx;
-	char *zb = HighSprZ+sx;
-	int collision = 0;
+	UINT32 pack=0; 
+	UINT32 t=0;
+	UINT8 *pd = HighCol+sx;
+	INT8 *zb = HighSprZ+sx;
+	INT32 collision = 0;
 
-	pack=*(unsigned int *)(RamVid+addr); // Get 8 pixels
+	pack=*(UINT32 *)(RamVid+addr); // Get 8 pixels
 	if (pack) {
 		t=(pack&0x0000f000)>>12; sh_pixZ(0);
 		t=(pack&0x00000f00)>> 8; sh_pixZ(1);
@@ -3173,15 +3173,15 @@ static int TileNormZSH(int sx,int addr,int pal,int zval)
 	return 1; // Tile blank
 }
 
-static int TileFlipZSH(int sx,int addr,int pal,int zval)
+static INT32 TileFlipZSH(INT32 sx,INT32 addr,INT32 pal,INT32 zval)
 {
-	unsigned int pack=0; 
-	unsigned int t=0;
-	unsigned char *pd = HighCol+sx;
-	char *zb = HighSprZ+sx;
-	int collision = 0;
+	UINT32 pack=0; 
+	UINT32 t=0;
+	UINT8 *pd = HighCol+sx;
+	INT8 *zb = HighSprZ+sx;
+	INT32 collision = 0;
 	
-	pack=*(unsigned int *)(RamVid+addr); // Get 8 pixels
+	pack=*(UINT32 *)(RamVid+addr); // Get 8 pixels
 	if (pack) {
 		t=(pack&0x000f0000)>>16; sh_pixZ(0);
 		t=(pack&0x00f00000)>>20; sh_pixZ(1);
@@ -3197,11 +3197,11 @@ static int TileFlipZSH(int sx,int addr,int pal,int zval)
 	return 1; // Tile blank
 }
 
-static void DrawStrip(struct TileStrip *ts, int sh)
+static void DrawStrip(struct TileStrip *ts, INT32 sh)
 {
-	int tilex=0,dx=0,ty=0,code=0,addr=0,cells;
-	int oldcode=-1,blank=-1; // The tile we know is blank
-	int pal=0;
+	INT32 tilex=0,dx=0,ty=0,code=0,addr=0,cells;
+	INT32 oldcode=-1,blank=-1; // The tile we know is blank
+	INT32 pal=0;
 
 	// Draw tiles across screen:
 	tilex = (-ts->hscroll)>>3;
@@ -3211,12 +3211,12 @@ static void DrawStrip(struct TileStrip *ts, int sh)
 	if(dx != 8) cells++; // have hscroll, need to draw 1 cell more
 
 	for (; cells; dx+=8,tilex++,cells--) {
-		int zero=0;
+		INT32 zero=0;
 
 		code=RamVid[ts->nametab + (tilex&ts->xmask)];
 		if (code==blank) continue;
 		if (code>>15) { // high priority tile
-			int cval = code | (dx<<16) | (ty<<25);
+			INT32 cval = code | (dx<<16) | (ty<<25);
 			if(code&0x1000) cval^=7<<26;
 			*ts->hc++ = cval; // cache it
 			continue;
@@ -3241,17 +3241,17 @@ static void DrawStrip(struct TileStrip *ts, int sh)
 	*ts->hc = 0;
 }
 
-static void DrawStripVSRam(struct TileStrip *ts, int plane)
+static void DrawStripVSRam(struct TileStrip *ts, INT32 plane)
 {
-	int tilex=0,dx=0,ty=0,code=0,addr=0,cell=0,nametabadd=0;
-	int oldcode=-1,blank=-1; // The tile we know is blank
-	int pal=0,scan=Scanline;
+	INT32 tilex=0,dx=0,ty=0,code=0,addr=0,cell=0,nametabadd=0;
+	INT32 oldcode=-1,blank=-1; // The tile we know is blank
+	INT32 pal=0,scan=Scanline;
 
 	// Draw tiles across screen:
 	tilex=(-ts->hscroll)>>3;
 	dx=((ts->hscroll-1)&7)+1;
 	if(dx != 8) {
-		int vscroll, line;
+		INT32 vscroll, line;
 		cell--; // have hscroll, start with negative cell
 		// also calculate intial VS stuff
 		vscroll = RamSVid[plane];
@@ -3263,10 +3263,10 @@ static void DrawStripVSRam(struct TileStrip *ts, int plane)
 	}
 
 	for (; cell < ts->cells; dx+=8,tilex++,cell++) {
-		int zero=0;
+		INT32 zero=0;
 
 		if((cell&1)==0) {
-			int line,vscroll;
+			INT32 line,vscroll;
 			vscroll = RamSVid[plane+(cell&~1)];
 
 			// Find the line in the name table
@@ -3278,7 +3278,7 @@ static void DrawStripVSRam(struct TileStrip *ts, int plane)
 		code = RamVid[ts->nametab + nametabadd + (tilex&ts->xmask)];
 		if (code==blank) continue;
 		if (code>>15) { // high priority tile
-			int cval = code | (dx<<16) | (ty<<25);
+			INT32 cval = code | (dx<<16) | (ty<<25);
 			if(code&0x1000) cval^=7<<26;
 			*ts->hc++ = cval; // cache it
 			continue;
@@ -3304,9 +3304,9 @@ static void DrawStripVSRam(struct TileStrip *ts, int plane)
 
 static void DrawStripInterlace(struct TileStrip *ts)
 {
-	int tilex=0,dx=0,ty=0,code=0,addr=0,cells;
-	int oldcode=-1,blank=-1; // The tile we know is blank
-	int pal=0;
+	INT32 tilex=0,dx=0,ty=0,code=0,addr=0,cells;
+	INT32 oldcode=-1,blank=-1; // The tile we know is blank
+	INT32 pal=0;
 
 	// Draw tiles across screen:
 	tilex=(-ts->hscroll)>>3;
@@ -3316,12 +3316,12 @@ static void DrawStripInterlace(struct TileStrip *ts)
 	if(dx != 8) cells++; // have hscroll, need to draw 1 cell more
 
 	for (; cells; dx+=8,tilex++,cells--) {
-		int zero=0;
+		INT32 zero=0;
 
 		code=RamVid[ts->nametab+(tilex&ts->xmask)];
 		if (code==blank) continue;
 		if (code>>15) { // high priority tile
-			int cval = (code&0xfc00) | (dx<<16) | (ty<<25);
+			INT32 cval = (code&0xfc00) | (dx<<16) | (ty<<25);
 			cval |= (code&0x3ff)<<1;
 			if(code&0x1000) cval^=0xf<<26;
 			*ts->hc++ = cval; // cache it
@@ -3346,12 +3346,12 @@ static void DrawStripInterlace(struct TileStrip *ts)
 	*ts->hc = 0;
 }
 
-static void DrawLayer(int plane, int *hcache, int maxcells, int sh)
+static void DrawLayer(INT32 plane, INT32 *hcache, INT32 maxcells, INT32 sh)
 {
-	const char shift[4]={5,6,5,7}; // 32,64 or 128 sized tilemaps (2 is invalid)
+	const INT8 shift[4]={5,6,5,7}; // 32,64 or 128 sized tilemaps (2 is invalid)
 	struct TileStrip ts;
-	int width, height, ymask;
-	int vscroll, htab;
+	INT32 width, height, ymask;
+	INT32 vscroll, htab;
 
 	ts.hc = hcache;
 	ts.cells = maxcells;
@@ -3405,10 +3405,10 @@ static void DrawLayer(int plane, int *hcache, int maxcells, int sh)
 	}
 }
 
-static void DrawWindow(int tstart, int tend, int prio, int sh)
+static void DrawWindow(INT32 tstart, INT32 tend, INT32 prio, INT32 sh)
 {
-	int tilex=0, ty=0, nametab, code=0;
-	int blank = -1; // The tile we know is blank
+	INT32 tilex=0, ty=0, nametab, code=0;
+	INT32 blank = -1; // The tile we know is blank
 
 	// Find name table line:
 	nametab  = (RamVReg->reg[3] & 0x3c)<<9;
@@ -3429,7 +3429,7 @@ static void DrawWindow(int tstart, int tend, int prio, int sh)
 
 	// Draw tiles across screen:
 	for (; tilex < tend; tilex++) {
-		int addr=0, zero=0, pal;
+		INT32 addr=0, zero=0, pal;
 
 		code = RamVid[nametab + tilex];
 		if(code==blank) continue;
@@ -3441,7 +3441,7 @@ static void DrawWindow(int tstart, int tend, int prio, int sh)
 		pal=((code>>9)&0x30);
 
 		if(sh) {
-			int tmp, *zb = (int *)(HighCol+8+(tilex<<3));
+			INT32 tmp, *zb = (INT32 *)(HighCol+8+(tilex<<3));
 			if(prio) {
 				tmp = *zb;
 				if(!(tmp&0x00000080)) tmp&=~0x000000c0; if(!(tmp&0x00008000)) tmp&=~0x0000c000;
@@ -3468,23 +3468,23 @@ static void DrawWindow(int tstart, int tend, int prio, int sh)
 	//*hcache = 0;
 }
 
-static void DrawTilesFromCache(int *hc, int sh)
+static void DrawTilesFromCache(INT32 *hc, INT32 sh)
 {
-	int code, addr, zero, dx;
-	int pal;
-	short blank=-1; // The tile we know is blank
+	INT32 code, addr, zero, dx;
+	INT32 pal;
+	INT16 blank=-1; // The tile we know is blank
 
 	// *ts->hc++ = code | (dx<<16) | (ty<<25); // cache it
 
 	while((code = *hc++)) {
-		if(!sh && (short)code == blank) continue;
+		if(!sh && (INT16)code == blank) continue;
 
 		// Get tile address/2:
 		addr=(code&0x7ff)<<4;
-		addr+=(unsigned int)code>>25; // y offset into tile
+		addr+=(UINT32)code>>25; // y offset into tile
 		dx=(code>>16)&0x1ff;
 		if(sh) {
-			unsigned char *zb = HighCol+dx;
+			UINT8 *zb = HighCol+dx;
 			if(!(*zb&0x80)) *zb&=0x3f; zb++; if(!(*zb&0x80)) *zb&=0x3f; zb++;
 			if(!(*zb&0x80)) *zb&=0x3f; zb++; if(!(*zb&0x80)) *zb&=0x3f; zb++;
 			if(!(*zb&0x80)) *zb&=0x3f; zb++; if(!(*zb&0x80)) *zb&=0x3f; zb++;
@@ -3496,21 +3496,21 @@ static void DrawTilesFromCache(int *hc, int sh)
 		if (code&0x0800) zero=TileFlip(dx,addr,pal);
 		else             zero=TileNorm(dx,addr,pal);
 
-		if(zero) blank=(short)code;
+		if(zero) blank=(INT16)code;
 	}
 }
 
 // Index + 0  :    hhhhvvvv ab--hhvv yyyyyyyy yyyyyyyy // a: offscreen h, b: offs. v, h: horiz. size
 // Index + 4  :    xxxxxxxx xxxxxxxx pccvhnnn nnnnnnnn // x: x coord + 8
 
-static void DrawSprite(int *sprite, int **hc, int sh)
+static void DrawSprite(INT32 *sprite, INT32 **hc, INT32 sh)
 {
-	int width=0,height=0;
-	int row=0,code=0;
-	int pal;
-	int tile=0,delta=0;
-	int sx, sy;
-	int (*fTileFunc)(int sx,int addr,int pal);
+	INT32 width=0,height=0;
+	INT32 row=0,code=0;
+	INT32 pal;
+	INT32 tile=0,delta=0;
+	INT32 sx, sy;
+	INT32 (*fTileFunc)(INT32 sx,INT32 addr,INT32 pal);
 
 	// parse the sprite data
 	sy=sprite[0];
@@ -3558,14 +3558,14 @@ static void DrawSprite(int *sprite, int **hc, int sh)
 // Index + 0  :    hhhhvvvv s---hhvv yyyyyyyy yyyyyyyy // s: skip flag, h: horiz. size
 // Index + 4  :    xxxxxxxx xxxxxxxx pccvhnnn nnnnnnnn // x: x coord + 8
 
-static void DrawSpriteZ(int pack, int pack2, int shpri, int sprio)
+static void DrawSpriteZ(INT32 pack, INT32 pack2, INT32 shpri, INT32 sprio)
 {
-	int width=0,height=0;
-	int row=0;
-	int pal;
-	int tile=0,delta=0;
-	int sx, sy;
-	int (*fTileFunc)(int sx,int addr,int pal,int zval);
+	INT32 width=0,height=0;
+	INT32 row=0;
+	INT32 pal;
+	INT32 tile=0,delta=0;
+	INT32 sx, sy;
+	INT32 (*fTileFunc)(INT32 sx,INT32 addr,INT32 pal,INT32 zval);
 
 	// parse the sprite data
 	sx    =  pack2>>16;			// X
@@ -3612,13 +3612,13 @@ static void DrawSpriteZ(int pack, int pack2, int shpri, int sprio)
 }
 
 
-static void DrawSpriteInterlace(unsigned int *sprite)
+static void DrawSpriteInterlace(UINT32 *sprite)
 {
-	int width=0,height=0;
-	int row=0,code=0;
-	int pal;
-	int tile=0,delta=0;
-	int sx, sy;
+	INT32 width=0,height=0;
+	INT32 row=0,code=0;
+	INT32 pal;
+	INT32 tile=0,delta=0;
+	INT32 sx, sy;
 	
 	// parse the sprite data
 	sy=sprite[0];
@@ -3655,20 +3655,20 @@ static void DrawSpriteInterlace(unsigned int *sprite)
 }
 
 
-static void DrawAllSpritesInterlace(int pri, int maxwidth)
+static void DrawAllSpritesInterlace(INT32 pri, INT32 maxwidth)
 {
-	int i,u,table,link=0,sline=Scanline<<1;
-	unsigned int *sprites[80]; // Sprite index
+	INT32 i,u,table,link=0,sline=Scanline<<1;
+	UINT32 *sprites[80]; // Sprite index
 	
 	table = RamVReg->reg[5]&0x7f;
 	if (RamVReg->reg[12]&1) table&=0x7e; // Lowest bit 0 in 40-cell mode
 	table<<=8; // Get sprite table address/2
 	
 	for (i=u=0; u < 80 && i < 21; u++) {
-		unsigned int *sprite;
-		int code, sx, sy, height;
+		UINT32 *sprite;
+		INT32 code, sx, sy, height;
 
-		sprite=(unsigned int *)(RamVid+((table+(link<<2))&0x7ffc)); // Find sprite
+		sprite=(UINT32 *)(RamVid+((table+(link<<2))&0x7ffc)); // Find sprite
 
 		// get sprite info
 		code = sprite[0];
@@ -3699,11 +3699,11 @@ static void DrawAllSpritesInterlace(int pri, int maxwidth)
 		DrawSpriteInterlace(sprites[i]);
 }
 
-static void DrawSpritesFromCache(int *hc, int sh)
+static void DrawSpritesFromCache(INT32 *hc, INT32 sh)
 {
-	int code, tile, sx, delta, width;
-	int pal;
-	int (*fTileFunc)(int sx,int addr,int pal);
+	INT32 code, tile, sx, delta, width;
+	INT32 pal;
+	INT32 (*fTileFunc)(INT32 sx,INT32 addr,INT32 pal);
 	
 	// *(*hc)++ = (tile<<16)|((code&0x0800)<<5)|((sx<<6)&0x0000ffc0)|((code>>9)&0x30)|((sprite[0]>>24)&0xf);
 	
@@ -3714,7 +3714,7 @@ static void DrawSpritesFromCache(int *hc, int sh)
 		width++; delta++; // Width and height in tiles
 		if (code&0x10000) delta=-delta; // Flip X
 		delta<<=4;
-		tile=((unsigned int)code>>17)<<1;
+		tile=((UINT32)code>>17)<<1;
 		sx=(code<<16)>>22; // sx can be negative (start offscreen), so sign extend
 		
 		if(sh && pal == 0x30) { //
@@ -3741,24 +3741,24 @@ static void DrawSpritesFromCache(int *hc, int sh)
 // Index + 0  :    hhhhvvvv ab--hhvv yyyyyyyy yyyyyyyy // a: offscreen h, b: offs. v, h: horiz. size
 // Index + 4  :    xxxxxxxx xxxxxxxx pccvhnnn nnnnnnnn // x: x coord + 8
 
-static void PrepareSprites(int full)
+static void PrepareSprites(INT32 full)
 {
-	int u=0,link=0,sblocks=0;
-	int table=0;
-	int *pd = HighPreSpr;
+	INT32 u=0,link=0,sblocks=0;
+	INT32 table=0;
+	INT32 *pd = HighPreSpr;
 	
 	table=RamVReg->reg[5]&0x7f;
 	if (RamVReg->reg[12]&1) table&=0x7e; // Lowest bit 0 in 40-cell mode
 	table<<=8; // Get sprite table address/2
 	
 	if (!full) {
-		int pack;
+		INT32 pack;
 		// updates: tilecode, sx
 		for (u=0; u < 80 && (pack = *pd); u++, pd+=2) {
-			unsigned int *sprite;
-			int code, code2, sx, sy, skip=0;
+			UINT32 *sprite;
+			INT32 code, code2, sx, sy, skip=0;
 			
-			sprite=(unsigned int *)(RamVid+((table+(link<<2))&0x7ffc)); // Find sprite
+			sprite=(UINT32 *)(RamVid+((table+(link<<2))&0x7ffc)); // Find sprite
 			
 			// parse sprite info
 			code  = sprite[0];
@@ -3769,7 +3769,7 @@ static void PrepareSprites(int full)
 
 			if((sx <= 8-((pack>>28)<<3) && sx >= -0x76) || sx >= 328) skip=1<<23;
 			else if ((sy = (pack<<16)>>16) < 240 && sy > -32) {
-				int sbl = (2<<(pack>>28))-1;
+				INT32 sbl = (2<<(pack>>28))-1;
 				sblocks |= sbl<<(sy>>3);
 			}
 
@@ -3783,10 +3783,10 @@ static void PrepareSprites(int full)
 		SpriteBlocks |= sblocks;
 	} else {
 		for (; u < 80; u++) {
-			unsigned int *sprite;
-			int code, code2, sx, sy, hv, height, width, skip=0, sx_min;
+			UINT32 *sprite;
+			INT32 code, code2, sx, sy, hv, height, width, skip=0, sx_min;
 			
-			sprite=(unsigned int *)(RamVid+((table+(link<<2))&0x7ffc)); // Find sprite
+			sprite=(UINT32 *)(RamVid+((table+(link<<2))&0x7ffc)); // Find sprite
 			
 			// parse sprite info
 			code = sprite[0];
@@ -3804,14 +3804,14 @@ static void PrepareSprites(int full)
     
 			if((sx <= sx_min && sx >= -0x76) || sx >= 328) skip|=1<<23;
 			else if (sx > sx_min && !skip) {
-				int sbl = (2<<height)-1;
-				int shi = sy>>3;
+				INT32 sbl = (2<<height)-1;
+				INT32 shi = sy>>3;
 				if(shi < 0) shi=0; // negative sy
 				sblocks |= sbl<<shi;
 			}
     
-			*pd++ = (width<<28)|(height<<24)|skip|(hv<<16)|((unsigned short)sy);
-			*pd++ = (sx<<16)|((unsigned short)code2);
+			*pd++ = (width<<28)|(height<<24)|skip|(hv<<16)|((UINT16)sy);
+			*pd++ = (sx<<16)|((UINT16)code2);
 			
 			// Find next sprite
 			link=(code>>16)&0x7f;
@@ -3822,13 +3822,13 @@ static void PrepareSprites(int full)
 	}
 }
 
-static void DrawAllSprites(int *hcache, int maxwidth, int prio, int sh)
+static void DrawAllSprites(INT32 *hcache, INT32 maxwidth, INT32 prio, INT32 sh)
 {
-	int i,u,n;
-	int sx1seen=0; // sprite with x coord 1 or 0 seen
-	int ntiles = 0; // tile counter for sprite limit emulation
-	int *sprites[40]; // Sprites to draw in fast mode
-	int *ps, pack, rs = rendstatus, scan=Scanline;
+	INT32 i,u,n;
+	INT32 sx1seen=0; // sprite with x coord 1 or 0 seen
+	INT32 ntiles = 0; // tile counter for sprite limit emulation
+	INT32 *sprites[40]; // Sprites to draw in fast mode
+	INT32 *ps, pack, rs = rendstatus, scan=Scanline;
 
 	if(rs&8) {
 		DrawAllSpritesInterlace(prio, maxwidth);
@@ -3854,7 +3854,7 @@ static void DrawAllSprites(int *hcache, int maxwidth, int prio, int sh)
 	// Index + 4  :    xxxxxxxx xxxxxxxx pccvhnnn nnnnnnnn // x: x coord + 8
 
 	for(i=u=n=0; (pack = *ps) && n < 20; ps+=2, u++) {
-		int sx, sy, row, pack2;
+		INT32 sx, sy, row, pack2;
 
 		if(pack & 0x00400000) continue;
 
@@ -3901,7 +3901,7 @@ static void DrawAllSprites(int *hcache, int maxwidth, int prio, int sh)
 		if(rs&4) {
 			// might need to skip this sprite
 			if((pack2&0x8000) ^ (prio<<15)) continue;
-			DrawSpriteZ(pack,pack2,sh|(prio<<1),(char)(0x1f-n));
+			DrawSpriteZ(pack,pack2,sh|(prio<<1),(INT8)(0x1f-n));
 			continue;
 		}
 
@@ -3920,12 +3920,12 @@ static void DrawAllSprites(int *hcache, int maxwidth, int prio, int sh)
 }
 
 
-static void BackFill(int reg7, int sh)
+static void BackFill(INT32 reg7, INT32 sh)
 {
 	// Start with a blank scanline (background colour):
-	unsigned int *pd = (unsigned int *)(HighCol+8);
-	unsigned int *end= (unsigned int *)(HighCol+8+320);
-	unsigned int back = reg7 & 0x3f;
+	UINT32 *pd = (UINT32 *)(HighCol+8);
+	UINT32 *end= (UINT32 *)(HighCol+8+320);
+	UINT32 back = reg7 & 0x3f;
 	back |= sh<<6;
 	back |= back<<8;
 	back |= back<<16;
@@ -3933,10 +3933,10 @@ static void BackFill(int reg7, int sh)
 }
 
 
-static int DrawDisplay(int sh)
+static INT32 DrawDisplay(INT32 sh)
 {
-	int maxw, maxcells;
-	int win=0, edge=0, hvwind=0;
+	INT32 maxw, maxcells;
+	INT32 win=0, edge=0, hvwind=0;
 	
 	if(RamVReg->reg[12] & 1) {
 		maxw = 328; maxcells = 40;
@@ -3999,16 +3999,16 @@ static void PicoFrameStart()
 	PrepareSprites(1);
 }
 
-static int PicoLine(int /*scan*/)
+static INT32 PicoLine(INT32 /*scan*/)
 {
-	int sh = (RamVReg->reg[0xC] & 8)>>3; // shadow/hilight?
+	INT32 sh = (RamVReg->reg[0xC] & 8)>>3; // shadow/hilight?
 
 	BackFill(RamVReg->reg[7], sh);
 	if (RamVReg->reg[1] & 0x40)
 		DrawDisplay(sh);
 	
 	{
-		int num = Scanline + 1;
+		INT32 num = Scanline + 1;
 		if (!(RamVReg->reg[1] & 8)) num += 8;
 		HighCol = HighColFull + ( num * (8 + 320 + 8) );
 	};
@@ -4018,13 +4018,13 @@ static int PicoLine(int /*scan*/)
 
 static void MegadriveDraw()
 {
-	unsigned short * pDest = (unsigned short *)pBurnDraw;
+	UINT16 * pDest = (UINT16 *)pBurnDraw;
 
 	if ((RamVReg->reg[12]&1) || !(MegadriveDIP[1] & 0x03)) {
 	
-		for (int j=0; j<224; j++) {
-			unsigned char * pSrc = HighColFull + (j+9)*(8+320+8) + 8;
-			for (int i=0;i<320;i++)
+		for (INT32 j=0; j<224; j++) {
+			UINT8 * pSrc = HighColFull + (j+9)*(8+320+8) + 8;
+			for (INT32 i=0;i<320;i++)
 				pDest[i] = MegadriveCurPal[ pSrc[i] ];
 			pDest += 320;
 		}
@@ -4034,24 +4034,24 @@ static void MegadriveDraw()
 		if (( MegadriveDIP[1] & 0x03 ) == 0x01 ) {
 			// Center 
 			pDest += 32;
-			for (int j=0; j<224; j++) {
-				unsigned char * pSrc = HighColFull + (j+9)*(8+320+8) + 8;
+			for (INT32 j=0; j<224; j++) {
+				UINT8 * pSrc = HighColFull + (j+9)*(8+320+8) + 8;
 
-				memset((unsigned char *)pDest -  32*2, 0, 64);
+				memset((UINT8 *)pDest -  32*2, 0, 64);
 				
-				for (int i=0;i<256;i++)
+				for (INT32 i=0;i<256;i++)
 					pDest[i] = MegadriveCurPal[ pSrc[i] ];
 				
-				memset((unsigned char *)pDest + 256*2, 0, 64);
+				memset((UINT8 *)pDest + 256*2, 0, 64);
 				
 				pDest += 320;
 			}
 		} else {
 			// Zoom
-			for (int j=0; j<224; j++) {
-				unsigned char * pSrc = HighColFull + (j+9)*(8+320+8) + 8;
-				unsigned int delta = 0;
-				for (int i=0;i<320;i++) {
+			for (INT32 j=0; j<224; j++) {
+				UINT8 * pSrc = HighColFull + (j+9)*(8+320+8) + 8;
+				UINT32 delta = 0;
+				for (INT32 i=0;i<320;i++) {
 					pDest[i] = MegadriveCurPal[ pSrc[ delta >> 16 ] ];
 					delta += 0xCCCC;
 				}
@@ -4067,9 +4067,9 @@ static void MegadriveDraw()
 #define TOTAL_68K_CYCLES_PAL	((double)OSC_PAL / 7) / 50
 #define TOTAL_Z80_CYCLES_PAL	((double)OSC_PAL / 15) / 50
 
-int MegadriveFrame()
+INT32 MegadriveFrame()
 {
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 	
 	if (MegadriveReset) {
 		MegadriveResetDo();
@@ -4077,13 +4077,13 @@ int MegadriveFrame()
 	}
 
 	if (bMegadriveRecalcPalette) {
-		for (int i=0;i<0x40;i++)
+		for (INT32 i=0;i<0x40;i++)
 			CalcCol(i, RamPal[i]);
 		bMegadriveRecalcPalette = 0;	
 	}
 	
 	JoyPad->pad[0] = JoyPad->pad[1] = JoyPad->pad[2] = JoyPad->pad[3] = 0;
-	for (int i = 0; i < 12; i++) {
+	for (INT32 i = 0; i < 12; i++) {
 		JoyPad->pad[0] |= (MegadriveJoy1[i] & 1) << i;
 		JoyPad->pad[1] |= (MegadriveJoy2[i] & 1) << i;
 		JoyPad->pad[2] |= (MegadriveJoy3[i] & 1) << i;
@@ -4097,22 +4097,22 @@ int MegadriveFrame()
 	HighCol = HighColFull;
 	PicoFrameStart();
 
-	int lines,lines_vis = 224,line_sample;
-	int done_z80 = 0;
-	int hint = RamVReg->reg[10]; // Hint counter
-	int total_68k_cycles, total_z80_cycles;
+	INT32 lines,lines_vis = 224,line_sample;
+	INT32 done_z80 = 0;
+	INT32 hint = RamVReg->reg[10]; // Hint counter
+	INT32 total_68k_cycles, total_z80_cycles;
 	
 	if( Hardware & 0x40 ) {
 		lines  = 313;
 		line_sample = 68;
 		if( RamVReg->reg[1]&8 ) lines_vis = 240;
-		total_68k_cycles = (int)(long long)(TOTAL_68K_CYCLES_PAL * nBurnCPUSpeedAdjust / 0x100);
-		total_z80_cycles = (int)TOTAL_Z80_CYCLES_PAL;
+		total_68k_cycles = (INT32)(INT64)(TOTAL_68K_CYCLES_PAL * nBurnCPUSpeedAdjust / 0x100);
+		total_z80_cycles = (INT32)TOTAL_Z80_CYCLES_PAL;
 	} else {
 		lines  = 262;
 		line_sample = 93;
-		total_68k_cycles = (int)(long long)(TOTAL_68K_CYCLES * nBurnCPUSpeedAdjust / 0x100);
-		total_z80_cycles = (int)TOTAL_Z80_CYCLES;
+		total_68k_cycles = (INT32)(INT64)(TOTAL_68K_CYCLES * nBurnCPUSpeedAdjust / 0x100);
+		total_z80_cycles = (INT32)TOTAL_Z80_CYCLES;
 	}
 	
 	cycles_68k = total_68k_cycles / lines;
@@ -4120,7 +4120,7 @@ int MegadriveFrame()
   
 	RamVReg->status &= ~0x88; // clear V-Int, come out of vblank
 	
-	for (int y=0; y<lines; y++) {
+	for (INT32 y=0; y<lines; y++) {
 
 		Scanline = y;
 
@@ -4179,8 +4179,8 @@ int MegadriveFrame()
 		}
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			SekOpen(0);
 			BurnYM2612Update(pSoundBuf, nSegmentLength);
 			SekClose();
@@ -4204,8 +4204,8 @@ int MegadriveFrame()
 	}
 	
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			SekOpen(0);
 			BurnYM2612Update(pSoundBuf, nSegmentLength);
@@ -4217,7 +4217,7 @@ int MegadriveFrame()
 	return 0;
 }
 
-int MegadriveScan(int /*nAction*/, int * /*pnMin*/)
+INT32 MegadriveScan(INT32 /*nAction*/, INT32 * /*pnMin*/)
 {
 	//BurnYM2612Scan(nAction, pnMin);	
 	

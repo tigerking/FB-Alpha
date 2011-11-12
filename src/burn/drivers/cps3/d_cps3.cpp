@@ -816,7 +816,7 @@ STD_ROM_FN(redeartna)
 
 // ------------------------------------------------------------------------------------
 
-static int sfiiiInit()
+static INT32 sfiiiInit()
 {
 	cps3_key1 = 0xb5fe053e;
 	cps3_key2 = 0xfc03925a;
@@ -834,7 +834,7 @@ static int sfiiiInit()
 	return cps3Init();
 }
 
-static int sfiii2Init()
+static INT32 sfiii2Init()
 {
 	cps3_key1 = 0x00000000;
 	cps3_key2 = 0x00000000;
@@ -852,7 +852,7 @@ static int sfiii2Init()
 	return cps3Init();
 }
 
-static int sfiii3Init()
+static INT32 sfiii3Init()
 {
 	cps3_key1 = 0xa55432b4;
 	cps3_key2 = 0x0c129981;
@@ -870,7 +870,7 @@ static int sfiii3Init()
 	return cps3Init();
 }
 
-static int jojoInit()
+static INT32 jojoInit()
 {
 	cps3_key1 = 0x02203ee3;
 	cps3_key2 = 0x01301972;
@@ -888,7 +888,7 @@ static int jojoInit()
 	return cps3Init();
 }
 
-static int jojobaInit()
+static INT32 jojobaInit()
 {
 	cps3_key1 = 0x23323ee3;
 	cps3_key2 = 0x03021972;
@@ -906,7 +906,7 @@ static int jojobaInit()
 	return cps3Init();
 }
 
-static int jojoaltInit()
+static INT32 jojoaltInit()
 {
 	cps3_key1 = 0x02203ee3;
 	cps3_key2 = 0x01301972;
@@ -924,7 +924,7 @@ static int jojoaltInit()
 	return cps3Init();
 }
 
-static int redearthInit()
+static INT32 redearthInit()
 {
 	cps3_key1 = 0x9e300ab1;
 	cps3_key2 = 0xa175b82c;
