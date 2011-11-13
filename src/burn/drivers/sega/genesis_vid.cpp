@@ -1,8 +1,8 @@
 #include "genesis_vid.h"
 #include "burnint.h"
 
-int GenesisScreenNumber;
-unsigned int *GenesisPalette = NULL;
+INT32 GenesisScreenNumber;
+UINT32 *GenesisPalette = NULL;
 UINT16 GenesisPaletteBase;
 UINT8 VdpBgColour;
 
@@ -47,7 +47,7 @@ UINT32 VdpAddress;
 
 #define EXTRACT_PIXEL(x,i)	(((x) >> (((i) ^ 1) * 4)) & 0x0f)
 
-static void VdpRegisterWrite(int d, int /*vBlank*/)
+static void VdpRegisterWrite(INT32 d, INT32 /*vBlank*/)
 {	
 	UINT8 RegNum = (d & 0x1f00) >> 8;
 	UINT8 RegDat = d & 0x00ff;
@@ -161,7 +161,7 @@ static void VdpRegisterWrite(int d, int /*vBlank*/)
 
 static UINT16 VDPDataRead()
 {
-	int read = 0;
+	INT32 read = 0;
 	
 	VdpCmdPart = 0;
 	
@@ -187,7 +187,7 @@ static UINT16 VDPDataRead()
 
 static UINT16 VDPControlRead()
 {
-	int status = 0x3600;
+	INT32 status = 0x3600;
 	
 	VdpCmdPart = 0;
 	
@@ -197,7 +197,7 @@ static UINT16 VDPControlRead()
 	return status;
 }
 
-UINT16 GenesisVDPRead(unsigned int offset)
+UINT16 GenesisVDPRead(UINT32 offset)
 {
 	switch(offset) {
 		case 0x00:
@@ -277,7 +277,7 @@ static void VDPDataWrite(UINT16 data)
 	VdpAddress += GenesisVdpRegs[15];
 }
 
-void GenesisVDPWrite(unsigned int offset, UINT16 data)
+void GenesisVDPWrite(UINT32 offset, UINT16 data)
 {
 	switch (offset) {
 		case 0x00:
@@ -296,9 +296,9 @@ void GenesisVDPWrite(unsigned int offset, UINT16 data)
 //	bprintf(PRINT_NORMAL, _T("Genesis VDP Write %x\n"), data);
 }
 
-int StartGenesisVDP(int ScreenNum, unsigned int* pal)
+INT32 StartGenesisVDP(INT32 ScreenNum, UINT32* pal)
 {
-	int i;
+	INT32 i;
 	static const UINT8 VdpInit[24] =
 	{
 		0x04, 0x44, 0x30, 0x3C, 0x07, 0x6C, 0x00, 0x00,
@@ -319,8 +319,8 @@ int StartGenesisVDP(int ScreenNum, unsigned int* pal)
 	
 	// Init the transparency lookup table
 	for (i = 0; i < 0x1000; i++) {
-		int OriginalColour = i & 0x7ff;
-		int HalfBright = i & 0x800;
+		INT32 OriginalColour = i & 0x7ff;
+		INT32 HalfBright = i & 0x800;
 
 		if (OriginalColour & 0x100)
 			VdpTransLookup[i] = OriginalColour;
@@ -420,7 +420,7 @@ void GenesisVDPScan()
 	SCAN_VAR(VdpAddress);
 }
 
-inline int vdp_gethscroll(int plane, int line)
+inline INT32 vdp_gethscroll(INT32 plane, INT32 line)
 {
 	line &= VdpHScrollMask;
 	return 0x400 - (VDP_VRAM_WORD(VdpHScrollBase + (4 * line) + plane) & 0x3ff);
@@ -429,7 +429,7 @@ inline int vdp_gethscroll(int plane, int line)
 
 /* Note: We expect plane = 0 for Scroll A, plane = 2 for Scroll B
    A Column is 8 Pixels Wide                                     */
-static int vdp_getvscroll(int plane, int column)
+static INT32 vdp_getvscroll(INT32 plane, INT32 column)
 {
 	UINT32 vsramoffset;
 
@@ -446,10 +446,10 @@ static int vdp_getvscroll(int plane, int column)
 	return 0;
 }
 
-static void get_scroll_tiles(unsigned int line, int scrollnum, UINT32 scrollbase, UINT32 *tiles, int *offset)
+static void get_scroll_tiles(UINT32 line, INT32 scrollnum, UINT32 scrollbase, UINT32 *tiles, INT32 *offset)
 {
-	int linehscroll = vdp_gethscroll(scrollnum, line);
-	int column;
+	INT32 linehscroll = vdp_gethscroll(scrollnum, line);
+	INT32 column;
 
 	/* adjust for partial tiles and then pre-divide hscroll to get the tile offset */
 	*offset = -(linehscroll % 8);
@@ -458,11 +458,11 @@ static void get_scroll_tiles(unsigned int line, int scrollnum, UINT32 scrollbase
 	/* loop over columns */
 	for (column = 0; column < 41; column++)
 	{
-		int columnvscroll = vdp_getvscroll(scrollnum, (column - (linehscroll & 1)) & 0x3f) + line;
+		INT32 columnvscroll = vdp_getvscroll(scrollnum, (column - (linehscroll & 1)) & 0x3f) + line;
 
 		/* determine the base of the tilemap row */
-		int temp = ((columnvscroll / 8) & (VdpScrollHeight - 1)) * VdpScrollWidth;
-		int tilebase = scrollbase + 2 * temp;
+		INT32 temp = ((columnvscroll / 8) & (VdpScrollHeight - 1)) * VdpScrollWidth;
+		INT32 tilebase = scrollbase + 2 * temp;
 
 		/* offset into the tilemap based on the column */
 		temp = (linehscroll + column) & (VdpScrollWidth - 1);
@@ -473,23 +473,23 @@ static void get_scroll_tiles(unsigned int line, int scrollnum, UINT32 scrollbase
 	}
 }
 
-static void get_window_tiles(unsigned int line, UINT32 scrollbase, UINT32 *tiles)
+static void get_window_tiles(UINT32 line, UINT32 scrollbase, UINT32 *tiles)
 {
-	int column;
+	INT32 column;
 
 	/* loop over columns */
 	for (column = 0; column < 40; column++)
 	{
 		/* determine the base of the tilemap row */
-		int temp = (line / 8) * VdpWindowWidth + column;
-		int tilebase = scrollbase + 2 * temp;
+		INT32 temp = (line / 8) * VdpWindowWidth + column;
+		INT32 tilebase = scrollbase + 2 * temp;
 
 		/* get the tile info */
 		*tiles++ = ((line % 8) << 16) | VDP_VRAM_WORD(tilebase);
 	}
 }
 
-static void drawline_tiles(UINT32 *tiles, UINT16 *bmap, unsigned int pri, int offset, int lclip, int rclip)
+static void drawline_tiles(UINT32 *tiles, UINT16 *bmap, UINT32 pri, INT32 offset, INT32 lclip, INT32 rclip)
 {
 	/* adjust for the 8-pixel slop */
 	bmap += offset;
@@ -504,10 +504,10 @@ static void drawline_tiles(UINT32 *tiles, UINT16 *bmap, unsigned int pri, int of
 		/* if the tile is the correct priority, draw it */
 		if (((tile >> 15) & 1) == pri && offset < 320)
 		{
-			int colbase = GenesisBgPalLookup[(tile & 0x6000) >> 13];
+			INT32 colbase = GenesisBgPalLookup[(tile & 0x6000) >> 13];
 			UINT32 *tp = (UINT32 *)&VDP_VRAM_BYTE((tile & 0x7ff) * 32);
 			UINT32 mytile;
-			int col;
+			INT32 col;
 
 			/* vertical flipping */
 			if (!(tile & 0x1000))
@@ -582,10 +582,10 @@ static void drawline_tiles(UINT32 *tiles, UINT16 *bmap, unsigned int pri, int of
 	}
 }
 
-static void draw8pixs(UINT16 *bmap, int patno, int /*priority*/, int colbase, int patline)
+static void draw8pixs(UINT16 *bmap, INT32 patno, INT32 /*priority*/, INT32 colbase, INT32 patline)
 {
 	UINT32 tile = *(UINT32 *)&VDP_VRAM_BYTE(patno * 32 + 4 * patline);
-	int col;
+	INT32 col;
 
 	/* skip if all-transparent */
 	if (!tile)
@@ -660,10 +660,10 @@ static void draw8pixs(UINT16 *bmap, int patno, int /*priority*/, int colbase, in
 
 
 /* draw a horizontally-flipped section of a sprite */
-static void draw8pixs_hflip(UINT16 *bmap, int patno, int /*priority*/, int colbase, int patline)
+static void draw8pixs_hflip(UINT16 *bmap, INT32 patno, INT32 /*priority*/, INT32 colbase, INT32 patline)
 {
 	UINT32 tile = *(UINT32 *)&VDP_VRAM_BYTE(patno * 32 + 4 * patline);
-	int col;
+	INT32 col;
 
 	/* skip if all-transparent */
 	if (!tile)
@@ -736,13 +736,13 @@ static void draw8pixs_hflip(UINT16 *bmap, int patno, int /*priority*/, int colba
 	}
 }
 
-static void drawline_sprite(int line, UINT16 *bmap, int priority, UINT8 *spritebase)
+static void drawline_sprite(INT32 line, UINT16 *bmap, INT32 priority, UINT8 *spritebase)
 {
-	int spriteypos   = (((spritebase[0] & 0x01) << 8) | spritebase[1]) - 0x80;
-	int spritexpos   = (((spritebase[6] & 0x01) << 8) | spritebase[7]) - 0x80;
-	int spriteheight = ((spritebase[2] & 0x03) + 1) * 8;
-	int spritewidth  = (((spritebase[2] & 0x0c) >> 2) + 1) * 8;
-	int spriteattr, patno, patflip, patline, colbase, x;
+	INT32 spriteypos   = (((spritebase[0] & 0x01) << 8) | spritebase[1]) - 0x80;
+	INT32 spritexpos   = (((spritebase[6] & 0x01) << 8) | spritebase[7]) - 0x80;
+	INT32 spriteheight = ((spritebase[2] & 0x03) + 1) * 8;
+	INT32 spritewidth  = (((spritebase[2] & 0x0c) >> 2) + 1) * 8;
+	INT32 spriteattr, patno, patflip, patline, colbase, x;
 
 	/* skip if out of range */
 	if (line < spriteypos || line >= spriteypos + spriteheight)
@@ -813,16 +813,16 @@ static void drawline_sprite(int line, UINT16 *bmap, int priority, UINT8 *spriteb
 	}
 }
 
-void vdp_drawline(UINT16 *bitmap, unsigned int line, int bgfill)
+void vdp_drawline(UINT16 *bitmap, UINT32 line, INT32 bgfill)
 {
-	int lowsprites, highsprites, link;
+	INT32 lowsprites, highsprites, link;
 	UINT32 scrolla_tiles[41], scrollb_tiles[41], window_tiles[41];
-	int scrolla_offset, scrollb_offset;
+	INT32 scrolla_offset, scrollb_offset;
 	UINT8 *lowlist[81], *highlist[81];
-	int bgcolor = bgfill ? bgfill : GenesisBgPalLookup[0];
-	int window_lclip, window_rclip;
-	int scrolla_lclip, scrolla_rclip;
-	int column, sprite;
+	INT32 bgcolor = bgfill ? bgfill : GenesisBgPalLookup[0];
+	INT32 window_lclip, window_rclip;
+	INT32 scrolla_lclip, scrolla_rclip;
+	INT32 column, sprite;
 
 	/* clear to the background color */
 	for (column = 0; column < 320; column++)

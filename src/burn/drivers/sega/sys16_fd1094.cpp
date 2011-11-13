@@ -3,16 +3,16 @@
 
 #define S16_NUMCACHE 8
 
-static unsigned char *fd1094_key; // the memory region containing key
+static UINT8 *fd1094_key; // the memory region containing key
 static UINT16 *fd1094_cpuregion; // the CPU region with encrypted code
 static UINT32  fd1094_cpuregionsize; // the size of this region in bytes
 
 static UINT16* fd1094_userregion; // a user region where the current decrypted state is put and executed from
 static UINT16* fd1094_cacheregion[S16_NUMCACHE]; // a cache region where S16_NUMCACHE states are stored to improve performance
-static int fd1094_cached_states[S16_NUMCACHE]; // array of cached state numbers
-static int fd1094_current_cacheposition; // current position in cache array
+static INT32 fd1094_cached_states[S16_NUMCACHE]; // array of cached state numbers
+static INT32 fd1094_current_cacheposition; // current position in cache array
 
-static int nFD1094CPU = 0;
+static INT32 nFD1094CPU = 0;
 
 bool System18Banking;
 /*
@@ -27,9 +27,9 @@ static void *fd1094_get_decrypted_base(void)
    if it is then it copies the cached data to the user region where code is
    executed from, if its not cached then it gets decrypted to the current
    cache position using the functions in fd1094.c */
-static void fd1094_setstate_and_decrypt(int state)
+static void fd1094_setstate_and_decrypt(INT32 state)
 {
-	int i;
+	INT32 i;
 	UINT32 addr;
 
 	// force a flush of the prefetch cache
@@ -46,8 +46,8 @@ static void fd1094_setstate_and_decrypt(int state)
 			/* copy cached state */
 			fd1094_userregion=fd1094_cacheregion[i];
 			SekOpen(nFD1094CPU);
-			SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
-			if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
+			SekMapMemory((UINT8*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+			if (System18Banking) SekMapMemory((UINT8*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
 			SekClose();
 
 			return;
@@ -67,8 +67,8 @@ static void fd1094_setstate_and_decrypt(int state)
 	/* copy newly decrypted data to user region */
 	fd1094_userregion=fd1094_cacheregion[fd1094_current_cacheposition];
 	SekOpen(nFD1094CPU);
-	SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
-	if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
+	SekMapMemory((UINT8*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+	if (System18Banking) SekMapMemory((UINT8*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
 	SekClose();
 
 	fd1094_current_cacheposition++;
@@ -83,7 +83,7 @@ static void fd1094_setstate_and_decrypt(int state)
 }
 
 /* Callback for CMP.L instructions (state change) */
-int __fastcall fd1094_cmp_callback(unsigned int val, int reg)
+INT32 __fastcall fd1094_cmp_callback(UINT32 val, INT32 reg)
 {
 	if (reg == 0 && (val & 0x0000ffff) == 0x0000ffff) // ?
 	{
@@ -94,13 +94,13 @@ int __fastcall fd1094_cmp_callback(unsigned int val, int reg)
 }
 
 /* Callback when the FD1094 enters interrupt code */
-int __fastcall fd1094_int_callback (int irq)
+INT32 __fastcall fd1094_int_callback (INT32 irq)
 {
 	fd1094_setstate_and_decrypt(FD1094_STATE_IRQ);
 	return (0x60+irq*4)/4; // vector address
 }
 
-int __fastcall fd1094_rte_callback (void)
+INT32 __fastcall fd1094_rte_callback (void)
 {
 	fd1094_setstate_and_decrypt(FD1094_STATE_RTE);
 	
@@ -109,15 +109,15 @@ int __fastcall fd1094_rte_callback (void)
 
 void fd1094_kludge_reset_values(void)
 {
-	int i;
+	INT32 i;
 
 	for (i = 0;i < 4;i++) {
 		fd1094_userregion[i] = fd1094_decode(i,fd1094_cpuregion[i],fd1094_key,1);
 	}
 		
 	SekOpen(nFD1094CPU);
-	SekMapMemory((unsigned char*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
-	if (System18Banking) SekMapMemory((unsigned char*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
+	SekMapMemory((UINT8*)fd1094_userregion, 0x000000, 0x0fffff, SM_FETCH);
+	if (System18Banking) SekMapMemory((UINT8*)fd1094_userregion + 0x200000, 0x200000, 0x27ffff, SM_FETCH);
 	SekClose();
 }
 
@@ -136,9 +136,9 @@ void fd1094_machine_init(void)
 }
 
 /* startup function, to be called from DRIVER_INIT (once on startup) */
-void fd1094_driver_init(int nCPU)
+void fd1094_driver_init(INT32 nCPU)
 {
-	int i;
+	INT32 i;
 	
 	nFD1094CPU = nCPU;
 
@@ -180,7 +180,7 @@ void fd1094_exit()
 	System18Banking = false;
 	nFD1094CPU = 0;
 	
-	for (int i = 0; i < S16_NUMCACHE; i++) {
+	for (INT32 i = 0; i < S16_NUMCACHE; i++) {
 		if (fd1094_cacheregion[i]) {
 			free(fd1094_cacheregion[i]);
 			fd1094_cacheregion[i] = NULL;

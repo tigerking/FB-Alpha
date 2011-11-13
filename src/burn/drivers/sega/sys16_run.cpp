@@ -5,137 +5,137 @@
 #include "upd7759.h"
 #include "segapcm.h"
 
-unsigned char  System16InputPort0[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char  System16InputPort1[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char  System16InputPort2[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char  System16InputPort3[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char  System16InputPort4[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char  System16InputPort5[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char  System16InputPort6[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
-unsigned char  System16Gear           = 0;
-int            System16AnalogPort0    = 0;
-int            System16AnalogPort1    = 0;
-int            System16AnalogPort2    = 0;
-int            System16AnalogPort3    = 0;
-int            System16AnalogPort4    = 0;
-int            System16AnalogPort5    = 0;
-int            System16AnalogSelect   = 0;
-unsigned char  System16Dip[3]         = {0, 0, 0};
-unsigned char  System16Input[7]       = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-unsigned char  System16Reset          = 0;
+UINT8  System16InputPort0[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
+UINT8  System16InputPort1[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
+UINT8  System16InputPort2[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
+UINT8  System16InputPort3[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
+UINT8  System16InputPort4[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
+UINT8  System16InputPort5[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
+UINT8  System16InputPort6[8]  = {0, 0, 0, 0, 0, 0, 0, 0};
+UINT8  System16Gear           = 0;
+INT32  System16AnalogPort0    = 0;
+INT32  System16AnalogPort1    = 0;
+INT32  System16AnalogPort2    = 0;
+INT32  System16AnalogPort3    = 0;
+INT32  System16AnalogPort4    = 0;
+INT32  System16AnalogPort5    = 0;
+INT32  System16AnalogSelect   = 0;
+UINT8  System16Dip[3]         = {0, 0, 0};
+UINT8  System16Input[7]       = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+UINT8  System16Reset          = 0;
 
-unsigned char  *Mem                   = NULL;
-unsigned char  *MemEnd                = NULL;
-unsigned char  *RamStart              = NULL;
-unsigned char  *RamEnd                = NULL;
-unsigned char  *System16Rom           = NULL;
-unsigned char  *System16Code          = NULL;
-unsigned char  *System16Rom2          = NULL;
-unsigned char  *System16Rom3          = NULL;
-unsigned char  *System16Z80Rom        = NULL;
-unsigned char  *System16Z80Code       = NULL;
-unsigned char  *System16Z80Rom2       = NULL;
-unsigned char  *System16Z80Rom3       = NULL;
-unsigned char  *System16Z80Rom4       = NULL;
-unsigned char  *System167751Prog      = NULL;
-unsigned char  *System167751Data      = NULL;
-unsigned char  *System16UPD7759Data   = NULL;
-unsigned char  *System16PCMData       = NULL;
-unsigned char  *System16PCM2Data      = NULL;
-unsigned char  *System16RF5C68Data    = NULL;
-unsigned char  *System16Prom          = NULL;
-unsigned char  *System16Key           = NULL;
-unsigned char  *System16Ram           = NULL;
-unsigned char  *System16ExtraRam      = NULL;
-unsigned char  *System16ExtraRam2     = NULL;
-unsigned char  *System16ExtraRam3     = NULL;
-unsigned char  *System16BackupRam     = NULL;
-unsigned char  *System16BackupRam2    = NULL;
-unsigned char  *System16Z80Ram        = NULL;
-unsigned char  *System16TileRam       = NULL;
-unsigned char  *System16TextRam       = NULL;
-unsigned char  *System16SpriteRam     = NULL;
-unsigned char  *System16SpriteRamBuff = NULL;
-unsigned char  *System16SpriteRam2    = NULL;
-unsigned char  *System16RotateRam     = NULL;
-unsigned char  *System16RotateRamBuff = NULL;
-unsigned char  *System16PaletteRam    = NULL;
-unsigned char  *System16RoadRam       = NULL;
-unsigned char  *System16RoadRamBuff   = NULL;
-unsigned char  *System16Tiles         = NULL;
-unsigned char  *System16Sprites       = NULL;
-unsigned char  *System16Sprites2      = NULL;
-unsigned char  *System16Roads         = NULL;
-unsigned int   *System16Palette       = NULL;
-unsigned char  *System16TempGfx       = NULL;
+UINT8  *Mem                   = NULL;
+UINT8  *MemEnd                = NULL;
+UINT8  *RamStart              = NULL;
+UINT8  *RamEnd                = NULL;
+UINT8  *System16Rom           = NULL;
+UINT8  *System16Code          = NULL;
+UINT8  *System16Rom2          = NULL;
+UINT8  *System16Rom3          = NULL;
+UINT8  *System16Z80Rom        = NULL;
+UINT8  *System16Z80Code       = NULL;
+UINT8  *System16Z80Rom2       = NULL;
+UINT8  *System16Z80Rom3       = NULL;
+UINT8  *System16Z80Rom4       = NULL;
+UINT8  *System167751Prog      = NULL;
+UINT8  *System167751Data      = NULL;
+UINT8  *System16UPD7759Data   = NULL;
+UINT8  *System16PCMData       = NULL;
+UINT8  *System16PCM2Data      = NULL;
+UINT8  *System16RF5C68Data    = NULL;
+UINT8  *System16Prom          = NULL;
+UINT8  *System16Key           = NULL;
+UINT8  *System16Ram           = NULL;
+UINT8  *System16ExtraRam      = NULL;
+UINT8  *System16ExtraRam2     = NULL;
+UINT8  *System16ExtraRam3     = NULL;
+UINT8  *System16BackupRam     = NULL;
+UINT8  *System16BackupRam2    = NULL;
+UINT8  *System16Z80Ram        = NULL;
+UINT8  *System16TileRam       = NULL;
+UINT8  *System16TextRam       = NULL;
+UINT8  *System16SpriteRam     = NULL;
+UINT8  *System16SpriteRamBuff = NULL;
+UINT8  *System16SpriteRam2    = NULL;
+UINT8  *System16RotateRam     = NULL;
+UINT8  *System16RotateRamBuff = NULL;
+UINT8  *System16PaletteRam    = NULL;
+UINT8  *System16RoadRam       = NULL;
+UINT8  *System16RoadRamBuff   = NULL;
+UINT8  *System16Tiles         = NULL;
+UINT8  *System16Sprites       = NULL;
+UINT8  *System16Sprites2      = NULL;
+UINT8  *System16Roads         = NULL;
+UINT32   *System16Palette       = NULL;
+UINT8  *System16TempGfx       = NULL;
 
-unsigned int System16RomSize = 0;
-unsigned int System16RomNum = 0;
-unsigned int System16Rom2Size = 0;
-unsigned int System16Rom2Num = 0;
-unsigned int System16Rom3Size = 0;
-unsigned int System16Rom3Num = 0;
-unsigned int System16TileRomSize = 0;
-unsigned int System16TileRomNum = 0;
-unsigned int System16NumTiles = 0;
-unsigned int System16SpriteRomSize = 0;
-unsigned int System16SpriteRomNum = 0;
-unsigned int System16Sprite2RomSize = 0;
-unsigned int System16Sprite2RomNum = 0;
-unsigned int System16RoadRomSize = 0;
-unsigned int System16RoadRomNum = 0;
-unsigned int System16Z80RomSize = 0;
-unsigned int System16Z80RomNum = 0;
-unsigned int System16Z80Rom2Size = 0;
-unsigned int System16Z80Rom2Num = 0;
-unsigned int System16Z80Rom3Size = 0;
-unsigned int System16Z80Rom3Num = 0;
-unsigned int System16Z80Rom4Size = 0;
-unsigned int System16Z80Rom4Num = 0;
-unsigned int System167751ProgSize = 0;
-unsigned int System167751ProgNum = 0;
-unsigned int System167751DataSize = 0;
-unsigned int System167751DataNum = 0;
-unsigned int System16UPD7759DataSize = 0;
-unsigned int System16UPD7759DataNum = 0;
-unsigned int System16PCMDataSize = 0;
-unsigned int System16PCMDataNum = 0;
-unsigned int System16PCMDataSizePreAllocate = 0;
-unsigned int System16PCM2DataSize = 0;
-unsigned int System16PCM2DataNum = 0;
-unsigned int System16RF5C68DataSize = 0;
-unsigned int System16RF5C68DataNum = 0;
-unsigned int System16PromSize = 0;
-unsigned int System16PromNum = 0;
-unsigned int System16KeySize = 0;
-unsigned int System16RamSize = 0;
-unsigned int System16ExtraRamSize = 0;
-unsigned int System16ExtraRam2Size = 0;
-unsigned int System16ExtraRam3Size = 0;
-unsigned int System16SpriteRamSize = 0;
-unsigned int System16SpriteRam2Size = 0;
-unsigned int System16RotateRamSize = 0;
-unsigned int System16BackupRamSize = 0;
-unsigned int System16BackupRam2Size = 0;
+UINT32 System16RomSize = 0;
+UINT32 System16RomNum = 0;
+UINT32 System16Rom2Size = 0;
+UINT32 System16Rom2Num = 0;
+UINT32 System16Rom3Size = 0;
+UINT32 System16Rom3Num = 0;
+UINT32 System16TileRomSize = 0;
+UINT32 System16TileRomNum = 0;
+UINT32 System16NumTiles = 0;
+UINT32 System16SpriteRomSize = 0;
+UINT32 System16SpriteRomNum = 0;
+UINT32 System16Sprite2RomSize = 0;
+UINT32 System16Sprite2RomNum = 0;
+UINT32 System16RoadRomSize = 0;
+UINT32 System16RoadRomNum = 0;
+UINT32 System16Z80RomSize = 0;
+UINT32 System16Z80RomNum = 0;
+UINT32 System16Z80Rom2Size = 0;
+UINT32 System16Z80Rom2Num = 0;
+UINT32 System16Z80Rom3Size = 0;
+UINT32 System16Z80Rom3Num = 0;
+UINT32 System16Z80Rom4Size = 0;
+UINT32 System16Z80Rom4Num = 0;
+UINT32 System167751ProgSize = 0;
+UINT32 System167751ProgNum = 0;
+UINT32 System167751DataSize = 0;
+UINT32 System167751DataNum = 0;
+UINT32 System16UPD7759DataSize = 0;
+UINT32 System16UPD7759DataNum = 0;
+UINT32 System16PCMDataSize = 0;
+UINT32 System16PCMDataNum = 0;
+UINT32 System16PCMDataSizePreAllocate = 0;
+UINT32 System16PCM2DataSize = 0;
+UINT32 System16PCM2DataNum = 0;
+UINT32 System16RF5C68DataSize = 0;
+UINT32 System16RF5C68DataNum = 0;
+UINT32 System16PromSize = 0;
+UINT32 System16PromNum = 0;
+UINT32 System16KeySize = 0;
+UINT32 System16RamSize = 0;
+UINT32 System16ExtraRamSize = 0;
+UINT32 System16ExtraRam2Size = 0;
+UINT32 System16ExtraRam3Size = 0;
+UINT32 System16SpriteRamSize = 0;
+UINT32 System16SpriteRam2Size = 0;
+UINT32 System16RotateRamSize = 0;
+UINT32 System16BackupRamSize = 0;
+UINT32 System16BackupRam2Size = 0;
 
-static int System16LastGear;
+static INT32 System16LastGear;
 bool System16HasGears = false;
 
-unsigned char System16VideoControl;
-int System16SoundLatch;
+UINT8 System16VideoControl;
+INT32 System16SoundLatch;
 bool System16BTileAlt = false;
 bool Shangon = false;
 bool Hangon = false;
 bool System16Z80Enable = true;
 
-int nSystem16CyclesDone[4];
-static int nCyclesTotal[4];
-static int nCyclesSegment;
-unsigned int System16ClockSpeed = 0;
+INT32 nSystem16CyclesDone[4];
+static INT32 nCyclesTotal[4];
+static INT32 nCyclesSegment;
+UINT32 System16ClockSpeed = 0;
 
-int YBoardIrq2Scanline = 0;
+INT32 YBoardIrq2Scanline = 0;
 
-int System16YM2413IRQInterval;
+INT32 System16YM2413IRQInterval;
 
 static bool bUseAsm68KCoreOldValue = false;
 
@@ -155,7 +155,7 @@ System16MakeAnalogInputs System16MakeAnalogInputsDo;
 Inputs
 ====================================================*/
 
-inline static void System16ClearOpposites(unsigned char* nJoystickInputs)
+inline static void System16ClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x30) == 0x30) {
 		*nJoystickInputs &= ~0x30;
@@ -192,7 +192,7 @@ inline static void OutrunMakeInputs()
 	if (System16Gear && System16LastGear == 0) System16InputPort0[4] ^= 1;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		System16Input[0] |= (System16InputPort0[i] & 1) << i;
 	}
 	
@@ -207,7 +207,7 @@ inline static void PdriftMakeInputs()
 	if (System16Gear && System16LastGear == 0) System16InputPort0[5] ^= 1;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		System16Input[0] |= (System16InputPort0[i] & 1) << i;
 	}
 	
@@ -216,18 +216,18 @@ inline static void PdriftMakeInputs()
 
 static void System16GunMakeInputs()
 {
-	if (nBurnGunNumPlayers) BurnGunMakeInputs(0, (short)System16AnalogPort0, (short)System16AnalogPort1);
-	if (nBurnGunNumPlayers >= 1) BurnGunMakeInputs(1, (short)System16AnalogPort2, (short)System16AnalogPort3);
-	if (nBurnGunNumPlayers >= 2) BurnGunMakeInputs(2, (short)System16AnalogPort4, (short)System16AnalogPort5);
+	if (nBurnGunNumPlayers) BurnGunMakeInputs(0, (INT16)System16AnalogPort0, (INT16)System16AnalogPort1);
+	if (nBurnGunNumPlayers >= 1) BurnGunMakeInputs(1, (INT16)System16AnalogPort2, (INT16)System16AnalogPort3);
+	if (nBurnGunNumPlayers >= 2) BurnGunMakeInputs(2, (INT16)System16AnalogPort4, (INT16)System16AnalogPort5);
 }
 
 /*====================================================
 Reset Driver
 ====================================================*/
 
-static int System16DoReset()
+static INT32 System16DoReset()
 {
-	int i;
+	INT32 i;
 	
 	if ((BurnDrvGetHardwareCode() & HARDWARE_SEGA_FD1094_ENC) || (BurnDrvGetHardwareCode() & HARDWARE_SEGA_FD1094_ENC_CPU2)) {
 		fd1094_machine_init();
@@ -352,9 +352,9 @@ static int System16DoReset()
 	return 0;
 }
 
-int __fastcall OutrunResetCallback()
+INT32 __fastcall OutrunResetCallback()
 {
-	int nLastCPU = nSekActive;
+	INT32 nLastCPU = nSekActive;
 	SekClose();
 	
 	SekOpen(1);
@@ -370,7 +370,7 @@ int __fastcall OutrunResetCallback()
 Z80 Memory Handlers
 ====================================================*/
 
-unsigned char __fastcall System16Z80PortRead(unsigned short a)
+UINT8 __fastcall System16Z80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -399,7 +399,7 @@ unsigned char __fastcall System16Z80PortRead(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall System16PPIZ80PortRead(unsigned short a)
+UINT8 __fastcall System16PPIZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -422,7 +422,7 @@ unsigned char __fastcall System16PPIZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall System16Z80PortWrite(unsigned short a, unsigned char d)
+void __fastcall System16Z80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	d &= 0xff;
@@ -496,7 +496,7 @@ void __fastcall System16Z80PortWrite(unsigned short a, unsigned char d)
 }
 
 #if 1 && defined FBA_DEBUG
-unsigned char __fastcall System16Z80Read(unsigned short a)
+UINT8 __fastcall System16Z80Read(UINT16 a)
 {
 	bprintf(PRINT_NORMAL, _T("Z80 Read -> %04X\n"), a);
 
@@ -505,13 +505,13 @@ unsigned char __fastcall System16Z80Read(unsigned short a)
 #endif
 
 #if 1 && defined FBA_DEBUG
-void __fastcall System16Z80Write(unsigned short a, unsigned char d)
+void __fastcall System16Z80Write(UINT16 a, UINT8 d)
 {
 	bprintf(PRINT_NORMAL, _T("Z80 Write -> %04X, %02X\n"), a, d);
 }
 #endif
 
-unsigned char __fastcall System16Z80PCMRead(unsigned short a)
+UINT8 __fastcall System16Z80PCMRead(UINT16 a)
 {
 	if (a >= 0xf000 && a <= 0xf0ff) {
 		return SegaPCMRead(a - 0xf000);
@@ -524,7 +524,7 @@ unsigned char __fastcall System16Z80PCMRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall System16Z80PCMWrite(unsigned short a, unsigned char d)
+void __fastcall System16Z80PCMWrite(UINT16 a, UINT8 d)
 {
 	if (a >= 0xf000 && a <= 0xf0ff) {
 		SegaPCMWrite(a - 0xf000, d);
@@ -536,7 +536,7 @@ void __fastcall System16Z80PCMWrite(unsigned short a, unsigned char d)
 #endif
 }
 
-unsigned char __fastcall System16Z802203PortRead(unsigned short a)
+UINT8 __fastcall System16Z802203PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -554,7 +554,7 @@ unsigned char __fastcall System16Z802203PortRead(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall System16Z802203Read(unsigned short a)
+UINT8 __fastcall System16Z802203Read(UINT16 a)
 {
 	if (a >= 0xe000 && a <= 0xe0ff) {
 		return SegaPCMRead(a - 0xe000);
@@ -573,7 +573,7 @@ unsigned char __fastcall System16Z802203Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall System16Z802203Write(unsigned short a, unsigned char d)
+void __fastcall System16Z802203Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0xe000 && a <= 0xe0ff) {
 		SegaPCMWrite(a - 0xe000, d);
@@ -597,7 +597,7 @@ void __fastcall System16Z802203Write(unsigned short a, unsigned char d)
 #endif
 }
 
-unsigned char __fastcall System18Z80PortRead(unsigned short a)
+UINT8 __fastcall System18Z80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -618,7 +618,7 @@ unsigned char __fastcall System18Z80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall System18Z80PortWrite(unsigned short a, unsigned char d)
+void __fastcall System18Z80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -664,7 +664,7 @@ void __fastcall System18Z80PortWrite(unsigned short a, unsigned char d)
 		}
 		
 		case 0xa0: {
-			unsigned int BankAddress = d * 0x2000;
+			UINT32 BankAddress = d * 0x2000;
 			ZetMapArea(0xa000, 0xbfff, 0, System16Z80Rom + 0x10000 + BankAddress);
 			ZetMapArea(0xa000, 0xbfff, 2, System16Z80Rom + 0x10000 + BankAddress);
 			return;
@@ -676,7 +676,7 @@ void __fastcall System18Z80PortWrite(unsigned short a, unsigned char d)
 #endif
 }
 
-unsigned char __fastcall System18Z80Read(unsigned short a)
+UINT8 __fastcall System18Z80Read(UINT16 a)
 {
 	if (a >= 0xd000 && a <= 0xdfff) {
 		return RF5C68PCMRead(a - 0xd000);
@@ -689,7 +689,7 @@ unsigned char __fastcall System18Z80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall System18Z80Write(unsigned short a, unsigned char d)
+void __fastcall System18Z80Write(UINT16 a, UINT8 d)
 {
 	if (a >= 0xc000 && a <= 0xc00f) {
 		RF5C68PCMRegWrite(a - 0xc000, d);
@@ -706,7 +706,7 @@ void __fastcall System18Z80Write(unsigned short a, unsigned char d)
 #endif
 }
 
-void System16N7751ControlWrite(unsigned int Port, unsigned int Data)
+void System16N7751ControlWrite(UINT32 Port, UINT32 Data)
 {
 	if (!(Data & 0x01)) {
 		N7751Reset();
@@ -726,7 +726,7 @@ void System16N7751ControlWrite(unsigned int Port, unsigned int Data)
 	bprintf(PRINT_NORMAL, _T("YM2151 Write Port %x, %02X\n"), Port, Data);
 }
 
-unsigned char __fastcall N7751ReadIo(unsigned int Port)
+UINT8 __fastcall N7751ReadIo(UINT32 Port)
 {
 	switch (Port) {
 		case 0x102: {
@@ -741,7 +741,7 @@ unsigned char __fastcall N7751ReadIo(unsigned int Port)
 	return 0;
 }
 
-void __fastcall N7751WriteIo(unsigned int Port, unsigned char Value)
+void __fastcall N7751WriteIo(UINT32 Port, UINT8 Value)
 {
 	switch (Port) {
 		case 0x101: {
@@ -757,16 +757,16 @@ void __fastcall N7751WriteIo(unsigned int Port, unsigned char Value)
 		case 0x105:
 		case 0x106:
 		case 0x107: {
-			int Offset = Port - 0x104;
-			int Mask = (0xf << (4 * Offset)) & 0x3fff;
-			int NewData = (Value << (4 * Offset)) & Mask;
+			INT32 Offset = Port - 0x104;
+			INT32 Mask = (0xf << (4 * Offset)) & 0x3fff;
+			INT32 NewData = (Value << (4 * Offset)) & Mask;
 			N7751RomAddress = (N7751RomAddress & ~Mask) | NewData;
 			return;
 		}
 	}
 }
 
-unsigned char __fastcall N7751Read(unsigned int Address)
+UINT8 __fastcall N7751Read(UINT32 Address)
 {
 	if (Address < 0x400) return System167751Prog[Address];
 	return 0;
@@ -776,9 +776,9 @@ unsigned char __fastcall N7751Read(unsigned int Address)
 Allocate Memory
 ====================================================*/
 
-static int System16MemIndex()
+static INT32 System16MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	
 	System16PaletteEntries = 0x800;
 	System16RamSize = 0x4000;
@@ -793,8 +793,8 @@ static int System16MemIndex()
 	bool SpriteBuffer = false;
 	bool HasRoad = false;
 	bool UseTempDraw = false;
-	int Z80RomSize = 0x10000;
-	int Z80RamSize = 0x00800;
+	INT32 Z80RomSize = 0x10000;
+	INT32 Z80RamSize = 0x00800;
 	
 	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) {
 		Z80RomSize = 0x210000;
@@ -908,9 +908,9 @@ static int System16MemIndex()
 		System16Roads        = Next; Next += 0x40000;
 	}
 	
-	System16Palette      = (unsigned int*)Next; Next += System16PaletteEntries * 3 * sizeof(unsigned int) + (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) ? (0x40 * sizeof(unsigned int)) : 0);
+	System16Palette      = (UINT32*)Next; Next += System16PaletteEntries * 3 * sizeof(UINT32) + (((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_SYSTEM18) ? (0x40 * sizeof(UINT32)) : 0);
 	
-	if (UseTempDraw) pTempDraw = (unsigned short*)Next; Next += (512 * 512 * sizeof(unsigned short));
+	if (UseTempDraw) pTempDraw = (UINT16*)Next; Next += (512 * 512 * sizeof(UINT16));
 	
 	MemEnd = Next;
 
@@ -921,14 +921,14 @@ static int System16MemIndex()
 Rom Loading
 ====================================================*/
 
-static int System16LoadRoms(bool bLoad)
+static INT32 System16LoadRoms(bool bLoad)
 {
 	struct BurnRomInfo ri;
 	ri.nType = 0;
 	ri.nLen = 0;
-	int nOffset = -1;
-	unsigned int i;
-	int nRet = 0;
+	INT32 nOffset = -1;
+	UINT32 i;
+	INT32 nRet = 0;
 	
 	if (!bLoad) {
 		do {
@@ -1049,7 +1049,7 @@ static int System16LoadRoms(bool bLoad)
 	}
 	
 	if (bLoad) {
-		int Offset;
+		INT32 Offset;
 		
 		// 68000 Program Roms
 		Offset = 0;
@@ -1093,7 +1093,7 @@ static int System16LoadRoms(bool bLoad)
 
 		// Tile Roms
 		Offset = 0;
-		System16TempGfx = (unsigned char*)malloc(System16TileRomSize);
+		System16TempGfx = (UINT8*)malloc(System16TileRomSize);
 		for (i = System16RomNum + System16Rom2Num + System16Rom3Num; i < System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum; i++) {
 			nRet = BurnLoadRom(System16TempGfx + Offset, i, 1); if (nRet) return 1;
 			
@@ -1177,7 +1177,7 @@ static int System16LoadRoms(bool bLoad)
 		// Road Roms
 		if (System16RoadRomSize) {
 			Offset = 0;
-			System16TempGfx = (unsigned char*)malloc(System16RoadRomSize);
+			System16TempGfx = (UINT8*)malloc(System16RoadRomSize);
 			for (i = System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum; i < System16RomNum + System16Rom2Num + System16Rom3Num + System16TileRomNum + System16SpriteRomNum + System16Sprite2RomNum + System16RoadRomNum; i++) {
 				nRet = BurnLoadRom(System16TempGfx + Offset, i, 1); if (nRet) return 1;
 			
@@ -1335,10 +1335,10 @@ static int System16LoadRoms(bool bLoad)
 	return nRet;
 }
 
-int CustomLoadRom20000()
+INT32 CustomLoadRom20000()
 {
-	int nRet = 1;
-	unsigned char *pTemp = (unsigned char*)malloc(0xc0000);
+	INT32 nRet = 1;
+	UINT8 *pTemp = (UINT8*)malloc(0xc0000);
 	
 	if (pTemp) {
 		memcpy(pTemp, System16Rom, 0xc0000);
@@ -1353,10 +1353,10 @@ int CustomLoadRom20000()
 	return nRet;
 }
 
-int CustomLoadRom40000()
+INT32 CustomLoadRom40000()
 {
-	int nRet = 1;
-	unsigned char *pTemp = (unsigned char*)malloc(0xc0000);
+	INT32 nRet = 1;
+	UINT8 *pTemp = (UINT8*)malloc(0xc0000);
 	
 	if (pTemp) {
 		memcpy(pTemp, System16Rom, 0xc0000);
@@ -1375,17 +1375,17 @@ int CustomLoadRom40000()
 Sound Support Functions
 ====================================================*/
 
-inline static int System16SndGetBank(int Reg86)
+inline static INT32 System16SndGetBank(INT32 Reg86)
 {
 	return (Reg86>>4)&7;
 }
 
-inline static int PdriftSndGetBank(int Reg86)
+inline static INT32 PdriftSndGetBank(INT32 Reg86)
 {
 	return (Reg86>>3)&0x1f;
 }
 
-inline void System16YM2151IRQHandler(int Irq)
+inline void System16YM2151IRQHandler(INT32 Irq)
 {
 	if (Irq) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -1394,7 +1394,7 @@ inline void System16YM2151IRQHandler(int Irq)
 	}
 }
 
-inline static void System16YM2203IRQHandler(int, int nStatus)
+inline static void System16YM2203IRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -1403,9 +1403,9 @@ inline static void System16YM2203IRQHandler(int, int nStatus)
 	}
 }
 
-inline static int System16SynchroniseStream(int nSoundRate)
+inline static INT32 System16SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
 inline static double System16GetTime()
@@ -1413,9 +1413,9 @@ inline static double System16GetTime()
 	return (double)ZetTotalCycles() / 4000000;
 }
 
-inline static int System18SynchroniseStream(int nSoundRate)
+inline static INT32 System18SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 8000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 8000000;
 }
 
 inline static double System18GetTime()
@@ -1423,7 +1423,7 @@ inline static double System18GetTime()
 	return (double)ZetTotalCycles() / 8000000;
 }
 
-static void System16UPD7759DrqCallback(int state)
+static void System16UPD7759DrqCallback(INT32 state)
 {
 	if (state) ZetNmi();
 }
@@ -1439,7 +1439,7 @@ struct multiply_chip
 
 static struct multiply_chip multiply[3];
 
-UINT16 System16MultiplyChipRead(int which, int offset)
+UINT16 System16MultiplyChipRead(INT32 which, INT32 offset)
 {
 	offset &= 3;
 	switch (offset) {
@@ -1463,7 +1463,7 @@ UINT16 System16MultiplyChipRead(int which, int offset)
 	return 0xffff;
 }
 
-void System16MultiplyChipWrite(int which, int offset, UINT16 data)
+void System16MultiplyChipWrite(INT32 which, INT32 offset, UINT16 data)
 {
 	offset &= 3;
 	switch (offset) {
@@ -1500,7 +1500,7 @@ struct divide_chip
 
 static struct divide_chip divide[3];
 
-static void update_divide(int which, int mode)
+static void update_divide(INT32 which, INT32 mode)
 {
 	/* clear the flags by default */
 	divide[which].regs[6] = 0;
@@ -1561,7 +1561,7 @@ static void update_divide(int which, int mode)
 	}
 }
 
-UINT16 System16DivideChipRead(int which, int offset)
+UINT16 System16DivideChipRead(INT32 which, INT32 offset)
 {
 	offset &= 7;
 	switch (offset) {
@@ -1593,10 +1593,10 @@ UINT16 System16DivideChipRead(int which, int offset)
 	return 0xffff;
 }
 
-void System16DivideChipWrite(int which, int offset, UINT16 data)
+void System16DivideChipWrite(INT32 which, INT32 offset, UINT16 data)
 {
-	int a4 = offset & 8;
-	int a3 = offset & 4;
+	INT32 a4 = offset & 8;
+	INT32 a3 = offset & 4;
 	
 	offset &= 3;
 	switch (offset) {
@@ -1636,10 +1636,10 @@ struct compare_timer_chip
 
 static struct compare_timer_chip compare_timer[2];
 
-inline static int segaic16_compare_timer_clock(int which)
+inline static INT32 segaic16_compare_timer_clock(INT32 which)
 {
-	int old_counter = compare_timer[which].counter;
-	int result = 0;
+	INT32 old_counter = compare_timer[which].counter;
+	INT32 result = 0;
 
 	/* if we're enabled, clock the upcounter */
 	if (compare_timer[which].regs[10] & 1)
@@ -1654,13 +1654,13 @@ inline static int segaic16_compare_timer_clock(int which)
 	return result;
 }
 
-inline static void update_compare(int which, int update_history)
+inline static void update_compare(INT32 which, INT32 update_history)
 {
-	int bound1 = (INT16)compare_timer[which].regs[0];
-	int bound2 = (INT16)compare_timer[which].regs[1];
-	int value = (INT16)compare_timer[which].regs[2];
-	int min = (bound1 < bound2) ? bound1 : bound2;
-	int max = (bound1 > bound2) ? bound1 : bound2;
+	INT32 bound1 = (INT16)compare_timer[which].regs[0];
+	INT32 bound2 = (INT16)compare_timer[which].regs[1];
+	INT32 value = (INT16)compare_timer[which].regs[2];
+	INT32 min = (bound1 < bound2) ? bound1 : bound2;
+	INT32 max = (bound1 > bound2) ? bound1 : bound2;
 
 	if (value < min)
 	{
@@ -1682,7 +1682,7 @@ inline static void update_compare(int which, int update_history)
 		compare_timer[which].regs[4] |= (compare_timer[which].regs[3] == 0) << compare_timer[which].bit++;
 }
 
-UINT16 System16CompareTimerChipRead(int which, int offset)
+UINT16 System16CompareTimerChipRead(INT32 which, INT32 offset)
 {
 	offset &= 0xf;
 	switch (offset) {
@@ -1699,7 +1699,7 @@ UINT16 System16CompareTimerChipRead(int which, int offset)
 	return 0xffff;
 }
 
-void System16CompareTimerChipWrite(int which, int offset, UINT16 data)
+void System16CompareTimerChipWrite(INT32 which, INT32 offset, UINT16 data)
 {
 	offset &= 0xf;
 	switch (offset) {
@@ -1723,16 +1723,16 @@ void System16CompareTimerChipWrite(int which, int offset, UINT16 data)
 Main Driver Init function
 ====================================================*/
 
-int System16Init()
+INT32 System16Init()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	System16LoadRoms(0); // Get required rom sizes
 	System16MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	System16MemIndex();
 	
@@ -2322,9 +2322,9 @@ int System16Init()
 Exit Function
 ====================================================*/
 
-int System16Exit()
+INT32 System16Exit()
 {
-	int i;
+	INT32 i;
 	
 	SekExit();
 	ZetExit();
@@ -2496,27 +2496,27 @@ int System16Exit()
 Frame Functions
 ====================================================*/
 
-int System16AFrame()
+INT32 System16AFrame()
 {
-	int nInterleave = nBurnSoundLen; // for the DAC
+	INT32 nInterleave = nBurnSoundLen; // for the DAC
 	
 	if (System16Reset) System16DoReset();
 
 	System16MakeInputs();
 	
-	nCyclesTotal[0] = (int)((long long)10000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)10000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[1] = 4000000 / 60;
 	nCyclesTotal[2] = (6000000 / 15) / 60;
 	nSystem16CyclesDone[0] = nSystem16CyclesDone[1] = nSystem16CyclesDone[2] = 0;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekNewFrame();
 	ZetNewFrame();
 
 	SekOpen(0);
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -2542,8 +2542,8 @@ int System16AFrame()
 		}
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -2560,8 +2560,8 @@ int System16AFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			ZetOpen(0);
@@ -2576,9 +2576,9 @@ int System16AFrame()
 	return 0;
 }
 
-int System16BFrame()
+INT32 System16BFrame()
 {
-	int nInterleave = (nBurnSoundRate <= 44100) ? 183 : 200;	// For the UPD7759
+	INT32 nInterleave = (nBurnSoundRate <= 44100) ? 183 : 200;	// For the UPD7759
 	
 	if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2413) nInterleave = System16YM2413IRQInterval;
 	
@@ -2586,18 +2586,18 @@ int System16BFrame()
 	
 	System16MakeInputs();
 	
-	nCyclesTotal[0] = (int)((long long)System16ClockSpeed * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)System16ClockSpeed * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[1] = 5000000 / 60;
 	nSystem16CyclesDone[0] = nSystem16CyclesDone[1] = 0;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 	
 	SekNewFrame();
 	ZetNewFrame();
 	
 	SekOpen(0);
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -2621,8 +2621,8 @@ int System16BFrame()
 		}
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			
 			if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2413) {
 				BurnYM2413Render(pSoundBuf, nSegmentLength);
@@ -2638,8 +2638,8 @@ int System16BFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			if (BurnDrvGetHardwareCode() & HARDWARE_SEGA_YM2413) {
@@ -2673,9 +2673,9 @@ int System16BFrame()
 	return 0;
 }
 
-int System18Frame()
+INT32 System18Frame()
 {
-	int nInterleave = nBurnSoundLen;
+	INT32 nInterleave = nBurnSoundLen;
 
 	if (System16Reset) System16DoReset();
 
@@ -2683,18 +2683,18 @@ int System18Frame()
 	
 	if (nBurnGunNumPlayers) System16GunMakeInputs();
 	
-	nCyclesTotal[0] = (int)((long long)10000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)10000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[1] = 8000000 / 60;
 	nSystem16CyclesDone[0] = nSystem16CyclesDone[1] = 0;
 	
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekNewFrame();
 	ZetNewFrame();
 	
 	SekOpen(0);
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -2708,8 +2708,8 @@ int System18Frame()
 		ZetClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			RF5C68PCMUpdate(pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -2723,8 +2723,8 @@ int System18Frame()
 	ZetClose();
 	
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			RF5C68PCMUpdate(pSoundBuf, nSegmentLength);
@@ -2742,26 +2742,26 @@ int System18Frame()
 	return 0;
 }
 
-int HangonFrame()
+INT32 HangonFrame()
 {
-	int nInterleave = 10, i;
+	INT32 nInterleave = 10, i;
 
 	if (System16Reset) System16DoReset();
 
 	System16MakeInputs();
 	
-	nCyclesTotal[0] = (int)((long long)System16ClockSpeed * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	nCyclesTotal[1] = (int)((long long)System16ClockSpeed * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)System16ClockSpeed * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = (INT32)((INT64)System16ClockSpeed * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[2] = 4000000 / 60;
 	nSystem16CyclesDone[0] = nSystem16CyclesDone[1] = nSystem16CyclesDone[2] = 0;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 	
 	SekNewFrame();
 	ZetNewFrame();
 
 	for (i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 #1
 		nCurrentCPU = 0;
@@ -2790,8 +2790,8 @@ int HangonFrame()
 		ZetClose();
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -2803,8 +2803,8 @@ int HangonFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			ZetOpen(0);
@@ -2827,26 +2827,26 @@ int HangonFrame()
 	return 0;
 }
 
-int HangonYM2203Frame()
+INT32 HangonYM2203Frame()
 {
-	int nInterleave = 100, i;
+	INT32 nInterleave = 100, i;
 
 	if (System16Reset) System16DoReset();
 
 	System16MakeInputs();
 	
-	nCyclesTotal[0] = (int)((long long)System16ClockSpeed * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	nCyclesTotal[1] = (int)((long long)System16ClockSpeed * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)System16ClockSpeed * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = (INT32)((INT64)System16ClockSpeed * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[2] = 4000000 / 60;
 	nSystem16CyclesDone[0] = nSystem16CyclesDone[1] = nSystem16CyclesDone[2] = 0;
 	
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekNewFrame();
 	ZetNewFrame();
 
 	for (i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 #1
 		nCurrentCPU = 0;
@@ -2870,8 +2870,8 @@ int HangonYM2203Frame()
 		ZetClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			ZetOpen(0);
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
 			SegaPCMUpdate(pSoundBuf, nSegmentLength);
@@ -2889,8 +2889,8 @@ int HangonYM2203Frame()
 	ZetClose();
 	
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			ZetOpen(0);
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
@@ -2912,9 +2912,9 @@ int HangonYM2203Frame()
 	return 0;
 }
 
-int OutrunFrame()
+INT32 OutrunFrame()
 {
-	int nInterleave = 10, i;
+	INT32 nInterleave = 10, i;
 
 	if (System16Reset) System16DoReset();
 
@@ -2924,18 +2924,18 @@ int OutrunFrame()
 		System16MakeInputs();
 	}
 	
-	nCyclesTotal[0] = (int)((long long)(40000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	nCyclesTotal[1] = (int)((long long)(40000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)(40000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = (INT32)((INT64)(40000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[2] = (16000000 / 4) / 60;
 	nSystem16CyclesDone[0] = nSystem16CyclesDone[1] = nSystem16CyclesDone[2] = 0;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 	
 	SekNewFrame();
 	ZetNewFrame();
 
 	for (i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 #1
 		nCurrentCPU = 0;
@@ -2965,8 +2965,8 @@ int OutrunFrame()
 		ZetClose();
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -2978,8 +2978,8 @@ int OutrunFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			ZetOpen(0);
@@ -3006,9 +3006,9 @@ int OutrunFrame()
 	return 0;
 }
 
-int XBoardFrame()
+INT32 XBoardFrame()
 {
-	int nInterleave = 100, i;
+	INT32 nInterleave = 100, i;
 
 	if (System16Reset) System16DoReset();
 
@@ -3016,18 +3016,18 @@ int XBoardFrame()
 	
 	if (nBurnGunNumPlayers) System16GunMakeInputs();
 	
-	nCyclesTotal[0] = (int)((long long)(50000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	nCyclesTotal[1] = (int)((long long)(50000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)(50000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = (INT32)((INT64)(50000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[2] = (16000000 / 4) / 60;
 	nSystem16CyclesDone[0] = nSystem16CyclesDone[1] = nSystem16CyclesDone[2] = 0;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 	
 	SekNewFrame();
 	ZetNewFrame();
 	
 	for (i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 #1
 		nCurrentCPU = 0;
@@ -3059,8 +3059,8 @@ int XBoardFrame()
 		ZetClose();
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -3072,8 +3072,8 @@ int XBoardFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			ZetOpen(0);
@@ -3090,9 +3090,9 @@ int XBoardFrame()
 	return 0;
 }
 
-int YBoardFrame()
+INT32 YBoardFrame()
 {
-	int nInterleave = 224, i;
+	INT32 nInterleave = 224, i;
 
 	if (System16Reset) System16DoReset();
 	
@@ -3104,19 +3104,19 @@ int YBoardFrame()
 	
 	if (nBurnGunNumPlayers) System16GunMakeInputs();
 
-	nCyclesTotal[0] = (int)((long long)(50000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	nCyclesTotal[1] = (int)((long long)(50000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	nCyclesTotal[2] = (int)((long long)(50000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)(50000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = (INT32)((INT64)(50000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[2] = (INT32)((INT64)(50000000 / 4) * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[3] = (32215900 / 8) / 60;
 	nSystem16CyclesDone[0] = nSystem16CyclesDone[1] = nSystem16CyclesDone[2] = nSystem16CyclesDone[3] = 0;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 	
 	SekNewFrame();
 	ZetNewFrame();
 
 	for (i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+		INT32 nCurrentCPU, nNext;
 		
 		// Run 68000 #1
 		nCurrentCPU = 0;
@@ -3157,8 +3157,8 @@ int YBoardFrame()
 		ZetClose();
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -3170,8 +3170,8 @@ int YBoardFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			ZetOpen(0);
@@ -3198,7 +3198,7 @@ int YBoardFrame()
 Driver Scan
 ====================================================*/
 
-int System16Scan(int nAction,int *pnMin)
+INT32 System16Scan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

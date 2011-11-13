@@ -4,7 +4,7 @@
 Input defs
 ====================================================*/
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo AbcopInputList[] = {
 	{"Coin 1"            , BIT_DIGITAL   , System16InputPort0 + 6, "p1 coin"    },
@@ -1441,7 +1441,7 @@ Memory Handlers
 static UINT8 iochip_regs[2][8];
 static UINT8 iochip_force_input;
 
-inline UINT16 iochip_r(int which, int port, int inputval)
+inline UINT16 iochip_r(INT32 which, INT32 port, INT32 inputval)
 {
 	UINT16 result = iochip_regs[which][port];
 
@@ -1470,7 +1470,7 @@ inline UINT16 iochip_r(int which, int port, int inputval)
 	return result;
 }
 
-unsigned short __fastcall XBoardReadWord(unsigned int a)
+UINT16 __fastcall XBoardReadWord(UINT32 a)
 {
 	if (a >= 0x0e0000 && a <= 0x0e0007) {
 		return System16MultiplyChipRead(0, (a - 0x0e0000) >> 1);
@@ -1502,7 +1502,7 @@ unsigned short __fastcall XBoardReadWord(unsigned int a)
 			memcpy(System16RoadRamBuff, System16RoadRam, 0x1000);
 			UINT32 *src = (UINT32 *)System16RoadRamBuff;
 			UINT32 *dst = (UINT32 *)System16RoadRam;
-			for (int i = 0; i < 0x1000/4; i++) {
+			for (INT32 i = 0; i < 0x1000/4; i++) {
 				UINT32 temp = *src;
 				*src++ = *dst;
 				*dst++ = temp;
@@ -1519,14 +1519,14 @@ unsigned short __fastcall XBoardReadWord(unsigned int a)
 	return 0xffff;
 }
 
-unsigned char __fastcall XBoardReadByte(unsigned int a)
+UINT8 __fastcall XBoardReadByte(UINT32 a)
 {
 	if (a >= 0x0e4000 && a <= 0x0e401f) {
-		return (unsigned char)System16DivideChipRead(0, (a - 0x0e4000) >> 1);
+		return (UINT8)System16DivideChipRead(0, (a - 0x0e4000) >> 1);
 	}
 	
 	if (a >= 0x2e4000 && a <= 0x2e401f) {
-		return (unsigned char)System16DivideChipRead(0, (a - 0x2e4000) >> 1);
+		return (UINT8)System16DivideChipRead(0, (a - 0x2e4000) >> 1);
 	}
 	
 	if (a >= 0x140000 && a <= 0x14ffff) {
@@ -1561,7 +1561,7 @@ unsigned char __fastcall XBoardReadByte(unsigned int a)
 	if (a == 0x150007) return System16Dip[1];
 	
 	if (a >= 0x150008 && a <= 0x15ffff) {
-		int offset = ((a - 0x150000) >> 1) & 7;
+		INT32 offset = ((a - 0x150000) >> 1) & 7;
 		switch (offset) {
 			case 0: {
 				return iochip_r(1, 0, ~System16Input[0]);
@@ -1598,7 +1598,7 @@ unsigned char __fastcall XBoardReadByte(unsigned int a)
 			memcpy(System16RoadRamBuff, System16RoadRam, 0x1000);
 			UINT32 *src = (UINT32 *)System16RoadRamBuff;
 			UINT32 *dst = (UINT32 *)System16RoadRam;
-			for (int i = 0; i < 0x1000/4; i++) {
+			for (INT32 i = 0; i < 0x1000/4; i++) {
 				UINT32 temp = *src;
 				*src++ = *dst;
 				*dst++ = temp;
@@ -1615,7 +1615,7 @@ unsigned char __fastcall XBoardReadByte(unsigned int a)
 	return 0xff;
 }
 
-void __fastcall XBoardWriteWord(unsigned int a, unsigned short d)
+void __fastcall XBoardWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x0c0000 && a <= 0x0cffff) {
 		System16BTileWordWrite(a - 0x0c0000, d);
@@ -1646,7 +1646,7 @@ void __fastcall XBoardWriteWord(unsigned int a, unsigned short d)
 	}
 	
 	if (a >= 0x140000 && a <= 0x14ffff) {
-		int offset = ((a - 0x140000) >> 1) & 7;
+		INT32 offset = ((a - 0x140000) >> 1) & 7;
 		
 		iochip_regs[0][offset] = d;
 		
@@ -1662,7 +1662,7 @@ void __fastcall XBoardWriteWord(unsigned int a, unsigned short d)
 	}
 	
 	if (a >= 0x150000 && a <= 0x15ffff) {
-		int offset = ((a - 0x150000) >> 1) & 7;
+		INT32 offset = ((a - 0x150000) >> 1) & 7;
 		
 		iochip_regs[1][offset] = d;
 		return;
@@ -1689,7 +1689,7 @@ void __fastcall XBoardWriteWord(unsigned int a, unsigned short d)
 			UINT32 *dst = (UINT32 *)System16SpriteRamBuff;
 
 			/* swap the halves of the sprite RAM */
-			for (unsigned int i = 0; i < System16SpriteRamSize/4; i++) {
+			for (UINT32 i = 0; i < System16SpriteRamSize/4; i++) {
 				UINT32 temp = *src;
 				*src++ = *dst;
 				*dst++ = temp;
@@ -1712,7 +1712,7 @@ void __fastcall XBoardWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall XBoardWriteByte(unsigned int a, unsigned char d)
+void __fastcall XBoardWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x0c0000 && a <= 0x0cffff) {
 		System16BTileByteWrite((a - 0x0c0000) ^ 1, d);
@@ -1720,7 +1720,7 @@ void __fastcall XBoardWriteByte(unsigned int a, unsigned char d)
 	}
 	
 	if (a >= 0x140000 && a <= 0x14ffff) {
-		int offset = ((a - 0x140000) >> 1) & 7;
+		INT32 offset = ((a - 0x140000) >> 1) & 7;
 		
 		iochip_regs[0][offset] = d;
 		
@@ -1736,7 +1736,7 @@ void __fastcall XBoardWriteByte(unsigned int a, unsigned char d)
 	}
 	
 	if (a >= 0x150000 && a <= 0x15ffff) {
-		int offset = ((a - 0x150000) >> 1) & 7;
+		INT32 offset = ((a - 0x150000) >> 1) & 7;
 		
 		iochip_regs[1][offset] = d;
 		return;
@@ -1749,7 +1749,7 @@ void __fastcall XBoardWriteByte(unsigned int a, unsigned char d)
 			UINT32 *dst = (UINT32 *)System16SpriteRamBuff;
 
 			/* swap the halves of the sprite RAM */
-			for (unsigned int i = 0; i < System16SpriteRamSize/4; i++) {
+			for (UINT32 i = 0; i < System16SpriteRamSize/4; i++) {
 				UINT32 temp = *src;
 				*src++ = *dst;
 				*dst++ = temp;
@@ -1781,7 +1781,7 @@ void __fastcall XBoardWriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-unsigned short __fastcall XBoard2ReadWord(unsigned int a)
+UINT16 __fastcall XBoard2ReadWord(UINT32 a)
 {
 	if (a >= 0x0e0000 && a <= 0x0e0007) {
 		return System16MultiplyChipRead(1, (a - 0x0e0000) >> 1);
@@ -1810,7 +1810,7 @@ unsigned short __fastcall XBoard2ReadWord(unsigned int a)
 			memcpy(System16RoadRamBuff, System16RoadRam, 0x1000);
 			UINT32 *src = (UINT32 *)System16RoadRamBuff;
 			UINT32 *dst = (UINT32 *)System16RoadRam;
-			for (int i = 0; i < 0x1000/4; i++) {
+			for (INT32 i = 0; i < 0x1000/4; i++) {
 				UINT32 temp = *src;
 				*src++ = *dst;
 				*dst++ = temp;
@@ -1827,7 +1827,7 @@ unsigned short __fastcall XBoard2ReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall XBoard2ReadByte(unsigned int a)
+UINT8 __fastcall XBoard2ReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x0ee000:
@@ -1836,7 +1836,7 @@ unsigned char __fastcall XBoard2ReadByte(unsigned int a)
 			memcpy(System16RoadRamBuff, System16RoadRam, 0x1000);
 			UINT32 *src = (UINT32 *)System16RoadRamBuff;
 			UINT32 *dst = (UINT32 *)System16RoadRam;
-			for (int i = 0; i < 0x1000/4; i++) {
+			for (INT32 i = 0; i < 0x1000/4; i++) {
 				UINT32 temp = *src;
 				*src++ = *dst;
 				*dst++ = temp;
@@ -1853,7 +1853,7 @@ unsigned char __fastcall XBoard2ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall XBoard2WriteWord(unsigned int a, unsigned short d)
+void __fastcall XBoard2WriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x0e0000 && a <= 0x0e0007) {
 		System16MultiplyChipWrite(1, (a - 0x0e0000) >> 1, d);
@@ -1893,7 +1893,7 @@ void __fastcall XBoard2WriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall XBoard2WriteByte(unsigned int a, unsigned char d)
+void __fastcall XBoard2WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x0ee001: 
@@ -1912,9 +1912,9 @@ void __fastcall XBoard2WriteByte(unsigned int a, unsigned char d)
 Driver Inits
 ====================================================*/
 
-unsigned char AbcopProcessAnalogControls(UINT16 value)
+UINT8 AbcopProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -1923,7 +1923,7 @@ unsigned char AbcopProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort0 >> 4) < 0xf82 && (System16AnalogPort0 >> 4) > 0x80) {
-				temp = (unsigned char)(0x80 - 0xf82);
+				temp = (UINT8)(0x80 - 0xf82);
 			} else {
 				temp = 0x80 - (System16AnalogPort0 >> 4);
 			}
@@ -1957,9 +1957,9 @@ unsigned char AbcopProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char AburnerProcessAnalogControls(UINT16 value)
+UINT8 AburnerProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 
 	switch (value) {
 
@@ -1996,7 +1996,7 @@ unsigned char AburnerProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort1 >> 4) < 0xf82 && (System16AnalogPort1 >> 4) > 0x80) {
-				temp = (unsigned char)(0x80 - 0xf82);
+				temp = (UINT8)(0x80 - 0xf82);
 			} else {
 				temp = 0x80 - (System16AnalogPort1 >> 4);
 			}
@@ -2051,7 +2051,7 @@ unsigned char AburnerProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char GpriderProcessAnalogControls(UINT16 value)
+UINT8 GpriderProcessAnalogControls(UINT16 value)
 {
 	switch (value) {
 
@@ -2081,7 +2081,7 @@ unsigned char GpriderProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char LoffireProcessAnalogControls(UINT16 value)
+UINT8 LoffireProcessAnalogControls(UINT16 value)
 {
 	switch (value) {
 		case 0: {	return BurnGunReturnX(0);	}
@@ -2092,9 +2092,9 @@ unsigned char LoffireProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char RacheroProcessAnalogControls(UINT16 value)
+UINT8 RacheroProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -2103,7 +2103,7 @@ unsigned char RacheroProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort0 >> 4) < 0xf82 && (System16AnalogPort0 >> 4) > 0x80) {
-				temp = (unsigned char)(0x80 - 0xf82);
+				temp = (UINT8)(0x80 - 0xf82);
 			} else {
 				temp = 0x80 - (System16AnalogPort0 >> 4);
 			}
@@ -2129,9 +2129,9 @@ unsigned char RacheroProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char SmgpProcessAnalogControls(UINT16 value)
+UINT8 SmgpProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -2166,9 +2166,9 @@ unsigned char SmgpProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-unsigned char ThndrbldProcessAnalogControls(UINT16 value)
+UINT8 ThndrbldProcessAnalogControls(UINT16 value)
 {
-	unsigned char temp = 0;
+	UINT8 temp = 0;
 	
 	switch (value) {
 
@@ -2177,7 +2177,7 @@ unsigned char ThndrbldProcessAnalogControls(UINT16 value)
 
 			// Prevent CHAR data overflow
 			if((System16AnalogPort0 >> 4) < 0xf82 && (System16AnalogPort0 >> 4) > 0x80) {
-				temp = (unsigned char)(0x80 - 0xf82);
+				temp = (UINT8)(0x80 - 0xf82);
 			} else {
 				temp = 0x80 - (System16AnalogPort0 >> 4);
 			}
@@ -2236,20 +2236,18 @@ unsigned char ThndrbldProcessAnalogControls(UINT16 value)
 	return 0;
 }
 
-static int AbcopInit()
+static INT32 AbcopInit()
 {
 	System16ProcessAnalogControlsDo = AbcopProcessAnalogControls;
 	
-	int nRet = System16Init();
-
-	return nRet;
+	return System16Init();
 }
 
-static int Aburner2Init()
+static INT32 Aburner2Init()
 {
 	System16ProcessAnalogControlsDo = AburnerProcessAnalogControls;
 	
-	int nRet = System16Init();
+	INT32 nRet = System16Init();
 	
 	if (!nRet) {
 		System16RoadPriority = 0;
@@ -2258,54 +2256,44 @@ static int Aburner2Init()
 	return nRet;
 }
 
-static int GpriderInit()
+static INT32 GpriderInit()
 {
 	System16ProcessAnalogControlsDo = GpriderProcessAnalogControls;
 	
-	int nRet = System16Init();
-
-	return nRet;
+	return System16Init();
 }
 
-static int LoffireInit()
+static INT32 LoffireInit()
 {
 	BurnGunInit(2, true);
 	
 	System16ProcessAnalogControlsDo = LoffireProcessAnalogControls;
 	
-	int nRet = System16Init();
-
-	return nRet;
+	return System16Init();
 }
 
-static int RacheroInit()
+static INT32 RacheroInit()
 {
 	System16ProcessAnalogControlsDo = RacheroProcessAnalogControls;
 	
-	int nRet = System16Init();
-
-	return nRet;
+	return System16Init();
 }
 
-static int SmgpInit()
+static INT32 SmgpInit()
 {
 	System16ProcessAnalogControlsDo = SmgpProcessAnalogControls;
 	
-	int nRet = System16Init();
-
-	return nRet;
+	return System16Init();
 }
 
-static int ThndrbldInit()
+static INT32 ThndrbldInit()
 {
 	System16ProcessAnalogControlsDo = ThndrbldProcessAnalogControls;
 	
-	int nRet = System16Init();
-
-	return nRet;
+	return System16Init();
 }
 
-static int XBoardExit()
+static INT32 XBoardExit()
 {
 	memset(iochip_regs, 0, sizeof(iochip_regs));
 	iochip_force_input = 0;
@@ -2313,7 +2301,7 @@ static int XBoardExit()
 	return System16Exit();
 }
 
-static int XBoardScan(int nAction,int *pnMin)
+static INT32 XBoardScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {					// Return minimum compatible version
 		*pnMin =  0x029660;
