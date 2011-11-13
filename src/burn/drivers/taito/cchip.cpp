@@ -28,7 +28,7 @@ UINT16 SupermanCChipCtrlRead()
 	return 0x01;
 }
 
-UINT16 SupermanCChipRamRead(unsigned int Offset, unsigned char Input1, unsigned char Input2, unsigned char Input3)
+UINT16 SupermanCChipRamRead(UINT32 Offset, UINT8 Input1, UINT8 Input2, UINT8 Input3)
 {
 	if (CurrentBank == 0) {
 		switch (Offset) {
@@ -68,7 +68,7 @@ void SupermanCChipBankWrite(UINT16 Data)
 	CurrentBank = Data & 7;
 }
 
-void SupermanCChipRamWrite(unsigned int Offset, UINT16 Data)
+void SupermanCChipRamWrite(UINT32 Offset, UINT16 Data)
 {
 	if (CurrentBank == 0 && Offset == 0x03)	{
 		SupermanPort = Data;
@@ -95,7 +95,7 @@ void SupermanCChipExit()
 	SupermanPort = 0;
 }
 
-void SupermanCChipScan(int nAction)
+void SupermanCChipScan(INT32 nAction)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(CurrentBank);
@@ -105,9 +105,9 @@ void SupermanCChipScan(int nAction)
 
 // Mega Blast
 
-static unsigned char *MegabCChipRam;
+static UINT8 *MegabCChipRam;
 
-UINT16 MegabCChipRead(unsigned int Offset)
+UINT16 MegabCChipRead(UINT32 Offset)
 {
 	if (Offset == 0x401) {
 		return 0x01;
@@ -116,7 +116,7 @@ UINT16 MegabCChipRead(unsigned int Offset)
 	return MegabCChipRam[Offset];
 }
 
-void MegabCChipWrite(unsigned int Offset, UINT16 Data)
+void MegabCChipWrite(UINT32 Offset, UINT16 Data)
 {
 	MegabCChipRam[Offset] = Data;
 }
@@ -128,7 +128,7 @@ void MegabCChipReset()
 
 void MegabCChipInit()
 {
-	MegabCChipRam = (unsigned char*)malloc(0x800);
+	MegabCChipRam = (UINT8*)malloc(0x800);
 	memset(MegabCChipRam, 0, 0x800);
 	
 	TaitoIC_MegabCChipInUse = 1;
@@ -142,7 +142,7 @@ void MegabCChipExit()
 	}
 }
 
-void MegabCChipScan(int nAction)
+void MegabCChipScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	
@@ -158,7 +158,7 @@ void MegabCChipScan(int nAction)
 // Rainbow Islands C-Chip
 
 static UINT8 *CRAM[8];
-static int ExtraVersion;
+static INT32 ExtraVersion;
 
 struct CBANK
 {
@@ -741,7 +741,7 @@ static const UINT32 cchip_round_address[] =
 
 static void RequestRoundData(void)
 {
-	int round = CRAM[1][0x141]; /* 0...49 */
+	INT32 round = CRAM[1][0x141]; /* 0...49 */
 
 	memcpy(CRAM[1], CROM_BANK1, sizeof CROM_BANK1);
 	memcpy(CRAM[2], CROM_BANK2, sizeof CROM_BANK2);
@@ -761,7 +761,7 @@ static void RequestRoundData(void)
 
 static void RequestWorldData(void)
 {
-	int world = CRAM[0][0x00D] / 4; /* 0...9 */
+	INT32 world = CRAM[0][0x00D] / 4; /* 0...9 */
 
 	/* the extra version has the world data swapped around */
 
@@ -785,7 +785,7 @@ static void RequestWorldData(void)
 
 	if (ExtraVersion)
 	{
-		int i;
+		INT32 i;
 
 		for (i = 0; i < 8; i++)
 		{
@@ -808,7 +808,7 @@ static void RequestWorldData(void)
 
 static void RequestGoalinData(void)
 {
-	int n = rand() % 15;
+	INT32 n = rand() % 15;
 
 	CRAM[1][0x14B] = 0x00; /* x coordinates */
 	CRAM[1][0x14D] = 0x10;
@@ -825,7 +825,7 @@ static void RequestGoalinData(void)
 	CRAM[1][0x154] = cchip_goalin[n][5];
 }
 
-void RainbowCChipUpdate(unsigned char Input1, unsigned char Input2, unsigned char Input3, unsigned char Input4)
+void RainbowCChipUpdate(UINT8 Input1, UINT8 Input2, UINT8 Input3, UINT8 Input4)
 {
 	if (CRAM[1][0x100] == 1) {
 		RequestRoundData();
@@ -856,7 +856,7 @@ UINT16 RainbowCChipCtrlRead()
 	return 0x01;
 }
 
-UINT16 RainbowCChipRamRead(unsigned int Offset)
+UINT16 RainbowCChipRamRead(UINT32 Offset)
 {
 	return CRAM[CurrentBank][Offset];
 }
@@ -871,14 +871,14 @@ void RainbowCChipBankWrite(UINT16 Data)
 	CurrentBank = Data & 7;
 }
 
-void RainbowCChipRamWrite(unsigned int Offset, UINT16 Data)
+void RainbowCChipRamWrite(UINT32 Offset, UINT16 Data)
 {
 	CRAM[CurrentBank][Offset] = Data;
 }
 
 void RainbowCChipReset()
 {
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		memset(CRAM[i], 0, 0x400);
 	}
 	
@@ -886,12 +886,12 @@ void RainbowCChipReset()
 	CurrentBank = 0;	
 }
 
-void RainbowCChipInit(int Version)
+void RainbowCChipInit(INT32 Version)
 {
 	ExtraVersion = Version;
 	
-	for (int i = 0; i < 8; i++) {
-		CRAM[i] = (unsigned char*)malloc(0x400);
+	for (INT32 i = 0; i < 8; i++) {
+		CRAM[i] = (UINT8*)malloc(0x400);
 		memset(CRAM[i], 0, 0x400);
 	}
 	
@@ -900,7 +900,7 @@ void RainbowCChipInit(int Version)
 
 void RainbowCChipExit()
 {
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		if (CRAM[i]) {
 			free(CRAM[i]);
 			CRAM[i] = NULL;
@@ -911,12 +911,12 @@ void RainbowCChipExit()
 	CurrentBank = 0;	
 }
 
-void RainbowCChipScan(int nAction)
+void RainbowCChipScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	
 	if (nAction & ACB_MEMORY_RAM) {
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			memset(&ba, 0, sizeof(ba));
 			ba.Data	  = CRAM[i];
 			ba.nLen	  = 0x400;
@@ -939,7 +939,7 @@ void RainbowCChipScan(int nAction)
 #define OPWOLF_REGION_WORLD		3
 #define OPWOLF_REGION_OTHER		4
 
-static int CChipRegion;
+static INT32 CChipRegion;
 
 static UINT8 CurrentCmd=0;
 static UINT8* CChipRam=0;
@@ -1177,9 +1177,9 @@ static void AccessLevelDataCommand()
 	// Level data command
 	if (CurrentCmd==0xf5)
 	{
-		int level=CChipRam[0x1b];
+		INT32 level=CChipRam[0x1b];
 		const UINT16* level_data=level_data_lookup[level];
-		int i=0;
+		INT32 i=0;
 		for (i=0; i<0xcc; i++)
 		{
 			CChipRam[0x200 + i*2 + 0]=level_data[i]>>8;
@@ -1211,7 +1211,7 @@ static void AccessLevelDataCommand()
 	CurrentCmd=0;
 }
 
-static void updateDifficulty(int Mode)
+static void updateDifficulty(INT32 Mode)
 {
 	// The game is made up of 6 rounds, when you complete the
 	// sixth you return to the start but with harder difficulty.
@@ -1277,7 +1277,7 @@ static void updateDifficulty(int Mode)
 	}
 }
 
-void OpwolfCChipUpdate(unsigned char Input1, unsigned char Input2)
+void OpwolfCChipUpdate(UINT8 Input1, UINT8 Input2)
 {
 	// Update input ports, these are used by both the 68k directly and by the c-chip
 	CChipRam[0x4] = Input1;
@@ -1286,7 +1286,7 @@ void OpwolfCChipUpdate(unsigned char Input1, unsigned char Input2)
 	// Coin slots
 	if (CChipRam[0x4]!=CChipLast_04)
 	{
-		int slot=-1;
+		INT32 slot=-1;
 
 		if (CChipRam[0x4]&1) slot=0;
 		if (CChipRam[0x4]&2) slot=1;
@@ -1459,7 +1459,7 @@ UINT16 OpwolfCChipStatusRead()
 	return 0x01;
 }
 
-UINT16 OpwolfCChipDataRead(unsigned int Offset)
+UINT16 OpwolfCChipDataRead(UINT32 Offset)
 {
 	return CChipRam[(CurrentBank * 0x400) + Offset];
 }
@@ -1476,7 +1476,7 @@ void OpwolfCChipBankWrite(UINT16 Data)
 	CurrentBank = Data & 7;
 }
 
-void OpwolfCChipDataWrite(unsigned char *p68kRom, unsigned int Offset, UINT16 Data )
+void OpwolfCChipDataWrite(UINT8 *p68kRom, UINT32 Offset, UINT16 Data )
 {
 	CChipRam[(CurrentBank * 0x400) + Offset] = Data & 0xff;
 
@@ -1486,7 +1486,7 @@ void OpwolfCChipDataWrite(unsigned char *p68kRom, unsigned int Offset, UINT16 Da
 			UINT16* rom = (UINT16*)p68kRom;
 			UINT32 CoinTable[2]= { 0, 0};
 			UINT8 CoinOffset[2];
-			int Slot;
+			INT32 Slot;
 
 			if ((CChipRegion == OPWOLF_REGION_JAPAN) || (CChipRegion == OPWOLF_REGION_US)) {
 				CoinTable[0] = 0x03ffce;
@@ -1536,11 +1536,11 @@ void OpwolfCChipReset()
 	
 }
 
-void OpwolfCChipInit(int Region)
+void OpwolfCChipInit(INT32 Region)
 {
 	CChipRegion = Region;
 	
-	CChipRam = (unsigned char*)malloc(0x400 * 8);
+	CChipRam = (UINT8*)malloc(0x400 * 8);
 	memset(CChipRam, 0, 0x400 * 8);
 	
 	CChipLast_7a = 0;
@@ -1582,7 +1582,7 @@ void OpwolfCChipExit()
 	
 }
 
-void OpwolfCChipScan(int nAction)
+void OpwolfCChipScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	
@@ -1641,13 +1641,13 @@ void OpwolfCChipScan(int nAction)
 *************************************************************************/
 
 
-static int current_round = 0;
-static int current_bank = 0;
-static int coin_lockout = 0;
+static INT32 current_round = 0;
+static INT32 current_bank = 0;
+static INT32 coin_lockout = 0;
 
-static unsigned char cval[26];
-static unsigned char cc_port;
-static unsigned char restart_status;
+static UINT8 cval[26];
+static UINT8 cc_port;
+static UINT8 restart_status;
 
 struct cchip_mapping
 {
@@ -1929,7 +1929,7 @@ static const struct cchip_mapping *const levelData[]=
 
 static void WriteLevelData(void)
 {
-	for (int i = 0; i < 13; i++)
+	for (INT32 i = 0; i < 13; i++)
 	{
 		UINT16 v = CLEV[current_round][i];
 
@@ -1938,7 +1938,7 @@ static void WriteLevelData(void)
 	}
 }
 
-static void WriteRestartPos(int level)
+static void WriteRestartPos(INT32 level)
 {
 	/*
         Cval0/1 = scroll x position
@@ -1951,8 +1951,8 @@ static void WriteRestartPos(int level)
         for the restart position to be returned.
     */
 
-	int x = cval[0] + 256 * cval[1] + cval[4] + 256 * cval[5];
-	int y = cval[2] + 256 * cval[3] + cval[6] + 256 * cval[7];
+	INT32 x = cval[0] + 256 * cval[1] + cval[4] + 256 * cval[5];
+	INT32 y = cval[2] + 256 * cval[3] + cval[6] + 256 * cval[7];
 
 	const struct cchip_mapping* thisLevel=levelData[level];
 
@@ -1983,12 +1983,12 @@ static void WriteRestartPos(int level)
 	restart_status=0xff;
 }
 
-void BonzeWriteCChipBank(int data)
+void BonzeWriteCChipBank(INT32 data)
 {
 	current_bank = data & 7;
 }
 
-void BonzeWriteCChipRam(int offset, int data)
+void BonzeWriteCChipRam(INT32 offset, INT32 data)
 {
 	offset = (offset & 0xfff) / 2;
 
@@ -2023,7 +2023,7 @@ void BonzeWriteCChipRam(int offset, int data)
 	}
 }
 
-unsigned short BonzeReadCChipRam(int offset)
+UINT16 BonzeReadCChipRam(INT32 offset)
 {
 	offset = (offset & 0xfff) / 2;
 
@@ -2063,7 +2063,7 @@ void BonzeCChipReset()
 	restart_status = 0;
 }
 
-void BonzeCChipScan(int nAction)
+void BonzeCChipScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	
@@ -2373,7 +2373,7 @@ static void volfied_timer_callback()
 	if (volfied_current_cmd >= 0x1 && volfied_current_cmd < 0x12)
 	{
 		const UINT16* palette_data = palette_data_lookup[volfied_current_cmd];
-		int i;
+		INT32 i;
 		for (i = 0; i < 0x50; i++)
 		{
 			volfied_cchip_ram[0x10 + i * 2 + 0] = palette_data[i] >> 8;
@@ -2420,7 +2420,7 @@ void VolfiedCChipBankWrite(UINT16 data)
 	volfied_current_bank = data & 7;
 }
 
-void VolfiedCChipRamWrite(int offset, UINT8 data)
+void VolfiedCChipRamWrite(INT32 offset, UINT8 data)
 {
 	volfied_cchip_ram[(volfied_current_bank * 0x400) + offset] = data;
 
@@ -2509,7 +2509,7 @@ UINT8 VolfiedCChipCtrlRead()
 	return 0x01;
 }
 
-UINT8 VolfiedCChipRamRead(int offset)
+UINT8 VolfiedCChipRamRead(INT32 offset)
 {
 	/* Check for input ports */
 	if (volfied_current_bank == 0)
@@ -2591,7 +2591,7 @@ void VolfiedCChipExit()
 	}
 }
 
-void VolfiedCChipScan(int nAction)
+void VolfiedCChipScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	

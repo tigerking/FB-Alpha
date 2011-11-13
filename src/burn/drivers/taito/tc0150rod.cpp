@@ -3,14 +3,14 @@
 #include "tiles_generic.h"
 #include "taito_ic.h"
 
-unsigned char *TC0150RODRom = NULL;
-unsigned char *TC0150RODRam = NULL;
-static int TC0150RODFlipScreenX;
+UINT8 *TC0150RODRom = NULL;
+UINT8 *TC0150RODRam = NULL;
+static INT32 TC0150RODFlipScreenX;
 
-static void DrawScanLine(int y, const UINT16 *src, int Transparent, int /*Pri*/)
+static void DrawScanLine(INT32 y, const UINT16 *src, INT32 Transparent, INT32 /*Pri*/)
 {
-	unsigned short* pPixel;
-	int Length;
+	UINT16* pPixel;
+	INT32 Length;
 	
 	if (!TC0150RODFlipScreenX) {
 		pPixel = pTransDraw + (y * nScreenWidth);
@@ -51,9 +51,9 @@ static void DrawScanLine(int y, const UINT16 *src, int Transparent, int /*Pri*/)
 	}
 }
 
-void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriority, int HighPriority)
+void TC0150RODDraw(INT32 yOffs, INT32 pOffs, INT32 Type, INT32 RoadTrans, INT32 LowPriority, INT32 HighPriority)
 {
-	int xOffs = 0xa7;
+	INT32 xOffs = 0xa7;
 	yOffs += 16;
 	
 	UINT16* RoadRam = (UINT16*)TC0150RODRam;
@@ -71,19 +71,19 @@ void TC0150RODDraw(int yOffs, int pOffs, int Type, int RoadTrans, int LowPriorit
 	UINT16 RoadBClipL, RoadBClipR, RoadBBodyCtrl;;
 	UINT16 Pri, PixPri;
 	UINT8 Priorities[6];
-	int xIndex, RoadRamIndex, RoadRam2Index, i;
-	int xOffset, PalOffs, PalLOffs, PalROffs;
-	int RoadGfxTileNum, ColBank, RoadCentre;
-	int RoadCtrl = RoadRam[0xfff];
-	int LeftEdge, RightEdge, Begin, End, RightOver, LeftOver;
-	int LineNeedsDrawing, DrawTopRoadLine, BackgroundOnly;
+	INT32 xIndex, RoadRamIndex, RoadRam2Index, i;
+	INT32 xOffset, PalOffs, PalLOffs, PalROffs;
+	INT32 RoadGfxTileNum, ColBank, RoadCentre;
+	INT32 RoadCtrl = RoadRam[0xfff];
+	INT32 LeftEdge, RightEdge, Begin, End, RightOver, LeftOver;
+	INT32 LineNeedsDrawing, DrawTopRoadLine, BackgroundOnly;
 
-	int y = 0;
+	INT32 y = 0;
 
-	int RoadAAddress = yOffs * 4 + ((RoadCtrl & 0x0300) << 2);
-	int RoadBAddress = yOffs * 4 + ((RoadCtrl & 0x0c00) << 0);
+	INT32 RoadAAddress = yOffs * 4 + ((RoadCtrl & 0x0300) << 2);
+	INT32 RoadBAddress = yOffs * 4 + ((RoadCtrl & 0x0c00) << 0);
 	
-	int PrioritySwitchLine = (RoadCtrl & 0x00ff) - yOffs;
+	INT32 PrioritySwitchLine = (RoadCtrl & 0x00ff) - yOffs;
 
 	do {
 		LineNeedsDrawing = 0;
@@ -420,11 +420,11 @@ void TC0150RODReset()
 
 }
 
-void TC0150RODInit(int nRomSize, int xFlip)
+void TC0150RODInit(INT32 nRomSize, INT32 xFlip)
 {
-	TC0150RODRom = (unsigned char*)malloc(nRomSize);
+	TC0150RODRom = (UINT8*)malloc(nRomSize);
 	memset(TC0150RODRom, 0, nRomSize);
-	TC0150RODRam = (unsigned char*)malloc(0x2000);
+	TC0150RODRam = (UINT8*)malloc(0x2000);
 	memset(TC0150RODRam, 0, 0x2000);
 	
 	TC0150RODFlipScreenX = xFlip;
@@ -447,7 +447,7 @@ void TC0150RODExit()
 	TC0150RODFlipScreenX = 0;
 }
 
-void TC0150RODScan(int nAction)
+void TC0150RODScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	

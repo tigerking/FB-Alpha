@@ -3,28 +3,28 @@
 #include "tiles_generic.h"
 #include "taito_ic.h"
 
-unsigned char *PC090OJRam = NULL;
-static int PC090OJNumTiles;
-static int PC090OJXOffset;
-static int PC090OJYOffset;
-static int PC090OJUseBuffer;
-static int PC090OJPaletteOffset;
-int PC090OJSpriteCtrl;
+UINT8 *PC090OJRam = NULL;
+static INT32 PC090OJNumTiles;
+static INT32 PC090OJXOffset;
+static INT32 PC090OJYOffset;
+static INT32 PC090OJUseBuffer;
+static INT32 PC090OJPaletteOffset;
+INT32 PC090OJSpriteCtrl;
 
-void PC090OJDrawSprites(unsigned char *pSrc)
+void PC090OJDrawSprites(UINT8 *pSrc)
 {
 	UINT16 *VideoRam = (UINT16*)PC090OJRam;
 	
-	int PC090OJCtrl = VideoRam[0xdff];
+	INT32 PC090OJCtrl = VideoRam[0xdff];
 	
-	int Offset;
-	int SpriteColBank = (PC090OJSpriteCtrl & 0x0f) << 4;
+	INT32 Offset;
+	INT32 SpriteColBank = (PC090OJSpriteCtrl & 0x0f) << 4;
 	
 	for (Offset = 0x400 - 4; Offset >= 0; Offset -= 4)
 	{
-		int xFlip, yFlip;
-		int x, y;
-		int Data, Code, Colour;
+		INT32 xFlip, yFlip;
+		INT32 x, y;
+		INT32 Data, Code, Colour;
 
 		Data = VideoRam[Offset + 0];
 		yFlip = (Data & 0x8000) >> 15;
@@ -89,9 +89,9 @@ void PC090OJReset()
 	PC090OJSpriteCtrl = 0;
 }
 
-void PC090OJInit(int nNumTiles, int xOffset, int yOffset, int UseBuffer)
+void PC090OJInit(INT32 nNumTiles, INT32 xOffset, INT32 yOffset, INT32 UseBuffer)
 {
-	PC090OJRam = (unsigned char*)malloc(0x4000);
+	PC090OJRam = (UINT8*)malloc(0x4000);
 	memset(PC090OJRam, 0, 0x4000);
 	
 	PC090OJNumTiles = nNumTiles;
@@ -104,7 +104,7 @@ void PC090OJInit(int nNumTiles, int xOffset, int yOffset, int UseBuffer)
 	TaitoIC_PC090OJInUse = 1;
 }
 
-void PC090OJSetPaletteOffset(int Offset)
+void PC090OJSetPaletteOffset(INT32 Offset)
 {
 	PC090OJPaletteOffset = Offset;
 }
@@ -125,7 +125,7 @@ void PC090OJExit()
 	PC090OJSpriteCtrl = 0;
 }
 
-void PC090OJScan(int nAction)
+void PC090OJScan(INT32 nAction)
 {
 	struct BurnArea ba;
 	

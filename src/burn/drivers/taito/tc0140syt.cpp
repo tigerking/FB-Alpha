@@ -192,7 +192,7 @@ void TC0140SYTSlaveCommWrite(UINT8 Data)
 
 void TC0140SYTReset()
 {	
-	for (int i = 0; i < 4; i++) {
+	for (INT32 i = 0; i < 4; i++) {
 		tc0140syt.SlaveData[i] = 0;
 		tc0140syt.MasterData[i] = 0;
 	}
@@ -211,7 +211,7 @@ void TC0140SYTInit()
 
 void TC0140SYTExit()
 {
-	int i;
+	INT32 i;
 	
 	for (i = 0; i < 4; i++) {
 		tc0140syt.SlaveData[i] = 0;
@@ -225,7 +225,7 @@ void TC0140SYTExit()
 	tc0140syt.NmiReq = 0;
 }
 
-void TC0140SYTScan(int nAction)
+void TC0140SYTScan(INT32 nAction)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(tc0140syt);

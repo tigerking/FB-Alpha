@@ -1,28 +1,28 @@
 #include "burnint.h"
 #include "taito_ic.h"
 
-int TaitoIC_SupermanCChipInUse = 0;
-int TaitoIC_MegabCChipInUse = 0;
-int TaitoIC_RainbowCChipInUse = 0;
-int TaitoIC_OpwolfCChipInUse = 0;
-int TaitoIC_VolfiedCChipInUse = 0;
+INT32 TaitoIC_SupermanCChipInUse = 0;
+INT32 TaitoIC_MegabCChipInUse = 0;
+INT32 TaitoIC_RainbowCChipInUse = 0;
+INT32 TaitoIC_OpwolfCChipInUse = 0;
+INT32 TaitoIC_VolfiedCChipInUse = 0;
 
-int TaitoIC_PC080SNInUse = 0;
-int TaitoIC_PC090OJInUse = 0;
-int TaitoIC_TC0100SCNInUse = 0;
-int TaitoIC_TC0110PCRInUse = 0;
-int TaitoIC_TC0140SYTInUse = 0;
-int TaitoIC_TC0150RODInUse = 0;
-int TaitoIC_TC0180VCUInUse = 0;
-int TaitoIC_TC0220IOCInUse = 0;
-int TaitoIC_TC0280GRDInUse = 0;
-int TaitoIC_TC0360PRIInUse = 0;
-int TaitoIC_TC0430GRWInUse = 0;
-int TaitoIC_TC0480SCPInUse = 0;
-int TaitoIC_TC0510NIOInUse = 0;
-int TaitoIC_TC0640FIOInUse = 0;
+INT32 TaitoIC_PC080SNInUse = 0;
+INT32 TaitoIC_PC090OJInUse = 0;
+INT32 TaitoIC_TC0100SCNInUse = 0;
+INT32 TaitoIC_TC0110PCRInUse = 0;
+INT32 TaitoIC_TC0140SYTInUse = 0;
+INT32 TaitoIC_TC0150RODInUse = 0;
+INT32 TaitoIC_TC0180VCUInUse = 0;
+INT32 TaitoIC_TC0220IOCInUse = 0;
+INT32 TaitoIC_TC0280GRDInUse = 0;
+INT32 TaitoIC_TC0360PRIInUse = 0;
+INT32 TaitoIC_TC0430GRWInUse = 0;
+INT32 TaitoIC_TC0480SCPInUse = 0;
+INT32 TaitoIC_TC0510NIOInUse = 0;
+INT32 TaitoIC_TC0640FIOInUse = 0;
 
-int TaitoWatchdog;
+INT32 TaitoWatchdog;
 
 void TaitoICReset()
 {
@@ -97,7 +97,7 @@ void TaitoICExit()
 	TC0640FIOExit();
 }
 
-void TaitoICScan(int nAction)
+void TaitoICScan(INT32 nAction)
 {
 	if (TaitoIC_SupermanCChipInUse) SupermanCChipScan(nAction);
 	if (TaitoIC_MegabCChipInUse) MegabCChipScan(nAction);
