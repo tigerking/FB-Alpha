@@ -36,13 +36,12 @@ static int RomInfoDialog();
 
 // Filter TreeView
 HWND hFilterList			= NULL;
-HTREEITEM hFilterAtari			= NULL;
 HTREEITEM hFilterCave			= NULL;
 HTREEITEM hFilterCps1			= NULL;
 HTREEITEM hFilterCps2			= NULL;
 HTREEITEM hFilterCps3			= NULL;
 HTREEITEM hFilterGalaxian		= NULL;
-HTREEITEM hFilterKaneko16		= NULL;
+HTREEITEM hFilterIrem			= NULL;
 HTREEITEM hFilterKonami			= NULL;
 HTREEITEM hFilterNeogeo			= NULL;
 HTREEITEM hFilterPacman			= NULL;
@@ -126,14 +125,13 @@ HTREEITEM hHardware			= NULL;
 #define MASKMEGADRIVE	(1 << (HARDWARE_PREFIX_SEGA_MEGADRIVE   >> 24))
 #define MASKTAITO		(1 << (HARDWARE_PREFIX_TAITO			>> 24))
 #define MASKPSIKYO		(1 << (HARDWARE_PREFIX_PSIKYO			>> 24))
-#define MASKKANEKO16	(1 << (HARDWARE_PREFIX_KANEKO16			>> 24))
 #define MASKKONAMI		(1 << (HARDWARE_PREFIX_KONAMI			>> 24))
 #define MASKPACMAN		(1 << (HARDWARE_PREFIX_PACMAN			>> 24))
 #define MASKGALAXIAN		(1 << (HARDWARE_PREFIX_GALAXIAN			>> 24))
-#define MASKATARI		(0x1000 * (HARDWARE_PREFIX_ATARI			>> 24))
+#define MASKIREM		(0x1000 * (HARDWARE_PREFIX_IREM			>> 24))
 #define MASKMISCPRE90S	(1 << (HARDWARE_PREFIX_MISC_PRE90S		>> 24))
 #define MASKMISCPOST90S	(1 << (HARDWARE_PREFIX_MISC_POST90S		>> 24))
-#define MASKALL			(MASKCPS | MASKCPS2 | MASKCPS3 | MASKNEOGEO | MASKSEGA | MASKTOAPLAN | MASKCAVE | MASKPGM | MASKTAITO | MASKPSIKYO | MASKKANEKO16 | MASKKONAMI | MASKPACMAN | MASKGALAXIAN | MASKATARI | MASKMEGADRIVE | MASKMISCPRE90S | MASKMISCPOST90S)
+#define MASKALL			(MASKCPS | MASKCPS2 | MASKCPS3 | MASKNEOGEO | MASKSEGA | MASKTOAPLAN | MASKCAVE | MASKPGM | MASKTAITO | MASKPSIKYO | MASKKONAMI | MASKPACMAN | MASKGALAXIAN | MASKIREM | MASKMEGADRIVE | MASKMISCPRE90S | MASKMISCPOST90S)
 
 #define AVAILONLY		(1 << 18)
 #define AUTOEXPAND		(1 << 19)
@@ -313,7 +311,7 @@ static int SelListMake()
 		//}
 
 		int nHardware = 1 << (BurnDrvGetHardwareCode() >> 24);
-		if ((BurnDrvGetHardwareCode() >> 24) == (HARDWARE_PREFIX_ATARI >> 24)) nHardware = MASKATARI;
+		if ((BurnDrvGetHardwareCode() >> 24) == (HARDWARE_PREFIX_IREM >> 24)) nHardware = MASKIREM;
 		if ((nHardware & MASKALL) && ((nHardware & nLoadMenuShowX) || (nHardware & MASKALL) == 0)) {
 			continue;
 		}
@@ -372,7 +370,7 @@ static int SelListMake()
 		//}
 
 		int nHardware = 1 << (BurnDrvGetHardwareCode() >> 24);
-		if ((BurnDrvGetHardwareCode() >> 24) == (HARDWARE_PREFIX_ATARI >> 24)) nHardware = MASKATARI;
+		if ((BurnDrvGetHardwareCode() >> 24) == (HARDWARE_PREFIX_IREM >> 24)) nHardware = MASKIREM;
 		if ((nHardware & MASKALL) && ((nHardware & nLoadMenuShowX) || ((nHardware & MASKALL) == 0))) {
 			continue;
 		}
@@ -874,13 +872,12 @@ static void CreateFilters()
 
 	_TVCreateFiltersB(hRoot			, IDS_SEL_HARDWARE, hHardware			);
 	
-	_TVCreateFiltersA(hHardware		, IDS_SEL_ATARI			, hFilterAtari			, nLoadMenuShowX & MASKATARI						);
 	_TVCreateFiltersA(hHardware		, IDS_SEL_CAVE			, hFilterCave			, nLoadMenuShowX & MASKCAVE							);
 	_TVCreateFiltersA(hHardware		, IDS_SEL_CPS1			, hFilterCps1			, nLoadMenuShowX & MASKCPS							);
 	_TVCreateFiltersA(hHardware		, IDS_SEL_CPS2			, hFilterCps2			, nLoadMenuShowX & MASKCPS2							);
 	_TVCreateFiltersA(hHardware		, IDS_SEL_CPS3			, hFilterCps3			, nLoadMenuShowX & MASKCPS3							);
 	_TVCreateFiltersA(hHardware		, IDS_SEL_GALAXIAN		, hFilterGalaxian		, nLoadMenuShowX & MASKGALAXIAN						);
-	_TVCreateFiltersA(hHardware		, IDS_SEL_KANEKO16		, hFilterKaneko16		, nLoadMenuShowX & MASKKANEKO16						);
+	_TVCreateFiltersA(hHardware		, IDS_SEL_IREM			, hFilterIrem			, nLoadMenuShowX & MASKIREM							);
 	_TVCreateFiltersA(hHardware		, IDS_SEL_KONAMI		, hFilterKonami			, nLoadMenuShowX & MASKKONAMI						);
 	_TVCreateFiltersA(hHardware		, IDS_SEL_NEOGEO		, hFilterNeogeo			, nLoadMenuShowX & MASKNEOGEO						);
 	_TVCreateFiltersA(hHardware		, IDS_SEL_PACMAN		, hFilterPacman			, nLoadMenuShowX & MASKPACMAN						);
@@ -1014,13 +1011,12 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 			if ((nLoadMenuShowX & MASKALL) == 0) {
 				_TreeView_SetCheckState(hFilterList, hItemChanged, FALSE);
 			
-				_TreeView_SetCheckState(hFilterList, hFilterAtari, FALSE);
 				_TreeView_SetCheckState(hFilterList, hFilterCave, FALSE);
 				_TreeView_SetCheckState(hFilterList, hFilterCps1, FALSE);
 				_TreeView_SetCheckState(hFilterList, hFilterCps2, FALSE);
 				_TreeView_SetCheckState(hFilterList, hFilterCps3, FALSE);
 				_TreeView_SetCheckState(hFilterList, hFilterGalaxian, FALSE);
-				_TreeView_SetCheckState(hFilterList, hFilterKaneko16, FALSE);
+				_TreeView_SetCheckState(hFilterList, hFilterIrem, FALSE);
 				_TreeView_SetCheckState(hFilterList, hFilterKonami, FALSE);
 				_TreeView_SetCheckState(hFilterList, hFilterNeogeo, FALSE);
 				_TreeView_SetCheckState(hFilterList, hFilterPacman, FALSE);
@@ -1037,13 +1033,12 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 			} else {
 				_TreeView_SetCheckState(hFilterList, hItemChanged, TRUE);
 			
-				_TreeView_SetCheckState(hFilterList, hFilterAtari, TRUE);
 				_TreeView_SetCheckState(hFilterList, hFilterCave, TRUE);
 				_TreeView_SetCheckState(hFilterList, hFilterCps1, TRUE);
 				_TreeView_SetCheckState(hFilterList, hFilterCps2, TRUE);
 				_TreeView_SetCheckState(hFilterList, hFilterCps3, TRUE);
 				_TreeView_SetCheckState(hFilterList, hFilterGalaxian, TRUE);
-				_TreeView_SetCheckState(hFilterList, hFilterKaneko16, TRUE);
+				_TreeView_SetCheckState(hFilterList, hFilterIrem, TRUE);
 				_TreeView_SetCheckState(hFilterList, hFilterKonami, TRUE);
 				_TreeView_SetCheckState(hFilterList, hFilterNeogeo, TRUE);
 				_TreeView_SetCheckState(hFilterList, hFilterPacman, TRUE);
@@ -1174,13 +1169,12 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 			}
 		}
 
-		if (hItemChanged == hFilterAtari)			_ToggleGameListing(nLoadMenuShowX, MASKATARI);
 		if (hItemChanged == hFilterCave)			_ToggleGameListing(nLoadMenuShowX, MASKCAVE);
 		if (hItemChanged == hFilterCps1)			_ToggleGameListing(nLoadMenuShowX, MASKCPS);
 		if (hItemChanged == hFilterCps2)			_ToggleGameListing(nLoadMenuShowX, MASKCPS2);
 		if (hItemChanged == hFilterCps3)			_ToggleGameListing(nLoadMenuShowX, MASKCPS3);
 		if (hItemChanged == hFilterGalaxian)			_ToggleGameListing(nLoadMenuShowX, MASKGALAXIAN);
-		if (hItemChanged == hFilterKaneko16)			_ToggleGameListing(nLoadMenuShowX, MASKKANEKO16);
+		if (hItemChanged == hFilterIrem)			_ToggleGameListing(nLoadMenuShowX, MASKIREM);
 		if (hItemChanged == hFilterKonami)			_ToggleGameListing(nLoadMenuShowX, MASKKONAMI);
 		if (hItemChanged == hFilterNeogeo)			_ToggleGameListing(nLoadMenuShowX, MASKNEOGEO);
 		if (hItemChanged == hFilterPacman)			_ToggleGameListing(nLoadMenuShowX, MASKPACMAN);
