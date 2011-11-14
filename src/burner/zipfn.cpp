@@ -3,9 +3,9 @@
 #include "unzip.h"
 
 static unzFile Zip=NULL;
-static int nCurrFile=0; // The current file we are pointing to
+static INT32 nCurrFile=0; // The current file we are pointing to
 
-int ZipOpen(const char* szZip)
+INT32 ZipOpen(const char* szZip)
 {
 	if (szZip == NULL) return 1;
 
@@ -15,7 +15,7 @@ int ZipOpen(const char* szZip)
 	return 0;
 }
 
-int ZipClose()
+INT32 ZipClose()
 {
 	if (Zip != NULL) {
 		unzClose(Zip);
@@ -25,7 +25,7 @@ int ZipClose()
 }
 
 // Get the contents of a zip file into an array of ZipEntrys
-int ZipGetList(struct ZipEntry** pList, int* pnListCount)
+INT32 ZipGetList(struct ZipEntry** pList, INT32* pnListCount)
 {
 	if (Zip == NULL) return 1;
 	if (pList == NULL) return 1;
@@ -34,18 +34,18 @@ int ZipGetList(struct ZipEntry** pList, int* pnListCount)
 	memset(&ZipGlobalInfo, 0, sizeof(ZipGlobalInfo));
 
 	unzGetGlobalInfo(Zip, &ZipGlobalInfo);
-	int nListLen = ZipGlobalInfo.number_entry;
+	INT32 nListLen = ZipGlobalInfo.number_entry;
 
 	// Make an array of File Entries
 	struct ZipEntry* List = (struct ZipEntry *)malloc(nListLen * sizeof(struct ZipEntry));
 	if (List == NULL) { unzClose(Zip); return 1; }
 	memset(List, 0, nListLen * sizeof(struct ZipEntry));
 
-	int nRet = unzGoToFirstFile(Zip);
+	INT32 nRet = unzGoToFirstFile(Zip);
 	if (nRet != UNZ_OK) { unzClose(Zip); return 1; }
 
 	// Step through all of the files, until we get to the end
-	int nNextRet = 0;
+	INT32 nNextRet = 0;
 
 	for (nCurrFile = 0, nNextRet = UNZ_OK;
 		nCurrFile < nListLen && nNextRet == UNZ_OK;
@@ -78,11 +78,11 @@ int ZipGetList(struct ZipEntry** pList, int* pnListCount)
 	return 0;
 }
 
-int ZipLoadFile(unsigned char* Dest, int nLen, int* pnWrote, int nEntry)
+INT32 ZipLoadFile(UINT8* Dest, INT32 nLen, INT32* pnWrote, INT32 nEntry)
 {
 	if (Zip == NULL) return 1;
 
-	int nRet = 0;
+	INT32 nRet = 0;
 	if (nEntry < nCurrFile)
 	{
 		// We'll have to go through the zip file again to get to our entry
@@ -114,7 +114,7 @@ int ZipLoadFile(unsigned char* Dest, int nLen, int* pnWrote, int nEntry)
 }
 
 // Load one file directly, added by regret
-int __cdecl ZipLoadOneFile(const char* arcName, const char* fileName, void** Dest, int* pnWrote)
+INT32 __cdecl ZipLoadOneFile(const char* arcName, const char* fileName, void** Dest, INT32* pnWrote)
 {
 	if (ZipOpen(arcName)) {
 		return 1;
@@ -124,13 +124,13 @@ int __cdecl ZipLoadOneFile(const char* arcName, const char* fileName, void** Des
 	memset(&ZipGlobalInfo, 0, sizeof(ZipGlobalInfo));
 
 	unzGetGlobalInfo(Zip, &ZipGlobalInfo);
-	int nListLen = ZipGlobalInfo.number_entry;
+	INT32 nListLen = ZipGlobalInfo.number_entry;
 	if (nListLen <= 0) {
 		ZipClose();
 		return 1;
 	}
 
-	int nRet = unzGoToFirstFile(Zip);
+	INT32 nRet = unzGoToFirstFile(Zip);
 	if (nRet != UNZ_OK) { unzClose(Zip); return 1; }
 
 	unz_file_info FileInfo;
@@ -138,7 +138,7 @@ int __cdecl ZipLoadOneFile(const char* arcName, const char* fileName, void** Des
 
 	if (fileName != NULL) {
 		// Step through all of the files, until we get to the end
-		int nNextRet = 0;
+		INT32 nNextRet = 0;
 		char szName[MAX_PATH] = "";
 
 		for (nCurrFile = 0, nNextRet = UNZ_OK;
@@ -175,7 +175,7 @@ int __cdecl ZipLoadOneFile(const char* arcName, const char* fileName, void** Des
 	}
 
 	if (*Dest == NULL) {
-		*Dest = (unsigned char*)malloc(FileInfo.uncompressed_size);
+		*Dest = (UINT8*)malloc(FileInfo.uncompressed_size);
 		if (!*Dest) {
 			unzCloseCurrentFile(Zip);
 			ZipClose();

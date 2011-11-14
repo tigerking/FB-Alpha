@@ -5,33 +5,33 @@
 // ---------------------------------------------------------------------------
 // Software gamma
 
-int bDoGamma = 0;
-int bHardwareGammaOnly = 1;
+INT32 bDoGamma = 0;
+INT32 bHardwareGammaOnly = 1;
 double nGamma = 1.25;
-const int nMaxRGB = 255;
+const INT32 nMaxRGB = 255;
 
-static unsigned char GammaLUT[256];
+static UINT8 GammaLUT[256];
 
 void ComputeGammaLUT()
 {
-	for (int i = 0; i < 256; i++) {
-		GammaLUT[i] = (unsigned char)((double)nMaxRGB * pow((i / 255.0), nGamma));
+	for (INT32 i = 0; i < 256; i++) {
+		GammaLUT[i] = (UINT8)((double)nMaxRGB * pow((i / 255.0), nGamma));
 	}
 }
 
 // Standard callbacks for 16/24/32 bit color:
-static unsigned int __cdecl HighCol15(int r, int g, int b, int  /* i */)
+static UINT32 __cdecl HighCol15(INT32 r, INT32 g, INT32 b, INT32  /* i */)
 {
-	unsigned int t;
+	UINT32 t;
 	t =(r<<7)&0x7c00; // 0rrr rr00 0000 0000
 	t|=(g<<2)&0x03e0; // 0000 00gg ggg0 0000
 	t|=(b>>3)&0x001f; // 0000 0000 000b bbbb
 	return t;
 }
 
-static unsigned int __cdecl HighCol16(int r, int g, int b, int /* i */)
+static UINT32 __cdecl HighCol16(INT32 r, INT32 g, INT32 b, INT32 /* i */)
 {
-	unsigned int t;
+	UINT32 t;
 	t =(r<<8)&0xf800; // rrrr r000 0000 0000
 	t|=(g<<3)&0x07e0; // 0000 0ggg ggg0 0000
 	t|=(b>>3)&0x001f; // 0000 0000 000b bbbb
@@ -39,9 +39,9 @@ static unsigned int __cdecl HighCol16(int r, int g, int b, int /* i */)
 }
 
 // 24-bit/32-bit
-static unsigned int __cdecl HighCol24(int r, int g, int b, int  /* i */)
+static UINT32 __cdecl HighCol24(INT32 r, INT32 g, INT32 b, INT32  /* i */)
 {
-	unsigned int t;
+	UINT32 t;
 	t =(r<<16)&0xff0000;
 	t|=(g<<8 )&0x00ff00;
 	t|=(b    )&0x0000ff;
@@ -49,18 +49,18 @@ static unsigned int __cdecl HighCol24(int r, int g, int b, int  /* i */)
 	return t;
 }
 
-static unsigned int __cdecl HighCol15Gamma(int r, int g, int b, int  /* i */)
+static UINT32 __cdecl HighCol15Gamma(INT32 r, INT32 g, INT32 b, INT32  /* i */)
 {
-	unsigned int t;
+	UINT32 t;
 	t = (GammaLUT[r] << 7) & 0x7C00; // 0rrr rr00 0000 0000
 	t |= (GammaLUT[g] << 2) & 0x03E0; // 0000 00gg ggg0 0000
 	t |= (GammaLUT[b] >> 3) & 0x001F; // 0000 0000 000b bbbb
 	return t;
 }
 
-static unsigned int __cdecl HighCol16Gamma(int r, int g ,int b, int  /* i */)
+static UINT32 __cdecl HighCol16Gamma(INT32 r, INT32 g ,INT32 b, INT32  /* i */)
 {
-	unsigned int t;
+	UINT32 t;
 	t = (GammaLUT[r] << 8) & 0xF800; // rrrr r000 0000 0000
 	t |= (GammaLUT[g] << 3) & 0x07E0; // 0000 0ggg ggg0 0000
 	t |= (GammaLUT[b] >> 3) & 0x001F; // 0000 0000 000b bbbb
@@ -68,9 +68,9 @@ static unsigned int __cdecl HighCol16Gamma(int r, int g ,int b, int  /* i */)
 }
 
 // 24-bit/32-bit
-static unsigned int __cdecl HighCol24Gamma(int r, int g, int b, int  /* i */)
+static UINT32 __cdecl HighCol24Gamma(INT32 r, INT32 g, INT32 b, INT32  /* i */)
 {
-	unsigned int t;
+	UINT32 t;
 	t = (GammaLUT[r] << 16);
 	t |= (GammaLUT[g] << 8);
 	t |= GammaLUT[b];
@@ -78,7 +78,7 @@ static unsigned int __cdecl HighCol24Gamma(int r, int g, int b, int  /* i */)
 	return t;
 }
 
-int SetBurnHighCol(int nDepth)
+INT32 SetBurnHighCol(INT32 nDepth)
 {
 	VidRecalcPal();
 
@@ -112,10 +112,10 @@ int SetBurnHighCol(int nDepth)
 
 // ---------------------------------------------------------------------------
 
-char* DecorateGameName(unsigned int nBurnDrv)
+char* DecorateGameName(UINT32 nBurnDrv)
 {
 	static char szDecoratedName[256];
-	unsigned int nOldBurnDrv = nBurnDrvActive;
+	UINT32 nOldBurnDrv = nBurnDrvActive;
 
 	nBurnDrvActive = nBurnDrv;
 
@@ -181,8 +181,8 @@ char* DecorateGameName(unsigned int nBurnDrv)
 
 TCHAR* DecorateGenreInfo()
 {
-	int nGenre = BurnDrvGetGenreFlags();
-	int nFamily = BurnDrvGetFamilyFlags();
+	INT32 nGenre = BurnDrvGetGenreFlags();
+	INT32 nFamily = BurnDrvGetFamilyFlags();
 	
 	static TCHAR szDecoratedGenre[256];
 	TCHAR szFamily[256];
@@ -327,7 +327,7 @@ TCHAR* DecorateGenreInfo()
 
 TCHAR* LabelCheck(TCHAR* s, TCHAR* pszLabel)
 {
-	int nLen;
+	INT32 nLen;
 	if (s == NULL) {
 		return NULL;
 	}
@@ -344,7 +344,7 @@ TCHAR* LabelCheck(TCHAR* s, TCHAR* pszLabel)
 	return s + nLen;
 }
 
-int QuoteRead(TCHAR** ppszQuote, TCHAR** ppszEnd, TCHAR* pszSrc)	// Read a (quoted) string from szSrc and point to the end
+INT32 QuoteRead(TCHAR** ppszQuote, TCHAR** ppszEnd, TCHAR* pszSrc)	// Read a (quoted) string from szSrc and poINT32 to the end
 {
 	static TCHAR szQuote[QUOTE_MAX];
 	TCHAR* s = pszSrc;
@@ -393,10 +393,10 @@ TCHAR* ExtractFilename(TCHAR* fullname)
 	return filename;
 }
 
-TCHAR* DriverToName(unsigned int nDrv)
+TCHAR* DriverToName(UINT32 nDrv)
 {
 	TCHAR* szName = NULL;
-	unsigned int nOldDrv;
+	UINT32 nOldDrv;
 	
 	if (nDrv >= nBurnDrvCount) {
 		return NULL;
@@ -410,10 +410,10 @@ TCHAR* DriverToName(unsigned int nDrv)
 	return szName;
 }
 
-unsigned int NameToDriver(TCHAR* szName)
+UINT32 NameToDriver(TCHAR* szName)
 {
-	unsigned int nOldDrv = nBurnDrvActive;
-	unsigned int nDrv = 0;
+	UINT32 nOldDrv = nBurnDrvActive;
+	UINT32 nDrv = 0;
 
 	for (nBurnDrvActive = 0; nBurnDrvActive < nBurnDrvCount; nBurnDrvActive++) {
 		if (_tcscmp(szName, BurnDrvGetText(DRV_NAME)) == 0 && !(BurnDrvGetFlags() & BDF_BOARDROM)) {

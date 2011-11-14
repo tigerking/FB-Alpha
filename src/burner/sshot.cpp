@@ -7,23 +7,23 @@
 
 #define SSHOT_DIRECTORY "screenshots\\"
 
-static unsigned char* pSShot = NULL;
-static unsigned char* pConvertedImage = NULL;
+static UINT8* pSShot = NULL;
+static UINT8* pConvertedImage = NULL;
 static png_bytep* pSShotImageRows = NULL;
 static FILE* ff;
 
-int MakeScreenShot()
+INT32 MakeScreenShot()
 {
 	char szAuthor[256]; char szDescription[256]; char szCopyright[256];	char szSoftware[256]; char szSource[256];
 	png_text text_ptr[8] = { { 0, 0, 0, 0, 0, 0, 0 }, };
-	int num_text = 8;
+	INT32 num_text = 8;
 
     time_t currentTime;
     tm* tmTime;
     png_time_struct png_time_now;
 
     char szSShotName[MAX_PATH];
-    int w, h;
+    INT32 w, h;
 
     // do our PNG construct things
     png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -70,37 +70,37 @@ int MakeScreenShot()
 
 	// Convert the image to 32-bit
 	if (nVidImageBPP < 4) {
-		unsigned char* pTemp = (unsigned char*)malloc(w * h * sizeof(int));
+		UINT8* pTemp = (UINT8*)malloc(w * h * sizeof(INT32));
 
 		if (nVidImageBPP == 2) {
-			for (int i = 0; i < h * w; i++) {
-				unsigned short nColour = ((unsigned short*)pSShot)[i];
+			for (INT32 i = 0; i < h * w; i++) {
+				UINT16 nColour = ((UINT16*)pSShot)[i];
 
 				// Red
-		        *(pTemp + i * 4 + 0) = (unsigned char)((nColour & 0x1F) << 3);
+		        *(pTemp + i * 4 + 0) = (UINT8)((nColour & 0x1F) << 3);
 			    *(pTemp + i * 4 + 0) |= *(pTemp + 4 * i + 0) >> 5;
 
 				if (nVidImageDepth == 15) {
 					// Green
-					*(pTemp + i * 4 + 1) = (unsigned char)(((nColour >> 5) & 0x1F) << 3);
+					*(pTemp + i * 4 + 1) = (UINT8)(((nColour >> 5) & 0x1F) << 3);
 					*(pTemp + i * 4 + 1) |= *(pTemp + i * 4 + 1) >> 5;
 					// Blue
-					*(pTemp + i * 4 + 2) = (unsigned char)(((nColour >> 10)& 0x1F) << 3);
+					*(pTemp + i * 4 + 2) = (UINT8)(((nColour >> 10)& 0x1F) << 3);
 					*(pTemp + i * 4 + 2) |= *(pTemp + i * 4 + 2) >> 5;
 				}
 
 				if (nVidImageDepth == 16) {
 					// Green
-					*(pTemp + i * 4 + 1) = (unsigned char)(((nColour >> 5) & 0x3F) << 2);
+					*(pTemp + i * 4 + 1) = (UINT8)(((nColour >> 5) & 0x3F) << 2);
 					*(pTemp + i * 4 + 1) |= *(pTemp + i * 4 + 1) >> 6;
 					// Blue
-					*(pTemp + i * 4 + 2) = (unsigned char)(((nColour >> 11) & 0x1F) << 3);
+					*(pTemp + i * 4 + 2) = (UINT8)(((nColour >> 11) & 0x1F) << 3);
 					*(pTemp + i * 4 + 2) |= *(pTemp + i * 4 + 2) >> 5;
 				}
 			}
         } else {
-			memset(pTemp, 0, w * h * sizeof(int));
-			for (int i = 0; i < h * w; i++) {
+			memset(pTemp, 0, w * h * sizeof(INT32));
+			for (INT32 i = 0; i < h * w; i++) {
 		        *(pTemp + i * 4 + 0) = *(pSShot + i * 3 + 0);
 		        *(pTemp + i * 4 + 1) = *(pSShot + i * 3 + 1);
 		        *(pTemp + i * 4 + 2) = *(pSShot + i * 3 + 2);
@@ -114,16 +114,16 @@ int MakeScreenShot()
 
 	// Rotate and flip the image
 	if (BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) {
-		unsigned char* pTemp = (unsigned char*)malloc(w * h * sizeof(int));
+		UINT8* pTemp = (UINT8*)malloc(w * h * sizeof(INT32));
 
-		for (int x = 0; x < h; x++) {
+		for (INT32 x = 0; x < h; x++) {
 			if (BurnDrvGetFlags() & BDF_ORIENTATION_FLIPPED) {
-				for (int y = 0; y < w; y++) {
-					((unsigned int*)pTemp)[(w - y - 1) + x * w] = ((unsigned int*)pSShot)[x + y * h];
+				for (INT32 y = 0; y < w; y++) {
+					((UINT32*)pTemp)[(w - y - 1) + x * w] = ((UINT32*)pSShot)[x + y * h];
 				}
 			} else {
-				for (int y = 0; y < w; y++) {
-					((unsigned int*)pTemp)[y + (h - x - 1) * w] = ((unsigned int*)pSShot)[x + y * h];
+				for (INT32 y = 0; y < w; y++) {
+					((UINT32*)pTemp)[y + (h - x - 1) * w] = ((UINT32*)pSShot)[x + y * h];
 				}
 			}
 		}
@@ -136,11 +136,11 @@ int MakeScreenShot()
         pSShot = pConvertedImage;
 	}
 	else if (BurnDrvGetFlags() & BDF_ORIENTATION_FLIPPED) { // fixed rotation by regret
-		unsigned char* pTemp = (unsigned char*)malloc(w * h * sizeof(int));
+		UINT8* pTemp = (UINT8*)malloc(w * h * sizeof(INT32));
 
-		for (int y = h - 1; y >= 0; y--) {
-			for (int x = w - 1; x >= 0; x--) {
-				((unsigned int*)pTemp)[(w - x - 1) + (h - y - 1) * w] = ((unsigned int*)pSShot)[x + y * w];
+		for (INT32 y = h - 1; y >= 0; y--) {
+			for (INT32 x = w - 1; x >= 0; x--) {
+				((UINT32*)pTemp)[(w - x - 1) + (h - y - 1) * w] = ((UINT32*)pSShot)[x + y * w];
 			}
 		}
 
@@ -196,7 +196,7 @@ int MakeScreenShot()
 	text_ptr[6].key = "Source";			text_ptr[6].text = szSource;
 	text_ptr[7].key = "Comment";		text_ptr[7].text = "This screenshot was created by running the game in an emulator; it might not accurately reflect the actual hardware the game was designed to run on.";
 
-	for (int i = 0; i < num_text; i++) {
+	for (INT32 i = 0; i < num_text; i++) {
 		text_ptr[i].compression = PNG_TEXT_COMPRESSION_NONE;
 	}
 
@@ -212,8 +212,8 @@ int MakeScreenShot()
     png_set_bgr(png_ptr);
 
 	pSShotImageRows = (png_bytep*)malloc(h * sizeof(png_bytep));
-    for (int y = 0; y < h; y++) {
-        pSShotImageRows[y] = pSShot + (y * w * sizeof(int));
+    for (INT32 y = 0; y < h; y++) {
+        pSShotImageRows[y] = pSShot + (y * w * sizeof(INT32));
     }
 
 	png_write_image(png_ptr, pSShotImageRows);

@@ -6,9 +6,9 @@
 
 static void ReplaceAmpersand(char *szBuffer, char *szGameName)
 {
-	unsigned int nStringPos = 0;
+	UINT32 nStringPos = 0;
 	
-	for (unsigned int i = 0; i < strlen(szGameName); i++) {
+	for (UINT32 i = 0; i < strlen(szGameName); i++) {
 		if (szGameName[i] == '&') {
 			szBuffer[nStringPos + 0] = '&';
 			szBuffer[nStringPos + 1] = 'a';
@@ -25,9 +25,9 @@ static void ReplaceAmpersand(char *szBuffer, char *szGameName)
 
 static void ReplaceLessThan(char *szBuffer, char *szGameName)
 {
-	unsigned int nStringPos = 0;
+	UINT32 nStringPos = 0;
 	
-	for (unsigned int i = 0; i < strlen(szGameName); i++) {
+	for (UINT32 i = 0; i < strlen(szGameName); i++) {
 		if (szGameName[i] == '<') {
 			szBuffer[nStringPos + 0] = '&';
 			szBuffer[nStringPos + 1] = 'l';
@@ -43,9 +43,9 @@ static void ReplaceLessThan(char *szBuffer, char *szGameName)
 
 static void ReplaceGreaterThan(char *szBuffer, char *szGameName)
 {
-	unsigned int nStringPos = 0;
+	UINT32 nStringPos = 0;
 	
-	for (unsigned int i = 0; i < strlen(szGameName); i++) {
+	for (UINT32 i = 0; i < strlen(szGameName); i++) {
 		if (szGameName[i] == '>') {
 			szBuffer[nStringPos + 0] = '&';
 			szBuffer[nStringPos + 1] = 'g';
@@ -59,12 +59,12 @@ static void ReplaceGreaterThan(char *szBuffer, char *szGameName)
 	}
 }
 
-int write_datfile(int bIncMegadrive, FILE* fDat)
+INT32 write_datfile(INT32 bIncMegadrive, FILE* fDat)
 {
-	int nRet=0;
-	unsigned int nOldSelect=0;
-	unsigned int nGameSelect=0;
-	unsigned int nParentSelect,nBoardROMSelect;
+	INT32 nRet=0;
+	UINT32 nOldSelect=0;
+	UINT32 nGameSelect=0;
+	UINT32 nParentSelect,nBoardROMSelect;
 
 	nOldSelect=nBurnDrvActive;										// preserve the currently selected driver
 
@@ -75,8 +75,8 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 		char spName[32];
 		char sbName[32];
 		char ssName[32];
-		unsigned int i=0;
-		int nPass=0;
+		UINT32 i=0;
+		INT32 nPass=0;
 
 		nBurnDrvActive=nGameSelect;									// Switch to driver nGameSelect
 
@@ -153,13 +153,13 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 		if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SEGA_MEGADRIVE) {
 			// remove the md_
 			char Temp[35];
-			int Length;
+			INT32 Length;
 			if (sgName[0]) {
 				Length = strlen(sgName);
 				memset(Temp, 0, 35);
 				strcpy(Temp, sgName);
 				memset(sgName, 0, 32);
-				for (int pos = 0; pos < Length; pos++) {
+				for (INT32 pos = 0; pos < Length; pos++) {
 					sgName[pos] = Temp[pos + 3];
 				}
 			}
@@ -168,7 +168,7 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 				memset(Temp, 0, 35);
 				strcpy(Temp, spName);
 				memset(spName, 0, 32);
-				for (int pos = 0; pos < Length; pos++) {
+				for (INT32 pos = 0; pos < Length; pos++) {
 					spName[pos] = Temp[pos + 3];
 				}
 			}
@@ -252,11 +252,11 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 			// Go over each of the files needed for this game (upto 0x0100)
 			for (i=0, nRet=0; nRet==0 && i<0x100; i++)
 			{
-				int nRetTmp=0;
+				INT32 nRetTmp=0;
 				struct BurnRomInfo ri;
-				int nLen; unsigned int nCrc;
+				INT32 nLen; UINT32 nCrc;
 				char *szPossibleName=NULL;
-				int j, nMerged=0;
+				INT32 j, nMerged=0;
 
 				memset(&ri,0,sizeof(ri));
 
@@ -403,7 +403,7 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 	// Do another pass over each of the games to find boardROMs
 	for (nBurnDrvActive=0; nBurnDrvActive<nBurnDrvCount; nBurnDrvActive++)
 	{
-		int i, nPass;
+		INT32 i, nPass;
 
 		if (!(BurnDrvGetFlags() & BDF_BOARDROM)) {
 			continue;
@@ -468,10 +468,10 @@ int write_datfile(int bIncMegadrive, FILE* fDat)
 	return 0;
 }
 
-int create_datfile(TCHAR* szFilename, int bIncMegadrive)
+INT32 create_datfile(TCHAR* szFilename, INT32 bIncMegadrive)
 {
 	FILE *fDat=0;
-	int nRet=0;
+	INT32 nRet=0;
 	
 	if ((fDat = _tfopen(szFilename, _T("wt")))==0)
 		return -1;
