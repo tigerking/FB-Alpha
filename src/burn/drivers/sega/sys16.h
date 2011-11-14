@@ -282,11 +282,3 @@ void fd1094_machine_init();
 void fd1094_exit();
 
 // genesis_vid.cpp
-
-
-// rf5c68.cpp
-void rf5c68_init(INT32 clock);
-void rf5c68_update(INT16* pSoundBuf, INT32 nSegmentLength);
-UINT8 rf5c68_read(INT32 offset);
-void rf5c68_write(INT32 offset, UINT8 data);
-void rf5c68_reg_write(INT32 offset, UINT8 data);
