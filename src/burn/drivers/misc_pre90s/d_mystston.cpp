@@ -9,15 +9,15 @@ extern "C" {
 }
 
 
-static unsigned char *Mem, *Rom, *Gfx0, *Gfx1, *Gfx2, *Prom;
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvReset, DrvDips[2];
-static short *pAY8910Buffer[6], *pFMBuffer = NULL;
-static int *Palette;
+static UINT8 *Mem, *Rom, *Gfx0, *Gfx1, *Gfx2, *Prom;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvReset, DrvDips[2];
+static INT16 *pAY8910Buffer[6], *pFMBuffer = NULL;
+static INT32 *Palette;
 
-static int VBLK = 0x80;
-static int soundlatch;
-static unsigned char mystston_scroll_x = 0;
-static int mystston_fgcolor, mystston_flipscreen;
+static INT32 VBLK = 0x80;
+static INT32 soundlatch;
+static UINT8 mystston_scroll_x = 0;
+static INT32 mystston_fgcolor, mystston_flipscreen;
 
 
 //----------------------------------------------------------------------------------------------
@@ -98,9 +98,9 @@ STDDIPINFO(Drv)
 // Memory Read/Write Handlers
 
 
-static void mystston_soundcontrol_w(unsigned short, unsigned char data)
+static void mystston_soundcontrol_w(UINT16, UINT8 data)
 {
-	static int last;
+	static INT32 last;
 
 	if ((last & 0x20) == 0x20 && (data & 0x20) == 0x00)
 	{
@@ -121,15 +121,15 @@ static void mystston_soundcontrol_w(unsigned short, unsigned char data)
 	last = data;
 }
 
-unsigned char mystston_read_byte(unsigned short address)
+UINT8 mystston_read_byte(UINT16 address)
 {
-	unsigned char ret = 0;
+	UINT8 ret = 0;
 
 	switch (address)
 	{
 		case 0x2000:
 		{
-			for (int i = 0; i < 8; i++) 
+			for (INT32 i = 0; i < 8; i++) 
 				ret |= DrvJoy1[i] << i;
 
 			return ~ret;
@@ -137,7 +137,7 @@ unsigned char mystston_read_byte(unsigned short address)
 
 		case 0x2010:
 		{
-			for (int i = 0; i < 8; i++) 
+			for (INT32 i = 0; i < 8; i++) 
 				ret |= DrvJoy2[i] << i;
 
 			return ~ret;
@@ -153,7 +153,7 @@ unsigned char mystston_read_byte(unsigned short address)
 	return 0;
 }
 
-void mystston_write_byte(unsigned short address, unsigned char data)
+void mystston_write_byte(UINT16 address, UINT8 data)
 {
 #define pal2bit(bits) (((bits & 3) << 6) | ((bits & 3) << 4) | ((bits & 3) << 2) | (bits & 3))
 #define pal3bit(bits) (((bits & 7) << 5) | ((bits & 7) << 2) | ((bits & 7) >> 1))
@@ -198,7 +198,7 @@ void mystston_write_byte(unsigned short address, unsigned char data)
 // Initilization Routines
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -222,9 +222,9 @@ static int DrvDoReset()
 
 static void mystston_palette_init()
 {
-	for (int i = 0; i < 32; i++)
+	for (INT32 i = 0; i < 32; i++)
 	{
-		int bit0, bit1, bit2, r, g, b;
+		INT32 bit0, bit1, bit2, r, g, b;
 
 		bit0 = (Prom[i] >> 0) & 0x01;
 		bit1 = (Prom[i] >> 1) & 0x01;
@@ -244,13 +244,13 @@ static void mystston_palette_init()
 	}
 }
 
-static int mystston_gfx_convert()
+static INT32 mystston_gfx_convert()
 {
-	static int PlaneOffsets[3]   = { 0x40000, 0x20000, 0 };
-	static int XOffsets[16]      = { 128, 129, 130, 131, 132, 133, 134, 135, 0, 1, 2, 3, 4, 5, 6, 7 };
-	static int YOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+	static INT32 PlaneOffsets[3]   = { 0x40000, 0x20000, 0 };
+	static INT32 XOffsets[16]      = { 128, 129, 130, 131, 132, 133, 134, 135, 0, 1, 2, 3, 4, 5, 6, 7 };
+	static INT32 YOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)malloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -272,15 +272,15 @@ static int mystston_gfx_convert()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	Mem = (unsigned char*)malloc(0x10000 + 0x20000 + 0x20000 + 0x20000 + 0x20 + 0x38 * sizeof(int));
+	Mem = (UINT8*)malloc(0x10000 + 0x20000 + 0x20000 + 0x20000 + 0x20 + 0x38 * sizeof(INT32));
 	if (Mem == NULL) {
 		return 1;
 	}
 	memset (Mem, 0, 0x70000 + 0x20);
 
-	pFMBuffer = (short *)malloc (nBurnSoundLen * 6 * sizeof(short));
+	pFMBuffer = (INT16 *)malloc (nBurnSoundLen * 6 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -290,11 +290,11 @@ static int DrvInit()
 	Gfx1 = Mem + 0x30000;
 	Gfx2 = Mem + 0x50000;
 	Prom = Mem + 0x70000;
-	Palette = (int*)(Mem + 0x70020);
+	Palette = (INT32*)(Mem + 0x70020);
 
 	// Load Roms
 	{
-		for (int i = 0; i < 6; i++) {
+		for (INT32 i = 0; i < 6; i++) {
 			if (BurnLoadRom(Rom  + i * 0x2000 + 0x4000, i +  0, 1)) return 1;
 			if (BurnLoadRom(Gfx0 + i * 0x2000 + 0x0000, i +  6, 1)) return 1;
 			if (BurnLoadRom(Gfx1 + i * 0x2000 + 0x0000, i + 12, 1)) return 1;
@@ -331,7 +331,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	M6502Exit();
 	AY8910Exit(0);
@@ -363,9 +363,9 @@ static int DrvExit()
 // Drawing Routines
 
 
-static inline void mystston_putpix(int x, int y, unsigned char src, int color, int transp)
+static inline void mystston_putpix(INT32 x, INT32 y, UINT8 src, INT32 color, INT32 transp)
 {
-	int pos, pxl;
+	INT32 pos, pxl;
 
 	if (y > 255 || x > 239 || x < 0 || (!src && transp)) return;
 
@@ -379,35 +379,35 @@ static inline void mystston_putpix(int x, int y, unsigned char src, int color, i
 	PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
 }
 
-static void draw_16x16(int sx, int sy, unsigned char *gfx_base, int code, int color, int flipx, int flipy, int transp)
+static void draw_16x16(INT32 sx, INT32 sy, UINT8 *gfx_base, INT32 code, INT32 color, INT32 flipx, INT32 flipy, INT32 transp)
 {
-	unsigned char *src = gfx_base + code;
+	UINT8 *src = gfx_base + code;
 
 	if (flipx)
 	{
-		for (int x = sx + 15; x >= sx; x--)
+		for (INT32 x = sx + 15; x >= sx; x--)
 		{
 			if (flipy)
 			{
-				for (int y = sy; y < sy + 16; y++, src++) {
+				for (INT32 y = sy; y < sy + 16; y++, src++) {
 					mystston_putpix(x, y, *src, color, transp);
 				}
 			} else {
-				for (int y = sy + 15; y >= sy; y--, src++) {
+				for (INT32 y = sy + 15; y >= sy; y--, src++) {
 					mystston_putpix(x, y, *src, color, transp);
 				}
 			}
 		}
 	} else {
-		for (int x = sx; x < sx + 16; x++)
+		for (INT32 x = sx; x < sx + 16; x++)
 		{
 			if (flipy)
 			{
-				for (int y = sy; y < sy + 16; y++, src++) {
+				for (INT32 y = sy; y < sy + 16; y++, src++) {
 					mystston_putpix(x, y, *src, color, transp);
 				}
 			} else {
-				for (int y = sy + 15; y >= sy; y--, src++) {
+				for (INT32 y = sy + 15; y >= sy; y--, src++) {
 					mystston_putpix(x, y, *src, color, transp);
 				}
 			}
@@ -415,59 +415,59 @@ static void draw_16x16(int sx, int sy, unsigned char *gfx_base, int code, int co
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	for (int offs = 0; offs < 0x200; offs++)
+	for (INT32 offs = 0; offs < 0x200; offs++)
 	{
-		int code = (Rom[0x1800 + offs] + ((Rom[0x1a00 + offs] & 0x01) << 8)) << 8;
-		int flipx = offs & 0x10;
-		int sx = ((offs & 0x1f) << 4) - (mystston_scroll_x + 8);
-		int sy = ((offs >> 5) << 4);
+		INT32 code = (Rom[0x1800 + offs] + ((Rom[0x1a00 + offs] & 0x01) << 8)) << 8;
+		INT32 flipx = offs & 0x10;
+		INT32 sx = ((offs & 0x1f) << 4) - (mystston_scroll_x + 8);
+		INT32 sy = ((offs >> 5) << 4);
 
 		draw_16x16(sx, sy, Gfx1, code, 0x10, flipx, 0, 0);
 	}
 
-	for (int offs = 0; offs < 0x60; offs += 4)
+	for (INT32 offs = 0; offs < 0x60; offs += 4)
 	{
-		int attr = Rom[0x0780 + offs];
+		INT32 attr = Rom[0x0780 + offs];
 
 		if (attr & 0x01)
 		{
-			int code = (Rom[0x0781 + offs] + ((attr & 0x10) << 4)) << 8;
-			int color = attr & 0x08;
-			int flipy = attr & 0x04;
-			int flipx = attr & 0x02;
-			int sy = Rom[0x0783 + offs];
-			int sx = (240 - Rom[0x0782 + offs]) - 9;
+			INT32 code = (Rom[0x0781 + offs] + ((attr & 0x10) << 4)) << 8;
+			INT32 color = attr & 0x08;
+			INT32 flipy = attr & 0x04;
+			INT32 flipx = attr & 0x02;
+			INT32 sy = Rom[0x0783 + offs];
+			INT32 sx = (240 - Rom[0x0782 + offs]) - 9;
 
 			draw_16x16(sx, sy, Gfx2, code, color, flipx, flipy, 1);
 		}
 	}
 
-	for (int offs = 0; offs < 0x400; offs++)
+	for (INT32 offs = 0; offs < 0x400; offs++)
 	{
-		int code = (Rom[0x1000 | offs] + ((Rom[0x1400 + offs] & 0x07) << 8)) << 6;
-		int color = (mystston_fgcolor << 3) + 0x18;
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 2) & 0xf8;
+		INT32 code = (Rom[0x1000 | offs] + ((Rom[0x1400 + offs] & 0x07) << 8)) << 6;
+		INT32 color = (mystston_fgcolor << 3) + 0x18;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 2) & 0xf8;
 		if (sx >= 248 || sx < 8) continue;
 		sx -= 8;
 
-		unsigned char *src = Gfx0 + code;
+		UINT8 *src = Gfx0 + code;
 
-		for (int x = sx; x < sx + 8; x++)
+		for (INT32 x = sx; x < sx + 8; x++)
 		{
-			for (int y = sy + 7; y >= sy; y--, src++)
+			for (INT32 y = sy + 7; y >= sy; y--, src++)
 			{
 				if (!*src) continue;
 
-				int pos;
+				INT32 pos;
 				if (mystston_flipscreen)
 					pos = ((255 - y) * 240) + (239 - x);
 				else
 					pos = (y * 240) + x;
 
-				int pxl = Palette[color | *src];
+				INT32 pxl = Palette[color | *src];
 
 				PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
 			}
@@ -477,10 +477,10 @@ static int DrvDraw()
 	return 0;
 }
 
-static void mystston_interrupt_handler(int scanline)
+static void mystston_interrupt_handler(INT32 scanline)
 {
-	static int coin;
-	int inp = (DrvJoy1[6] << 6) | (DrvJoy1[7] << 7);
+	static INT32 coin;
+	INT32 inp = (DrvJoy1[6] << 6) | (DrvJoy1[7] << 7);
 
 	if ((~inp & 0xc0) != 0xc0)
 	{
@@ -503,18 +503,18 @@ static void mystston_interrupt_handler(int scanline)
 		M6502SetIRQ(M6502_IRQ_LINE, M6502_IRQSTATUS_ACK);
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
-	int nTotalCycles = (int)((double)(1500000 / 57.45));
-	int nCyclesRun = 0;
+	INT32 nTotalCycles = (INT32)((double)(1500000 / 57.45));
+	INT32 nCyclesRun = 0;
 
 	M6502Open(0);
 
-	for (int i = 0; i < 272; i++) {
+	for (INT32 i = 0; i < 272; i++) {
 		nCyclesRun += M6502Run(nTotalCycles / 272);
 		mystston_interrupt_handler(i);
 	}
@@ -522,13 +522,13 @@ static int DrvFrame()
 	M6502Close();
 
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen;
-		short* pSoundBuf = pBurnSoundOut;
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen;
+		INT16* pSoundBuf = pBurnSoundOut;
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -562,7 +562,7 @@ static int DrvFrame()
 // Save State
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -579,7 +579,7 @@ static int DrvScan(int nAction,int *pnMin)
 
 		memset(&ba, 0, sizeof(ba));
 		ba.Data	  = Mem + 0x70020;
-		ba.nLen	  = 24 * sizeof(int);
+		ba.nLen	  = 24 * sizeof(INT32);
 		ba.szName = "Palette";
 		BurnAcb(&ba);
 

@@ -9,56 +9,56 @@
 
 //#define EMULATE_ADPCM
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvZ80ROM0;
-static unsigned char *DrvZ80ROM1;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvZ80ROM0;
+static UINT8 *DrvZ80ROM1;
 #ifdef EMULATE_ADPCM
-static unsigned char *DrvZ80ROM2;
+static UINT8 *DrvZ80ROM2;
 #endif
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-static unsigned char *DrvTileMap;
-static unsigned char *DrvGfxMask;
-static unsigned int  *DrvPalette;
-static unsigned int  *Palette;
-static unsigned char *DrvZ80RAM0;
-static unsigned char *DrvZ80RAM1;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvFgRAM;
-static unsigned char *DrvBgRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvSprBuf;
-static unsigned char *ScrollX;
-static unsigned char *ScrollY;
-static unsigned char DrvRecalc;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+static UINT8 *DrvTileMap;
+static UINT8 *DrvGfxMask;
+static UINT32  *DrvPalette;
+static UINT32  *Palette;
+static UINT8 *DrvZ80RAM0;
+static UINT8 *DrvZ80RAM1;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvFgRAM;
+static UINT8 *DrvBgRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvSprBuf;
+static UINT8 *ScrollX;
+static UINT8 *ScrollY;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvReset;
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvDip[2];
-static unsigned char DrvInp[3];
+static UINT8 DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvDip[2];
+static UINT8 DrvInp[3];
 
-static unsigned char interrupt_enable;
-static unsigned char soundlatch;
-static unsigned char flipscreen;
-static unsigned char DrvZ80Bank;
+static UINT8 interrupt_enable;
+static UINT8 soundlatch;
+static UINT8 flipscreen;
+static UINT8 DrvZ80Bank;
 
-static unsigned char avengers_param[4];
-static unsigned int  avengers_palette_pen;
-static unsigned char avengers_soundlatch2;
-static unsigned char avengers_soundstate;
-static unsigned char avengers_adpcm;
+static UINT8 avengers_param[4];
+static UINT32  avengers_palette_pen;
+static UINT8 avengers_soundlatch2;
+static UINT8 avengers_soundstate;
+static UINT8 avengers_adpcm;
 
-static unsigned char trojan_bg2_scrollx;
-static unsigned char trojan_bg2_image;
+static UINT8 trojan_bg2_scrollx;
+static UINT8 trojan_bg2_image;
 
-static int avengers = 0;
+static INT32 avengers = 0;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 6,	"p1 coin"	},
@@ -429,9 +429,9 @@ STDDIPINFO(Avengers)
 
 
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM0	= Next; Next += 0x020000;
 	DrvZ80ROM1	= Next; Next += 0x008000;
@@ -448,7 +448,7 @@ static int MemIndex()
 
 	DrvGfxMask	= Next; Next += 0x000020;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0400 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0400 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -460,7 +460,7 @@ static int MemIndex()
 	DrvSprRAM	= Next; Next += 0x000200;
 	DrvSprBuf	= Next; Next += 0x000200;
 
-	Palette		= (unsigned int*)Next; Next += 0x0400 * sizeof(int);
+	Palette		= (UINT32*)Next; Next += 0x0400 * sizeof(UINT32);
 
 	ScrollX		= Next; Next += 0x000002;
 	ScrollY		= Next; Next += 0x000002;
@@ -473,9 +473,9 @@ static int MemIndex()
 }
 
 // Avengers protection code ripped directly from MAME
-static void avengers_protection_w(unsigned char data)
+static void avengers_protection_w(UINT8 data)
 {
-	int pc = ZetPc(-1);
+	INT32 pc = ZetPc(-1);
 
 	if (pc == 0x2eeb)
 	{
@@ -500,7 +500,7 @@ static void avengers_protection_w(unsigned char data)
 	}
 }
 
-static int avengers_fetch_paldata()
+static INT32 avengers_fetch_paldata()
 {
 	static const char pal_data[] =
 	// page 1: 0x03,0x02,0x01,0x00
@@ -563,15 +563,15 @@ static int avengers_fetch_paldata()
 	"0000000000000000" "6474667676660100" "7696657575650423" "88A8647474645473"
 	"0000000000000000" "0001070701050004" "0003060603040303" "0005050505040302";
 
-	int bank = avengers_palette_pen/64;
-	int offs = avengers_palette_pen%64;
-	int page = bank/4;				// 0..7
-	int base = (3-(bank&3));			// 0..3
-	int row = offs&0xf;				// 0..15
-	int col = offs/16 + base*4;			// 0..15
-	int digit0 = pal_data[page*256*2 + (31-row*2)*16+col];
-	int digit1 = pal_data[page*256*2 + (30-row*2)*16+col];
-	int result;
+	INT32 bank = avengers_palette_pen/64;
+	INT32 offs = avengers_palette_pen%64;
+	INT32 page = bank/4;				// 0..7
+	INT32 base = (3-(bank&3));			// 0..3
+	INT32 row = offs&0xf;				// 0..15
+	INT32 col = offs/16 + base*4;			// 0..15
+	INT32 digit0 = pal_data[page*256*2 + (31-row*2)*16+col];
+	INT32 digit1 = pal_data[page*256*2 + (30-row*2)*16+col];
+	INT32 result;
 
 	if( digit0>='A' ) digit0 += 10 - 'A'; else digit0 -= '0';
 	if( digit1>='A' ) digit1 += 10 - 'A'; else digit1 -= '0';
@@ -582,14 +582,14 @@ static int avengers_fetch_paldata()
 	return result;
 }
 
-static unsigned char avengers_protection_r()
+static UINT8 avengers_protection_r()
 {
-	static const int xpos[8] = { 10, 7,  0, -7, -10, -7,   0,  7 };
-	static const int ypos[8] = {  0, 7, 10,  7,   0, -7, -10, -7 };
-	int best_dist = 0;
-	int best_dir = 0;
-	int x,y;
-	int dx,dy,dist,dir;
+	static const INT32 xpos[8] = { 10, 7,  0, -7, -10, -7,   0,  7 };
+	static const INT32 ypos[8] = {  0, 7, 10,  7,   0, -7, -10, -7 };
+	INT32 best_dist = 0;
+	INT32 best_dir = 0;
+	INT32 x,y;
+	INT32 dx,dy,dist,dir;
 
 	if(ZetPc(-1) == 0x7c7 )
 	{
@@ -597,7 +597,7 @@ static unsigned char avengers_protection_r()
 		return avengers_fetch_paldata();
 	}
 
-	//  Point to Angle Function
+	//  PoINT32 to Angle Function
 	//
         //	Input: two cartesian points
         //	Output: direction code (north,northeast,east,...)
@@ -620,7 +620,7 @@ static unsigned char avengers_protection_r()
 
 
 
-unsigned char __fastcall lwings_main_read(unsigned short address)
+UINT8 __fastcall lwings_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -640,23 +640,23 @@ unsigned char __fastcall lwings_main_read(unsigned short address)
 	return 0;
 }
 
-static void lwings_bankswitch_w(unsigned char data)
+static void lwings_bankswitch_w(UINT8 data)
 {
 	DrvZ80Bank = data;
 
-	int bankaddress = 0x10000 + ((data >> 1) & 3) * 0x4000;
+	INT32 bankaddress = 0x10000 + ((data >> 1) & 3) * 0x4000;
 
 	ZetMapArea(0x8000, 0xbfff, 0, DrvZ80ROM0 + bankaddress);
 	ZetMapArea(0x8000, 0xbfff, 2, DrvZ80ROM0 + bankaddress);
 }
 
-void __fastcall lwings_main_write(unsigned short address, unsigned char data)
+void __fastcall lwings_main_write(UINT16 address, UINT8 data)
 {
 	if ((address & 0xf800) == 0xf000) {
 		DrvPalRAM[address & 0x7ff] = data;
 
-		unsigned char r, g, b;
-		unsigned short coldata = DrvPalRAM[(address & 0x3ff) | 0x400] | (DrvPalRAM[address & 0x3ff] << 8);
+		UINT8 r, g, b;
+		UINT16 coldata = DrvPalRAM[(address & 0x3ff) | 0x400] | (DrvPalRAM[address & 0x3ff] << 8);
 
 		r = (coldata >> 8) & 0xf0;
 		g = (coldata >> 4) & 0xf0;
@@ -730,7 +730,7 @@ void __fastcall lwings_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-void __fastcall lwings_sound_write(unsigned short address, unsigned char data)
+void __fastcall lwings_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -747,7 +747,7 @@ void __fastcall lwings_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall lwings_sound_read(unsigned short address)
+UINT8 __fastcall lwings_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -762,7 +762,7 @@ unsigned char __fastcall lwings_sound_read(unsigned short address)
 }
 
 #ifdef EMULATE_ADPCM
-void __fastcall trojan_adpcm_out(unsigned short /*port*/, unsigned char /*data*/)
+void __fastcall trojan_adpcm_out(UINT16 /*port*/, UINT8 /*data*/)
 {
 #if 0
 	if ((port & 0xff) == 0x01) {
@@ -774,11 +774,11 @@ void __fastcall trojan_adpcm_out(unsigned short /*port*/, unsigned char /*data*/
 #endif
 }
 
-unsigned char __fastcall trojan_adpcm_in(unsigned short port)
+UINT8 __fastcall trojan_adpcm_in(UINT16 port)
 {
 	port &= 0xff;
 
-	unsigned char ret = 0;
+	UINT8 ret = 0;
 
 	if (port == 0x00) {
 		if (avengers) {
@@ -793,13 +793,13 @@ unsigned char __fastcall trojan_adpcm_in(unsigned short port)
 }
 #endif
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
 	memset (AllRam, 0, RamEnd - AllRam);
 
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		ZetOpen(i);
 		ZetReset();
 		if (i == 0) lwings_bankswitch_w(0);
@@ -826,23 +826,23 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane0[2]  = { 0x000000, 0x000004 };
-	int Plane1[4]  = { 0x080004, 0x080000, 0x000004, 0x000000 };
-	int Plane1a[4] = { 0x100004, 0x100000, 0x000004, 0x000000 };
-	int Plane2[4]  = { 0x180000, 0x100000, 0x080000, 0x000000 };
-	int Plane3[4]  = { 0x040000, 0x040004, 0x000000, 0x000004 };
+	INT32 Plane0[2]  = { 0x000000, 0x000004 };
+	INT32 Plane1[4]  = { 0x080004, 0x080000, 0x000004, 0x000000 };
+	INT32 Plane1a[4] = { 0x100004, 0x100000, 0x000004, 0x000000 };
+	INT32 Plane2[4]  = { 0x180000, 0x100000, 0x080000, 0x000000 };
+	INT32 Plane3[4]  = { 0x040000, 0x040004, 0x000000, 0x000004 };
 
 	// sprite, char
-	int XOffs0[16] = { 0, 1, 2, 3, 8, 9, 10, 11, 256, 257, 258, 259, 264, 265, 266, 267 };
-	int YOffs0[16] = { 0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240 };
+	INT32 XOffs0[16] = { 0, 1, 2, 3, 8, 9, 10, 11, 256, 257, 258, 259, 264, 265, 266, 267 };
+	INT32 YOffs0[16] = { 0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240 };
 
 	// background
-	int XOffs1[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
-	int YOffs1[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+	INT32 XOffs1[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
+	INT32 YOffs1[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x40000);
+	UINT8 *tmp = (UINT8*)malloc(0x40000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -875,9 +875,9 @@ static int DrvGfxDecode()
 	return 0;
 }
 
-inline static int DrvSynchroniseStream(int nSoundRate)
+inline static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)(ZetTotalCycles() * nSoundRate / 4000000);
+	return (INT64)(ZetTotalCycles() * nSoundRate / 4000000);
 }
 
 inline static double DrvGetTime()
@@ -933,12 +933,12 @@ static void lwings_sound_init()
 	BurnTimerAttachZet(4000000);
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -954,11 +954,11 @@ static int DrvInit()
 
 		if (BurnLoadRom(DrvGfxROM0 + 0x00000, 4, 1)) return 1;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			if (BurnLoadRom(DrvGfxROM1 + i * 0x8000, i + 5, 1)) return 1;
 		}
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			if (BurnLoadRom(DrvGfxROM2 + i * 0x8000, i + 13, 1)) return 1;
 		}
 
@@ -976,12 +976,12 @@ static int DrvInit()
 	return 0;
 }
 
-static int TrojanInit()
+static INT32 TrojanInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -998,7 +998,7 @@ static int TrojanInit()
 
 		if (BurnLoadRom(DrvGfxROM0 + 0x00000, 5, 1)) return 1;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			if (BurnLoadRom(DrvGfxROM1 + i * 0x8000, i + 6, 1)) return 1;
 			if (BurnLoadRom(DrvGfxROM2 + i * 0x8000, i + 14, 1)) return 1;
 		}
@@ -1011,7 +1011,7 @@ static int TrojanInit()
 		DrvGfxDecode();
 
 		{
-			for (int i = 0; i < 32; i++) {
+			for (INT32 i = 0; i < 32; i++) {
 				DrvGfxMask[i] = (0xf07f0001 & (1 << i)) ? 1 : 0;
 			}
 		}
@@ -1038,7 +1038,7 @@ static int TrojanInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -1054,18 +1054,18 @@ static int DrvExit()
 	return 0;
 }
 
-static void draw_foreground(int colbase)
+static void draw_foreground(INT32 colbase)
 {
-	for (int offs = 0x20; offs < 0x3e0; offs++)
+	for (INT32 offs = 0x20; offs < 0x3e0; offs++)
 	{
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 
-		int color = DrvFgRAM[offs | 0x400];
-		int code = DrvFgRAM[offs] | ((color & 0xc0) << 2);
+		INT32 color = DrvFgRAM[offs | 0x400];
+		INT32 code = DrvFgRAM[offs] | ((color & 0xc0) << 2);
 
-		int flipx = color & 0x10;
-		int flipy = color & 0x20;
+		INT32 flipx = color & 0x10;
+		INT32 flipy = color & 0x20;
 
 		color &= 0x0f;
 
@@ -1089,13 +1089,13 @@ static void draw_foreground(int colbase)
 
 static void draw_background()
 {
-	int scrollx = (ScrollX[0] | (ScrollX[1] << 8)) & 0x1ff;
-	int scrolly = (ScrollY[0] | (ScrollY[1] << 8)) & 0x1ff;
+	INT32 scrollx = (ScrollX[0] | (ScrollX[1] << 8)) & 0x1ff;
+	INT32 scrolly = (ScrollY[0] | (ScrollY[1] << 8)) & 0x1ff;
 
-	for (int offs = 0; offs < 0x400; offs++)
+	for (INT32 offs = 0; offs < 0x400; offs++)
 	{
-		int sy = (offs & 0x1f) << 4;
-		int sx = (offs >> 5) << 4;
+		INT32 sy = (offs & 0x1f) << 4;
+		INT32 sx = (offs >> 5) << 4;
 		    sy -= 8;
 
 		sx -= scrollx;
@@ -1106,11 +1106,11 @@ static void draw_background()
 		if (sy < -15 || sx < -15 || sy >= nScreenHeight || sx >= nScreenWidth)
 			continue;
 
-		int color = DrvBgRAM[offs | 0x400];
-		int code = DrvBgRAM[offs] | (color & 0xe0) << 3;;
+		INT32 color = DrvBgRAM[offs | 0x400];
+		INT32 code = DrvBgRAM[offs] | (color & 0xe0) << 3;;
 
-		int flipx = color & 0x08;
-		int flipy = color & 0x10;
+		INT32 flipx = color & 0x08;
+		INT32 flipy = color & 0x10;
 
 		color &= 0x07;
 
@@ -1132,14 +1132,14 @@ static void draw_background()
 
 static void lwings_draw_sprites()
 {
-	for (int offs = 0x200 - 4; offs >= 0; offs -= 4)
+	for (INT32 offs = 0x200 - 4; offs >= 0; offs -= 4)
 	{
-		int sx = DrvSprBuf[offs + 3] - 0x100 * (DrvSprBuf[offs + 1] & 0x01);
-		int sy = DrvSprBuf[offs + 2];
+		INT32 sx = DrvSprBuf[offs + 3] - 0x100 * (DrvSprBuf[offs + 1] & 0x01);
+		INT32 sy = DrvSprBuf[offs + 2];
 
 		if (sy && sx)
 		{
-			int code,color,flipx,flipy;
+			INT32 code,color,flipx,flipy;
 
 			if (sy > 0xf8) sy-=0x100;
 
@@ -1170,9 +1170,9 @@ static void lwings_draw_sprites()
 }
 
 
-static void draw_16x16_with_mask(int sx, int sy, int code, int color, unsigned char *gfxbase, unsigned char *mask, int flipx, int flipy)
+static void draw_16x16_with_mask(INT32 sx, INT32 sy, INT32 code, INT32 color, UINT8 *gfxbase, UINT8 *mask, INT32 flipx, INT32 flipy)
 {
-	unsigned char *src = gfxbase + (code << 8);
+	UINT8 *src = gfxbase + (code << 8);
 
 	color = (color << 4) | 0x100;
 
@@ -1180,38 +1180,38 @@ static void draw_16x16_with_mask(int sx, int sy, int code, int color, unsigned c
 		src += 0xf0;
 
 		if (flipx) {
-			for (int y = 15; y >= 0; y--, src-=16)
+			for (INT32 y = 15; y >= 0; y--, src-=16)
 			{
-				int yy = sy + y;
+				INT32 yy = sy + y;
 				if (yy < 0) break;
 				if (yy >= nScreenHeight) continue;
 		
-				for (int x = 15; x >= 0; x--)
+				for (INT32 x = 15; x >= 0; x--)
 				{
-					int xx = sx + x;
+					INT32 xx = sx + x;
 					if (xx < 0) break;
 					if (xx >= nScreenWidth) continue;	
 		
-					int o = color | src[15-x];
+					INT32 o = color | src[15-x];
 					if (mask[src[15-x]]) continue;
 		
 					pTransDraw[(yy * nScreenWidth) + xx] = o;
 				}
 			}
 		} else {
-			for (int y = 15; y >= 0; y--, src-=16)
+			for (INT32 y = 15; y >= 0; y--, src-=16)
 			{
-				int yy = sy + y;
+				INT32 yy = sy + y;
 				if (yy < 0) break;
 				if (yy >= nScreenHeight) continue;
 		
-				for (int x = 0; x < 16; x++)
+				for (INT32 x = 0; x < 16; x++)
 				{
-					int xx = sx + x;
+					INT32 xx = sx + x;
 					if (xx < 0) continue;
 					if (xx >= nScreenWidth) break;	
 		
-					int o = color | src[x];
+					INT32 o = color | src[x];
 					if (mask[src[x]]) continue;
 		
 					pTransDraw[(yy * nScreenWidth) + xx] = o;
@@ -1220,38 +1220,38 @@ static void draw_16x16_with_mask(int sx, int sy, int code, int color, unsigned c
 		}
 	} else {
 		if (flipx) {
-			for (int y = 0; y < 16; y++, src+=16)
+			for (INT32 y = 0; y < 16; y++, src+=16)
 			{
-				int yy = sy + y;
+				INT32 yy = sy + y;
 				if (yy < 0) continue;
 				if (yy >= nScreenHeight) break;
 
-				for (int x = 15; x >= 0; x--)
+				for (INT32 x = 15; x >= 0; x--)
 				{
-					int xx = sx + x;
+					INT32 xx = sx + x;
 					if (xx < 0) break;
 					if (xx >= nScreenWidth) continue;	
 		
-					int o = color | src[15-x];
+					INT32 o = color | src[15-x];
 					if (mask[src[15-x]]) continue;
 
 					pTransDraw[(yy * nScreenWidth) + xx] = o;
 				}
 			}
 		} else {
-			for (int y = 0; y < 16; y++, src+=16)
+			for (INT32 y = 0; y < 16; y++, src+=16)
 			{
-				int yy = sy + y;
+				INT32 yy = sy + y;
 				if (yy < 0) continue;
 				if (yy >= nScreenHeight) break;
 
-				for (int x = 0; x < 16; x++)
+				for (INT32 x = 0; x < 16; x++)
 				{
-					int xx = sx + x;
+					INT32 xx = sx + x;
 					if (xx < 0) continue;
 					if (xx >= nScreenWidth) break;	
 		
-					int o = color | src[x];
+					INT32 o = color | src[x];
 					if (mask[src[x]]) continue;
 
 					pTransDraw[(yy * nScreenWidth) + xx] = o;
@@ -1261,18 +1261,18 @@ static void draw_16x16_with_mask(int sx, int sy, int code, int color, unsigned c
 	}
 }
 
-static void trojan_draw_background(int priority)
+static void trojan_draw_background(INT32 priority)
 {
-	int scrollx = (ScrollX[0] | (ScrollX[1] << 8)) & 0x1ff;
-	int scrolly = (ScrollY[0] | (ScrollY[1] << 8)) & 0x1ff;
+	INT32 scrollx = (ScrollX[0] | (ScrollX[1] << 8)) & 0x1ff;
+	INT32 scrolly = (ScrollY[0] | (ScrollY[1] << 8)) & 0x1ff;
 
-	for (int offs = 0; offs < 0x400; offs++)
+	for (INT32 offs = 0; offs < 0x400; offs++)
 	{
-		int color = DrvBgRAM[offs | 0x400];
+		INT32 color = DrvBgRAM[offs | 0x400];
 		if (priority && ((~color >> 3) & 1)) continue;
 
-		int sy = (offs & 0x1f) << 4;
-		int sx = (offs >> 5) << 4;
+		INT32 sy = (offs & 0x1f) << 4;
+		INT32 sx = (offs >> 5) << 4;
 		    sy -= 8;
 
 		sx -= scrollx;
@@ -1283,9 +1283,9 @@ static void trojan_draw_background(int priority)
 		if (sy < -15 || sx < -15 || sy >= nScreenHeight || sx >= nScreenWidth)
 			continue;
 
-		int code = DrvBgRAM[offs] | ((color & 0xe0) << 3);
-		int flipx = color & 0x10;
-		int flipy = 0;
+		INT32 code = DrvBgRAM[offs] | ((color & 0xe0) << 3);
+		INT32 flipx = color & 0x10;
+		INT32 flipy = 0;
 
 		color &= 0x07;
 
@@ -1312,10 +1312,10 @@ static void trojan_draw_background(int priority)
 
 static void trojan_draw_background2()
 {
-	for (int offs = 0; offs < 32 * 16; offs++)
+	for (INT32 offs = 0; offs < 32 * 16; offs++)
 	{
-		int sx = (offs & 0x1f) << 4;
-		int sy = (offs >> 5) << 4;
+		INT32 sx = (offs & 0x1f) << 4;
+		INT32 sy = (offs >> 5) << 4;
 
 		sx -= trojan_bg2_scrollx;
 		if (sx < -15) sx += 512;
@@ -1324,12 +1324,12 @@ static void trojan_draw_background2()
 		if (sy < -15 || sx < -15 || sy >= nScreenHeight || sx >= nScreenWidth)
 			continue;
 
-		int offset = ((((offs << 6) & 0x7800) | ((offs << 1) & 0x3e)) + (trojan_bg2_image << 5)) & 0x7fff;
+		INT32 offset = ((((offs << 6) & 0x7800) | ((offs << 1) & 0x3e)) + (trojan_bg2_image << 5)) & 0x7fff;
 
-		int color = DrvTileMap[offset + 1];
-		int code  = DrvTileMap[offset + 0] | ((color & 0x80) << 1);
-		int flipx = color & 0x10;
-		int flipy = color & 0x20;
+		INT32 color = DrvTileMap[offset + 1];
+		INT32 code  = DrvTileMap[offset + 0] | ((color & 0x80) << 1);
+		INT32 flipx = color & 0x10;
+		INT32 flipy = color & 0x20;
 
 		color &= 7;
 
@@ -1351,19 +1351,19 @@ static void trojan_draw_background2()
 
 static void trojan_draw_sprites()
 {
-	for (int offs = 0x180 - 4; offs >= 0; offs -= 4)
+	for (INT32 offs = 0x180 - 4; offs >= 0; offs -= 4)
 	{
-		int sx = DrvSprBuf[offs + 3] - 0x100 * (DrvSprBuf[offs + 1] & 0x01);
-		int sy = DrvSprBuf[offs + 2];
+		INT32 sx = DrvSprBuf[offs + 3] - 0x100 * (DrvSprBuf[offs + 1] & 0x01);
+		INT32 sy = DrvSprBuf[offs + 2];
 
 		if (sy && sx)
 		{
-			int flipx, flipy;
+			INT32 flipx, flipy;
 
 			if (sy > 0xf8) sy-=0x100;
 
-			int color = DrvSprBuf[offs + 1];
-			int code  = DrvSprBuf[offs] | ((color & 0x20) << 4) | ((color & 0x40) << 2) | ((color & 0x80) << 3);
+			INT32 color = DrvSprBuf[offs + 1];
+			INT32 code  = DrvSprBuf[offs] | ((color & 0x20) << 4) | ((color & 0x40) << 2) | ((color & 0x80) << 3);
 
 			if (avengers)
 			{
@@ -1397,11 +1397,11 @@ static void trojan_draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x400; i++) {
-			int rgb = Palette[i];
+		for (INT32 i = 0; i < 0x400; i++) {
+			INT32 rgb = Palette[i];
 			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
 		}
 	}
@@ -1419,11 +1419,11 @@ static int DrvDraw()
 	}
 
 	if (flipscreen) {
-		unsigned short *ptr = pTransDraw + (nScreenWidth * nScreenHeight) - 1;
+		UINT16 *ptr = pTransDraw + (nScreenWidth * nScreenHeight) - 1;
 
-		for (int i = 0; i < nScreenWidth * nScreenHeight / 2; i++, ptr--)
+		for (INT32 i = 0; i < nScreenWidth * nScreenHeight / 2; i++, ptr--)
 		{
-			int n = pTransDraw[i];
+			INT32 n = pTransDraw[i];
 			pTransDraw[i] = *ptr;
 			*ptr = n;
 		}
@@ -1435,7 +1435,7 @@ static int DrvDraw()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -1444,7 +1444,7 @@ static int DrvFrame()
 	{
 		memset (DrvInp, 0xff, 3);
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInp[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInp[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInp[2] ^= (DrvJoy3[i] & 1) << i;
@@ -1456,13 +1456,13 @@ static int DrvFrame()
 		if ((DrvInp[2] & 0x0c) == 0) DrvInp[2] |= 0x0c;
 	}
 
-	int nInterleave = 16;
-	int nSoundBufferPos = 0;
-	int nCyclesTotal[3] = { 6000000 / 60, 4000000 / 60, 4000000 / 60 };
+	INT32 nInterleave = 16;
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[3] = { 6000000 / 60, 4000000 / 60, 4000000 / 60 };
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		int nSegment;
+		INT32 nSegment;
 
 		ZetOpen(0);
 		nSegment = nCyclesTotal[0] / (nInterleave - i);
@@ -1493,8 +1493,8 @@ static int DrvFrame()
 #endif
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			ZetOpen(1);
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
 			ZetClose();
@@ -1503,8 +1503,8 @@ static int DrvFrame()
 	}
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			ZetOpen(1);
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
@@ -1525,7 +1525,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -1551,7 +1551,7 @@ static int DrvScan(int nAction, int *pnMin)
 		SCAN_VAR(flipscreen);
 		SCAN_VAR(DrvZ80Bank);
 
-		SCAN_VAR(*((unsigned int*)avengers_param));
+		SCAN_VAR(*((UINT32*)avengers_param));
 		SCAN_VAR(avengers_palette_pen);
 		SCAN_VAR(avengers_soundlatch2);
 		SCAN_VAR(avengers_soundstate);
@@ -2025,7 +2025,7 @@ static struct BurnRomInfo avengersRomDesc[] = {
 STD_ROM_PICK(avengers)
 STD_ROM_FN(avengers)
 
-static int AvengersInit()
+static INT32 AvengersInit()
 {
 	avengers = 1;
 

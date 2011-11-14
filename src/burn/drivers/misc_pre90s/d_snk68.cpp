@@ -7,50 +7,50 @@
 // 	Analog Inputs
 //	Fix savestates (crash due to snd?)
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvInputs[8];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
-static unsigned int nAnalogAxis[2] = {0,0};
-static unsigned short DrvAxis[2];
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvInputs[8];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
+static UINT32 nAnalogAxis[2] = {0,0};
+static UINT16 DrvAxis[2];
 
-static int Rotary1 = 0;
-static int Rotary1OldVal = 0;
-static int Rotary2 = 0;
-static int Rotary2OldVal = 0;
+static INT32 Rotary1 = 0;
+static INT32 Rotary1OldVal = 0;
+static INT32 Rotary2 = 0;
+static INT32 Rotary2OldVal = 0;
 
-static unsigned char *Mem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KRom;
-static unsigned char *Drv68KRomBank;
-static unsigned char *DrvZ80Rom;
-static unsigned char *Drv68KRam;
-static unsigned char *DrvVidRam;
-static unsigned char *DrvSprRam;
-static unsigned char *DrvPalRam;
-static unsigned char *DrvZ80Ram;
-static unsigned char *DrvGfx0;
-static unsigned char *DrvGfx0Trans;
-static unsigned char *DrvGfx1;
-static unsigned char *DrvSnd0;
+static UINT8 *Mem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KRom;
+static UINT8 *Drv68KRomBank;
+static UINT8 *DrvZ80Rom;
+static UINT8 *Drv68KRam;
+static UINT8 *DrvVidRam;
+static UINT8 *DrvSprRam;
+static UINT8 *DrvPalRam;
+static UINT8 *DrvZ80Ram;
+static UINT8 *DrvGfx0;
+static UINT8 *DrvGfx0Trans;
+static UINT8 *DrvGfx1;
+static UINT8 *DrvSnd0;
 
-static unsigned int *Palette;
-static unsigned int *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static int game_select;
+static INT32 game_select;
 
-static int invert_controls;
-static int soundlatch;
-static int flipscreen;
-static int sprite_flip;
-static int pow_charbase;
+static INT32 invert_controls;
+static INT32 soundlatch;
+static INT32 flipscreen;
+static INT32 sprite_flip;
+static INT32 pow_charbase;
 
-#define A(a, b, c, d) { a, b, (unsigned char*)(c), d }
+#define A(a, b, c, d) { a, b, (UINT8*)(c), d }
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"Coin 1"       , BIT_DIGITAL  , DrvJoy3 + 4,	"p1 coin"  },
@@ -465,7 +465,7 @@ static struct BurnDIPInfo IkariDIPList[]=
 STDDIPINFO(Ikari)
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -496,10 +496,10 @@ static int DrvDoReset()
 	return 0;
 }
 
-void pow_paletteram16_word_w(unsigned int address)
+void pow_paletteram16_word_w(UINT32 address)
 {
-	int r,g,b;
-	unsigned short data = *((unsigned short*)(DrvPalRam + (address & 0x0ffe)));
+	INT32 r,g,b;
+	UINT16 data = *((UINT16*)(DrvPalRam + (address & 0x0ffe)));
 
 	r = ((data >> 7) & 0x1e) | ((data >> 14) & 0x01);
 	g = ((data >> 3) & 0x1e) | ((data >> 13) & 0x01);
@@ -513,19 +513,19 @@ void pow_paletteram16_word_w(unsigned int address)
 	DrvPalette[(address >> 1) & 0x7ff] = BurnHighCol(r, g, b, 0);
 }
 
-void __fastcall pow_write_word(unsigned int address, unsigned short data)
+void __fastcall pow_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xffff8000) == 0x100000 && game_select & 1) {
 		if (!(address & 2))
 		data |= 0xff00;
 
-		*((unsigned short *)(DrvSprRam + (address & 0x7fff))) = data;
+		*((UINT16 *)(DrvSprRam + (address & 0x7fff))) = data;
 
 		return;
 	}
 
 	if ((address & 0xfffff000) == 0x400000) {
-		*((unsigned short *)(DrvPalRam + (address & 0x0ffe))) = data;
+		*((UINT16 *)(DrvPalRam + (address & 0x0ffe))) = data;
 
 		pow_paletteram16_word_w(address);
 
@@ -533,7 +533,7 @@ void __fastcall pow_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-void __fastcall pow_write_byte(unsigned int address, unsigned char data)
+void __fastcall pow_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xffff8000) == 0x100000 && game_select == 1) {
 		if ((address & 3) == 3) data = 0xff;
@@ -571,14 +571,14 @@ void __fastcall pow_write_byte(unsigned int address, unsigned char data)
 }
 
 
-unsigned short __fastcall pow_read_word(unsigned int address)
+UINT16 __fastcall pow_read_word(UINT32 address)
 {
 	bprintf (PRINT_NORMAL, _T("read %x, w\n"), address);
 
 	return 0;
 }
 
-unsigned char __fastcall pow_read_byte(unsigned int address)
+UINT8 __fastcall pow_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -610,7 +610,7 @@ unsigned char __fastcall pow_read_byte(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall sar_read_byte(unsigned int address)
+UINT8 __fastcall sar_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -620,19 +620,19 @@ unsigned char __fastcall sar_read_byte(unsigned int address)
 			return DrvInputs[(address >> 1) & 3] ^ invert_controls;
 
 		case 0x0c0000: {
-			int RetVal = Rotary1;
+			INT32 RetVal = Rotary1;
 			RetVal = (~(1 << RetVal)) & 0xff;
-			return (unsigned char)RetVal;
+			return (UINT8)RetVal;
 		}
 
 		case 0x0c8000: {
-			int RetVal = Rotary2;
+			INT32 RetVal = Rotary2;
 			RetVal = (~(1 << RetVal)) & 0xff;
-			return (unsigned char)RetVal;
+			return (UINT8)RetVal;
 		}
 
 		case 0x0d0000: {
-			int RetVal = 0xff;
+			INT32 RetVal = 0xff;
 			
 			if (Rotary1 ==  8) RetVal -= 0x01;
 			if (Rotary1 ==  9) RetVal -= 0x02;
@@ -643,7 +643,7 @@ unsigned char __fastcall sar_read_byte(unsigned int address)
 			if (Rotary2 ==  9) RetVal -= 0x20;
 			if (Rotary2 == 10) RetVal -= 0x40;
 			if (Rotary2 == 11) RetVal -= 0x80;
-			return (unsigned char)RetVal;
+			return (UINT8)RetVal;
 		}
 
 		case 0x0f0000:
@@ -661,11 +661,11 @@ unsigned char __fastcall sar_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall pow_sound_write(unsigned short, unsigned char)
+void __fastcall pow_sound_write(UINT16, UINT8)
 {
 }
 
-void __fastcall pow_sound_out(unsigned short address, unsigned char data)
+void __fastcall pow_sound_out(UINT16 address, UINT8 data)
 {
 	switch (address & 0xff)
 	{
@@ -687,14 +687,14 @@ void __fastcall pow_sound_out(unsigned short address, unsigned char data)
 
 }
 
-unsigned char __fastcall pow_sound_read(unsigned short address)
+UINT8 __fastcall pow_sound_read(UINT16 address)
 {
 	if (address == 0xf800) return soundlatch;
 
 	return 0;
 }
 
-unsigned char __fastcall pow_sound_in(unsigned short address)
+UINT8 __fastcall pow_sound_in(UINT16 address)
 {
 	address &= 0xff;
 
@@ -703,7 +703,7 @@ unsigned char __fastcall pow_sound_in(unsigned short address)
 	return 0;
 }
 
-static void powFMIRQHandler(int, int nStatus)
+static void powFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -712,18 +712,18 @@ static void powFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int powSynchroniseStream(int nSoundRate)
+static INT32 powSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
-static int DrvGfxDecode(int *spriPlanes, int *spriXOffs, int *spriYOffs, int modulo)
+static INT32 DrvGfxDecode(INT32 *spriPlanes, INT32 *spriXOffs, INT32 *spriYOffs, INT32 modulo)
 {
-	static int tilePlanes[4] = { 0x00000, 0x00004, 0x40000, 0x40004 };
-	static int tileXOffs[8]  = { 0x43, 0x42, 0x41, 0x40, 0x03, 0x02, 0x01, 0x00 };
-	static int tileYOffs[8]  = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38 };
+	static INT32 tilePlanes[4] = { 0x00000, 0x00004, 0x40000, 0x40004 };
+	static INT32 tileXOffs[8]  = { 0x43, 0x42, 0x41, 0x40, 0x03, 0x02, 0x01, 0x00 };
+	static INT32 tileYOffs[8]  = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x300000);
+	UINT8 *tmp = (UINT8*)malloc(0x300000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -742,7 +742,7 @@ static int DrvGfxDecode(int *spriPlanes, int *spriXOffs, int *spriYOffs, int mod
 	}
 
 	memset (DrvGfx0Trans, 1, 0x800);
-	for (int i = 0; i < 0x20000; i++) {
+	for (INT32 i = 0; i < 0x20000; i++) {
 		if (DrvGfx0[i]) {
 			DrvGfx0Trans[i>>6] = 0;
 			i|=0x3f;
@@ -752,42 +752,42 @@ static int DrvGfxDecode(int *spriPlanes, int *spriXOffs, int *spriYOffs, int mod
 	return 0;
 }
 
-static int PowGfxDecode()
+static INT32 PowGfxDecode()
 {
-	static int spriPlanes[4] = { 0x000000, 0x400000, 0x800000, 0xc00000 };
-	static int spriXOffs[16] = { 0x87, 0x86, 0x85, 0x84, 0x83, 0x82, 0x81, 0x80,
+	static INT32 spriPlanes[4] = { 0x000000, 0x400000, 0x800000, 0xc00000 };
+	static INT32 spriXOffs[16] = { 0x87, 0x86, 0x85, 0x84, 0x83, 0x82, 0x81, 0x80,
 				     0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
-	static int spriYOffs[16] = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
+	static INT32 spriYOffs[16] = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
 				     0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78 };
 
 	return DrvGfxDecode(spriPlanes, spriXOffs, spriYOffs, 0x100);
 }
 
-static int SarGfxDecode()
+static INT32 SarGfxDecode()
 {
-	static int spriPlanes[4] = { 0x000000, 0x000008,0xc00000, 0xc00008 };
-	static int spriXOffs[16] = { 0x107, 0x106, 0x105, 0x104, 0x103, 0x102, 0x101, 0x100, 
+	static INT32 spriPlanes[4] = { 0x000000, 0x000008,0xc00000, 0xc00008 };
+	static INT32 spriXOffs[16] = { 0x107, 0x106, 0x105, 0x104, 0x103, 0x102, 0x101, 0x100, 
 				     0x007, 0x006, 0x005, 0x004, 0x003, 0x002, 0x001, 0x000 };
-	static int spriYOffs[16] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070,
+	static INT32 spriYOffs[16] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070,
 				     0x080, 0x090, 0x0a0, 0x0b0, 0x0c0, 0x0d0, 0x0e0, 0x0f0 };
 
 	return DrvGfxDecode(spriPlanes, spriXOffs, spriYOffs, 0x200);
 }
 
-static int IkariGfxDecode()
+static INT32 IkariGfxDecode()
 {
-	static int spriPlanes[4] = { 0xa00000, 0x000000, 0x500000, 0xf00000 };
-	static int spriXOffs[16] = { 0x87, 0x86, 0x85, 0x84, 0x83, 0x82, 0x81, 0x80,
+	static INT32 spriPlanes[4] = { 0xa00000, 0x000000, 0x500000, 0xf00000 };
+	static INT32 spriXOffs[16] = { 0x87, 0x86, 0x85, 0x84, 0x83, 0x82, 0x81, 0x80,
 				     0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
-	static int spriYOffs[16] = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
+	static INT32 spriYOffs[16] = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
 				     0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78 };
 
 	return DrvGfxDecode(spriPlanes, spriXOffs, spriYOffs, 0x100);
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom	= Next; Next += 0x040000;
 	Drv68KRomBank	= Next; Next += 0x040000;
@@ -809,11 +809,11 @@ static int MemIndex()
 
 	DrvZ80Ram	= Next; Next += 0x000800;
 
-	Palette		= (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
+	Palette		= (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
 
 	RamEnd		= Next;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
+	DrvPalette	= (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
 
 	MemEnd		= Next;
 
@@ -856,17 +856,17 @@ static void sar_map_68k()
 }
 
 
-static int DrvGetRoms()
+static INT32 DrvGetRoms()
 {
 	char* pRomName;
 	struct BurnRomInfo ri;
-	unsigned char *LoadP0 = Drv68KRom;
-	unsigned char *LoadP1 = DrvZ80Rom;
-	unsigned char *LoadG0 = DrvGfx0;
-	unsigned char *LoadG1 = DrvGfx1;
-	unsigned char *LoadS0 = DrvSnd0;
+	UINT8 *LoadP0 = Drv68KRom;
+	UINT8 *LoadP1 = DrvZ80Rom;
+	UINT8 *LoadG0 = DrvGfx0;
+	UINT8 *LoadG1 = DrvGfx1;
+	UINT8 *LoadS0 = DrvSnd0;
 
-	for (int i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
+	for (INT32 i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
 		BurnDrvGetRomInfo(&ri, i);
 
 		if ((ri.nType & 7) == 1) {
@@ -905,14 +905,14 @@ static int DrvGetRoms()
 	return 0;
 }
 
-static int DrvInit(int game)
+static INT32 DrvInit(INT32 game)
 {
 	game_select = game;
 
 	Mem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -967,7 +967,7 @@ static int DrvInit(int game)
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	BurnYM3812Exit();
 	UPD7759Exit();
@@ -987,11 +987,11 @@ static int DrvExit()
 }
 
 
-static void pow_sprites(int j, int pos)
+static void pow_sprites(INT32 j, INT32 pos)
 {
-	int offs,mx,my,color,tile,fx,fy,i;
+	INT32 offs,mx,my,color,tile,fx,fy,i;
 
-	unsigned short *spriteram16 = (unsigned short*)(DrvSprRam);
+	UINT16 *spriteram16 = (UINT16*)(DrvSprRam);
 
 	for (offs = pos; offs < pos+0x800; offs += 0x80 )
 	{
@@ -1058,11 +1058,11 @@ static void pow_sprites(int j, int pos)
 	}
 }
 
-static void sar_sprites(int j, int z, int pos)
+static void sar_sprites(INT32 j, INT32 z, INT32 pos)
 {
-	int offs,mx,my,color,tile,fx,fy,i;
+	INT32 offs,mx,my,color,tile,fx,fy,i;
 
-	unsigned short *spriteram16 = (unsigned short*)(DrvSprRam);
+	UINT16 *spriteram16 = (UINT16*)(DrvSprRam);
 
 	for (offs = pos; offs < pos+0x800 ; offs += 0x80 )
 	{
@@ -1142,12 +1142,12 @@ static void sar_sprites(int j, int z, int pos)
 
 static void pow_foreground()
 {
-	unsigned short *vidram = (unsigned short*)DrvVidRam;
+	UINT16 *vidram = (UINT16*)DrvVidRam;
 
-	for (int offs = 0; offs < 0x1000 / 2; offs+=2)
+	for (INT32 offs = 0; offs < 0x1000 / 2; offs+=2)
 	{
-		int sy = (offs << 2) & 0xf8;
-		int sx = (offs >> 3) & 0xf8;
+		INT32 sy = (offs << 2) & 0xf8;
+		INT32 sx = (offs >> 3) & 0xf8;
 
 		if (flipscreen) {
 			sy ^= 0xf8;
@@ -1157,8 +1157,8 @@ static void pow_foreground()
 		if (sy < 16 || sy > 239) continue;
 		sy -= 16;
 
-		int code  = (vidram[offs | 0] & 0xff) | pow_charbase;
-		int color = vidram[offs | 1] & 0x0f;
+		INT32 code  = (vidram[offs | 0] & 0xff) | pow_charbase;
+		INT32 color = vidram[offs | 1] & 0x0f;
 
 		if (DrvGfx0Trans[code]) continue;
 
@@ -1172,12 +1172,12 @@ static void pow_foreground()
 
 static void sar_foreground()
 {
-	unsigned short *vidram = (unsigned short*)DrvVidRam;
+	UINT16 *vidram = (UINT16*)DrvVidRam;
 
-	for (int offs = 0; offs < 0x1000 / 2; offs+=2)
+	for (INT32 offs = 0; offs < 0x1000 / 2; offs+=2)
 	{
-		int sy = (offs << 2) & 0xf8;
-		int sx = (offs >> 3) & 0xf8;
+		INT32 sy = (offs << 2) & 0xf8;
+		INT32 sx = (offs >> 3) & 0xf8;
 
 		if (flipscreen) {
 			sy ^= 0xf8;
@@ -1187,8 +1187,8 @@ static void sar_foreground()
 		if (sy < 16 || sy > 239) continue;
 		sy -= 16;
 
-		int code = vidram[offs];
-		int color = code >> 12;
+		INT32 code = vidram[offs];
+		INT32 color = code >> 12;
 
 		// kludge for bad tile (ikari)
 		if (code == 0x80ff) {
@@ -1208,16 +1208,16 @@ static void sar_foreground()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x800; i++) {
-			int rgb = Palette[i];
+		for (INT32 i = 0; i < 0x800; i++) {
+			INT32 rgb = Palette[i];
 			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
 		}
 	}
 
-	for (int offs = 0; offs < nScreenHeight * nScreenWidth; offs++) {
+	for (INT32 offs = 0; offs < nScreenHeight * nScreenWidth; offs++) {
 		pTransDraw[offs] = 0x7ff;
 	}
 
@@ -1249,7 +1249,7 @@ static int DrvDraw()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -1258,7 +1258,7 @@ static int DrvFrame()
 	{
 		DrvInputs[0] = DrvInputs[1] = DrvInputs[2] = 0xff;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= DrvJoy1[i] << i;
 			DrvInputs[1] ^= DrvJoy2[i] << i;
 			DrvInputs[2] ^= DrvJoy3[i] << i;
@@ -1295,7 +1295,7 @@ static int DrvFrame()
 		if (Rotary2 < 0) Rotary2 = 11;
 	}
 
-	int nTotalCycles[2] =  { ((game_select == 1) ? 9000000 : 10000000) / 60, 4000000 / 60 };
+	INT32 nTotalCycles[2] =  { ((game_select == 1) ? 9000000 : 10000000) / 60, 4000000 / 60 };
 
 	SekOpen(0);
 	ZetOpen(0);
@@ -1321,7 +1321,7 @@ static int DrvFrame()
 }
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -1401,7 +1401,7 @@ static struct BurnRomInfo powRomDesc[] = {
 STD_ROM_PICK(pow)
 STD_ROM_FN(pow)
 
-static int powInit()
+static INT32 powInit()
 {
 	return DrvInit(0);
 }
@@ -1490,7 +1490,7 @@ static struct BurnRomInfo searcharRomDesc[] = {
 STD_ROM_PICK(searchar)
 STD_ROM_FN(searchar)
 
-static int searcharInit()
+static INT32 searcharInit()
 {
 	return DrvInit(1);
 }
@@ -1607,7 +1607,7 @@ static struct BurnRomInfo streetsmRomDesc[] = {
 STD_ROM_PICK(streetsm)
 STD_ROM_FN(streetsm)
 
-static int streetsmInit()
+static INT32 streetsmInit()
 {
 	return DrvInit(2);
 }
@@ -1767,7 +1767,7 @@ static struct BurnRomInfo ikari3RomDesc[] = {
 STD_ROM_PICK(ikari3)
 STD_ROM_FN(ikari3)
 
-static int ikari3Init()
+static INT32 ikari3Init()
 {
 	return DrvInit(3);
 }

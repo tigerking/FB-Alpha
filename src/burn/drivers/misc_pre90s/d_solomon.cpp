@@ -5,43 +5,44 @@ extern "C" {
  #include "ay8910.h"
 }
 
-static unsigned char SolomonInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char SolomonInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char SolomonInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char SolomonDip[2]        = {0, 0};
-static unsigned char SolomonInput[3]      = {0x00, 0x00, 0x00};
-static unsigned char SolomonReset         = 0;
+static UINT8 SolomonInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 SolomonInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 SolomonInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 SolomonDip[2]        = {0, 0};
+static UINT8 SolomonInput[3]      = {0x00, 0x00, 0x00};
+static UINT8 SolomonReset         = 0;
 
-static unsigned char *Mem                 = NULL;
-static unsigned char *MemEnd              = NULL;
-static unsigned char *RamStart            = NULL;
-static unsigned char *RamEnd              = NULL;
-static unsigned char *SolomonZ80Rom1      = NULL;
-static unsigned char *SolomonZ80Rom2      = NULL;
-static unsigned char *SolomonZ80Ram1      = NULL;
-static unsigned char *SolomonZ80Ram2      = NULL;
-static unsigned char *SolomonColourRam    = NULL;
-static unsigned char *SolomonVideoRam     = NULL;
-static unsigned char *SolomonBgColourRam  = NULL;
-static unsigned char *SolomonBgVideoRam   = NULL;
-static unsigned char *SolomonSpriteRam    = NULL;
-static unsigned char *SolomonPaletteRam   = NULL;
-static unsigned int  *SolomonPalette      = NULL;
-static unsigned char *SolomonBgTiles      = NULL;
-static unsigned char *SolomonFgTiles      = NULL;
-static unsigned char *SolomonSprites      = NULL;
-static unsigned char *SolomonTempRom      = NULL;
+static UINT8 *Mem                 = NULL;
+static UINT8 *MemEnd              = NULL;
+static UINT8 *RamStart            = NULL;
+static UINT8 *RamEnd              = NULL;
+static UINT8 *SolomonZ80Rom1      = NULL;
+static UINT8 *SolomonZ80Rom2      = NULL;
+static UINT8 *SolomonZ80Ram1      = NULL;
+static UINT8 *SolomonZ80Ram2      = NULL;
+static UINT8 *SolomonColourRam    = NULL;
+static UINT8 *SolomonVideoRam     = NULL;
+static UINT8 *SolomonBgColourRam  = NULL;
+static UINT8 *SolomonBgVideoRam   = NULL;
+static UINT8 *SolomonSpriteRam    = NULL;
+static UINT8 *SolomonPaletteRam   = NULL;
+static UINT32  *SolomonPalette      = NULL;
+static UINT8 *SolomonBgTiles      = NULL;
+static UINT8 *SolomonFgTiles      = NULL;
+static UINT8 *SolomonSprites      = NULL;
+static UINT8 *SolomonTempRom      = NULL;
 
-static int SolomonIrqFire = 0;
+static INT32 SolomonIrqFire = 0;
 
-static int SolomonFlipScreen = 0;
+static INT32 SolomonFlipScreen = 0;
 
-static int SolomonSoundLatch = 0;
-static short* pFMBuffer;
-static short* pAY8910Buffer[9];
+static INT32 SolomonSoundLatch = 0;
+static INT16* pFMBuffer;
+static INT16* pAY8910Buffer[9];
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 static struct BurnInputInfo SolomonInputList[] =
 {
@@ -71,7 +72,7 @@ static struct BurnInputInfo SolomonInputList[] =
 
 STDINPUTINFO(Solomon)
 
-inline void SolomonClearOpposites(unsigned char* nJoystickInputs)
+inline void SolomonClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -87,7 +88,7 @@ inline void SolomonMakeInputs()
 	SolomonInput[0] = SolomonInput[1] = SolomonInput[2] = 0x00;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		SolomonInput[0] |= (SolomonInputPort0[i] & 1) << i;
 		SolomonInput[1] |= (SolomonInputPort1[i] & 1) << i;
 		SolomonInput[2] |= (SolomonInputPort2[i] & 1) << i;
@@ -203,26 +204,26 @@ static struct BurnRomInfo SolomonjRomDesc[] = {
 STD_ROM_PICK(Solomonj)
 STD_ROM_FN(Solomonj)
 
-int SolomonDoReset()
+INT32 SolomonDoReset()
 {
 	SolomonIrqFire = 0;
 	SolomonFlipScreen = 0;
 	SolomonSoundLatch = 0;
 
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		ZetOpen(i);
 		ZetReset();
 		ZetClose();
 	}
 
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		AY8910Reset(i);
 	}
 
 	return 0;
 }
 
-unsigned char __fastcall SolomonRead1(unsigned short a)
+UINT8 __fastcall SolomonRead1(UINT16 a)
 {
 	switch (a) {
 		case 0xe600: {
@@ -249,7 +250,7 @@ unsigned char __fastcall SolomonRead1(unsigned short a)
 	return 0;
 }
 
-void __fastcall SolomonWrite1(unsigned short a, unsigned char d)
+void __fastcall SolomonWrite1(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe600: {
@@ -274,7 +275,7 @@ void __fastcall SolomonWrite1(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall SolomonRead2(unsigned short a)
+UINT8 __fastcall SolomonRead2(UINT16 a)
 {
 	switch (a) {
 		case 0x8000: {
@@ -285,7 +286,7 @@ unsigned char __fastcall SolomonRead2(unsigned short a)
 	return 0;
 }
 
-void __fastcall SolomonPortWrite2(unsigned short a, unsigned char d)
+void __fastcall SolomonPortWrite2(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 
@@ -322,9 +323,9 @@ void __fastcall SolomonPortWrite2(unsigned short a, unsigned char d)
 	}
 }
 
-static int SolomonMemIndex()
+static INT32 SolomonMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	SolomonZ80Rom1         = Next; Next += 0x10000;
 	SolomonZ80Rom2         = Next; Next += 0x04000;
@@ -345,34 +346,34 @@ static int SolomonMemIndex()
 	SolomonBgTiles         = Next; Next += 2048 * 8 * 8;
 	SolomonFgTiles         = Next; Next += 2048 * 8 * 8;
 	SolomonSprites         = Next; Next += 2048 * 8 * 8;
-	pFMBuffer              = (short*)Next; Next += nBurnSoundLen * 9 * sizeof(short);
-	SolomonPalette         = (unsigned int*)Next; Next += 0x00200 * sizeof(unsigned int);
+	pFMBuffer              = (INT16*)Next; Next += nBurnSoundLen * 9 * sizeof(INT16);
+	SolomonPalette         = (UINT32*)Next; Next += 0x00200 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
-static int TileXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
-static int TileYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int SpritePlaneOffsets[4] = { 0, 131072, 262144, 393216 };
-static int SpriteXOffsets[16]    = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
-static int SpriteYOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
+static INT32 TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
+static INT32 TileXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static INT32 TileYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 SpritePlaneOffsets[4] = { 0, 131072, 262144, 393216 };
+static INT32 SpriteXOffsets[16]    = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
+static INT32 SpriteYOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
 
-int SolomonInit()
+INT32 SolomonInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	SolomonMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	SolomonMemIndex();
 
-	SolomonTempRom = (unsigned char *)malloc(0x10000);
+	SolomonTempRom = (UINT8 *)malloc(0x10000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(SolomonZ80Rom1, 0, 1); if (nRet != 0) return 1;
@@ -478,11 +479,11 @@ int SolomonInit()
 	return 0;
 }
 
-int SolomonExit()
+INT32 SolomonExit()
 {
 	ZetExit();
 
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		AY8910Exit(i);
 	}
 
@@ -498,8 +499,8 @@ int SolomonExit()
 
 void SolomonRenderBgLayer()
 {
-	for (int Offs = 0; Offs < 0x400; Offs++) {
-		int sx, sy, Attr, Code, Colour, FlipX, FlipY;
+	for (INT32 Offs = 0; Offs < 0x400; Offs++) {
+		INT32 sx, sy, Attr, Code, Colour, FlipX, FlipY;
 
 		sx = (Offs % 32);
 		sy = (Offs / 32);
@@ -554,8 +555,8 @@ void SolomonRenderBgLayer()
 
 void SolomonRenderFgLayer()
 {
-	for (int Offs = 0x400 - 1; Offs >= 0; Offs--) {
-		int sx, sy, Code, Colour;
+	for (INT32 Offs = 0x400 - 1; Offs >= 0; Offs--) {
+		INT32 sx, sy, Code, Colour;
 
 		sx = (Offs % 32);
 		sy = (Offs / 32);
@@ -589,8 +590,8 @@ void SolomonRenderFgLayer()
 
 void SolomonRenderSpriteLayer()
 {
-	for (int Offs = 0x80 - 4; Offs >= 0; Offs -= 4) {
-		int sx, sy, Attr, Code, Colour, FlipX, FlipY;
+	for (INT32 Offs = 0x80 - 4; Offs >= 0; Offs -= 4) {
+		INT32 sx, sy, Attr, Code, Colour, FlipX, FlipY;
 
 		sx = SolomonSpriteRam[Offs + 3];
 		sy = 241 - SolomonSpriteRam[Offs + 2];
@@ -641,9 +642,9 @@ void SolomonRenderSpriteLayer()
 	}
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour >> 0) & 0x0f;
 	g = (nColour >> 4) & 0x0f;
@@ -656,9 +657,9 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-int SolomonCalcPalette()
+INT32 SolomonCalcPalette()
 {
-	for (int i = 0; i < 0x200; i++) {
+	for (INT32 i = 0; i < 0x200; i++) {
 		SolomonPalette[i / 2] = CalcCol(SolomonPaletteRam[i & ~1] | (SolomonPaletteRam[i | 1] << 8));
 	}
 
@@ -675,10 +676,10 @@ void SolomonDraw()
 	BurnTransferCopy(SolomonPalette);
 }
 
-int SolomonFrame()
+INT32 SolomonFrame()
 {
-	int nInterleave = 2;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 2;
+	INT32 nSoundBufferPos = 0;
 
 	if (SolomonReset) SolomonDoReset();
 
@@ -688,8 +689,8 @@ int SolomonFrame()
 	nCyclesTotal[1] = 3072000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run Z80 #1
 		nCurrentCPU = 0;
@@ -712,13 +713,13 @@ int SolomonFrame()
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -746,14 +747,14 @@ int SolomonFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -783,7 +784,7 @@ int SolomonFrame()
 	return 0;
 }
 
-static int SolomonScan(int nAction,int *pnMin)
+static INT32 SolomonScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

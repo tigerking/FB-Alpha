@@ -7,19 +7,19 @@
 #define	UNLOCK	0x0f
 #define LOCK	0x0c
 
-static int mcu_type;
+static INT32 mcu_type;
 
-static int mcu_initializing;
-static int mcu_coinage_init;
-static int mcu_command,mcu_readcredits;
-static int mcu_reportcoin;
-static unsigned char mcu_coinage[4];
-static unsigned char mcu_coinsA;
-static unsigned char mcu_coinsB;
-static unsigned char mcu_credits;
-static unsigned char mcu_coin_lockout;
+static INT32 mcu_initializing;
+static INT32 mcu_coinage_init;
+static INT32 mcu_command,mcu_readcredits;
+static INT32 mcu_reportcoin;
+static UINT8 mcu_coinage[4];
+static UINT8 mcu_coinsA;
+static UINT8 mcu_coinsB;
+static UINT8 mcu_credits;
+static UINT8 mcu_coin_lockout;
 
-unsigned char *tnzs_mcu_inputs;
+UINT8 *tnzs_mcu_inputs;
 
 void tnzs_mcu_reset()
 {
@@ -37,15 +37,15 @@ void tnzs_mcu_reset()
 	mcu_coin_lockout = LOCK;
 }
 
-void tnzs_mcu_init(int type)
+void tnzs_mcu_init(INT32 type)
 {
 	tnzs_mcu_reset();
 	mcu_type = type;
 }
 
-static void mcu_handle_coins(int coin)
+static void mcu_handle_coins(INT32 coin)
 {
-	static int insertcoin;
+	static INT32 insertcoin;
 
 	if (coin & 0x08)
 		mcu_reportcoin = coin;
@@ -102,7 +102,7 @@ static void mcu_handle_coins(int coin)
 	insertcoin = coin;
 }
 
-static unsigned char mcu_arknoid2_r(int offset)
+static UINT8 mcu_arknoid2_r(INT32 offset)
 {
 	const char *mcu_startup = "\x55\xaa\x5a";
 
@@ -147,7 +147,7 @@ static unsigned char mcu_arknoid2_r(int offset)
 	}
 }
 
-static void mcu_arknoid2_w(int offset, int data)
+static void mcu_arknoid2_w(INT32 offset, INT32 data)
 {
 	if (offset == 0)
 	{
@@ -174,7 +174,7 @@ static void mcu_arknoid2_w(int offset, int data)
 	}
 }
 
-static unsigned char mcu_chukatai_r(int offset)
+static UINT8 mcu_chukatai_r(INT32 offset)
 {
 	const char *mcu_startup = "\xa5\x5a\xaa";
 
@@ -235,7 +235,7 @@ static unsigned char mcu_chukatai_r(int offset)
 	}
 }
 
-static void mcu_chukatai_w(int offset, int data)
+static void mcu_chukatai_w(INT32 offset, INT32 data)
 {
 	if (offset == 0)
 	{
@@ -259,7 +259,7 @@ static void mcu_chukatai_w(int offset, int data)
 	}
 }
 
-static unsigned char mcu_tnzs_r(int offset)
+static UINT8 mcu_tnzs_r(INT32 offset)
 {
 	const char *mcu_startup = "\x5a\xa5\x55";
 
@@ -336,7 +336,7 @@ static unsigned char mcu_tnzs_r(int offset)
 	}
 }
 
-static void mcu_tnzs_w(int offset, int data)
+static void mcu_tnzs_w(INT32 offset, INT32 data)
 {
 	if (offset == 0) {
 		if (mcu_command == 0x41) {
@@ -364,7 +364,7 @@ static void mcu_tnzs_w(int offset, int data)
 	}
 }
 
-unsigned char tnzs_mcu_read(int offset)
+UINT8 tnzs_mcu_read(INT32 offset)
 {
 	switch (mcu_type)
 	{
@@ -394,7 +394,7 @@ unsigned char tnzs_mcu_read(int offset)
 	return 0xff;
 }
 
-void tnzs_mcu_write(int offset, int data)
+void tnzs_mcu_write(INT32 offset, INT32 data)
 {
 	switch (mcu_type)
 	{
@@ -417,7 +417,7 @@ void tnzs_mcu_write(int offset, int data)
 
 void tnzs_mcu_interrupt()
 {
-	int coin;
+	INT32 coin;
 
 	switch (mcu_type)
 	{
@@ -443,7 +443,7 @@ void tnzs_mcu_interrupt()
 	}
 }
 
-int tnzs_mcu_type()
+INT32 tnzs_mcu_type()
 {
 	return mcu_type;
 }

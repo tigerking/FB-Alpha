@@ -5,34 +5,34 @@
 #include "burn_ym2151.h"
 #include "msm6295.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvSndROM;
-static unsigned char *Drv68KRAM0;
-static unsigned char *Drv68KRAM1;
-static unsigned char *Drv68KRAM2;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvVidRAM0;
-static unsigned char *DrvVidRAM1;
-static unsigned short*DrvTmpBmp;
-static unsigned int  *DrvPalette;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvSndROM;
+static UINT8 *Drv68KRAM0;
+static UINT8 *Drv68KRAM1;
+static UINT8 *Drv68KRAM2;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvVidRAM0;
+static UINT8 *DrvVidRAM1;
+static UINT16*DrvTmpBmp;
+static UINT32  *DrvPalette;
 
-static unsigned char *soundlatch;
+static UINT8 *soundlatch;
 
-static unsigned char DrvRecalc;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvJoy3[16];
-static unsigned char DrvJoy5[16];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
-static unsigned char DrvInputs[5];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvJoy3[16];
+static UINT8 DrvJoy5[16];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
+static UINT8 DrvInputs[5];
 
 static struct BurnInputInfo BlockoutInputList[] = {
 	{"Coin 1",		BIT_DIGITAL,	DrvJoy3 + 1,	"p1 coin"  },
@@ -164,12 +164,12 @@ static struct BurnDIPInfo AgressDIPList[]=
 
 STDDIPINFO(Agress)
 
-static void palette_write(int offset)
+static void palette_write(INT32 offset)
 {
-	unsigned short rgb = *((unsigned short*)(DrvPalRAM + offset));
+	UINT16 rgb = *((UINT16*)(DrvPalRAM + offset));
 
-	int bit0,bit1,bit2,bit3;
-	int r,g,b;
+	INT32 bit0,bit1,bit2,bit3;
+	INT32 r,g,b;
 
 	bit0 = (rgb >> 0) & 0x01;
 	bit1 = (rgb >> 1) & 0x01;
@@ -192,17 +192,17 @@ static void palette_write(int offset)
 	DrvPalette[offset/2] = BurnHighCol(r, g, b, 0);
 }
 
-static void update_pixels(int offset)
+static void update_pixels(INT32 offset)
 {
-	int x = (offset & 0xff);
-	int y = (offset >> 8) & 0xff;
+	INT32 x = (offset & 0xff);
+	INT32 y = (offset >> 8) & 0xff;
 	if (x >= 320 || y < 8 || y > 247) return;
 
-	unsigned short *src = (unsigned short*)DrvVidRAM0 + ((y << 8) | x);
-	unsigned short *dst = DrvTmpBmp + (y-8) * 320 + x * 2;
+	UINT16 *src = (UINT16*)DrvVidRAM0 + ((y << 8) | x);
+	UINT16 *dst = DrvTmpBmp + (y-8) * 320 + x * 2;
 
-	int front = src[0x00000];
-	int back  = src[0x10000];
+	INT32 front = src[0x00000];
+	INT32 back  = src[0x10000];
 
 	if (front >> 8)   dst[0] = front >> 8;
 	else              dst[0] = (back >> 8) | 0x100;
@@ -211,7 +211,7 @@ static void update_pixels(int offset)
 	else              dst[1] = (back & 0xff) | 0x100;
 }
 
-void __fastcall blockout_write_byte(unsigned int address, unsigned char data)
+void __fastcall blockout_write_byte(UINT32 address, UINT8 data)
 {
 	if (address >= 0x180000 && address <= 0x1bffff) {
 		address = (address & 0x3ffff) ^ 1;
@@ -231,17 +231,17 @@ void __fastcall blockout_write_byte(unsigned int address, unsigned char data)
 	return;
 }
 
-void __fastcall blockout_write_word(unsigned int address, unsigned short data)
+void __fastcall blockout_write_word(UINT32 address, UINT16 data)
 {
 	if (address >= 0x280200 && address <= 0x2805ff) {
-		*((unsigned short*)(DrvPalRAM + (address - 0x280200))) = data;
+		*((UINT16*)(DrvPalRAM + (address - 0x280200))) = data;
 		palette_write(address & 0x3fe);
 		return;
 	}
 
 	if (address >= 0x180000 && address <= 0x1bffff) {
 		address &= 0x3fffe;
-		*((unsigned short*)(DrvVidRAM0 + address)) = data;
+		*((UINT16*)(DrvVidRAM0 + address)) = data;
 		update_pixels(address>>1);
 		return;
 	}
@@ -254,7 +254,7 @@ void __fastcall blockout_write_word(unsigned int address, unsigned short data)
 		return;
 
 		case 0x280002: // front color
-			*((unsigned short*)(DrvPalRAM + 0x400)) = data;
+			*((UINT16*)(DrvPalRAM + 0x400)) = data;
 			palette_write(0x400);
 		return;
 	}
@@ -262,7 +262,7 @@ void __fastcall blockout_write_word(unsigned int address, unsigned short data)
 	return;
 }
 
-unsigned char __fastcall blockout_read_byte(unsigned int address)
+UINT8 __fastcall blockout_read_byte(UINT32 address)
 {
 	switch (address^1)
 	{
@@ -285,7 +285,7 @@ unsigned char __fastcall blockout_read_byte(unsigned int address)
 	return 0;
 }
 
-unsigned short __fastcall blockout_read_word(unsigned int address)
+UINT16 __fastcall blockout_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -308,7 +308,7 @@ unsigned short __fastcall blockout_read_word(unsigned int address)
 	return 0;
 }
 
-void __fastcall blockout_sound_write(unsigned short address, unsigned char data)
+void __fastcall blockout_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -326,7 +326,7 @@ void __fastcall blockout_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall blockout_sound_read(unsigned short address)
+UINT8 __fastcall blockout_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -343,7 +343,7 @@ unsigned char __fastcall blockout_sound_read(unsigned short address)
 	return 0;
 }
 
-void BlockoutYM2151IrqHandler(int Irq)
+void BlockoutYM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -352,7 +352,7 @@ void BlockoutYM2151IrqHandler(int Irq)
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -372,9 +372,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x040000;
 	DrvZ80ROM	= Next; Next += 0x008000;
@@ -382,7 +382,7 @@ static int MemIndex()
 	MSM6295ROM	= Next;
 	DrvSndROM	= Next; Next += 0x040000;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0201 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0201 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -397,7 +397,7 @@ static int MemIndex()
 
 	soundlatch	= Next; Next += 0x000001;
 
-	DrvTmpBmp	= (unsigned short*)Next; Next += (320 * 240) * sizeof(short);
+	DrvTmpBmp	= (UINT16*)Next; Next += (320 * 240) * sizeof(UINT16);
 
 	RamEnd		= Next;
 
@@ -406,14 +406,14 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	BurnSetRefreshRate(58.0);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -465,7 +465,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -485,10 +485,10 @@ static int DrvExit()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x402; i+=2) {
+		for (INT32 i = 0; i < 0x402; i+=2) {
 			palette_write(i);
 		}
 	}
@@ -496,16 +496,16 @@ static int DrvDraw()
 	memcpy (pTransDraw, DrvTmpBmp, 320 * 240 * 2);
 
 	{
-		unsigned short *vram = (unsigned short*)DrvVidRAM1;
+		UINT16 *vram = (UINT16*)DrvVidRAM1;
 
-		for (int y = 0; y < 240;y++)
+		for (INT32 y = 0; y < 240;y++)
 		{
-			for (int x = 0; x < 320; x+=8)
+			for (INT32 x = 0; x < 320; x+=8)
 			{
-				int d = vram[((y + 8) << 6) + (x >> 3)];
+				INT32 d = vram[((y + 8) << 6) + (x >> 3)];
 
 				if (d) {
-					for (int v = 0x80, c = 0; v > 0; v >>= 1, c++)
+					for (INT32 v = 0x80, c = 0; v > 0; v >>= 1, c++)
 						if (d & v) pTransDraw[(y * 320) + x + c] = 512;
 				}
 			}
@@ -518,7 +518,7 @@ static int DrvDraw()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -526,7 +526,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 10); 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -534,15 +534,15 @@ static int DrvFrame()
 		}
 	}
 
-	int nSegment;
-	int nInterleave = 10;
-	int nSoundBufferPos = 0;
-	int nTotalCycles[2] = { 10000000 / 58, 3579545 / 58 };
+	INT32 nSegment;
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
+	INT32 nTotalCycles[2] = { 10000000 / 58, 3579545 / 58 };
 
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 
 		nSegment = nTotalCycles[0] / nInterleave;
@@ -555,7 +555,7 @@ static int DrvFrame()
 		nSegment = nBurnSoundLen / nInterleave;
 
 		if (pBurnSoundOut) {
-			short *pSoundBuf = pBurnSoundOut + nSoundBufferPos * 2;
+			INT16 *pSoundBuf = pBurnSoundOut + nSoundBufferPos * 2;
 			BurnYM2151Render(pSoundBuf, nSegment);
 			MSM6295Render(0, pSoundBuf, nSegment);
 			nSoundBufferPos += nSegment;
@@ -565,7 +565,7 @@ static int DrvFrame()
 	}
 
 	if (pBurnSoundOut) {
-		short *pSoundBuf = pBurnSoundOut + nSoundBufferPos * 2;
+		INT16 *pSoundBuf = pBurnSoundOut + nSoundBufferPos * 2;
 		nSegment = nBurnSoundLen - nSoundBufferPos;
 		if (nSegment) {
 			BurnYM2151Render(pSoundBuf, nSegment);
@@ -585,7 +585,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

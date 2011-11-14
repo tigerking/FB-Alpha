@@ -13,12 +13,12 @@ extern "C" {
 // Variables
 
 
-static unsigned char *Mem, *Rom, *Gfx, *BankRam;
-static unsigned char DrvJoy1[12], DrvJoy2[12], DrvReset, DrvDips;
-static int *Palette;
-static short *pAY8910Buffer[3], *pFMBuffer = NULL;
+static UINT8 *Mem, *Rom, *Gfx, *BankRam;
+static UINT8 DrvJoy1[12], DrvJoy2[12], DrvReset, DrvDips;
+static INT32 *Palette;
+static INT16 *pAY8910Buffer[3], *pFMBuffer = NULL;
 
-static int tile_bank, flipscreen;
+static INT32 tile_bank, flipscreen;
 
 
 //--------------------------------------------------------------------------------------
@@ -86,7 +86,7 @@ STDDIPINFO(Drv)
 // Memory handling
 
 
-static unsigned char mole_protection_r(unsigned char offset)
+static UINT8 mole_protection_r(UINT8 offset)
 {
 	switch (offset)
 	{
@@ -113,7 +113,7 @@ static unsigned char mole_protection_r(unsigned char offset)
 	return 0x00;
 }
 
-void mole_write_byte(unsigned short address, unsigned char data)
+void mole_write_byte(UINT16 address, UINT8 data)
 {
 	// Tile RAM
 	if (address >= 0x8000 && address <= 0x83ff)
@@ -154,9 +154,9 @@ void mole_write_byte(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char mole_read_byte(unsigned short address)
+UINT8 mole_read_byte(UINT16 address)
 {
-	unsigned char ret = 0;
+	UINT8 ret = 0;
 
 	switch (address)
 	{
@@ -165,7 +165,7 @@ unsigned char mole_read_byte(unsigned short address)
 
 		case 0x8d40: // input port 1
 		{
-			for (int i = 0; i < 8; i++)
+			for (INT32 i = 0; i < 8; i++)
 				ret |= DrvJoy1[i] << i;
 
 			return ret;
@@ -216,7 +216,7 @@ unsigned char mole_read_byte(unsigned short address)
 // Initilizing functions
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -238,7 +238,7 @@ static int DrvDoReset()
 
 static void mole_palette_init()
 {
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		Palette[i] |= (i & 1) ? 0xff0000 : 0;
 		Palette[i] |= (i & 4) ? 0x00ff00 : 0;
 		Palette[i] |= (i & 2) ? 0x0000ff : 0;
@@ -246,17 +246,17 @@ static void mole_palette_init()
 	
 }
 
-static int mole_gfx_convert()
+static INT32 mole_gfx_convert()
 {
-	unsigned char a, b, c;
-	unsigned char *tmp = (unsigned char*)malloc(0x6000);
+	UINT8 a, b, c;
+	UINT8 *tmp = (UINT8*)malloc(0x6000);
 	if (tmp == NULL) {
 		return 1;
 	}
 
 	memcpy (tmp, Gfx, 0x6000);
 
-	for (int i = 0; i < 0x8000; i++)
+	for (INT32 i = 0; i < 0x8000; i++)
 	{
 		a = (tmp[0x0000 + (i >> 3)] >> (i & 7)) & 1;
 		b = (tmp[0x1000 + (i >> 3)] >> (i & 7)) & 1;
@@ -279,14 +279,14 @@ static int mole_gfx_convert()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	Mem = (unsigned char*)malloc(0x10000 + 0x10000 + 0x400 + 0x20);
+	Mem = (UINT8*)malloc(0x10000 + 0x10000 + 0x400 + 0x20);
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (short *)malloc (nBurnSoundLen * 3 * sizeof(short));
+	pFMBuffer = (INT16 *)malloc (nBurnSoundLen * 3 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -296,7 +296,7 @@ static int DrvInit()
 	Rom = Mem + 0x00000;
 	Gfx = Mem + 0x10000;
 	BankRam = Mem + 0x20000;
-	Palette = (int *)(Mem + 0x20400);
+	Palette = (INT32 *)(Mem + 0x20400);
 
 	{
 		BurnLoadRom(Rom + 0x5000, 0, 1);
@@ -338,7 +338,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 //	m6502Exit();
 	M6502Exit();
@@ -361,24 +361,24 @@ static int DrvExit()
 // Drawing functions
 
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	for (int offs = 0; offs < 0x400; offs++)
+	for (INT32 offs = 0; offs < 0x400; offs++)
 	{
-		int sy = ((offs / 40) % 25) << 3;
-		int sx = (offs % 40) << 3;
+		INT32 sy = ((offs / 40) % 25) << 3;
+		INT32 sx = (offs % 40) << 3;
 
-		int code = ((BankRam[offs] & 3) << 14) | ((Rom[0x8000 + offs]) << 6);
+		INT32 code = ((BankRam[offs] & 3) << 14) | ((Rom[0x8000 + offs]) << 6);
 
-		unsigned char *gfxsrc = Gfx + code;
+		UINT8 *gfxsrc = Gfx + code;
 
-		for (int y = sy; y < sy + 8; y++)
+		for (INT32 y = sy; y < sy + 8; y++)
 		{
-			for (int x = sx; x < sx + 8; x++, gfxsrc++)
+			for (INT32 x = sx; x < sx + 8; x++, gfxsrc++)
 			{
-				int pxl = Palette[*gfxsrc];
+				INT32 pxl = Palette[*gfxsrc];
 
-				int pos;
+				INT32 pos;
 
 				if (flipscreen)
 					pos = (199 - y) * 320 + (319 - x);
@@ -394,7 +394,7 @@ static int DrvDraw()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -406,12 +406,12 @@ static int DrvFrame()
 	M6502Close();
 
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen;
-		short* pSoundBuf = pBurnSoundOut;
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen;
+		INT16* pSoundBuf = pBurnSoundOut;
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
@@ -444,7 +444,7 @@ static int DrvFrame()
 // Savestates
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

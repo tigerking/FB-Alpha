@@ -1,4 +1,3 @@
-
 enum
 {
 	MCU_NONE,
@@ -13,16 +12,16 @@ enum
 	MCU_NONE_JPOPNICS
 };
 
-int tnzs_mcu_type();
+INT32 tnzs_mcu_type();
 void tnzs_mcu_reset();
-void tnzs_mcu_init(int type);
+void tnzs_mcu_init(INT32 type);
 void tnzs_mcu_interrupt();
 void tnzs_mcu_scan();
 
-unsigned char tnzs_mcu_read(int offset);
-void tnzs_mcu_write(int offset, int data);
+UINT8 tnzs_mcu_read(INT32 offset);
+void tnzs_mcu_write(INT32 offset, INT32 data);
 
-extern unsigned char *tnzs_mcu_inputs;
+extern UINT8 *tnzs_mcu_inputs;
 
 #define TNZS_DIFFICULTY_DIPSETTING(dip)	\
 	{0   , 0xfe, 0   ,    4, "Difficulty"	},	\
@@ -99,4 +98,3 @@ extern unsigned char *tnzs_mcu_inputs;
 #define TNZS_COINAGE_JAPAN_OLD(dip) \
 	TNZS_COINA_TYPE1_DIPSETTING(dip) \
 	TNZS_COINB_TYPE1_DIPSETTING(dip)
-

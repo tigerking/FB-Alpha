@@ -6,16 +6,16 @@ extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *Mem, *Rom, *Gfx0, *Gfx1, *Prom;
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvDips[2], DrvReset;
-static unsigned int *Palette, *DrvPalette;
-static unsigned char DrvRecalcPal = 0;
-static short *pFMBuffer, *pAY8910Buffer[6];
+static UINT8 *Mem, *Rom, *Gfx0, *Gfx1, *Prom;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvDips[2], DrvReset;
+static UINT32 *Palette, *DrvPalette;
+static UINT8 DrvRecalcPal = 0;
+static INT16 *pFMBuffer, *pAY8910Buffer[6];
 
-static int flipscreen = 0;
-static int VBLK = 0;
+static INT32 flipscreen = 0;
+static INT32 VBLK = 0;
 
-static int scregg = 0, rockduck = 0;
+static INT32 scregg = 0, rockduck = 0;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 coin"  },
@@ -82,9 +82,9 @@ static struct BurnDIPInfo DrvDIPList[]=
 
 STDDIPINFO(Drv)
 
-static inline int calc_mirror_offset(unsigned short address)
+static inline INT32 calc_mirror_offset(UINT16 address)
 {
-	int x, y, offset;
+	INT32 x, y, offset;
 	offset = address & 0x3ff;
 
 	x = offset >> 5;
@@ -93,9 +93,9 @@ static inline int calc_mirror_offset(unsigned short address)
 	return ((y << 5) | x);
 }
 
-unsigned char eggs_readmem(unsigned short address)
+UINT8 eggs_readmem(UINT16 address)
 {
-	unsigned char ret = 0xff;
+	UINT8 ret = 0xff;
 
 	if ((address & 0xf800) == 0x1800) {
     		return Rom[0x2000 + (address & 0x400) + calc_mirror_offset(address)];
@@ -111,14 +111,14 @@ unsigned char eggs_readmem(unsigned short address)
 
 		case 0x2002:
 		{
-			for (int i = 0; i < 8; i++) ret ^= DrvJoy1[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret ^= DrvJoy1[i] << i;
 
 			return ret;
 		}
 
 		case 0x2003:
 		{
-			for (int i = 0; i < 8; i++) ret ^= DrvJoy2[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret ^= DrvJoy2[i] << i;
 
 			return ret;
 		}
@@ -127,7 +127,7 @@ unsigned char eggs_readmem(unsigned short address)
 	return 0;
 }
 
-void eggs_writemem(unsigned short address, unsigned char data)
+void eggs_writemem(UINT16 address, UINT8 data)
 {
 	if ((address & 0xf800) == 0x1800) {
     		Rom[0x2000 + (address & 0x400) + calc_mirror_offset(address)] = data;
@@ -152,9 +152,9 @@ void eggs_writemem(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char dommy_readmem(unsigned short address)
+UINT8 dommy_readmem(UINT16 address)
 {
-	unsigned char ret = 0xff;
+	UINT8 ret = 0xff;
 
 	if (address >= 0x2800 && address <= 0x2bff) {   
     		return Rom[0x2000 + calc_mirror_offset(address)];
@@ -170,14 +170,14 @@ unsigned char dommy_readmem(unsigned short address)
 
 		case 0x4002:
 		{
-			for (int i = 0; i < 8; i++) ret ^= DrvJoy1[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret ^= DrvJoy1[i] << i;
 
 			return ret;
 		}
 
 		case 0x4003:
 		{
-			for (int i = 0; i < 8; i++) ret ^= DrvJoy2[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret ^= DrvJoy2[i] << i;
 
 			return ret;
 		}
@@ -186,7 +186,7 @@ unsigned char dommy_readmem(unsigned short address)
 	return 0;
 }
 
-void dommy_writemem(unsigned short address, unsigned char data)
+void dommy_writemem(UINT16 address, UINT8 data)
 {
 	if (address >= 0x2800 && address <= 0x2bff) {   
     		Rom[0x2000 + calc_mirror_offset(address)] = data;
@@ -212,7 +212,7 @@ void dommy_writemem(unsigned short address, unsigned char data)
 }
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (Rom, 0, 0x3000);
 
@@ -229,13 +229,13 @@ static int DrvDoReset()
 }
 
 
-static int scregg_gfx_convert()
+static INT32 scregg_gfx_convert()
 {
-	static int PlaneOffsets[3]   = { 0x20000, 0x10000, 0 };
-	static int XOffsets[16]      = { 128, 129, 130, 131, 132, 133, 134, 135, 0, 1, 2, 3, 4, 5, 6, 7 };
-	static int YOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+	static INT32 PlaneOffsets[3]   = { 0x20000, 0x10000, 0 };
+	static INT32 XOffsets[16]      = { 128, 129, 130, 131, 132, 133, 134, 135, 0, 1, 2, 3, 4, 5, 6, 7 };
+	static INT32 YOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x6000);
+	UINT8 *tmp = (UINT8*)malloc(0x6000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -253,11 +253,11 @@ static int scregg_gfx_convert()
 	return 0;
 }
 
-static int scregg_palette_init()
+static INT32 scregg_palette_init()
 {
-	for (int i = 0;i < 8;i++)
+	for (INT32 i = 0;i < 8;i++)
 	{
-		int bit0,bit1,bit2,r,g,b;
+		INT32 bit0,bit1,bit2,r,g,b;
 
 		bit0 = (Prom[i] >> 0) & 0x01;
 		bit1 = (Prom[i] >> 1) & 0x01;
@@ -280,14 +280,14 @@ static int scregg_palette_init()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	Mem = (unsigned char*)malloc(0x10000 + 0x10000 + 0x10000 + 0x20 + 0x40);
+	Mem = (UINT8*)malloc(0x10000 + 0x10000 + 0x10000 + 0x20 + 0x40);
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (short *)malloc (nBurnSoundLen * 6 * sizeof(short));
+	pFMBuffer = (INT16 *)malloc (nBurnSoundLen * 6 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -296,8 +296,8 @@ static int DrvInit()
 	Gfx0 = Mem + 0x10000;
 	Gfx1 = Mem + 0x20000;
 	Prom = Mem + 0x30000;
-	Palette    = (unsigned int*)(Mem + 0x30020);
-	DrvPalette = (unsigned int*)(Mem + 0x30040);
+	Palette    = (UINT32*)(Mem + 0x30020);
+	DrvPalette = (UINT32*)(Mem + 0x30040);
 
 	if (scregg)
 	{
@@ -316,16 +316,16 @@ static int DrvInit()
 
 			if (BurnLoadRom(Prom + 0x0000, 6, 1)) return 1;
 
-			for (int i = 0x2000; i < 0x6000; i++)
+			for (INT32 i = 0x2000; i < 0x6000; i++)
 				Gfx0[i] = BITSWAP08(Gfx0[i],2,0,3,6,1,4,7,5);
 
 		} else {
-			for (int i = 0; i < 5; i++)
+			for (INT32 i = 0; i < 5; i++)
 				if (BurnLoadRom(Rom + 0x3000 + i * 0x1000, i, 1)) return 1;
 
 			memcpy (Rom + 0xf000, Rom + 0x7000, 0x1000);
 
-			for (int i = 0; i < 6; i++)
+			for (INT32 i = 0; i < 6; i++)
 				if (BurnLoadRom(Gfx0 + i * 0x1000, i + 5, 1)) return 1;
 
 			if (BurnLoadRom(Prom, 11, 1)) return 1;
@@ -345,7 +345,7 @@ static int DrvInit()
 		M6502MapMemory(Rom + 0xf000, 0xf000, 0xffff, M6502_ROM);
 		M6502Close();
 	} else {
-		for (int i = 0; i < 3; i++) {
+		for (INT32 i = 0; i < 3; i++) {
 			if (BurnLoadRom(Rom  + 0xa000 + i * 0x2000,     i, 1)) return 1;
 			if (BurnLoadRom(Gfx0 + 0x0000 + i * 0x2000, 3 + i, 1)) return 1;
 		}
@@ -389,7 +389,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	M6502Exit();
 	AY8910Exit(0);
@@ -411,12 +411,12 @@ static int DrvExit()
 
 static void draw_chars()
 {
-	for (int offs = 0; offs < 0x400; offs++)
+	for (INT32 offs = 0; offs < 0x400; offs++)
 	{
-		int sx = (~offs >> 2) & 0xf8;
-		int sy = ( offs & 0x1f) << 3;
+		INT32 sx = (~offs >> 2) & 0xf8;
+		INT32 sy = ( offs & 0x1f) << 3;
 
-        	unsigned short code = Rom[0x2000 | offs] | ((Rom[0x2400 | offs] & 3) << 8);
+        	UINT16 code = Rom[0x2000 | offs] | ((Rom[0x2400 | offs] & 3) << 8);
 
 		if (flipscreen)
 		{
@@ -437,10 +437,10 @@ static void draw_chars()
 
 static void draw_sprites()
 {
-	for (int i = 0, offs = 0; i < 8; i++, offs += 4*0x20)
+	for (INT32 i = 0, offs = 0; i < 8; i++, offs += 4*0x20)
 	{
-		int sx, sy, code;
-		unsigned char flipx,flipy;
+		INT32 sx, sy, code;
+		UINT8 flipx,flipy;
 
 		if (!(Rom[0x2000 + offs] & 0x01)) continue;
 
@@ -480,12 +480,12 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	// check to see if we need to recalculate the palette
 	if (DrvRecalcPal) {
-		for (int i = 0; i < 8; i++) {
-			int col = Palette[i];
+		for (INT32 i = 0; i < 8; i++) {
+			INT32 col = Palette[i];
 			DrvPalette[i] = BurnHighCol(col >> 16, col >> 8, col, 0);
 		}
 	}
@@ -498,7 +498,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static inline void scregg_interrupt_handler(int scanline)
+static inline void scregg_interrupt_handler(INT32 scanline)
 {
 	if (scanline == 0)
 		VBLK = 0;
@@ -509,18 +509,18 @@ static inline void scregg_interrupt_handler(int scanline)
 	M6502SetIRQ(M6502_IRQ_LINE, M6502_IRQSTATUS_AUTO);
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
-	int nTotalCycles = (int)((double)(1500000 / 57));
-	int nCyclesRun = 0;
+	INT32 nTotalCycles = (INT32)((double)(1500000 / 57));
+	INT32 nCyclesRun = 0;
 
 	M6502Open(0);
 
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		nCyclesRun += M6502Run((nTotalCycles - nCyclesRun) / (16 - i));
 		scregg_interrupt_handler(i);
 	}
@@ -528,13 +528,13 @@ static int DrvFrame()
 	M6502Close();
 
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen;
-		short* pSoundBuf = pBurnSoundOut;
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen;
+		INT16* pSoundBuf = pBurnSoundOut;
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -564,7 +564,7 @@ static int DrvFrame()
 }
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -645,7 +645,7 @@ static struct BurnRomInfo screggRomDesc[] = {
 STD_ROM_PICK(scregg)
 STD_ROM_FN(scregg)
 
-static int screggInit()
+static INT32 screggInit()
 {
 	scregg = 1;
 
@@ -716,7 +716,7 @@ static struct BurnRomInfo rockduckRomDesc[] = {
 STD_ROM_PICK(rockduck)
 STD_ROM_FN(rockduck)
 
-static int rockduckInit()
+static INT32 rockduckInit()
 {
 	scregg = 1;
 	rockduck = 1;

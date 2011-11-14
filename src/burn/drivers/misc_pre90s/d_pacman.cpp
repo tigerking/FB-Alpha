@@ -18,43 +18,43 @@ extern "C" {
 #include "namco_snd.h"
 
 // General variables
-static unsigned char *Mem, *Rom, *Gfx, *Prom, *Snd, *QRom;
-static short *pAY8910Buffer[3], *pFMBuffer = NULL;
-static int *Palette;
+static UINT8 *Mem, *Rom, *Gfx, *Prom, *Snd, *QRom;
+static INT16 *pAY8910Buffer[3], *pFMBuffer = NULL;
+static INT32 *Palette;
 
-static int screen_flip = 0, bgpriority = 0;
+static INT32 screen_flip = 0, bgpriority = 0;
 
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvReset, DrvDips[4];
-static unsigned short DrvAxis[2] = { 0, 0 };
-static unsigned int nAnalogAxis[2];
-static unsigned char nCharAxis[2];
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvReset, DrvDips[4];
+static UINT16 DrvAxis[2] = { 0, 0 };
+static UINT32 nAnalogAxis[2];
+static UINT8 nCharAxis[2];
 
 static void (*pPacInitCallback)() = NULL;
 
 
 // Enable per-game settings
-static int mspacman = 0, cannonbp = 0, maketrax = 0;
-static int piranha = 0, vanvan = 0, nmouse = 0;
-static int dremshpr = 0, acitya = 0, mschamp = 0;
-static int bigbucks = 0, rocktrv2 = 0, korosuke = 0;
-static int alibaba = 0, crushs = 0, shootbul = 0;
+static INT32 mspacman = 0, cannonbp = 0, maketrax = 0;
+static INT32 piranha = 0, vanvan = 0, nmouse = 0;
+static INT32 dremshpr = 0, acitya = 0, mschamp = 0;
+static INT32 bigbucks = 0, rocktrv2 = 0, korosuke = 0;
+static INT32 alibaba = 0, crushs = 0, shootbul = 0;
 
-static int epos_hardware = 0;
+static INT32 epos_hardware = 0;
 
 
 // Volatile general variables
-static int flipscreen;
-static int nPacBank = -1;
-static int interrupt_mode, interrupt_enable;
-static unsigned char colortablebank, palettebank;
-static unsigned char spritebank, charbank;
+static INT32 flipscreen;
+static INT32 nPacBank = -1;
+static INT32 interrupt_mode, interrupt_enable;
+static UINT8 colortablebank, palettebank;
+static UINT8 spritebank, charbank;
 
 // Protection variables
-static int alibaba_mystery;
-static unsigned char rocktrv2_prot_data[4];
-static char epos_hardware_counter;
-static unsigned char mschamp_counter;
-static unsigned char cannonb_bit_to_read;
+static INT32 alibaba_mystery;
+static UINT8 rocktrv2_prot_data[4];
+static INT8 epos_hardware_counter;
+static UINT8 mschamp_counter;
+static UINT8 cannonb_bit_to_read;
 
 
 //------------------------------------------------------------------------------------------------------
@@ -514,7 +514,7 @@ static struct BurnInputInfo korosukeInputList[] = {
 
 STDINPUTINFO(korosuke)
 
-#define A(a, b, c, d) { a, b, (unsigned char*)(c), d }
+#define A(a, b, c, d) { a, b, (UINT8*)(c), d }
 
 static struct BurnInputInfo shootbulInputList[] = {
 	{"Coin 1",		BIT_DIGITAL,	DrvJoy1 + 5,	"p1 coin"},
@@ -1604,19 +1604,19 @@ STDDIPINFO(shootbul)
 
 
 static void mschamp_set_bank();
-static void mspacman_set_bank(int nBank);
-static void epos_hardware_set_bank(int nBank);
-static unsigned char cannonbp_protection_r(unsigned short offset);
-static unsigned char maketrax_special_port2_r(unsigned short offset);
-static unsigned char maketrax_special_port3_r(unsigned short offset);
-static unsigned char korosuke_special_port2_r(unsigned short offset);
-static unsigned char korosuke_special_port3_r(unsigned short offset);
-static unsigned char epos_hardware_decrypt_rom(unsigned short offset);
+static void mspacman_set_bank(INT32 nBank);
+static void epos_hardware_set_bank(INT32 nBank);
+static UINT8 cannonbp_protection_r(UINT16 offset);
+static UINT8 maketrax_special_port2_r(UINT16 offset);
+static UINT8 maketrax_special_port3_r(UINT16 offset);
+static UINT8 korosuke_special_port2_r(UINT16 offset);
+static UINT8 korosuke_special_port3_r(UINT16 offset);
+static UINT8 epos_hardware_decrypt_rom(UINT16 offset);
 
 
-unsigned char __fastcall pacman_read_byte(unsigned short a)
+UINT8 __fastcall pacman_read_byte(UINT16 a)
 {
-	unsigned char ret = 0xff;
+	UINT8 ret = 0xff;
 
 	if (alibaba) {
 		if (a >= 0x50c2 && a <= 0x50ff) {
@@ -1685,7 +1685,7 @@ unsigned char __fastcall pacman_read_byte(unsigned short a)
 		{
 			ret = DrvDips[0];
 
-			for (int i = 0; i < 8; i++)
+			for (INT32 i = 0; i < 8; i++)
 				ret ^= DrvJoy1[i] << i;
 
 			// Force input to act as 8-way
@@ -1702,7 +1702,7 @@ unsigned char __fastcall pacman_read_byte(unsigned short a)
 		{
 			ret = DrvDips[1];
 
-			for (int i = 0; i < 8; i++)
+			for (INT32 i = 0; i < 8; i++)
 				ret ^= DrvJoy2[i] << i;
 
 			// Force input to act as 8-way
@@ -1729,7 +1729,7 @@ unsigned char __fastcall pacman_read_byte(unsigned short a)
 	return 0;
 }
 
-void __fastcall pacman_write_byte(unsigned short a, unsigned char data)
+void __fastcall pacman_write_byte(UINT16 a, UINT8 data)
 {
 	if (alibaba)
 	{
@@ -1772,7 +1772,7 @@ void __fastcall pacman_write_byte(unsigned short a, unsigned char data)
 	}
 
 	if (vanvan && a == 0x5001) {
-		for (int i = 0; i < 256; i++) {
+		for (INT32 i = 0; i < 256; i++) {
 			if (Prom[0x100 + i] == 0) {
 				Palette[i] = (data & 1) ? 0xaaaaaa : 0; // gray / black
 			}
@@ -1827,7 +1827,7 @@ void __fastcall pacman_write_byte(unsigned short a, unsigned char data)
 }
 
 
-unsigned char __fastcall pacman_in_port(unsigned short a)
+UINT8 __fastcall pacman_in_port(UINT16 a)
 {
 	if (bigbucks) {
 		return QRom[(nPacBank << 16) | (a ^ 0xffff)];
@@ -1851,7 +1851,7 @@ unsigned char __fastcall pacman_in_port(unsigned short a)
 	return 0;
 }
 
-void __fastcall pacman_out_port(unsigned short a, unsigned char data)
+void __fastcall pacman_out_port(UINT16 a, UINT8 data)
 {
 	a &= 0xff;
 
@@ -1903,7 +1903,7 @@ void __fastcall pacman_out_port(unsigned short a, unsigned char data)
 // Initilization functions
 
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -1961,16 +1961,16 @@ static void pacman_palette_init()
 #define combine_2_weights(tab,w0,w1)	\
 	((int)(((tab)[0]*(w0) + (tab)[1]*(w1)) + 0.5))
 
-	unsigned int t_pal[32];
-	unsigned char *color_prom = Prom;
-	unsigned char rgweights[3] = {33, 71, 151};
-	unsigned char bweights[2] = {81, 174};
+	UINT32 t_pal[32];
+	UINT8 *color_prom = Prom;
+	UINT8 rgweights[3] = {33, 71, 151};
+	UINT8 bweights[2] = {81, 174};
 
 	// create a lookup table for the palette
-	for (int i = 0; i < 32; i++)
+	for (INT32 i = 0; i < 32; i++)
 	{
-		int bit0, bit1, bit2;
-		int r, g, b;
+		INT32 bit0, bit1, bit2;
+		INT32 r, g, b;
 
 		// red component
 		bit0 = (color_prom[i] >> 0) & 0x01;
@@ -1992,11 +1992,11 @@ static void pacman_palette_init()
 		t_pal[i] = (r << 16) | (g << 8) | b;
 	}
 
-	color_prom += 256; // point to the beginning of the lookup table
+	color_prom += 256; // poINT32 to the beginning of the lookup table
 
-	for (int i = 0; i < 256; i++)
+	for (INT32 i = 0; i < 256; i++)
 	{
-		unsigned char ctabentry = color_prom[i] & 0x0f;
+		UINT8 ctabentry = color_prom[i] & 0x0f;
 
 		Palette[0x000 | i] = t_pal[ctabentry | 0x00];
 		Palette[0x100 | i] = t_pal[ctabentry | 0x10];
@@ -2006,12 +2006,12 @@ static void pacman_palette_init()
 
 static void convert_gfx()
 {
-	static int PlaneOffsets[2]  = { 0, 4 };
-	static int XOffsets[16]     = { 312, 304, 296, 288, 280, 272, 264, 256, 56, 48, 40, 32, 24, 16, 8, 0 };
-	static int SpriYOffsets[16] = { 64, 65, 66, 67, 128, 129, 130, 131, 192, 193, 194, 195, 0, 1, 2, 3 };
-	static int CharYOffsets[8]  = { 64, 65, 66, 67, 0, 1, 2, 3 };
+	static INT32 PlaneOffsets[2]  = { 0, 4 };
+	static INT32 XOffsets[16]     = { 312, 304, 296, 288, 280, 272, 264, 256, 56, 48, 40, 32, 24, 16, 8, 0 };
+	static INT32 SpriYOffsets[16] = { 64, 65, 66, 67, 128, 129, 130, 131, 192, 193, 194, 195, 0, 1, 2, 3 };
+	static INT32 CharYOffsets[8]  = { 64, 65, 66, 67, 0, 1, 2, 3 };
 
-	unsigned char *tmp = (unsigned char*)malloc( 0x2000 );
+	UINT8 *tmp = (UINT8*)malloc( 0x2000 );
 	if (tmp)
 	{
 		memcpy (tmp, Gfx, 0x2000);
@@ -2024,17 +2024,17 @@ static void convert_gfx()
 	}
 }
 
-static int pacman_load()
+static INT32 pacman_load()
 {
 	char* pRomName;
 	struct BurnRomInfo ri;
 
-	int pOffset = 0;
-	unsigned char *gLoad = Gfx;
-	unsigned char *cLoad = Prom;
-	unsigned char *sLoad = NamcoSoundProm;
+	INT32 pOffset = 0;
+	UINT8 *gLoad = Gfx;
+	UINT8 *cLoad = Prom;
+	UINT8 *sLoad = NamcoSoundProm;
 
-	for (int i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
+	for (INT32 i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
 
 		BurnDrvGetRomInfo(&ri, i);
 
@@ -2074,9 +2074,9 @@ static int pacman_load()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	Mem = (unsigned char*)malloc( 0x10000 + 0x20000 + 0x10000 + 0x100 );
+	Mem = (UINT8*)malloc( 0x10000 + 0x20000 + 0x10000 + 0x100 );
 	if (Mem == NULL) {
 		return 1;
 	}
@@ -2149,7 +2149,7 @@ static int DrvInit()
 	ZetClose();
 
 	if (dremshpr || crushs) {
-		pFMBuffer = (short *)malloc (nBurnSoundLen * 3 * sizeof(short));
+		pFMBuffer = (INT16 *)malloc (nBurnSoundLen * 3 * sizeof(INT16));
 		if (pFMBuffer == NULL) {
 			return 1;
 		}
@@ -2174,7 +2174,7 @@ static int DrvInit()
 }
 
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ZetExit();
 
@@ -2231,9 +2231,9 @@ static int DrvExit()
 // Drawing routines
 
 
-static inline void pac_putpix(int x, int y, int color, unsigned char src, int transp)
+static inline void pac_putpix(INT32 x, INT32 y, INT32 color, UINT8 src, INT32 transp)
 {
-	int pos, pxl;
+	INT32 pos, pxl;
 
 	if (x > 223 || x < 0 || y > 287 || y < 0) return;
 
@@ -2248,32 +2248,32 @@ static inline void pac_putpix(int x, int y, int color, unsigned char src, int tr
 	PutPix(pBurnDraw + pos * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
 }
 
-static void DrawBackground(int /*priority*/)
+static void DrawBackground(INT32 /*priority*/)
 {
-	unsigned char *videoram = Rom + 0x4000;
-	unsigned char *colorram = Rom + 0x4400;
+	UINT8 *videoram = Rom + 0x4000;
+	UINT8 *colorram = Rom + 0x4400;
 
-	for (int offs = 0x400 - 1; offs >= 0; offs-=1)
+	for (INT32 offs = 0x400 - 1; offs >= 0; offs-=1)
 	{
-		int num = (charbank << 8) | videoram[offs];
-		int color = ((colorram[offs] & 0x1f) | (colortablebank << 5) | (palettebank << 6 )) << 2;
+		INT32 num = (charbank << 8) | videoram[offs];
+		INT32 color = ((colorram[offs] & 0x1f) | (colortablebank << 5) | (palettebank << 6 )) << 2;
 
-		unsigned char *src = Gfx + (num << 6);
+		UINT8 *src = Gfx + (num << 6);
 
-		int sy = ((offs & 0x1f) + 2) << 3;
-		int sx = ((offs >> 5) << 3) ^ 0xf8;
+		INT32 sy = ((offs & 0x1f) + 2) << 3;
+		INT32 sx = ((offs >> 5) << 3) ^ 0xf8;
 
 		if (sx >= 0xf0 || sx <= 0x0f) {
-			int t = sx;
+			INT32 t = sx;
 			sx = (sy - 0x10) ^ 0xf8;
 			sy = (t ^ 8) + (t & 0x20);
 		}
 
 		sx -= 0x10;
 
-		for (int y = sy; y < sy + 8; y++)
+		for (INT32 y = sy; y < sy + 8; y++)
 		{
-			for (int x = sx; x < sx + 8; x++, src++) {
+			for (INT32 x = sx; x < sx + 8; x++, src++) {
 				pac_putpix(x, y, color, *src, 0);
 			}
 		}	
@@ -2282,13 +2282,13 @@ static void DrawBackground(int /*priority*/)
 
 static void DrawSprites()
 {
-	unsigned char *spriteram = Rom + (0x4ff0 - (alibaba * 0x100));
-	unsigned char *spriteram_2 = Rom + 0x5060;
+	UINT8 *spriteram = Rom + (0x4ff0 - (alibaba * 0x100));
+	UINT8 *spriteram_2 = Rom + 0x5060;
 
 	// draw sprites
-	for (int offs = 0x10 - 2;offs >= 0;offs -= 2)
+	for (INT32 offs = 0x10 - 2;offs >= 0;offs -= 2)
 	{
-		int color, sx, sy, flipx, flipy, num;
+		INT32 color, sx, sy, flipx, flipy, num;
 
 		num   = ((spriteram[offs] >> 2 ) | (spritebank << 6)) << 8;
 		color = ((spriteram[offs + 1] & 0x1f ) | (colortablebank << 5) | (palettebank << 6 )) << 2;
@@ -2298,30 +2298,30 @@ static void DrawSprites()
 		flipy =  spriteram[offs] & 1;
 		flipx =  spriteram[offs] & 2;
 
-		unsigned char *src = Gfx + 0x4000 + num;
+		UINT8 *src = Gfx + 0x4000 + num;
 
 		if (flipy) {
-			for (int y = sy + 15; y >= sy; y--)
+			for (INT32 y = sy + 15; y >= sy; y--)
 			{
 				if (flipx) {
-					for (int x = sx + 15; x >= sx; x--, src++) {
+					for (INT32 x = sx + 15; x >= sx; x--, src++) {
 						pac_putpix(x, y, color, *src, 1);
 					}
 				} else {
-					for (int x = sx; x < sx + 16; x++, src++) {
+					for (INT32 x = sx; x < sx + 16; x++, src++) {
 						pac_putpix(x, y, color, *src, 1);
 					}
 				}
 			}
 		} else {
-			for (int y = sy; y < sy + 16; y++)
+			for (INT32 y = sy; y < sy + 16; y++)
 			{
 				if (flipx) {
-					for (int x = sx + 15; x >= sx; x--, src++) {
+					for (INT32 x = sx + 15; x >= sx; x--, src++) {
 						pac_putpix(x, y, color, *src, 1);
 					}
 				} else {
-					for (int x = sx; x < sx + 16; x++, src++) {
+					for (INT32 x = sx; x < sx + 16; x++, src++) {
 						pac_putpix(x, y, color, *src, 1);
 					}
 				}
@@ -2331,10 +2331,10 @@ static void DrawSprites()
 }
 
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (bgpriority) {
-		for (int i = 0; i < 288 * 224; i++) {
+		for (INT32 i = 0; i < 288 * 224; i++) {
 			PutPix(pBurnDraw + i * nBurnBpp, BurnHighCol(Palette[0] >> 16, Palette[0] >> 8, Palette[0], 0));
 		}
 	} else {
@@ -2349,7 +2349,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	ZetNewFrame();
 
@@ -2368,23 +2368,23 @@ static int DrvFrame()
 
 	ZetOpen(0);
 	
-	int nInterleave = nBurnSoundLen;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = nBurnSoundLen;
+	INT32 nSoundBufferPos = 0;
 	
-	int nCyclesTotal = (18432000 / 6) / 60;
-	int nCyclesDone = 0;
-	int nCyclesSegment;
+	INT32 nCyclesTotal = (18432000 / 6) / 60;
+	INT32 nCyclesDone = 0;
+	INT32 nCyclesSegment;
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext;
 		
 		nNext = (i + 1) * nCyclesTotal / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone;
 		nCyclesDone += ZetRun(nCyclesSegment);
 		
 		if (bigbucks) {
-			int nInterleaveIRQFire = nBurnSoundLen / 20;
-			for (int j = 0; j < 20; j++) {
+			INT32 nInterleaveIRQFire = nBurnSoundLen / 20;
+			for (INT32 j = 0; j < 20; j++) {
 				if (i == (nInterleaveIRQFire * j) - 1) ZetRaiseIrq(0);
 			}
 		} else {
@@ -2400,15 +2400,15 @@ static int DrvFrame()
 		}
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			
 			if (nSegmentLength) {
 				if (dremshpr || crushs) {
-					int nSample;
+					INT32 nSample;
 				
 					AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-					for (int n = 0; n < nSegmentLength; n++) {
+					for (INT32 n = 0; n < nSegmentLength; n++) {
 						nSample  = pAY8910Buffer[0][n];
 						nSample += pAY8910Buffer[1][n];
 						nSample += pAY8910Buffer[2][n];
@@ -2440,15 +2440,15 @@ static int DrvFrame()
 	}
 	
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			if (dremshpr || crushs) {
-				int nSample;
+				INT32 nSample;
 				
 				AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-				for (int n = 0; n < nSegmentLength; n++) {
+				for (INT32 n = 0; n < nSegmentLength; n++) {
 					nSample  = pAY8910Buffer[0][n];
 					nSample += pAY8910Buffer[1][n];
 					nSample += pAY8910Buffer[2][n];
@@ -2491,7 +2491,7 @@ static int DrvFrame()
 // Save states
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -2516,8 +2516,8 @@ static int DrvScan(int nAction,int *pnMin)
 
 		if (vanvan) {
 			memset(&ba, 0, sizeof(ba));
-			ba.Data	  = (unsigned char*)Palette;
-			ba.nLen	  = 0x200 * sizeof(int);
+			ba.Data	  = (UINT8*)Palette;
+			ba.nLen	  = 0x200 * sizeof(INT32);
 			ba.szName = "Palette";
 			BurnAcb(&ba);
 		}
@@ -3133,9 +3133,9 @@ static struct BurnRomInfo pacplusRomDesc[] = {
 STD_ROM_PICK(pacplus)
 STD_ROM_FN(pacplus)
 
-static unsigned char pacplus_decrypt(int addr, unsigned char e)
+static UINT8 pacplus_decrypt(INT32 addr, UINT8 e)
 {
-	static const unsigned char swap_xor_table[6][9] =
+	static const UINT8 swap_xor_table[6][9] =
 	{
 		{ 7,6,5,4,3,2,1,0, 0x00 },
 		{ 7,6,5,4,3,2,1,0, 0x28 },
@@ -3144,13 +3144,13 @@ static unsigned char pacplus_decrypt(int addr, unsigned char e)
 		{ 0,3,7,6,4,2,1,5, 0xd5 },
 		{ 0,3,4,6,7,2,1,5, 0xdd }
 	};
-	static const int picktable[32] =
+	static const INT32 picktable[32] =
 	{
 		0,2,4,2,4,0,4,2,2,0,2,2,4,0,4,2,
 		2,2,4,0,4,2,4,0,0,4,0,4,4,2,4,2
 	};
-	int method = 0;
-	const unsigned char *tbl;
+	INT32 method = 0;
+	const UINT8 *tbl;
 
 	// pick method from bits 0 2 5 7 9 of the address
 	method = picktable[
@@ -3172,13 +3172,13 @@ static unsigned char pacplus_decrypt(int addr, unsigned char e)
 
 void pacplus_decode()
 {
-	for (int i = 0; i < 0x4000; i++)
+	for (INT32 i = 0; i < 0x4000; i++)
 	{
 		Rom[i] = pacplus_decrypt(i,Rom[i]);
 	}
 }
 
-static int pacplusInit()
+static INT32 pacplusInit()
 {
 	pPacInitCallback = pacplus_decode;
 
@@ -3297,7 +3297,7 @@ static struct BurnRomInfo mspacmanRomDesc[] = {
 STD_ROM_PICK(mspacman)
 STD_ROM_FN(mspacman)
 
-static void mspacman_set_bank(int nBank)
+static void mspacman_set_bank(INT32 nBank)
 {
 	nBank &= 1;
 
@@ -3314,8 +3314,8 @@ static void mspacman_decode()
 #define decrypta1(e)	BITSWAP16(e, 15, 14, 13, 12, 11, 7, 8, 6, 9, 5, 4, 3, 10, 2, 1, 0)
 #define decrypta2(e)	BITSWAP16(e, 15, 14, 13, 12, 11, 6, 7, 10, 9, 5, 8, 3, 4, 2, 1, 0)
 
-	int i;
-	static const int tab[10 * 8] = { // even is dst, odd is src
+	INT32 i;
+	static const INT32 tab[10 * 8] = { // even is dst, odd is src
 		0x0410, 0x8008, 0x08E0, 0x81D8, 0x0A30, 0x8118, 0x0BD0, 0x80D8, 
 		0x0C20, 0x8120, 0x0E58, 0x8168, 0x0EA8, 0x8198, 0x1000, 0x8020, 
 		0x1008, 0x8010, 0x1288, 0x8098, 0x1348, 0x8048, 0x1688, 0x8088, 
@@ -3357,7 +3357,7 @@ static void mspacmanCallback()
 	mspacman_decode();
 }
 
-static int mspacmanInit()
+static INT32 mspacmanInit()
 {
 	mspacman = 1;
 
@@ -3508,18 +3508,18 @@ STD_ROM_FN(mspacmbe)
 static void mspacmbe_decode()
 {
 	// Address lines A1 and A0 swapped if A2=0
-	for(int i = 0x1000; i < 0x2000; i+=4)
+	for(INT32 i = 0x1000; i < 0x2000; i+=4)
 	{
 		if (!(i & 8))
 		{
-			int t = Rom[i+1];
+			INT32 t = Rom[i+1];
 			Rom[i+1] = Rom[i+2];
 			Rom[i+2] = t;
 		};
 	}
 }
 
-static int mspacmbeInit()
+static INT32 mspacmbeInit()
 {
 	pPacInitCallback = mspacmbe_decode;
 
@@ -3627,7 +3627,7 @@ STD_ROM_FN(mschamps)
 
 static void mschamp_set_bank()
 {
-	int nBank = DrvDips[3] & 1;
+	INT32 nBank = DrvDips[3] & 1;
 
 	nPacBank = nBank;
 	ZetMapArea(0x0000, 0x3fff, 0, Rom + 0x10000 + (nBank * 0x08000));
@@ -3648,7 +3648,7 @@ static void mschampCallback()
 	memcpy (Rom + 0x10000, Rom, 0x10000);
 }
 
-static int mschampInit()
+static INT32 mschampInit()
 {
 	mschamp = 1;
 
@@ -3718,7 +3718,7 @@ static void maketraxCallback()
 	Rom[0x3AE9] = 0xC9;
 }
 
-static int crushInit()
+static INT32 crushInit()
 {
 	pPacInitCallback = maketraxCallback;
 
@@ -3834,11 +3834,11 @@ static struct BurnRomInfo crush3RomDesc[] = {
 STD_ROM_PICK(crush3)
 STD_ROM_FN(crush3)
 
-static void eyes_gfx_decode(unsigned char *src)
+static void eyes_gfx_decode(UINT8 *src)
 {
-	unsigned char buf[8];
+	UINT8 buf[8];
 
-	for (int j = 0; j < 8; j++)
+	for (INT32 j = 0; j < 8; j++)
 	{
 		buf[j] = BITSWAP08(src[(j & 0xff00) | BITSWAP08(j,7,6,5,4,3,0,1,2)],7,4,5,6,3,2,1,0);
 	}
@@ -3849,7 +3849,7 @@ static void eyes_gfx_decode(unsigned char *src)
 static void eyes_decode()
 {
 	// Data lines D3 and D5 swapped
-	for (int i = 0; i < 0x4000; i++)
+	for (INT32 i = 0; i < 0x4000; i++)
 	{
 		Rom[i] = BITSWAP08(Rom[i],7,6,3,4,5,2,1,0);
 	}
@@ -3857,11 +3857,11 @@ static void eyes_decode()
 
 	// Graphics ROMs
 	// Data lines D4 and D6 and address lines A0 and A2 are swapped
-	for (int i = 0;i < 0x2000; i += 8)
+	for (INT32 i = 0;i < 0x2000; i += 8)
 		eyes_gfx_decode(Gfx + i);
 }
 
-static int crush3Init()
+static INT32 crush3Init()
 {
 	pPacInitCallback = eyes_decode;
 
@@ -3912,7 +3912,7 @@ static void crush4Callback()
 }
 
 
-static int crush4Init()
+static INT32 crush4Init()
 {
 	pPacInitCallback = crush4Callback;
 
@@ -3930,7 +3930,7 @@ struct BurnDriver BurnDrvcrush4 = {
 };
 
 
-// Paint Roller
+// PaINT32 Roller
 
 static struct BurnRomInfo paintrlrRomDesc[] = {
 	{ "paintrlr.1",   0x0800, 0x556d20b5, 1 | BRF_ESS | BRF_PRG },	//  0 Z80 Code
@@ -3959,7 +3959,7 @@ STD_ROM_FN(paintrlr)
 
 struct BurnDriverD BurnDrvpaintrlr = {
 	"paintrlr", "crush", NULL, NULL, "1981",
-	"Paint Roller\0", NULL, "bootleg", "Pac-man",
+	"PaINT32 Roller\0", NULL, "bootleg", "Pac-man",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_PACMAN, GBF_MAZE, 0,
 	NULL, paintrlrRomInfo, paintrlrRomName, NULL, NULL, DrvInputInfo, mbrushDIPInfo,
@@ -3989,7 +3989,7 @@ static struct BurnRomInfo crushsRomDesc[] = {
 STD_ROM_PICK(crushs)
 STD_ROM_FN(crushs)
 
-static int crushsInit()
+static INT32 crushsInit()
 {
 	crushs = 1;
 
@@ -4028,10 +4028,10 @@ static struct BurnRomInfo maketraxRomDesc[] = {
 STD_ROM_PICK(maketrax)
 STD_ROM_FN(maketrax)
 
-static unsigned char maketrax_special_port2_r(unsigned short offset)
+static UINT8 maketrax_special_port2_r(UINT16 offset)
 {
-	int data = DrvDips[2];
-	int pc = ZetPc(-1);
+	INT32 data = DrvDips[2];
+	INT32 pc = ZetPc(-1);
 
 	if ((pc == 0x1973) || (pc == 0x2389)) return data | 0x40;
 
@@ -4049,9 +4049,9 @@ static unsigned char maketrax_special_port2_r(unsigned short offset)
 	return data;
 }
 
-static unsigned char maketrax_special_port3_r(unsigned short offset)
+static UINT8 maketrax_special_port3_r(UINT16 offset)
 {
-	int pc = ZetPc(-1);
+	INT32 pc = ZetPc(-1);
 
 	if (pc == 0x040e) return 0x20;
 
@@ -4070,7 +4070,7 @@ static unsigned char maketrax_special_port3_r(unsigned short offset)
 	}
 }
 
-static int maketraxInit()
+static INT32 maketraxInit()
 {
 	maketrax = 1;
 	screen_flip = 1;
@@ -4154,7 +4154,7 @@ static void mbrushCallback()
 	Rom[0x3AE4] = 0x00;
 }
 
-static int mbrushInit()
+static INT32 mbrushInit()
 {
 	pPacInitCallback = mbrushCallback;
 
@@ -4193,10 +4193,10 @@ static struct BurnRomInfo korosukeRomDesc[] = {
 STD_ROM_PICK(korosuke)
 STD_ROM_FN(korosuke)
 
-static unsigned char korosuke_special_port2_r(unsigned short offset)
+static UINT8 korosuke_special_port2_r(UINT16 offset)
 {
-	int data = DrvDips[2];
-	int pc = ZetPc(-1);
+	INT32 data = DrvDips[2];
+	INT32 pc = ZetPc(-1);
 
 	if ((pc == 0x196e) || (pc == 0x2387)) return data | 0x40;
 
@@ -4216,9 +4216,9 @@ static unsigned char korosuke_special_port2_r(unsigned short offset)
 	return data;
 }
 
-static unsigned char korosuke_special_port3_r(unsigned short offset)
+static UINT8 korosuke_special_port3_r(UINT16 offset)
 {
-	int pc = ZetPc(-1);
+	INT32 pc = ZetPc(-1);
 
 	if (pc == 0x0445) return 0x20;
 
@@ -4267,7 +4267,7 @@ static void korosukeCallback()
 }
 
 
-static int korosukeInit()
+static INT32 korosukeInit()
 {
 	korosuke = 1;
 
@@ -4308,7 +4308,7 @@ static struct BurnRomInfo eyesRomDesc[] = {
 STD_ROM_PICK(eyes)
 STD_ROM_FN(eyes)
 
-static int eyesInit()
+static INT32 eyesInit()
 {
 	pPacInitCallback = eyes_decode;
 
@@ -4534,7 +4534,7 @@ static struct BurnRomInfo piranhaRomDesc[] = {
 STD_ROM_PICK(piranha)
 STD_ROM_FN(piranha)
 
-static int piranhaInit()
+static INT32 piranhaInit()
 {
 	piranha = 1;
 
@@ -4683,9 +4683,9 @@ static struct BurnRomInfo jumpshotRomDesc[] = {
 STD_ROM_PICK(jumpshot)
 STD_ROM_FN(jumpshot)
 
-static unsigned char jumpshot_decrypt(int addr, unsigned char e)
+static UINT8 jumpshot_decrypt(INT32 addr, UINT8 e)
 {
-	static const unsigned char swap_xor_table[6][9] =
+	static const UINT8 swap_xor_table[6][9] =
 	{
 		{ 7,6,5,4,3,2,1,0, 0x00 },
 		{ 7,6,3,4,5,2,1,0, 0x20 },
@@ -4694,13 +4694,13 @@ static unsigned char jumpshot_decrypt(int addr, unsigned char e)
 		{ 2,3,1,7,4,6,0,5, 0x6e },
 		{ 2,3,4,7,1,6,0,5, 0x4e }
 	};
-	static const int picktable[32] =
+	static const INT32 picktable[32] =
 	{
 		0,2,4,4,4,2,0,2,2,0,2,4,4,2,0,2,
 		5,3,5,1,5,3,5,3,1,5,1,5,5,3,5,3
 	};
-	int method = 0;
-	const unsigned char *tbl;
+	INT32 method = 0;
+	const UINT8 *tbl;
 
 	// pick method from bits 0 2 5 7 9 of the address
 	method = picktable[
@@ -4721,13 +4721,13 @@ static unsigned char jumpshot_decrypt(int addr, unsigned char e)
 
 void jumpshot_decode()
 {
-	for (int i = 0; i < 0x4000; i++)
+	for (INT32 i = 0; i < 0x4000; i++)
 	{
 		Rom[i] = jumpshot_decrypt(i, Rom[i]);
 	}
 }
 
-static int jumpshotInit()
+static INT32 jumpshotInit()
 {
 	pPacInitCallback = jumpshot_decode;
 
@@ -4798,7 +4798,7 @@ static struct BurnRomInfo shootbulRomDesc[] = {
 STD_ROM_PICK(shootbul)
 STD_ROM_FN(shootbul)
 
-static int shootbulInit()
+static INT32 shootbulInit()
 {
 	shootbul = 1;
 
@@ -4841,7 +4841,7 @@ static struct BurnRomInfo cannonbpRomDesc[] = {
 STD_ROM_PICK(cannonbp)
 STD_ROM_FN(cannonbp)
 
-static unsigned char cannonbp_protection_r(unsigned short offset)
+static UINT8 cannonbp_protection_r(UINT16 offset)
 {
 	switch (offset)
 	{
@@ -4870,7 +4870,7 @@ static unsigned char cannonbp_protection_r(unsigned short offset)
 	return 0;
 }
 
-static int cannonbpInit()
+static INT32 cannonbpInit()
 {
 	cannonbp = 1;
 
@@ -4919,11 +4919,11 @@ static void woodpeckCallback()
 
 	memset (Rom + 0x1000, 0, 0x3000);
 
-	for (int i = 0; i < 0x2000; i += 8)
+	for (INT32 i = 0; i < 0x2000; i += 8)
 		eyes_gfx_decode(Gfx + i);
 }
 
-static int woodpeckInit()
+static INT32 woodpeckInit()
 {
 	pPacInitCallback = woodpeckCallback;
 
@@ -5039,22 +5039,22 @@ static void ponpoko_decode()
 	// Here we revert it to the usual format.
 
 	// Characters
-	for (int i = 0;i < 0x1000;i += 0x10)
+	for (INT32 i = 0;i < 0x1000;i += 0x10)
 	{
-		for (int j = 0; j < 8; j++)
+		for (INT32 j = 0; j < 8; j++)
 		{
-			int t         = Gfx[i+j+0x08];
+			INT32 t         = Gfx[i+j+0x08];
 			Gfx[i+j+0x08] = Gfx[i+j+0x00];
 			Gfx[i+j+0x00] = t;
 		}
 	}
 
 	// Sprites
-	for (int i = 0x1000;i < 0x2000;i += 0x20)
+	for (INT32 i = 0x1000;i < 0x2000;i += 0x20)
 	{
-		for (int j = 0; j < 8; j++)
+		for (INT32 j = 0; j < 8; j++)
 		{
-			int t         = Gfx[i+j+0x18];
+			INT32 t         = Gfx[i+j+0x18];
 			Gfx[i+j+0x18] = Gfx[i+j+0x10];
 			Gfx[i+j+0x10] = Gfx[i+j+0x08];
 			Gfx[i+j+0x08] = Gfx[i+j+0x00];
@@ -5063,7 +5063,7 @@ static void ponpoko_decode()
 	}
 }
 
-static int ponpokoInit()
+static INT32 ponpokoInit()
 {
 	pPacInitCallback = ponpoko_decode;
 
@@ -5136,7 +5136,7 @@ static struct BurnRomInfo theglobpRomDesc[] = {
 STD_ROM_PICK(theglobp)
 STD_ROM_FN(theglobp)
 
-static void epos_hardware_set_bank(int nBank)
+static void epos_hardware_set_bank(INT32 nBank)
 {
 	nBank &= 3;
 
@@ -5145,7 +5145,7 @@ static void epos_hardware_set_bank(int nBank)
 	ZetMapArea(0x0000, 0x3fff, 2, Rom + 0x10000 + (nBank * 0x04000));
 }
 
-static unsigned char epos_hardware_decrypt_rom(unsigned short offset)
+static UINT8 epos_hardware_decrypt_rom(UINT16 offset)
 {
 	if (offset & 0x01)
 	{
@@ -5167,7 +5167,7 @@ static unsigned char epos_hardware_decrypt_rom(unsigned short offset)
 
 static void theglobp_decrypt()
 {
-	for (int i = 0; i < 0x4000; i++) {
+	for (INT32 i = 0; i < 0x4000; i++) {
 		Rom[0x10000 + i] = BITSWAP08(Rom[i] ^ 0xfc, 3, 7, 0, 6, 4, 1, 2, 5);
 		Rom[0x14000 + i] = BITSWAP08(Rom[i] ^ 0xf6, 1, 7, 0, 3, 4, 6, 2, 5);
 		Rom[0x18000 + i] = BITSWAP08(Rom[i] ^ 0x7d, 3, 0, 4, 6, 7, 1, 2, 5);
@@ -5175,7 +5175,7 @@ static void theglobp_decrypt()
 	}
 }
 
-static int theglobpInit()
+static INT32 theglobpInit()
 {
 	epos_hardware = 1;
 
@@ -5314,7 +5314,7 @@ static void vanvanCallback()
 	memcpy (Rom + 0xb000, Rom + 0x8000, 0x1000);
 }
 
-static int vanvanInit()
+static INT32 vanvanInit()
 {
 	vanvan = 1;
 	screen_flip = 1;
@@ -5426,7 +5426,7 @@ static struct BurnRomInfo nmouseRomDesc[] = {
 STD_ROM_PICK(nmouse)
 STD_ROM_FN(nmouse)
 
-static int nmouseInit()
+static INT32 nmouseInit()
 {
 	nmouse = 1;
 
@@ -5505,7 +5505,7 @@ static struct BurnRomInfo dremshprRomDesc[] = {
 STD_ROM_PICK(dremshpr)
 STD_ROM_FN(dremshpr)
 
-static int dremshprInit()
+static INT32 dremshprInit()
 {
 	screen_flip = 1;
 	dremshpr = 1;
@@ -5544,7 +5544,7 @@ STD_ROM_FN(bwcasino)
 
 static void acitya_decode()
 {
-	for (int i = 0; i < 0x4000; i++) {
+	for (INT32 i = 0; i < 0x4000; i++) {
 		Rom[i + 0x10000] = BITSWAP08(Rom[i] ^ 0xb5, 1, 6, 7, 3, 4, 0, 2, 5); // type 8
 		Rom[i + 0x14000] = BITSWAP08(Rom[i] ^ 0xa7, 7, 6, 1, 3, 4, 0, 2, 5); // type 9
 		Rom[i + 0x18000] = BITSWAP08(Rom[i] ^ 0xfc, 1, 0, 7, 6, 4, 3, 2, 5); // type a
@@ -5552,7 +5552,7 @@ static void acitya_decode()
 	}
 }
 
-static int acityaInit()
+static INT32 acityaInit()
 {
 	acitya = 1;
 	epos_hardware = 1;
@@ -5635,17 +5635,17 @@ STD_ROM_FN(bigbucks)
 
 static void bigbucksCallback()
 {
-	QRom = (unsigned char*)malloc(0x60000);
+	QRom = (UINT8*)malloc(0x60000);
 	if (QRom == NULL) {
 		return;
 	}
 
-	for (int i = 0; i < 12; i++) {
+	for (INT32 i = 0; i < 12; i++) {
 		BurnLoadRom(QRom + i * 0x08000, i + 7, 1);
 	}
 }
 
-static int bigbucksInit()
+static INT32 bigbucksInit()
 {
 	bigbucks = 1;
 	nPacBank = 0;
@@ -5704,12 +5704,12 @@ STD_ROM_FN(rocktrv2)
 
 static void rocktrv2Callback()
 {
-	QRom = (unsigned char*)malloc(0x40000);
+	QRom = (UINT8*)malloc(0x40000);
 	if (QRom == NULL) {
 		return;
 	}
 
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		BurnLoadRom(QRom + i * 0x04000, i + 7, 1);
 	}
 
@@ -5717,7 +5717,7 @@ static void rocktrv2Callback()
 	Rom[0x9fee] = 0x6d;
 }
 
-static int rocktrv2Init()
+static INT32 rocktrv2Init()
 {
 	nPacBank = 0;
 	rocktrv2 = 1;
@@ -5771,7 +5771,7 @@ static void alibabaCallback()
 	memset (Rom + 0x9000, 0, 0x800);
 }
 
-static int alibabaInit()
+static INT32 alibabaInit()
 {
 	alibaba = 1;
 

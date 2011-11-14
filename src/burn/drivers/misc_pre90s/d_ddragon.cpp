@@ -8,54 +8,54 @@
 #include "msm6295.h"
 #include "bitswap.h"
 
-static unsigned char DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[2]        = {0, 0};
-static unsigned char DrvInput[3]      = {0x00, 0x00, 0x00};
-static unsigned char DrvReset         = 0;
+static UINT8 DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDip[2]        = {0, 0};
+static UINT8 DrvInput[3]      = {0x00, 0x00, 0x00};
+static UINT8 DrvReset         = 0;
 
-static unsigned char *Mem                 = NULL;
-static unsigned char *MemEnd              = NULL;
-static unsigned char *RamStart            = NULL;
-static unsigned char *RamEnd              = NULL;
-static unsigned char *DrvHD6309Rom        = NULL;
-static unsigned char *DrvSubCPURom        = NULL;
-static unsigned char *DrvSoundCPURom      = NULL;
-static unsigned char *DrvMCURom           = NULL;
-static unsigned char *DrvMSM5205Rom       = NULL;
-static unsigned char *DrvHD6309Ram        = NULL;
-static unsigned char *DrvSubCPURam        = NULL;
-static unsigned char *DrvSoundCPURam      = NULL;
-static unsigned char *DrvMCURam           = NULL;
-static unsigned char *DrvMCUPorts         = NULL;
-static unsigned char *DrvFgVideoRam       = NULL;
-static unsigned char *DrvBgVideoRam       = NULL;
-static unsigned char *DrvSpriteRam        = NULL;
-static unsigned char *DrvPaletteRam1      = NULL;
-static unsigned char *DrvPaletteRam2      = NULL;
-static unsigned char *DrvChars            = NULL;
-static unsigned char *DrvTiles            = NULL;
-static unsigned char *DrvSprites          = NULL;
-static unsigned char *DrvTempRom          = NULL;
-static unsigned int  *DrvPalette          = NULL;
+static UINT8 *Mem                 = NULL;
+static UINT8 *MemEnd              = NULL;
+static UINT8 *RamStart            = NULL;
+static UINT8 *RamEnd              = NULL;
+static UINT8 *DrvHD6309Rom        = NULL;
+static UINT8 *DrvSubCPURom        = NULL;
+static UINT8 *DrvSoundCPURom      = NULL;
+static UINT8 *DrvMCURom           = NULL;
+static UINT8 *DrvMSM5205Rom       = NULL;
+static UINT8 *DrvHD6309Ram        = NULL;
+static UINT8 *DrvSubCPURam        = NULL;
+static UINT8 *DrvSoundCPURam      = NULL;
+static UINT8 *DrvMCURam           = NULL;
+static UINT8 *DrvMCUPorts         = NULL;
+static UINT8 *DrvFgVideoRam       = NULL;
+static UINT8 *DrvBgVideoRam       = NULL;
+static UINT8 *DrvSpriteRam        = NULL;
+static UINT8 *DrvPaletteRam1      = NULL;
+static UINT8 *DrvPaletteRam2      = NULL;
+static UINT8 *DrvChars            = NULL;
+static UINT8 *DrvTiles            = NULL;
+static UINT8 *DrvSprites          = NULL;
+static UINT8 *DrvTempRom          = NULL;
+static UINT32 *DrvPalette          = NULL;
 
-static unsigned char DrvRomBank;
-static unsigned char DrvVBlank;
-static unsigned char DrvSubCPUBusy;
-static unsigned char DrvSoundLatch;
-static unsigned char DrvADPCMIdle[2];
+static UINT8 DrvRomBank;
+static UINT8 DrvVBlank;
+static UINT8 DrvSubCPUBusy;
+static UINT8 DrvSoundLatch;
+static UINT8 DrvADPCMIdle[2];
 static UINT32 DrvADPCMPos[2];
 static UINT32 DrvADPCMEnd[2];
-static int DrvADPCMData[2];
+static INT32 DrvADPCMData[2];
 
-static unsigned short DrvScrollXHi;
-static unsigned short DrvScrollYHi;
-static unsigned char  DrvScrollXLo;
-static unsigned char  DrvScrollYLo;
+static UINT16 DrvScrollXHi;
+static UINT16 DrvScrollYHi;
+static UINT8  DrvScrollXLo;
+static UINT8  DrvScrollYLo;
 
-static int nCyclesDone[4], nCyclesTotal[4];
-static int nCyclesSegment;
+static INT32 nCyclesDone[4], nCyclesTotal[4];
+static INT32 nCyclesSegment;
 
 #define DD_CPU_TYPE_NONE		0
 #define DD_CPU_TYPE_HD63701		1
@@ -63,14 +63,14 @@ static int nCyclesSegment;
 #define DD_CPU_TYPE_M6803		3
 #define DD_CPU_TYPE_Z80			4
 #define DD_CPU_TYPE_M6809		5
-static int DrvSubCPUType;
-static int DrvSoundCPUType;
+static INT32 DrvSubCPUType;
+static INT32 DrvSoundCPUType;
 
 #define DD_VID_TYPE_DD2			1
-static int DrvVidHardwareType;
+static INT32 DrvVidHardwareType;
 
 #define DD_GAME_DARKTOWR		1
-static int DrvGameType;
+static INT32 DrvGameType;
 
 static struct BurnInputInfo DrvInputList[] =
 {
@@ -110,7 +110,7 @@ static inline void DrvMakeInputs()
 	DrvInput[2] = 0xe7;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] -= (DrvInputPort0[i] & 1) << i;
 		DrvInput[1] -= (DrvInputPort1[i] & 1) << i;
 		DrvInput[2] -= (DrvInputPort2[i] & 1) << i;
@@ -788,9 +788,9 @@ static struct BurnRomInfo DarktowrRomDesc[] = {
 STD_ROM_PICK(Darktowr)
 STD_ROM_FN(Darktowr)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	DrvHD6309Rom           = Next; Next += 0x30000;
 	DrvSubCPURom           = Next; Next += 0x04000;
@@ -813,16 +813,16 @@ static int MemIndex()
 	DrvChars               = Next; Next += 0x0400 * 8 * 8;
 	DrvTiles               = Next; Next += 0x0800 * 16 * 16;
 	DrvSprites             = Next; Next += 0x1000 * 16 * 16;
-	DrvPalette             = (unsigned int*)Next; Next += 0x00180 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 0x00180 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int Drv2MemIndex()
+static INT32 Drv2MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	DrvHD6309Rom           = Next; Next += 0x30000;
 	DrvSubCPURom           = Next; Next += 0x10000;
@@ -844,16 +844,16 @@ static int Drv2MemIndex()
 	DrvChars               = Next; Next += 0x0800 * 8 * 8;
 	DrvTiles               = Next; Next += 0x0800 * 16 * 16;
 	DrvSprites             = Next; Next += 0x1800 * 16 * 16;
-	DrvPalette             = (unsigned int*)Next; Next += 0x00180 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 0x00180 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int DarktowrMemIndex()
+static INT32 DarktowrMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	DrvHD6309Rom           = Next; Next += 0x30000;
 	DrvSubCPURom           = Next; Next += 0x04000;
@@ -879,14 +879,14 @@ static int DarktowrMemIndex()
 	DrvChars               = Next; Next += 0x0400 * 8 * 8;
 	DrvTiles               = Next; Next += 0x0800 * 16 * 16;
 	DrvSprites             = Next; Next += 0x1000 * 16 * 16;
-	DrvPalette             = (unsigned int*)Next; Next += 0x00180 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 0x00180 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	HD6309Open(0);
 	HD6309Reset();
@@ -955,7 +955,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-unsigned char DrvDdragonHD6309ReadByte(unsigned short Address)
+UINT8 DrvDdragonHD6309ReadByte(UINT16 Address)
 {
 	if (Address >= 0x2000 && Address <= 0x2fff) {
 		if (Address == 0x2049 && HD6309GetPC() == 0x6261 && DrvSpriteRam[0x0049] == 0x1f) return 0x01;
@@ -963,7 +963,7 @@ unsigned char DrvDdragonHD6309ReadByte(unsigned short Address)
 	}
 	
 	if (DrvGameType == DD_GAME_DARKTOWR && Address >= 0x4000 && Address <= 0x7fff) {
-		unsigned int Offset = Address - 0x4000;
+		UINT32 Offset = Address - 0x4000;
 		
 		if (Offset == 0x1401 || Offset == 0x0001) return DrvMCUPorts[0];
 		return 0xff;
@@ -1001,10 +1001,10 @@ unsigned char DrvDdragonHD6309ReadByte(unsigned short Address)
 	return 0;
 }
 
-void DrvDdragonHD6309WriteByte(unsigned short Address, unsigned char Data)
+void DrvDdragonHD6309WriteByte(UINT16 Address, UINT8 Data)
 {
 	if (DrvGameType == DD_GAME_DARKTOWR && Address >= 0x4000 && Address <= 0x7fff) {
-		unsigned int Offset = Address - 0x4000;
+		UINT32 Offset = Address - 0x4000;
 		
 		if (Offset == 0x1400 || Offset == 0x0000) {
 			DrvMCUPorts[1] = BITSWAP08(Data, 0, 1, 2, 3, 4, 5, 6, 7);
@@ -1014,7 +1014,7 @@ void DrvDdragonHD6309WriteByte(unsigned short Address, unsigned char Data)
 	
 	switch (Address) {
 		case 0x3808: {
-			unsigned char DrvOldRomBank = DrvRomBank;
+			UINT8 DrvOldRomBank = DrvRomBank;
 			DrvRomBank = (Data & 0xe0) >> 5;
 			HD6309MapMemory(DrvHD6309Rom + 0x8000 + (DrvRomBank * 0x4000), 0x4000, 0x7fff, M6809_ROM);
 			
@@ -1112,7 +1112,7 @@ void DrvDdragonHD6309WriteByte(unsigned short Address, unsigned char Data)
 	bprintf(PRINT_NORMAL, _T("HD6309 Write Byte -> %04X, %02X\n"), Address, Data);
 }
 
-unsigned char DrvDdragonHD63701ReadByte(unsigned short Address)
+UINT8 DrvDdragonHD63701ReadByte(UINT16 Address)
 {
 	if (Address >= 0x0020 && Address <= 0x0fff) {
 		return DrvSubCPURam[Address - 0x0020];
@@ -1128,7 +1128,7 @@ unsigned char DrvDdragonHD63701ReadByte(unsigned short Address)
 	return 0;
 }
 
-void DrvDdragonHD63701WriteByte(unsigned short Address, unsigned char Data)
+void DrvDdragonHD63701WriteByte(UINT16 Address, UINT8 Data)
 {
 	if (Address <= 0x001f) {
 		if (Address == 0x17) {
@@ -1157,7 +1157,7 @@ void DrvDdragonHD63701WriteByte(unsigned short Address, unsigned char Data)
 	bprintf(PRINT_NORMAL, _T("M6800 Write Byte -> %04X, %02X\n"), Address, Data);
 }
 
-unsigned char DrvDdragonbSubHD6309ReadByte(unsigned short Address)
+UINT8 DrvDdragonbSubHD6309ReadByte(UINT16 Address)
 {
 	if (Address >= 0x0020 && Address <= 0x0fff) {
 		return DrvSubCPURam[Address - 0x0020];
@@ -1172,7 +1172,7 @@ unsigned char DrvDdragonbSubHD6309ReadByte(unsigned short Address)
 	return 0;
 }
 
-void DrvDdragonbSubHD6309WriteByte(unsigned short Address, unsigned char Data)
+void DrvDdragonbSubHD6309WriteByte(UINT16 Address, UINT8 Data)
 {
 	if (Address <= 0x001f) {
 		if (Address == 0x17) {
@@ -1204,7 +1204,7 @@ void DrvDdragonbSubHD6309WriteByte(unsigned short Address, unsigned char Data)
 	bprintf(PRINT_NORMAL, _T("Sub HD6309 Write Byte -> %04X, %02X\n"), Address, Data);
 }
 
-unsigned char DrvDdragonbaM6803ReadByte(unsigned short Address)
+UINT8 DrvDdragonbaM6803ReadByte(UINT16 Address)
 {
 	if (Address >= 0x0020 && Address <= 0x0fff) {
 		return DrvSubCPURam[Address - 0x0020];
@@ -1219,7 +1219,7 @@ unsigned char DrvDdragonbaM6803ReadByte(unsigned short Address)
 	return 0;
 }
 
-void DrvDdragonbaM6803WriteByte(unsigned short Address, unsigned char Data)
+void DrvDdragonbaM6803WriteByte(UINT16 Address, UINT8 Data)
 {
 	if (Address >= 0x0020 && Address <= 0x0fff) {
 		DrvSubCPURam[Address - 0x0020] = Data;
@@ -1240,7 +1240,7 @@ void DrvDdragonbaM6803WriteByte(unsigned short Address, unsigned char Data)
 	bprintf(PRINT_NORMAL, _T("M6803 Write Byte -> %04X, %02X\n"), Address, Data);
 }
 
-void DrvDdragonbaM6803WritePort(unsigned short, unsigned char)
+void DrvDdragonbaM6803WritePort(UINT16, UINT8)
 {
 	M6803SetIRQ(M6803_INPUT_LINE_NMI, M6803_IRQSTATUS_NONE);
 	
@@ -1249,7 +1249,7 @@ void DrvDdragonbaM6803WritePort(unsigned short, unsigned char)
 	HD6309Close();
 }
 
-void __fastcall Ddragon2SubZ80Write(unsigned short Address, unsigned char Data)
+void __fastcall Ddragon2SubZ80Write(UINT16 Address, UINT8 Data)
 {
 	if (Address >= 0xc000 && Address <= 0xc3ff) {
 		if (Address == 0xc000) DrvSubCPUBusy = 1;
@@ -1276,7 +1276,7 @@ void __fastcall Ddragon2SubZ80Write(unsigned short Address, unsigned char Data)
 	}
 }
 
-unsigned char DrvDdragonM6809ReadByte(unsigned short Address)
+UINT8 DrvDdragonM6809ReadByte(UINT16 Address)
 {
 	switch (Address) {
 		case 0x1000: {
@@ -1299,7 +1299,7 @@ unsigned char DrvDdragonM6809ReadByte(unsigned short Address)
 }
 
 
-void DrvDdragonM6809WriteByte(unsigned short Address, unsigned char Data)
+void DrvDdragonM6809WriteByte(UINT16 Address, UINT8 Data)
 {
 	switch (Address) {
 		case 0x2800: {
@@ -1360,7 +1360,7 @@ void DrvDdragonM6809WriteByte(unsigned short Address, unsigned char Data)
 	bprintf(PRINT_NORMAL, _T("M6809 Write Byte -> %04X, %02X\n"), Address, Data);
 }
 
-unsigned char __fastcall Ddragon2SoundZ80Read(unsigned short Address)
+UINT8 __fastcall Ddragon2SoundZ80Read(UINT16 Address)
 {
 	switch (Address) {
 		case 0x8801: {
@@ -1383,7 +1383,7 @@ unsigned char __fastcall Ddragon2SoundZ80Read(unsigned short Address)
 	return 0;
 }
 
-void __fastcall Ddragon2SoundZ80Write(unsigned short Address, unsigned char Data)
+void __fastcall Ddragon2SoundZ80Write(UINT16 Address, UINT8 Data)
 {
 	switch (Address) {
 		case 0x8800: {
@@ -1407,7 +1407,7 @@ void __fastcall Ddragon2SoundZ80Write(unsigned short Address, unsigned char Data
 	}
 }
 
-unsigned char DrvMCUReadByte(unsigned short Address)
+UINT8 DrvMCUReadByte(UINT16 Address)
 {
 	if (Address <= 0x0007) {
 		return DrvMCUPorts[Address];
@@ -1418,7 +1418,7 @@ unsigned char DrvMCUReadByte(unsigned short Address)
 	return 0;
 }
 
-void DrvMCUWriteByte(unsigned short Address, unsigned char Data)
+void DrvMCUWriteByte(UINT16 Address, UINT8 Data)
 {
 	if (Address <= 0x0007) {
 		DrvMCUPorts[Address] = Data;
@@ -1428,17 +1428,17 @@ void DrvMCUWriteByte(unsigned short Address, unsigned char Data)
 	bprintf(PRINT_NORMAL, _T("M68705 Write Byte -> %04X, %02X\n"), Address, Data);
 }
 
-static int CharPlaneOffsets[4]          = { 0, 2, 4, 6 };
-static int CharXOffsets[8]              = { 1, 0, 65, 64, 129, 128, 193, 192 };
-static int CharYOffsets[8]              = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int TilePlaneOffsets[4]          = { 0x100000, 0x100004, 0, 4 };
-static int DdungeonTilePlaneOffsets[4]  = { 0x080000, 0x080004, 0, 4 };
-static int TileXOffsets[16]             = { 3, 2, 1, 0, 131, 130, 129, 128, 259, 258, 257, 256, 387, 386, 385, 384 };
-static int TileYOffsets[16]             = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
-static int SpritePlaneOffsets[4]        = { 0x200000, 0x200004, 0, 4 };
-static int Dd2SpritePlaneOffsets[4]     = { 0x300000, 0x300004, 0, 4 };
+static INT32 CharPlaneOffsets[4]          = { 0, 2, 4, 6 };
+static INT32 CharXOffsets[8]              = { 1, 0, 65, 64, 129, 128, 193, 192 };
+static INT32 CharYOffsets[8]              = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 TilePlaneOffsets[4]          = { 0x100000, 0x100004, 0, 4 };
+static INT32 DdungeonTilePlaneOffsets[4]  = { 0x080000, 0x080004, 0, 4 };
+static INT32 TileXOffsets[16]             = { 3, 2, 1, 0, 131, 130, 129, 128, 259, 258, 257, 256, 387, 386, 385, 384 };
+static INT32 TileYOffsets[16]             = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+static INT32 SpritePlaneOffsets[4]        = { 0x200000, 0x200004, 0, 4 };
+static INT32 Dd2SpritePlaneOffsets[4]     = { 0x300000, 0x300004, 0, 4 };
 
-static void DrvYM2151IrqHandler(int Irq)
+static void DrvYM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
 		M6809SetIRQ(M6809_FIRQ_LINE, M6809_IRQSTATUS_ACK);
@@ -1452,7 +1452,7 @@ static void DrvYM2151IrqHandler(int Irq)
 	}
 }
 
-static void Ddragon2YM2151IrqHandler(int Irq)
+static void Ddragon2YM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
 		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
@@ -1461,9 +1461,9 @@ static void Ddragon2YM2151IrqHandler(int Irq)
 	}
 }
 
-inline static int DrvSynchroniseStream(int nSoundRate)
+inline static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)(HD6309TotalCycles() * nSoundRate / ((int)(nCyclesTotal[0] * 57.444853)));
+	return (INT64)(HD6309TotalCycles() * nSoundRate / ((INT32)(nCyclesTotal[0] * 57.444853)));
 }
 
 static void DrvMSM5205Vck0()
@@ -1502,56 +1502,56 @@ static void DrvMSM5205Vck1()
 	}
 }
 
-static int DrvMemInit()
+static INT32 DrvMemInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 	
 	return 0;
 }
 
-static int Drv2MemInit()
+static INT32 Drv2MemInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	Drv2MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	Drv2MemIndex();
 	
 	return 0;
 }
 
-static int DarktowrMemInit()
+static INT32 DarktowrMemInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	DarktowrMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	DarktowrMemIndex();
 	
 	return 0;
 }
 
-static int DrvLoadRoms()
+static INT32 DrvLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)malloc(0x80000);
 
 	// Load HD6309 Program Roms
 	nRet = BurnLoadRom(DrvHD6309Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1601,11 +1601,11 @@ static int DrvLoadRoms()
 	return 0;
 }
 
-static int DrvbaLoadRoms()
+static INT32 DrvbaLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)malloc(0x80000);
 
 	// Load HD6309 Program Roms
 	nRet = BurnLoadRom(DrvHD6309Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1655,11 +1655,11 @@ static int DrvbaLoadRoms()
 	return 0;
 }
 
-static int Drv2LoadRoms()
+static INT32 Drv2LoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 
-	DrvTempRom = (unsigned char *)malloc(0xc0000);
+	DrvTempRom = (UINT8 *)malloc(0xc0000);
 
 	// Load HD6309 Program Roms
 	nRet = BurnLoadRom(DrvHD6309Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1705,11 +1705,11 @@ static int Drv2LoadRoms()
 	return 0;
 }
 
-static int DdungeonLoadRoms()
+static INT32 DdungeonLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)malloc(0x80000);
 
 	// Load HD6309 Program Roms
 	nRet = BurnLoadRom(DrvHD6309Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1752,11 +1752,11 @@ static int DdungeonLoadRoms()
 	return 0;
 }
 
-static int DarktowrLoadRoms()
+static INT32 DarktowrLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)malloc(0x80000);
 
 	// Load HD6309 Program Roms
 	nRet = BurnLoadRom(DrvHD6309Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1808,7 +1808,7 @@ static int DarktowrLoadRoms()
 	return 0;
 }
 
-static int DrvMachineInit()
+static INT32 DrvMachineInit()
 {
 	BurnSetRefreshRate(57.444853);
 	
@@ -1878,9 +1878,9 @@ static int DrvMachineInit()
 		m6805SetWriteHandler(DrvMCUWriteByte);
 	}
 	
-	nCyclesTotal[0] = (int)((double)4000000 / 57.44853);
-	nCyclesTotal[1] = (int)((double)4000000 / 57.44853);
-	nCyclesTotal[2] = (int)((double)1500000 / 57.44853);
+	nCyclesTotal[0] = (INT32)((double)4000000 / 57.44853);
+	nCyclesTotal[1] = (INT32)((double)4000000 / 57.44853);
+	nCyclesTotal[2] = (INT32)((double)1500000 / 57.44853);
 
 	GenericTilesInit();
 
@@ -1890,7 +1890,7 @@ static int DrvMachineInit()
 	return 0;
 }
 
-static int Drv2MachineInit()
+static INT32 Drv2MachineInit()
 {
 	// Setup the HD6309 emulation
 	HD6309Init(1);
@@ -1935,10 +1935,10 @@ static int Drv2MachineInit()
 	
 	BurnSetRefreshRate(57.444853);
 	
-	nCyclesTotal[0] = (int)((double)4000000 / 57.44853);
-	nCyclesTotal[1] = (int)((double)4000000 / 57.44853);
-	nCyclesTotal[2] = (int)((double)3579545 / 57.44853);
-	nCyclesTotal[3] = (int)((double)4000000 / 57.44853);
+	nCyclesTotal[0] = (INT32)((double)4000000 / 57.44853);
+	nCyclesTotal[1] = (INT32)((double)4000000 / 57.44853);
+	nCyclesTotal[2] = (INT32)((double)3579545 / 57.44853);
+	nCyclesTotal[3] = (INT32)((double)4000000 / 57.44853);
 
 	GenericTilesInit();
 
@@ -1948,7 +1948,7 @@ static int Drv2MachineInit()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	DrvSubCPUType = DD_CPU_TYPE_HD63701;
 	DrvSoundCPUType = DD_CPU_TYPE_M6809;
@@ -1960,7 +1960,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvbInit()
+static INT32 DrvbInit()
 {
 	DrvSubCPUType = DD_CPU_TYPE_HD6309;
 	DrvSoundCPUType = DD_CPU_TYPE_M6809;
@@ -1969,12 +1969,12 @@ static int DrvbInit()
 	if (DrvLoadRoms()) return 1;
 	if (DrvMachineInit()) return 1;
 	
-	nCyclesTotal[1] = (int)((double)1500000 / 57.44853);
+	nCyclesTotal[1] = (INT32)((double)1500000 / 57.44853);
 
 	return 0;
 }
 
-static int DrvbaInit()
+static INT32 DrvbaInit()
 {
 	DrvSubCPUType = DD_CPU_TYPE_M6803;
 	DrvSoundCPUType = DD_CPU_TYPE_M6809;
@@ -1986,7 +1986,7 @@ static int DrvbaInit()
 	return 0;
 }
 
-static int Drv2Init()
+static INT32 Drv2Init()
 {
 	DrvSubCPUType = DD_CPU_TYPE_Z80;
 	DrvSoundCPUType = DD_CPU_TYPE_Z80;
@@ -1999,7 +1999,7 @@ static int Drv2Init()
 	return 0;
 }
 
-static int DdungeonInit()
+static INT32 DdungeonInit()
 {
 	DrvSubCPUType = DD_CPU_TYPE_HD63701;
 	DrvSoundCPUType = DD_CPU_TYPE_M6809;
@@ -2012,7 +2012,7 @@ static int DdungeonInit()
 	return 0;
 }
 
-static int DarktowrInit()
+static INT32 DarktowrInit()
 {
 	DrvSubCPUType = DD_CPU_TYPE_HD63701;
 	DrvSoundCPUType = DD_CPU_TYPE_M6809;
@@ -2025,7 +2025,7 @@ static int DarktowrInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	HD6309Exit();
 	M6800Exit();
@@ -2070,15 +2070,15 @@ static int DrvExit()
 	return 0;
 }
 
-static inline unsigned char pal4bit(unsigned char bits)
+static inline UINT8 pal4bit(UINT8 bits)
 {
 	bits &= 0x0f;
 	return (bits << 4) | bits;
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = pal4bit(nColour >> 0);
 	g = pal4bit(nColour >> 4);
@@ -2089,8 +2089,8 @@ inline static unsigned int CalcCol(unsigned short nColour)
 
 static void DrvCalcPalette()
 {
-	for (int i = 0; i < 0x180; i++) {
-		int Val = DrvPaletteRam1[i] + (DrvPaletteRam2[i] << 8);
+	for (INT32 i = 0; i < 0x180; i++) {
+		INT32 Val = DrvPaletteRam1[i] + (DrvPaletteRam2[i] << 8);
 		
 		DrvPalette[i] = CalcCol(Val);
 	}
@@ -2098,7 +2098,7 @@ static void DrvCalcPalette()
 
 static void DrvRenderBgLayer()
 {
-	int mx, my, Code, Attr, Colour, x, y, TileIndex, xScroll, yScroll, Flip, xFlip, yFlip;
+	INT32 mx, my, Code, Attr, Colour, x, y, TileIndex, xScroll, yScroll, Flip, xFlip, yFlip;
 	
 	xScroll = DrvScrollXHi + DrvScrollXLo;
 	xScroll &= 0x1ff;
@@ -2194,22 +2194,22 @@ static void DrvRenderBgLayer()
 
 static void DrvRenderSpriteLayer()
 {
-	unsigned char *Src = &DrvSpriteRam[0x800];
+	UINT8 *Src = &DrvSpriteRam[0x800];
 	
-	for (int i = 0; i < (64 * 5); i += 5) {
-		int Attr = Src[i + 1];
+	for (INT32 i = 0; i < (64 * 5); i += 5) {
+		INT32 Attr = Src[i + 1];
 		
 		if (Attr & 0x80) {
-			int sx = 240 - Src[i + 4] + ((Attr & 2) << 7);
-			int sy = 232 - Src[i + 0] + ((Attr & 1) << 8);
-			int Size = (Attr & 0x30) >> 4;
-			int xFlip = Attr & 0x08;
-			int yFlip = Attr & 0x04;
-			int dx = -16;
-			int dy = -16;
+			INT32 sx = 240 - Src[i + 4] + ((Attr & 2) << 7);
+			INT32 sy = 232 - Src[i + 0] + ((Attr & 1) << 8);
+			INT32 Size = (Attr & 0x30) >> 4;
+			INT32 xFlip = Attr & 0x08;
+			INT32 yFlip = Attr & 0x04;
+			INT32 dx = -16;
+			INT32 dy = -16;
 			
-			int Colour;
-			int Code;
+			INT32 Colour;
+			INT32 Code;
 			
 			if (DrvVidHardwareType == DD_VID_TYPE_DD2) {
 				Colour = (Src[i + 2] >> 5);
@@ -2255,7 +2255,7 @@ static void DrvRenderSpriteLayer()
 
 static void DrvRenderCharLayer()
 {
-	int mx, my, Code, Attr, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Attr, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 32; mx++) {
@@ -2291,25 +2291,25 @@ static void DrvDraw()
 	BurnTransferCopy(DrvPalette);
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 272;
-	if (DrvSoundCPUType == DD_CPU_TYPE_M6809) nInterleave = MSM5205CalcInterleave(0, (int)(nCyclesTotal[0] * 57.444853));
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 272;
+	if (DrvSoundCPUType == DD_CPU_TYPE_M6809) nInterleave = MSM5205CalcInterleave(0, (INT32)(nCyclesTotal[0] * 57.444853));
+	INT32 nSoundBufferPos = 0;
 	
-	int VBlankSlice = (int)((double)(nInterleave * 240) / 272);
-	int FIRQFireSlice[16];
-	for (int i = 0; i < 16; i++) {
-		FIRQFireSlice[i] = (int)((double)((nInterleave * (i + 1)) / 17));
+	INT32 VBlankSlice = (INT32)((double)(nInterleave * 240) / 272);
+	INT32 FIRQFireSlice[16];
+	for (INT32 i = 0; i < 16; i++) {
+		FIRQFireSlice[i] = (INT32)((double)((nInterleave * (i + 1)) / 17));
 	}
 	
 	if (DrvReset) DrvDoReset();
 
 	DrvMakeInputs();
 	
-	unsigned int nCyclesToDo[2];
-	nCyclesToDo[0] = (int)((double)nCyclesTotal[0] * nBurnCPUSpeedAdjust / 0x0100);
-	nCyclesToDo[1] = (int)((double)nCyclesTotal[1] * nBurnCPUSpeedAdjust / 0x0100);
+	UINT32 nCyclesToDo[2];
+	nCyclesToDo[0] = (INT32)((double)nCyclesTotal[0] * nBurnCPUSpeedAdjust / 0x0100);
+	nCyclesToDo[1] = (INT32)((double)nCyclesTotal[1] * nBurnCPUSpeedAdjust / 0x0100);
 	
 	nCyclesDone[0] = nCyclesDone[1] = nCyclesDone[2] = nCyclesDone[3] = 0;
 	
@@ -2322,8 +2322,8 @@ static int DrvFrame()
 	
 	DrvVBlank = 0;
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		nCurrentCPU = 0;
 		HD6309Open(0);
@@ -2403,7 +2403,7 @@ static int DrvFrame()
 			HD6309Close();
 		}
 		
-		for (int j = 0; j < 16; j++) {
+		for (INT32 j = 0; j < 16; j++) {
 			if (i == FIRQFireSlice[j]) {
 				HD6309Open(0);
 				HD6309SetIRQ(HD6309_FIRQ_LINE, HD6309_IRQSTATUS_ACK);
@@ -2412,8 +2412,8 @@ static int DrvFrame()
 		}
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			
 			if (DrvSoundCPUType == DD_CPU_TYPE_M6809) {
 				M6809Open(0);
@@ -2434,8 +2434,8 @@ static int DrvFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			if (DrvSoundCPUType == DD_CPU_TYPE_M6809) {
@@ -2465,7 +2465,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

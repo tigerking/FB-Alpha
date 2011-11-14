@@ -7,22 +7,22 @@ extern "C" {
  #include "ay8910.h"
 }
 
-static int nWhichGame;
+static INT32 nWhichGame;
 
 static bool bInterruptEnable;
 static bool bSoundCPUEnable;
 static bool bSoundNMIEnable;
 
-static int nStatusIndex;
-static int nProtectIndex;
+static INT32 nStatusIndex;
+static INT32 nProtectIndex;
 
 // ---------------------------------------------------------------------------
 // Inputs
 
-static unsigned char tigerhInput[4] = {0,0,0,0};
-static unsigned char tigerhInpJoy1[8];
-static unsigned char tigerhInpMisc[8];
-static unsigned char tigerhReset = 0;
+static UINT8 tigerhInput[4] = {0,0,0,0};
+static UINT8 tigerhInpJoy1[8];
+static UINT8 tigerhInpMisc[8];
+static UINT8 tigerhReset = 0;
 
 // Dip Switch and Input Definitions
 static struct BurnInputInfo tigerhInputList[] = {
@@ -252,25 +252,25 @@ STDDIPINFO(slapfigh)
 
 // ---------------------------------------------------------------------------
 
-static unsigned char *Mem, *MemEnd, *RamStart, *RamEnd;
+static UINT8 *Mem, *MemEnd, *RamStart, *RamEnd;
 
-static unsigned char *Rom01, *Rom02, *Rom03;
-static unsigned char *TigerHeliTileROM, *TigerHeliSpriteROM, *TigerHeliTextROM;
+static UINT8 *Rom01, *Rom02, *Rom03;
+static UINT8 *TigerHeliTileROM, *TigerHeliSpriteROM, *TigerHeliTextROM;
 
-static unsigned char *Ram01, *RamShared, *Ram03;
-static unsigned char *TigerHeliTileRAM, *TigerHeliSpriteRAM, *TigerHeliSpriteBuf, *TigerHeliTextRAM;
+static UINT8 *Ram01, *RamShared, *Ram03;
+static UINT8 *TigerHeliTileRAM, *TigerHeliSpriteRAM, *TigerHeliSpriteBuf, *TigerHeliTextRAM;
 
-static unsigned char* TigerHeliPaletteROM;
-static unsigned int* TigerHeliPalette;
+static UINT8* TigerHeliPaletteROM;
+static UINT32* TigerHeliPalette;
 
-static short* pFMBuffer;
-static short* pAY8910Buffer[6];
+static INT16* pFMBuffer;
+static INT16* pAY8910Buffer[6];
 
-static int use_mcu = 0;
+static INT32 use_mcu = 0;
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char* Next; Next = Mem;
+	UINT8* Next; Next = Mem;
 	Rom01				= Next; Next += 0x012000;		// Z80 main program
 	Rom02				= Next; Next += 0x002000;		// Z80 sound program
 	Rom03				= Next; Next += 0x000800;		// m68705 mcu program
@@ -286,9 +286,9 @@ static int MemIndex()
 	TigerHeliTileRAM	= Next; Next += 0x001000;
 	Ram03			= Next; Next += 0x000080;
 	RamEnd				= Next;
-	pFMBuffer			= (short*)Next; Next += nBurnSoundLen * 6 * sizeof(short);
+	pFMBuffer			= (INT16*)Next; Next += nBurnSoundLen * 6 * sizeof(INT16);
 	TigerHeliPaletteROM	= Next; Next += 0x000300;
-	TigerHeliPalette	= (unsigned int*)Next; Next += 0x000100 * sizeof(int);
+	TigerHeliPalette	= (UINT32*)Next; Next += 0x000100 * sizeof(UINT32);
 	MemEnd				= Next;
 
 	return 0;
@@ -297,28 +297,28 @@ static int MemIndex()
 // ---------------------------------------------------------------------------
 //	Graphics
 
-static int nTigerHeliTileXPosLo, nTigerHeliTileXPosHi, nTigerHeliTileYPosLo;
-static int nTigerHeliTileMask;
+static INT32 nTigerHeliTileXPosLo, nTigerHeliTileXPosHi, nTigerHeliTileYPosLo;
+static INT32 nTigerHeliTileMask;
 
-static unsigned char* pTileData;
+static UINT8* pTileData;
 
-static int nTileNumber;
-static int nTilePalette;
+static INT32 nTileNumber;
+static INT32 nTilePalette;
 
-static unsigned short* pTileRow;
-static unsigned short* pTile;
+static UINT16* pTileRow;
+static UINT16* pTile;
 
-static int nTileXPos, nTileYPos;
+static INT32 nTileXPos, nTileYPos;
 
 // ---------------------------------------------------------------------------
 //	Palette
 
-static unsigned char tigerhRecalcPalette = 0;
+static UINT8 tigerhRecalcPalette = 0;
 
 static void TigerHeliPaletteInit()
 {
-	for (int i = 0; i < 0x0100; i++) {
-		int r, g, b;
+	for (INT32 i = 0; i < 0x0100; i++) {
+		INT32 r, g, b;
 
 		r = TigerHeliPaletteROM[i + 0x0000];	  // Red
 		r |= r << 4;
@@ -345,7 +345,7 @@ static void TigerHeliPaletteUpdate()
 // ---------------------------------------------------------------------------
 // Text layer
 
-static unsigned char* TigerHeliTextAttrib = NULL;
+static UINT8* TigerHeliTextAttrib = NULL;
 
 static void TigerHeliTextExit()
 {
@@ -355,16 +355,16 @@ static void TigerHeliTextExit()
 	}
 }
 
-static int TigerHeliTextInit()
+static INT32 TigerHeliTextInit()
 {
-	if ((TigerHeliTextAttrib = (unsigned char*)malloc(0x0400)) == NULL) {
+	if ((TigerHeliTextAttrib = (UINT8*)malloc(0x0400)) == NULL) {
 		return 1;
 	}
 
-	for (int i = 0; i < 0x0400; i++) {
+	for (INT32 i = 0; i < 0x0400; i++) {
 		bool bEmpty = true;
 
-		for (int j = 0; j < 64; j++) {
+		for (INT32 j = 0; j < 64; j++) {
 			if (TigerHeliTextROM[(i << 6) + j]) {
 				bEmpty = false;
 				break;
@@ -385,12 +385,12 @@ static int TigerHeliTextInit()
 
 static void TigerHeliRenderTextTile()
 {
-	unsigned short nPalette = nTilePalette << 2;
+	UINT16 nPalette = nTilePalette << 2;
 	pTileData = TigerHeliTextROM + (nTileNumber << 6);
 
-	unsigned short* pPixel = pTile;
+	UINT16* pPixel = pTile;
 
-	for (int y = 0; y < 8; y++, pPixel += 280, pTileData += 8) {
+	for (INT32 y = 0; y < 8; y++, pPixel += 280, pTileData += 8) {
 
 		if ((nTileYPos + y) >= 240) {
 			break;
@@ -414,7 +414,7 @@ static void TigerHeliRenderTextTile()
 
 static void TigerHeliTextRender()
 {
-	unsigned char* pTextRAM;
+	UINT8* pTextRAM;
 
 	if ((nBurnLayer & 2) == 0) {
 		return;
@@ -433,13 +433,13 @@ static void TigerHeliTextRender()
 	}
 	pTileRow = pTransDraw + nTileYPos * 280;
 
-	for (int y = 0; y < 32; y++, nTileYPos += 8, pTileRow += (280 << 3)) {
+	for (INT32 y = 0; y < 32; y++, nTileYPos += 8, pTileRow += (280 << 3)) {
 		if (nTileYPos <= -8 || nTileYPos >= 240 ) {
 			continue;
 		}
 		pTextRAM = TigerHeliTextRAM + (y << 6);
 		pTile = pTileRow;
-		for (int x = 1; x < 36; x++, pTile += 8) {
+		for (INT32 x = 1; x < 36; x++, pTile += 8) {
 			nTileNumber = pTextRAM[x] | (pTextRAM[0x0800 + x] << 8);
 			nTilePalette = nTileNumber >> 10;
 			nTileNumber &= 0x03FF;
@@ -461,7 +461,7 @@ static void TigerHeliTileExit()
 	return;
 }
 
-static int TigerHeliTileInit()
+static INT32 TigerHeliTileInit()
 {
 	return 0;
 }
@@ -471,12 +471,12 @@ static int TigerHeliTileInit()
 
 static void TigerHeliRenderTileNoClip()
 {
-	unsigned char nPalette = nTilePalette << 4;
+	UINT8 nPalette = nTilePalette << 4;
 	pTileData = TigerHeliTileROM + (nTileNumber << 6);
 
-	unsigned short* pPixel = pTile;
+	UINT16* pPixel = pTile;
 
-	for (int y = 0; y < 8; y++, pPixel += 280, pTileData += 8) {
+	for (INT32 y = 0; y < 8; y++, pPixel += 280, pTileData += 8) {
 		PLOTPIXEL(0);
 		PLOTPIXEL(1);
 		PLOTPIXEL(2);
@@ -490,12 +490,12 @@ static void TigerHeliRenderTileNoClip()
 
 static void TigerHeliRenderTileClip()
 {
-	unsigned char nPalette = nTilePalette << 4;
+	UINT8 nPalette = nTilePalette << 4;
 	pTileData = TigerHeliTileROM + (nTileNumber << 6);
 
-	unsigned short* pPixel = pTile;
+	UINT16* pPixel = pTile;
 
-	for (int y = 0; y < 8; y++, pPixel += 280, pTileData += 8) {
+	for (INT32 y = 0; y < 8; y++, pPixel += 280, pTileData += 8) {
 
 		if ((nTileYPos + y) >= 240) {
 			break;
@@ -520,15 +520,15 @@ static void TigerHeliRenderTileClip()
 
 static void TigerHeliTileRender()
 {
-	unsigned char* pTileRAM;
+	UINT8* pTileRAM;
 
 	if ((nBurnLayer & 3) == 0) {
 		BurnTransferClear();
 		return;
 	}
 
-	int nTigerHeliTileXPos = nTigerHeliTileXPosLo + (nTigerHeliTileXPosHi << 8);
-	int nTigerHeliTileYPos = nTigerHeliTileYPosLo;
+	INT32 nTigerHeliTileXPos = nTigerHeliTileXPosLo + (nTigerHeliTileXPosHi << 8);
+	INT32 nTigerHeliTileYPos = nTigerHeliTileYPosLo;
 
 	switch (nWhichGame) {
 		case 0:										// Tiger Heli
@@ -542,7 +542,7 @@ static void TigerHeliTileRender()
 			break;
 	}
 
-	int nXPos = -nTigerHeliTileXPos & 7;
+	INT32 nXPos = -nTigerHeliTileXPos & 7;
 	nTileYPos = -nTigerHeliTileYPos & 7;
 
 	if (nTigerHeliTileXPos & 7) {
@@ -556,12 +556,12 @@ static void TigerHeliTileRender()
 	pTileRow -= (nTigerHeliTileXPos & 7);
 	pTileRow -= (nTigerHeliTileYPos & 7) * 280;
 
-	for (int y = 2; y < 33; y++, nTileYPos += 8, pTileRow += (280 << 3)) {
+	for (INT32 y = 2; y < 33; y++, nTileYPos += 8, pTileRow += (280 << 3)) {
 		pTileRAM = TigerHeliTileRAM + (((y + (nTigerHeliTileYPos >> 3)) << 6) & 0x07C0);
 		pTile = pTileRow;
 		nTileXPos = nXPos;
-		for (int x = 1; x < 37; x++, nTileXPos += 8, pTile += 8) {
-			int x2 = (x + ((nTigerHeliTileXPos >> 3) & 0x3F));
+		for (INT32 x = 1; x < 37; x++, nTileXPos += 8, pTile += 8) {
+			INT32 x2 = (x + ((nTigerHeliTileXPos >> 3) & 0x3F));
 			nTileNumber = pTileRAM[x2] | (pTileRAM[0x0800 + x2] << 8);
 			nTilePalette = nTileNumber >> 12;
 			nTileNumber &= nTigerHeliTileMask;
@@ -580,16 +580,16 @@ static void TigerHeliTileRender()
 // ---------------------------------------------------------------------------
 // Sprites
 
-static int nSpriteXPos, nSpriteYPos, nSpriteNumber, nSpritePalette;
+static INT32 nSpriteXPos, nSpriteYPos, nSpriteNumber, nSpritePalette;
 
-static int nTigerHeliSpriteMask;
+static INT32 nTigerHeliSpriteMask;
 
 static void TigerHeliSpriteExit()
 {
 	return;
 }
 
-static int TigerHeliSpriteInit()
+static INT32 TigerHeliSpriteInit()
 {
 	return 0;
 }
@@ -599,12 +599,12 @@ static int TigerHeliSpriteInit()
 
 static void TigerHeliRenderSpriteNoClip()
 {
-	unsigned char nPalette = nSpritePalette << 4;
-	unsigned char* pSpriteData = TigerHeliSpriteROM + (nSpriteNumber << 8);
+	UINT8 nPalette = nSpritePalette << 4;
+	UINT8* pSpriteData = TigerHeliSpriteROM + (nSpriteNumber << 8);
 
-	unsigned short* pPixel = pTransDraw + nSpriteXPos + nSpriteYPos * 280;
+	UINT16* pPixel = pTransDraw + nSpriteXPos + nSpriteYPos * 280;
 
-	for (int y = 0; y < 16; y++, pPixel += 280, pSpriteData += 16) {
+	for (INT32 y = 0; y < 16; y++, pPixel += 280, pSpriteData += 16) {
 		PLOTPIXEL( 0);
 		PLOTPIXEL( 1);
 		PLOTPIXEL( 2);
@@ -626,12 +626,12 @@ static void TigerHeliRenderSpriteNoClip()
 
 static void TigerHeliRenderSpriteClip()
 {
-	unsigned char nPalette = nSpritePalette << 4;
-	unsigned char* pSpriteData = TigerHeliSpriteROM + (nSpriteNumber << 8);
+	UINT8 nPalette = nSpritePalette << 4;
+	UINT8* pSpriteData = TigerHeliSpriteROM + (nSpriteNumber << 8);
 
-	unsigned short* pPixel = pTransDraw + nSpriteXPos + nSpriteYPos * 280;
+	UINT16* pPixel = pTransDraw + nSpriteXPos + nSpriteYPos * 280;
 
-	for (int y = 0; y < 16; y++, pPixel += 280, pSpriteData += 16) {
+	for (INT32 y = 0; y < 16; y++, pPixel += 280, pSpriteData += 16) {
 
 		if ((nSpriteYPos + y) < 0 || (nSpriteYPos + y) >= 240) {
 			continue;
@@ -661,8 +661,8 @@ static void TigerHeliRenderSpriteClip()
 
 static void TigerHeliSpriteRender()
 {
-	unsigned char* pSpriteRAM = TigerHeliSpriteBuf;
-	int nSpriteYOffset = 0;
+	UINT8* pSpriteRAM = TigerHeliSpriteBuf;
+	INT32 nSpriteYOffset = 0;
 
 	if ((nBurnLayer & 1) == 0) {
 		return;
@@ -680,7 +680,7 @@ static void TigerHeliSpriteRender()
 			break;
 	}
 
-	for (int i = 0; i < 0x0800; i += 4) {
+	for (INT32 i = 0; i < 0x0800; i += 4) {
 		nSpriteNumber = pSpriteRAM[i + 0x00] | ((pSpriteRAM[i + 0x02] & 0xC0) << 2);
 		nSpriteNumber &= nTigerHeliSpriteMask;
 		nSpritePalette = (pSpriteRAM[i + 0x02] >> 1) & 0x0F;
@@ -709,14 +709,14 @@ static void TigerHeliBufferSprites()
 
 static inline void sync_mcu()
 {
-	int cycles = (ZetTotalCycles() / 2) - m6805TotalCycles();
+	INT32 cycles = (ZetTotalCycles() / 2) - m6805TotalCycles();
 	if (cycles > 0) {
 	//	bprintf (0, _T("mcu %d\n"), cycles);
 		m6805Run(cycles);
 	}
 }
 
-unsigned char __fastcall tigerhReadCPU0(unsigned short a)
+UINT8 __fastcall tigerhReadCPU0(UINT16 a)
 {
 	if (a >= 0xc800 && a <= 0xcfff) {
 		if (ZetPc(-1) == 0x6d34) return 0xff;
@@ -730,7 +730,7 @@ unsigned char __fastcall tigerhReadCPU0(unsigned short a)
 				return standard_taito_mcu_read();
 			}
 
-			unsigned char nProtectSequence[3] = { 0, 1, (0 + 5) ^ 0x56 };
+			UINT8 nProtectSequence[3] = { 0, 1, (0 + 5) ^ 0x56 };
 
 			//if (nProtectIndex == 3) {
 			//	nProtectIndex = 0;
@@ -739,7 +739,7 @@ unsigned char __fastcall tigerhReadCPU0(unsigned short a)
 //			bprintf(PRINT_NORMAL, "Protection read (%02X) PC: %04X.\n", nProtectSequence[nProtectIndex], ZetPc(-1));
 			//return nProtectSequence[nProtectIndex++];
 			
-			unsigned char val = nProtectSequence[nProtectIndex];
+			UINT8 val = nProtectSequence[nProtectIndex];
 			nProtectIndex = (nProtectIndex + 1) % 3;
 			return val;
 		}
@@ -751,7 +751,7 @@ unsigned char __fastcall tigerhReadCPU0(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall tigerhReadCPU0_tigerhb1(unsigned short a)
+UINT8 __fastcall tigerhReadCPU0_tigerhb1(UINT16 a)
 {
 	if (a >= 0xc800 && a <= 0xcfff) {
 		if (ZetPc(-1) == 0x6d34) return 0xff;
@@ -768,7 +768,7 @@ unsigned char __fastcall tigerhReadCPU0_tigerhb1(unsigned short a)
 }
 
 
-void __fastcall tigerhWriteCPU0(unsigned short a, unsigned char d)
+void __fastcall tigerhWriteCPU0(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xE800:
@@ -796,7 +796,7 @@ void __fastcall tigerhWriteCPU0(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall tigerhWriteCPU0_slapbtuk(unsigned short a, unsigned char d)
+void __fastcall tigerhWriteCPU0_slapbtuk(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xE800:
@@ -813,14 +813,14 @@ void __fastcall tigerhWriteCPU0_slapbtuk(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall tigerhInCPU0(unsigned short a)
+UINT8 __fastcall tigerhInCPU0(UINT16 a)
 {
 	a &= 0xFF;
 
 	switch (a) {
 		case 0x00: {
 
-			unsigned char nStatusSequence[3] = { 0xC7, 0x55, 0x00 };
+			UINT8 nStatusSequence[3] = { 0xC7, 0x55, 0x00 };
 
 			//if (nStatusIndex == 3) {
 			//	nStatusIndex = 0;
@@ -829,7 +829,7 @@ unsigned char __fastcall tigerhInCPU0(unsigned short a)
 //			bprintf(PRINT_NORMAL, "Status read (%02X) PC: %04X.\n", nStatusSequence[nStatusIndex], ZetPc(-1));
 			//return nStatusSequence[nStatusIndex++];
 			
-			unsigned char nStatus = nStatusSequence[nStatusIndex];
+			UINT8 nStatus = nStatusSequence[nStatusIndex];
 			nStatusIndex++;
 			if (nStatusIndex > 2) nStatusIndex = 0;
 
@@ -851,7 +851,7 @@ unsigned char __fastcall tigerhInCPU0(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall tigerhInCPU0_gtstarba(unsigned short a)
+UINT8 __fastcall tigerhInCPU0_gtstarba(UINT16 a)
 {
 	a &= 0xFF;
 
@@ -871,7 +871,7 @@ unsigned char __fastcall tigerhInCPU0_gtstarba(unsigned short a)
 	return 0;
 }
 
-void __fastcall tigerhOutCPU0(unsigned short a, unsigned char /* d */)
+void __fastcall tigerhOutCPU0(UINT16 a, UINT8 /* d */)
 {
 	a &= 0xFF;
 
@@ -944,7 +944,7 @@ void __fastcall tigerhOutCPU0(unsigned short a, unsigned char /* d */)
 	}
 }
 
-unsigned char __fastcall tigerhReadCPU1(unsigned short a)
+UINT8 __fastcall tigerhReadCPU1(UINT16 a)
 {
 	switch (a) {
 		case 0xA081:
@@ -961,7 +961,7 @@ unsigned char __fastcall tigerhReadCPU1(unsigned short a)
 	return 0;
 }
 
-void __fastcall tigerhWriteCPU1(unsigned short a, unsigned char d)
+void __fastcall tigerhWriteCPU1(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xA080:
@@ -991,38 +991,38 @@ void __fastcall tigerhWriteCPU1(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall tigerhInCPU1(unsigned short /* a */)
+UINT8 __fastcall tigerhInCPU1(UINT16 /* a */)
 {
 //	bprintf(PRINT_NORMAL, "Attempt by CPU1 to read port %02X.\n", a);
 
 	return 0;
 }
 
-void __fastcall tigerhOutCPU1(unsigned short /* a */, unsigned char /* d */)
+void __fastcall tigerhOutCPU1(UINT16 /* a */, UINT8 /* d */)
 {
 //	bprintf(PRINT_NORMAL, "Attempt by CPU1 to write port %02X -> %02X.\n", a, d);
 }
 
-static unsigned char tigerhReadPort0(unsigned int)
+static UINT8 tigerhReadPort0(UINT32)
 {
 	return ~tigerhInput[0];
 }
-static unsigned char tigerhReadPort1(unsigned int)
+static UINT8 tigerhReadPort1(UINT32)
 {
 	return ~tigerhInput[1];
 }
-static unsigned char tigerhReadPort2(unsigned int)
+static UINT8 tigerhReadPort2(UINT32)
 {
 	return ~tigerhInput[2];
 }
-static unsigned char tigerhReadPort3(unsigned int)
+static UINT8 tigerhReadPort3(UINT32)
 {
 	return ~tigerhInput[3];
 }
 
 //----------------------------------------------------------------------------
 
-void tigerh_m68705_portA_write(unsigned char *data)
+void tigerh_m68705_portA_write(UINT8 *data)
 {
 	from_mcu = *data;
 	mcu_sent = 1;
@@ -1043,9 +1043,9 @@ static m68705_interface tigerh_m68705_interface = {
 
 // ---------------------------------------------------------------------------
 
-static int tigerhLoadROMs()
+static INT32 tigerhLoadROMs()
 {
-	int nRomOffset = 0;
+	INT32 nRomOffset = 0;
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb2")) nRomOffset = 1;
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb3")) nRomOffset = 2;
 
@@ -1115,7 +1115,7 @@ static int tigerhLoadROMs()
 
 	// Sprites
 	{
-		int nRet = 0, nBaseROM = 0;
+		INT32 nRet = 0, nBaseROM = 0;
 		switch (nWhichGame) {
 			case 0:										// Tiger Heli
 				nBaseROM = 3;
@@ -1128,7 +1128,7 @@ static int tigerhLoadROMs()
 				break;
 		}
 
-		int nSize;
+		INT32 nSize;
 
 		{
 			struct BurnRomInfo ri;
@@ -1141,14 +1141,14 @@ static int tigerhLoadROMs()
 			nSize = ri.nLen;
 		}
 
-		unsigned char* pTemp = (unsigned char*)malloc(nSize * 4);
+		UINT8* pTemp = (UINT8*)malloc(nSize * 4);
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			nRet |= BurnLoadRom(pTemp + nSize * i, nBaseROM + i, 1);
 		}
 
-		for (int i = 0; i < nSize; i++) {
-			for (int j = 0; j < 8; j++) {
+		for (INT32 i = 0; i < nSize; i++) {
+			for (INT32 j = 0; j < 8; j++) {
 				TigerHeliSpriteROM[(i << 3) + j]  = ((pTemp[i + nSize * 0] >> (7 - j)) & 1) << 3;
 				TigerHeliSpriteROM[(i << 3) + j] |= ((pTemp[i + nSize * 1] >> (7 - j)) & 1) << 2;
 				TigerHeliSpriteROM[(i << 3) + j] |= ((pTemp[i + nSize * 2] >> (7 - j)) & 1) << 1;
@@ -1170,7 +1170,7 @@ static int tigerhLoadROMs()
 
 	// Text layer
 	{
-		int nBaseROM = 0;
+		INT32 nBaseROM = 0;
 		switch (nWhichGame) {
 			case 0:										// Tiger Heli
 				nBaseROM = 7;
@@ -1183,7 +1183,7 @@ static int tigerhLoadROMs()
 				break;
 		}
 
-		unsigned char* pTemp = (unsigned char*)malloc(0x4000);
+		UINT8* pTemp = (UINT8*)malloc(0x4000);
 
 		if (BurnLoadRom(pTemp + 0x0000, nBaseROM + 0, 1)) {
 			return 1;
@@ -1192,8 +1192,8 @@ static int tigerhLoadROMs()
 			return 1;
 		}
 
-		for (int i = 0; i < 0x02000; i++) {
-			for (int j = 0; j < 8; j++) {
+		for (INT32 i = 0; i < 0x02000; i++) {
+			for (INT32 j = 0; j < 8; j++) {
 				TigerHeliTextROM[(i << 3) + j]  = ((pTemp[i + 0x0000] >> (7 - j)) & 1) << 1;
 				TigerHeliTextROM[(i << 3) + j] |= ((pTemp[i + 0x2000] >> (7 - j)) & 1) << 0;
 			}
@@ -1207,7 +1207,7 @@ static int tigerhLoadROMs()
 
 	// Tile layer
 	{
-		int nRet = 0, nBaseROM = 0;
+		INT32 nRet = 0, nBaseROM = 0;
 		switch (nWhichGame) {
 			case 0:										// Tiger Heli
 				nBaseROM = 9;
@@ -1220,7 +1220,7 @@ static int tigerhLoadROMs()
 				break;
 		}
 
-		int nSize;
+		INT32 nSize;
 
 		{
 			struct BurnRomInfo ri;
@@ -1233,14 +1233,14 @@ static int tigerhLoadROMs()
 			nSize = ri.nLen;
 		}
 
-		unsigned char* pTemp = (unsigned char*)malloc(nSize * 4);
+		UINT8* pTemp = (UINT8*)malloc(nSize * 4);
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			nRet |= BurnLoadRom(pTemp + nSize * i, nBaseROM + i, 1);
 		}
 
-		for (int i = 0; i < nSize; i++) {
-			for (int j = 0; j < 8; j++) {
+		for (INT32 i = 0; i < nSize; i++) {
+			for (INT32 j = 0; j < 8; j++) {
 				TigerHeliTileROM[(i << 3) + j]  = ((pTemp[i + nSize * 0] >> (7 - j)) & 1) << 3;
 				TigerHeliTileROM[(i << 3) + j] |= ((pTemp[i + nSize * 1] >> (7 - j)) & 1) << 2;
 				TigerHeliTileROM[(i << 3) + j] |= ((pTemp[i + nSize * 2] >> (7 - j)) & 1) << 1;
@@ -1262,7 +1262,7 @@ static int tigerhLoadROMs()
 
 	// Colour PROMs
 	{
-		int nBaseROM = 0;
+		INT32 nBaseROM = 0;
 		switch (nWhichGame) {
 			case 0:										// Tiger Heli
 				nBaseROM = 13;
@@ -1288,7 +1288,7 @@ static int tigerhLoadROMs()
 
 	// Z80 program
 	{
-		int nBaseROM = 0;
+		INT32 nBaseROM = 0;
 		switch (nWhichGame) {
 			case 0:										// Tiger Heli
 				nBaseROM = 16;
@@ -1322,7 +1322,7 @@ static int tigerhLoadROMs()
 	return 0;
 }
 
-static int tigerhExit()
+static INT32 tigerhExit()
 {
 	BurnTransferExit();
 
@@ -1370,9 +1370,9 @@ static void tigerhDoReset()
 	return;
 }
 
-static int tigerhInit()
+static INT32 tigerhInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	nWhichGame = -1;
 
@@ -1389,8 +1389,8 @@ static int tigerhInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char*)0;
-	if ((Mem = (unsigned char*)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8*)0;
+	if ((Mem = (UINT8*)malloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										   	// blank all memory
@@ -1517,7 +1517,7 @@ static int tigerhInit()
 	return 0;
 }
 
-static int tigerhScan(int nAction, int* pnMin)
+static INT32 tigerhScan(INT32 nAction, INT32* pnMin)
 {
 	struct BurnArea ba;
 
@@ -1559,14 +1559,14 @@ static void tigerhDraw()
 	return;
 }
 
-static inline int CheckSleep(int)
+static inline INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int tigerhFrame()
+static INT32 tigerhFrame()
 {
-	int nCyclesTotal[3], nCyclesDone[3];
+	INT32 nCyclesTotal[3], nCyclesDone[3];
 
 	if (tigerhReset) {													// Reset machine
 		tigerhDoReset();
@@ -1578,7 +1578,7 @@ static int tigerhFrame()
 	// Compile digital inputs
 	tigerhInput[0] = 0x00;
 	tigerhInput[1] = 0x00;
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		tigerhInput[0] |= (tigerhInpJoy1[i] & 1) << i;
 		if (nWhichGame == 0 && i < 4) {
 			tigerhInput[1] |= (tigerhInpMisc[i] & 1) << (i ^ 1);
@@ -1608,11 +1608,11 @@ static int tigerhFrame()
 	nCyclesDone[0] = nCyclesDone[1] = nCyclesDone[2] = 0;
 	nCyclesTotal[2] = 3000000 / 60;
 
-	const int nVBlankCycles = 248 * 6000000 / 60 / 262;
-	const int nInterleave = 12;
+	const INT32 nVBlankCycles = 248 * 6000000 / 60 / 262;
+	const INT32 nInterleave = 12;
 
-	int nSoundBufferPos = 0;
-	int nSoundNMIMask = 0;
+	INT32 nSoundBufferPos = 0;
+	INT32 nSoundNMIMask = 0;
 	switch (nWhichGame) {
 		case 0:
 			nSoundNMIMask = 1;
@@ -1627,9 +1627,9 @@ static int tigerhFrame()
 
 	bool bVBlank = false;
 
-	for (int i = 0; i < nInterleave; i++) {
-    	int nCurrentCPU;
-		int nNext, nCyclesSegment;
+	for (INT32 i = 0; i < nInterleave; i++) {
+    	INT32 nCurrentCPU;
+		INT32 nNext, nCyclesSegment;
 
 		nCurrentCPU = 0;
 		ZetOpen(nCurrentCPU);
@@ -1700,12 +1700,12 @@ static int tigerhFrame()
 		{
 			// Render sound segment
 			if (pBurnSoundOut) {
-				int nSample;
-				int nSegmentLength = nBurnSoundLen / nInterleave;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSample;
+				INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 				AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-   				for (int n = 0; n < nSegmentLength; n++) {
+   				for (INT32 n = 0; n < nSegmentLength; n++) {
 					nSample  = pAY8910Buffer[0][n] >> 2;
 					nSample += pAY8910Buffer[1][n] >> 2;
 					nSample += pAY8910Buffer[2][n] >> 2;
@@ -1732,13 +1732,13 @@ static int tigerhFrame()
 	{
 		// Make sure the buffer is entirely filled.
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 				AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-   				for (int n = 0; n < nSegmentLength; n++) {
+   				for (INT32 n = 0; n < nSegmentLength; n++) {
 					nSample  = pAY8910Buffer[0][n] >> 2;
 					nSample += pAY8910Buffer[1][n] >> 2;
 					nSample += pAY8910Buffer[2][n] >> 2;

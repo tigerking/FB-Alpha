@@ -13,52 +13,52 @@
 #include "burn_ym3812.h"
 #include "burn_ym3526.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvMainROM;
-static unsigned char *DrvSubROM;
-static unsigned char *DrvM6502ROM;
-static unsigned char *DrvM6502OPS;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-static unsigned char *DrvColPROM;
-static unsigned char *DrvMainRAM;
-static unsigned char *DrvVidRAM;
-static unsigned char *DrvPf0RAM;
-static unsigned char *DrvPf1RAM;
-static unsigned char *DrvPf0Ctrl;
-static unsigned char *DrvPf1Ctrl;
-static unsigned char *DrvRowRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvSprBuf;
-static unsigned char *DrvM6502RAM;
-static unsigned char *DrvPalRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvMainROM;
+static UINT8 *DrvSubROM;
+static UINT8 *DrvM6502ROM;
+static UINT8 *DrvM6502OPS;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+static UINT8 *DrvColPROM;
+static UINT8 *DrvMainRAM;
+static UINT8 *DrvVidRAM;
+static UINT8 *DrvPf0RAM;
+static UINT8 *DrvPf1RAM;
+static UINT8 *DrvPf0Ctrl;
+static UINT8 *DrvPf1Ctrl;
+static UINT8 *DrvRowRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvSprBuf;
+static UINT8 *DrvM6502RAM;
+static UINT8 *DrvPalRAM;
 
-static unsigned int  *Palette;
-static unsigned int  *DrvPalette;
-static unsigned char  DrvRecalc;
+static UINT32  *Palette;
+static UINT32  *DrvPalette;
+static UINT8  DrvRecalc;
 
-static unsigned char *soundlatch;
-static unsigned char *nmi_enable;
-static unsigned char *interrupt_enable;
-static unsigned char *flipscreen;
+static UINT8 *soundlatch;
+static UINT8 *nmi_enable;
+static UINT8 *interrupt_enable;
+static UINT8 *flipscreen;
 
-static int i8751_return;
-static int i8751_value;
-static int vblank;
+static INT32 i8751_return;
+static INT32 i8751_value;
+static INT32 vblank;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvJoy4[8];
-static unsigned char DrvJoy5[8];
-static unsigned char DrvInputs[5];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvJoy4[8];
+static UINT8 DrvJoy5[8];
+static UINT8 DrvInputs[5];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
 
 static struct BurnInputInfo GhostbInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy5 + 3,	"p1 coin"},
@@ -933,7 +933,7 @@ static struct BurnDIPInfo CsilverDIPList[]=
 
 STDDIPINFO(Csilver)
 
-static void ghostb_i8751_write(int offset, int data)
+static void ghostb_i8751_write(INT32 offset, INT32 data)
 {
 	i8751_return = 0;
 
@@ -953,14 +953,14 @@ static void ghostb_i8751_write(int offset, int data)
 	if (i8751_value == 0x021b) i8751_return = 0x6e4; // Meikyuuh
 }
 
-static void bankswitch(int data)
+static void bankswitch(INT32 data)
 {
-	int bank = (data & 0x0f) * 0x4000;
+	INT32 bank = (data & 0x0f) * 0x4000;
 
 	HD6309MapMemory(DrvMainROM + 0x10000 + bank, 0x4000, 0x7fff, HD6309_ROM); // bank
 }
 
-void ghostb_main_write(unsigned short address, unsigned char data)
+void ghostb_main_write(UINT16 address, UINT8 data)
 {
 //	bprintf (0, _T("%4.4x, %2.2x\n"), address, data);
 
@@ -991,7 +991,7 @@ void ghostb_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char ghostb_main_read(unsigned short address)
+UINT8 ghostb_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -1020,7 +1020,7 @@ unsigned char ghostb_main_read(unsigned short address)
 	return 0;
 }
 
-void ghostb_sound_write(unsigned short address, unsigned char data)
+void ghostb_sound_write(UINT16 address, UINT8 data)
 {
 //	bprintf (0, _T("%4.4x, %2.2x\n"), address, data);
 
@@ -1038,7 +1038,7 @@ void ghostb_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char ghostb_sound_read(unsigned short address)
+UINT8 ghostb_sound_read(UINT16 address)
 {
 //	bprintf (0, _T("%4.4x, \n"), address);
 
@@ -1052,14 +1052,14 @@ unsigned char ghostb_sound_read(unsigned short address)
 	return 0;
 }
 
-static int DrvYM3812SynchroniseStream(int nSoundRate)
+static INT32 DrvYM3812SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)M6502TotalCycles() * nSoundRate / 1500000;
+	return (INT64)M6502TotalCycles() * nSoundRate / 1500000;
 }
 
-static int DrvYM2203SynchroniseStream(int nSoundRate)
+static INT32 DrvYM2203SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)HD6309TotalCycles() * nSoundRate / 1200000;
+	return (INT64)HD6309TotalCycles() * nSoundRate / 1200000;
 }
 
 static double DrvYM2203GetTime()
@@ -1067,9 +1067,9 @@ static double DrvYM2203GetTime()
 	return (double)HD6309TotalCycles() / 1200000;
 }
 
-static int DrvYM2203SynchroniseStream6000000(int nSoundRate)
+static INT32 DrvYM2203SynchroniseStream6000000(INT32 nSoundRate)
 {
-	return (long long)HD6309TotalCycles() * nSoundRate / 6000000;
+	return (INT64)HD6309TotalCycles() * nSoundRate / 6000000;
 }
 
 static double DrvYM2203GetTime6000000()
@@ -1077,9 +1077,9 @@ static double DrvYM2203GetTime6000000()
 	return (double)HD6309TotalCycles() / 6000000;
 }
 
-static int DrvYM2203M6809SynchroniseStream(int nSoundRate)
+static INT32 DrvYM2203M6809SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)M6809TotalCycles() * nSoundRate / 2000000;
+	return (INT64)M6809TotalCycles() * nSoundRate / 2000000;
 }
 
 static double DrvYM2203M6809GetTime()
@@ -1087,9 +1087,9 @@ static double DrvYM2203M6809GetTime()
 	return (double)M6809TotalCycles() / 2000000;
 }
 
-static int DrvYM2203M6809SynchroniseStream1500000(int nSoundRate)
+static INT32 DrvYM2203M6809SynchroniseStream1500000(INT32 nSoundRate)
 {
-	return (long long)M6809TotalCycles() * nSoundRate / 1500000;
+	return (INT64)M6809TotalCycles() * nSoundRate / 1500000;
 }
 
 static double DrvYM2203M6809GetTime1500000()
@@ -1097,7 +1097,7 @@ static double DrvYM2203M6809GetTime1500000()
 	return (double)M6809TotalCycles() / 1500000;
 }
 
-static void DrvYM3812FMIRQHandler(int, int nStatus)
+static void DrvYM3812FMIRQHandler(INT32, INT32 nStatus)
 {
 	bprintf(PRINT_NORMAL, _T("%x\n"), nStatus);
 	
@@ -1108,7 +1108,7 @@ static void DrvYM3812FMIRQHandler(int, int nStatus)
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -1131,9 +1131,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvMainROM		= Next; Next += 0x050000;
 	DrvSubROM		= Next; Next += 0x020000;
@@ -1147,8 +1147,8 @@ static int MemIndex()
 
 	DrvColPROM		= Next; Next += 0x000800;
 
-	Palette			= (unsigned int*)Next; Next += 0x0400 * sizeof(int);
-	DrvPalette		= (unsigned int*)Next; Next += 0x0400 * sizeof(int);
+	Palette			= (UINT32*)Next; Next += 0x0400 * sizeof(UINT32);
+	DrvPalette		= (UINT32*)Next; Next += 0x0400 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -1178,9 +1178,9 @@ static int MemIndex()
 
 static void DrvPaletteInit()
 {
-	for (int i = 0; i < 0x400; i++)
+	for (INT32 i = 0; i < 0x400; i++)
 	{
-		int bit0, bit1, bit2, bit3, r, g, b;
+		INT32 bit0, bit1, bit2, bit3, r, g, b;
 
 		bit0 = (DrvColPROM[i] >> 0) & 0x01;
 		bit1 = (DrvColPROM[i] >> 1) & 0x01;
@@ -1202,17 +1202,17 @@ static void DrvPaletteInit()
 	}
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane0[3] = { 0x6000*8,0x4000*8,0x2000*8 };
-	int Plane1[4] = { 0x60000*8,0x40000*8,0x20000*8,0x00000*8 };
-	int Plane2[4] = { 0x20000*8,0x00000*8,0x30000*8,0x10000*8 };
-	int XOffs0[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-	int XOffs1[16]= {16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
-	int XOffs2[16]= {7,6,5,4,3,2,1,0,7+(16*8), 6+(16*8), 5+(16*8), 4+(16*8), 3+(16*8), 2+(16*8), 1+(16*8), 0+(16*8) };
-	int YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
+	INT32 Plane0[3] = { 0x6000*8,0x4000*8,0x2000*8 };
+	INT32 Plane1[4] = { 0x60000*8,0x40000*8,0x20000*8,0x00000*8 };
+	INT32 Plane2[4] = { 0x20000*8,0x00000*8,0x30000*8,0x10000*8 };
+	INT32 XOffs0[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	INT32 XOffs1[16]= {16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
+	INT32 XOffs2[16]= {7,6,5,4,3,2,1,0,7+(16*8), 6+(16*8), 5+(16*8), 4+(16*8), 3+(16*8), 2+(16*8), 1+(16*8), 0+(16*8) };
+	INT32 YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)malloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -1239,16 +1239,16 @@ static int DrvGfxDecode()
 
 static void Deco222Decode()
 {
-	for (int A = 0x8000;A < 0x10000;A++)
+	for (INT32 A = 0x8000;A < 0x10000;A++)
 		DrvM6502OPS[A] = (DrvM6502ROM[A] & 0x9f) | ((DrvM6502ROM[A] & 0x20) << 1) | ((DrvM6502ROM[A] & 0x40) >> 1);
 } 
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1355,7 +1355,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 	HD6309Exit();
@@ -1374,13 +1374,13 @@ static int DrvExit()
 
 static void draw_txt_layer()
 {
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 
-		int code  = DrvVidRAM[offs * 2 + 1] | (DrvVidRAM[offs * 2 + 0] << 8);
-		int color = (code >> 10) & 3;
+		INT32 code  = DrvVidRAM[offs * 2 + 1] | (DrvVidRAM[offs * 2 + 0] << 8);
+		INT32 color = (code >> 10) & 3;
 
 		code &= 0x3ff;
 		if (code == 0) continue; // ok?
@@ -1392,23 +1392,23 @@ static void draw_txt_layer()
 	}
 }
 
-static void draw_sprites1(int priority)
+static void draw_sprites1(INT32 priority)
 {
-	for (int offs = 0;offs < 0x800;offs += 8)
+	for (INT32 offs = 0;offs < 0x800;offs += 8)
 	{
-		int y = DrvSprBuf[offs + 1] | (DrvSprBuf[offs + 0] << 8);
+		INT32 y = DrvSprBuf[offs + 1] | (DrvSprBuf[offs + 0] << 8);
 		if (~y  & 0x8000) continue;
 
-		int fx = DrvSprBuf[offs+3];
+		INT32 fx = DrvSprBuf[offs+3];
 		if (~fx & 0x0001) continue;
 
-		int x = DrvSprBuf[offs + 5] | (DrvSprBuf[offs + 4] << 8);
+		INT32 x = DrvSprBuf[offs + 5] | (DrvSprBuf[offs + 4] << 8);
 
-		int extra  = fx & 0x0010;
-       		int fy     = fx & 0x0002;
-		int colour = DrvSprBuf[offs+6] >> 4;
+		INT32 extra  = fx & 0x0010;
+       		INT32 fy     = fx & 0x0002;
+		INT32 colour = DrvSprBuf[offs+6] >> 4;
 
-		int sprite = DrvSprBuf[offs+7]+(DrvSprBuf[offs+6]<<8);
+		INT32 sprite = DrvSprBuf[offs+7]+(DrvSprBuf[offs+6]<<8);
 		sprite &= 0x0fff;
 
 		if (priority == 1 &&  colour & 8) continue;
@@ -1434,7 +1434,7 @@ static void draw_sprites1(int priority)
 			if (extra) y=y-16;
 		}
 
-		int sprite2;
+		INT32 sprite2;
 		/* Y Flip determines order of multi-sprite */
 		if (extra && fy)
 		{
@@ -1479,24 +1479,24 @@ static void draw_sprites1(int priority)
 	}
 }
 
-static void draw_bg_layer(unsigned char *ram, unsigned char *ctrl, unsigned char *gfx, int coff, int cmask, int mask, int t, int priority)
+static void draw_bg_layer(UINT8 *ram, UINT8 *ctrl, UINT8 *gfx, INT32 coff, INT32 cmask, INT32 mask, INT32 t, INT32 priority)
 {
-	int rowscroll = ctrl[0x00] & 0x04;
-	int scrolly = ((ctrl[0x12] << 8) + ctrl[0x13] + 8) & 0x1ff;
-	int scrollx = ((ctrl[0x10] << 8) | ctrl[0x11]) & 0x1ff;
+	INT32 rowscroll = ctrl[0x00] & 0x04;
+	INT32 scrolly = ((ctrl[0x12] << 8) + ctrl[0x13] + 8) & 0x1ff;
+	INT32 scrollx = ((ctrl[0x10] << 8) | ctrl[0x11]) & 0x1ff;
 
 	if (rowscroll || t > 1)
 	{
-		int xscroll[256];
+		INT32 xscroll[256];
 
-		for (int i = 0; i < 256; i++) {
+		for (INT32 i = 0; i < 256; i++) {
 			xscroll[i] = ((DrvRowRAM[i*2]<<8)+DrvRowRAM[i*2+1])&0x1ff;
 		}
 
-		for (int offs = 0; offs < 32 * 32; offs++)
+		for (INT32 offs = 0; offs < 32 * 32; offs++)
 		{
-			int sx = (offs & 0x1f) << 4;
-			int sy = (offs >> 5) << 4;
+			INT32 sx = (offs & 0x1f) << 4;
+			INT32 sy = (offs >> 5) << 4;
 	
 			sy -= scrolly;
 			if (sy < -15) sy += 512;
@@ -1505,10 +1505,10 @@ static void draw_bg_layer(unsigned char *ram, unsigned char *ctrl, unsigned char
 
 			if (sy >= nScreenHeight || sx >= nScreenWidth) continue;
 
-			int ofst = (offs & 0x0f) | ((offs >> 1) & 0x1f0) | ((offs & 0x10) << 5);
+			INT32 ofst = (offs & 0x0f) | ((offs >> 1) & 0x1f0) | ((offs & 0x10) << 5);
 	
-			int code  = (ram[ofst * 2 + 0] << 8) | ram[ofst * 2 + 1];
-			int color = (code >> 12) & cmask;
+			INT32 code  = (ram[ofst * 2 + 0] << 8) | ram[ofst * 2 + 1];
+			INT32 color = (code >> 12) & cmask;
 
 			if (priority && color < 8) continue;
 
@@ -1516,16 +1516,16 @@ static void draw_bg_layer(unsigned char *ram, unsigned char *ctrl, unsigned char
 				code &= mask;
 				color <<= 4;
 				color += coff;
-				unsigned short *dst = pTransDraw;
-				unsigned char *src = gfx + (code << 8);
+				UINT16 *dst = pTransDraw;
+				UINT8 *src = gfx + (code << 8);
 	
-				for (int y = 0; y < 16; y++, sy++, src+=16)
+				for (INT32 y = 0; y < 16; y++, sy++, src+=16)
 				{
 					if (sy < 0 || sy >= nScreenHeight) continue;
 	
 					dst = pTransDraw + sy * nScreenWidth;
 	
-					int xx = sx;
+					INT32 xx = sx;
 					if (rowscroll) {
 						xx -= xscroll[sy];
 						if (xx < -15) xx += 512;
@@ -1533,16 +1533,16 @@ static void draw_bg_layer(unsigned char *ram, unsigned char *ctrl, unsigned char
 					}
 
 					if (t) {
-						for (int x = 0; x < 16; x++, xx++)
+						for (INT32 x = 0; x < 16; x++, xx++)
 						{
-							int pxl = src[x];
+							INT32 pxl = src[x];
 							if (t & (1 << pxl)) continue;
 							if (xx < 0 || xx >= nScreenWidth) continue;
 		
 							dst[xx] = pxl | color;
 						}
 					} else {
-						for (int x = 0; x < 16; x++, xx++)
+						for (INT32 x = 0; x < 16; x++, xx++)
 						{
 							if (xx < 0 || xx >= nScreenWidth) continue;
 		
@@ -1553,10 +1553,10 @@ static void draw_bg_layer(unsigned char *ram, unsigned char *ctrl, unsigned char
 			}
 		}
 	} else {
-		for (int offs = 0; offs < 32 * 32; offs++)
+		for (INT32 offs = 0; offs < 32 * 32; offs++)
 		{
-			int sx = (offs & 0x1f) << 4;
-			int sy = (offs >> 5) << 4;
+			INT32 sx = (offs & 0x1f) << 4;
+			INT32 sy = (offs >> 5) << 4;
 
 			sx -= scrollx;
 			sy -= scrolly;
@@ -1565,10 +1565,10 @@ static void draw_bg_layer(unsigned char *ram, unsigned char *ctrl, unsigned char
 
 			if (sx >= nScreenWidth || sy >= nScreenHeight) continue;
 
-			int ofst = (offs & 0x0f) | ((offs >> 1) & 0x1f0) | ((offs & 0x10) << 5);
+			INT32 ofst = (offs & 0x0f) | ((offs >> 1) & 0x1f0) | ((offs & 0x10) << 5);
 	
-			int code  = (ram[ofst * 2 + 0] << 8) | ram[ofst * 2 + 1];
-			int color = (code >> 12) & cmask;
+			INT32 code  = (ram[ofst * 2 + 0] << 8) | ram[ofst * 2 + 1];
+			INT32 color = (code >> 12) & cmask;
 
 			if (priority && color < 8) continue;
 
@@ -1582,11 +1582,11 @@ static void draw_bg_layer(unsigned char *ram, unsigned char *ctrl, unsigned char
 } 
 
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x400; i++) {
-			int d = Palette[i];
+		for (INT32 i = 0; i < 0x400; i++) {
+			INT32 d = Palette[i];
 			DrvPalette[i] = BurnHighCol(d >> 16, (d >> 8) & 0xff, d & 0xff, 0);
 		}
 	}
@@ -1609,8 +1609,8 @@ static inline void do_interrupt()
 
 static void ghostb_interrupt()
 {
-	static int latch[4];
-	int i8751_out = DrvInputs[4] ^ 0x0f;
+	static INT32 latch[4];
+	INT32 i8751_out = DrvInputs[4] ^ 0x0f;
 
 	if ((i8751_out & 0x8) == 0x8) latch[0] = 1;
 	if ((i8751_out & 0x4) == 0x4) latch[1] = 1;
@@ -1625,7 +1625,7 @@ static void ghostb_interrupt()
 	if (*nmi_enable) HD6309SetIRQ(0x20, HD6309_IRQSTATUS_AUTO);
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -1636,7 +1636,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 5);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -1645,16 +1645,16 @@ static int DrvFrame()
 		}
 	}
 
-	int nInterleave = 32;
-	int nCyclesTotal[2] = { 12000000 / 58, 1500000 / 58 };
-//	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = 32;
+	INT32 nCyclesTotal[2] = { 12000000 / 58, 1500000 / 58 };
+//	INT32 nCyclesDone[2] = { 0, 0 };
 
 	M6502Open(0);
 	HD6309Open(0);
 
 	vblank = 8;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		if (i == 1) vblank = 0;
 		if (i == 31) {
@@ -1882,16 +1882,16 @@ struct BurnDriver BurnDrvMeikyuha = {
 
 
 
-static void m6809_bankswitch(int data)
+static void m6809_bankswitch(INT32 data)
 {
-	int bank = (data & 0x0f) * 0x4000;
+	INT32 bank = (data & 0x0f) * 0x4000;
 
 	M6809MapMemory(DrvMainROM + 0x10000 + bank, 0x4000, 0x7fff, M6809_ROM); // bank
 }
 
 
 
-void cobra_main_write(unsigned short address, unsigned char data)
+void cobra_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -1921,7 +1921,7 @@ void cobra_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char cobra_main_read(unsigned short address)
+UINT8 cobra_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -1944,7 +1944,7 @@ unsigned char cobra_main_read(unsigned short address)
 	return 0;
 }
 
-static int CobraDoReset()
+static INT32 CobraDoReset()
 {
 	DrvReset = 0;
 
@@ -1968,17 +1968,17 @@ static int CobraDoReset()
 }
 
 
-static int CobraGfxDecode()
+static INT32 CobraGfxDecode()
 {
 	// 0, 0x40, 0x80, 0xc0 for offs
 
-	int Plane0[2] = { 0x4000*8,0x0000*8 };
-	int Plane1[4] = { 0x60000*8,0x40000*8,0x20000*8,0x00000*8 };
-	int XOffs0[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-	int XOffs1[16]= { 16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
-	int YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
+	INT32 Plane0[2] = { 0x4000*8,0x0000*8 };
+	INT32 Plane1[4] = { 0x60000*8,0x40000*8,0x20000*8,0x00000*8 };
+	INT32 XOffs0[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	INT32 XOffs1[16]= { 16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
+	INT32 YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)malloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -2007,12 +2007,12 @@ static int CobraGfxDecode()
 	return 0;
 }
 
-static int CobraInit()
+static INT32 CobraInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -2086,13 +2086,13 @@ static int CobraInit()
 
 static void draw_cobra_txt_layer()
 {
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 
-		int code  = DrvVidRAM[offs * 2 + 1] | (DrvVidRAM[offs * 2 + 0] << 8);
-		int color = (code >> 13);
+		INT32 code  = DrvVidRAM[offs * 2 + 1] | (DrvVidRAM[offs * 2 + 0] << 8);
+		INT32 color = (code >> 13);
 
 		code &= 0x3ff;
 		if (code == 0) continue; // ok?
@@ -2104,15 +2104,15 @@ static void draw_cobra_txt_layer()
 	}
 }
 
-static void draw_sprites2(int colmask, int priority)
+static void draw_sprites2(INT32 colmask, INT32 priority)
 {
-	for (int offs = 0;offs < 0x800;offs += 8)
+	for (INT32 offs = 0;offs < 0x800;offs += 8)
 	{
-		int y =DrvSprBuf[offs+1]+(DrvSprBuf[offs]<<8);
+		INT32 y =DrvSprBuf[offs+1]+(DrvSprBuf[offs]<<8);
  		if ((y&0x8000) == 0) continue;
-		int x = DrvSprBuf[offs+5]+(DrvSprBuf[offs+4]<<8);
-		int colour = (x >> 12);
-		int flash=x&0x800;
+		INT32 x = DrvSprBuf[offs+5]+(DrvSprBuf[offs+4]<<8);
+		INT32 colour = (x >> 12);
+		INT32 flash=x&0x800;
 		if (flash && (GetCurrentFrame() & 1)) continue;
 
 		if (priority==1 &&  (colour&4)) continue;
@@ -2121,11 +2121,11 @@ static void draw_sprites2(int colmask, int priority)
 		colour &= colmask;
 		colour += 0x4;
 
-		int fx = y & 0x2000;
-		int fy = y & 0x4000;
-		int multi = (1 << ((y & 0x1800) >> 11)) - 1;
+		INT32 fx = y & 0x2000;
+		INT32 fy = y & 0x4000;
+		INT32 multi = (1 << ((y & 0x1800) >> 11)) - 1;
 
-		int sprite = DrvSprBuf[offs+3]+(DrvSprBuf[offs+2]<<8);
+		INT32 sprite = DrvSprBuf[offs+3]+(DrvSprBuf[offs+2]<<8);
 		sprite &= 0x0fff;
 
 		x = x & 0x01ff;
@@ -2135,7 +2135,7 @@ static void draw_sprites2(int colmask, int priority)
 		x = 240 - x;
 		y = 240 - y;
 
-		int mult, inc;
+		INT32 mult, inc;
 		sprite &= ~multi;
 		if (fy)
 			inc = -1;
@@ -2178,12 +2178,12 @@ static void draw_sprites2(int colmask, int priority)
 	}
 }
 
-static int CobraDraw()
+static INT32 CobraDraw()
 {
 	if (DrvRecalc) {
-		unsigned char r,g,b;
-		for (int i = 0; i < 0x200; i+=2) {
-			int d = (DrvPalRAM[i + 0] << 8) | DrvPalRAM[i + 1];
+		UINT8 r,g,b;
+		for (INT32 i = 0; i < 0x200; i+=2) {
+			INT32 d = (DrvPalRAM[i + 0] << 8) | DrvPalRAM[i + 1];
 			r = (d >> 0) & 0x0f;
 			g = (d >> 4) & 0x0f;
 			b = (d >> 8) & 0x0f;
@@ -2210,7 +2210,7 @@ static int CobraDraw()
 	return 0;
 }
 
-static int CobraFrame()
+static INT32 CobraFrame()
 {
 	if (DrvReset) {
 		CobraDoReset();
@@ -2221,7 +2221,7 @@ static int CobraFrame()
 
 	{
 		memset (DrvInputs, 0xff, 5);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -2230,16 +2230,16 @@ static int CobraFrame()
 		}
 	}
 
-	int nInterleave = 32;
-	int nCyclesTotal[2] = { 2000000 / 58, 1500000 / 58 };
-//	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = 32;
+	INT32 nCyclesTotal[2] = { 2000000 / 58, 1500000 / 58 };
+//	INT32 nCyclesDone[2] = { 0, 0 };
 
 	M6502Open(0);
 	M6809Open(0);
 
 	vblank = 0x80;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		if (i == 1) vblank = 0x80;
 		if (i == 31) {
@@ -2352,9 +2352,9 @@ struct BurnDriver BurnDrvCobracmj = {
 
 
 
-static void srdarwin_i8751_w(int offset, int data)
+static void srdarwin_i8751_w(INT32 offset, INT32 data)
 {
-	static int coins, latch;
+	static INT32 coins, latch;
 	i8751_return = 0;
 
 	switch (offset)
@@ -2391,7 +2391,7 @@ static void srdarwin_i8751_w(int offset, int data)
 	if (i8751_value == 0x800a) i8751_return = 0xf580 + 42; /* End Game(bad address?) */
 }
 
-void srdarwin_main_write(unsigned short address, unsigned char data)
+void srdarwin_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -2429,7 +2429,7 @@ void srdarwin_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char srdarwin_main_read(unsigned short address)
+UINT8 srdarwin_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -2455,20 +2455,20 @@ unsigned char srdarwin_main_read(unsigned short address)
 	return 0;
 }
 
-static int SrdarwinGfxDecode()
+static INT32 SrdarwinGfxDecode()
 {
-	int Plane0[2]  = { 0, 4 };
-	int Plane1[4]  = { 0x10000*8,0x20000*8,0x00000*8 };
-	int Plane2[4] = { 0x4000*8, 0x4000*8+4, 0, 4 };
+	INT32 Plane0[2]  = { 0, 4 };
+	INT32 Plane1[4]  = { 0x10000*8,0x20000*8,0x00000*8 };
+	INT32 Plane2[4] = { 0x4000*8, 0x4000*8+4, 0, 4 };
 
-	int XOffs0[8]  = { 0x2000*8+0, 0x2000*8+1, 0x2000*8+2, 0x2000*8+3, 0, 1, 2, 3 };
-	int XOffs1[16] = { 16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
-	int XOffs2[16] = { 0, 1, 2, 3, 1024*8*8+0, 1024*8*8+1, 1024*8*8+2, 1024*8*8+3,
+	INT32 XOffs0[8]  = { 0x2000*8+0, 0x2000*8+1, 0x2000*8+2, 0x2000*8+3, 0, 1, 2, 3 };
+	INT32 XOffs1[16] = { 16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
+	INT32 XOffs2[16] = { 0, 1, 2, 3, 1024*8*8+0, 1024*8*8+1, 1024*8*8+2, 1024*8*8+3,
 			16*8+0, 16*8+1, 16*8+2, 16*8+3, 16*8+1024*8*8+0, 16*8+1024*8*8+1, 16*8+1024*8*8+2, 16*8+1024*8*8+3 };
 
-	int YOffs[16]  = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
+	INT32 YOffs[16]  = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)malloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -2481,7 +2481,7 @@ static int SrdarwinGfxDecode()
 
 	GfxDecode(0x0800, 3, 16, 16, Plane1, XOffs1, YOffs, 0x100, tmp, DrvGfxROM1);
 
-	for (int i = 0; i < 4; i++) {
+	for (INT32 i = 0; i < 4; i++) {
 		memcpy (tmp, DrvGfxROM2 + i * 0x10000, 0x08000);
 		GfxDecode(0x0100, 4, 16, 16, Plane2, XOffs2, YOffs, 0x100, tmp, DrvGfxROM2 + i * 0x10000);
 	}
@@ -2495,12 +2495,12 @@ static int SrdarwinGfxDecode()
 }
 
 
-static int SrdarwinInit()
+static INT32 SrdarwinInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -2576,18 +2576,18 @@ static int SrdarwinInit()
 	return 0;
 }
 
-static void Srdarwin_draw_layer(int layer)
+static void Srdarwin_draw_layer(INT32 layer)
 {
-	int scrollx = (DrvPf0Ctrl[0x10] << 8) | DrvPf0Ctrl[0x11];
+	INT32 scrollx = (DrvPf0Ctrl[0x10] << 8) | DrvPf0Ctrl[0x11];
 
-	unsigned short layer0t[4] = { 0x0000, 0xff00, 0xff00, 0xffff };
-	unsigned short layer1t[4] = { 0xffff, 0x00ff, 0x00ff, 0x0000 };
-	unsigned short *layert = layer ? layer1t : layer0t;
+	UINT16 layer0t[4] = { 0x0000, 0xff00, 0xff00, 0xffff };
+	UINT16 layer1t[4] = { 0xffff, 0x00ff, 0x00ff, 0x0000 };
+	UINT16 *layert = layer ? layer1t : layer0t;
 
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 4;
-		int sy = (offs >> 5) << 4;
+		INT32 sx = (offs & 0x1f) << 4;
+		INT32 sy = (offs >> 5) << 4;
 
 		sy -= 8;
 		if (sy >= nScreenHeight) continue;
@@ -2595,28 +2595,28 @@ static void Srdarwin_draw_layer(int layer)
 		if (sx < -15) sx += 512;
 		if (sx >= nScreenWidth) continue;
 
-		int code  = DrvPf0RAM[offs * 2 + 1] | (DrvPf0RAM[offs * 2 + 0] << 8);
-		int color = (code >> 12) & 3;
+		INT32 code  = DrvPf0RAM[offs * 2 + 1] | (DrvPf0RAM[offs * 2 + 0] << 8);
+		INT32 color = (code >> 12) & 3;
 
 		{
 			code &= 0x3ff;
 			color <<= 4;
 
-			int t = layert[color>>4];
-			unsigned char *src = DrvGfxROM2 + (code << 8);
-			unsigned short *dst;
+			INT32 t = layert[color>>4];
+			UINT8 *src = DrvGfxROM2 + (code << 8);
+			UINT16 *dst;
 	
-			for (int y = 0; y < 16; y++, sy++, src+=16) 
+			for (INT32 y = 0; y < 16; y++, sy++, src+=16) 
 			{
 				if (sy < 0 || sy >= nScreenHeight) continue;
 
 				dst = pTransDraw + sy * nScreenWidth;
 
-				int xx = sx;
+				INT32 xx = sx;
 
-				for (int x = 0; x < 16; x++, xx++)
+				for (INT32 x = 0; x < 16; x++, xx++)
 				{
-					int pxl = src[x];
+					INT32 pxl = src[x];
 
 					if (t & (1 << pxl)) continue;
 					if (xx < 0 || xx >= nScreenWidth) continue;
@@ -2630,24 +2630,24 @@ static void Srdarwin_draw_layer(int layer)
 
 static void srdarwin_txt_draw()
 {
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 		sy -= 8;
 		if (sy < 0 || sy >= nScreenHeight) continue;
 
-		int code = DrvVidRAM[offs];
+		INT32 code = DrvVidRAM[offs];
 
 		Render8x8Tile_Mask(pTransDraw, code, sx, sy, 0, 2, 0, 0x80, DrvGfxROM0);
 	}
 }
 
-static void srdarwin_draw_sprites(int pri)
+static void srdarwin_draw_sprites(INT32 pri)
 {
-	for (int offs = 0;offs < 0x200;offs += 4)
+	for (INT32 offs = 0;offs < 0x200;offs += 4)
 	{
-		int multi,fx,sx,sy,sy2,code,color;
+		INT32 multi,fx,sx,sy,sy2,code,color;
 
 		color = (DrvSprBuf[offs+1] & 0x03) + ((DrvSprBuf[offs+1] & 0x08) >> 1);
 		if (pri==0 && color!=0) continue;
@@ -2709,12 +2709,12 @@ static void srdarwin_draw_sprites(int pri)
 	}
 }
 
-static int SrdarwinDraw()
+static INT32 SrdarwinDraw()
 {
 	if (DrvRecalc) {
-		unsigned char r,g,b;
-		for (int i = 0; i < 0x100; i++) {
-			int d = (DrvPalRAM[i + 0]) | (DrvPalRAM[i + 0x100] << 8);
+		UINT8 r,g,b;
+		for (INT32 i = 0; i < 0x100; i++) {
+			INT32 d = (DrvPalRAM[i + 0]) | (DrvPalRAM[i + 0x100] << 8);
 			r = (d >> 0) & 0x0f;
 			g = (d >> 4) & 0x0f;
 			b = (d >> 8) & 0x0f;
@@ -2740,7 +2740,7 @@ static int SrdarwinDraw()
 }
 
 
-static int SrdarwinFrame()
+static INT32 SrdarwinFrame()
 {
 	if (DrvReset) {
 		CobraDoReset();
@@ -2751,23 +2751,23 @@ static int SrdarwinFrame()
 
 	{
 		memset (DrvInputs, 0xff, 4);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
 		DrvInputs[4] = DrvJoy5[0] & 1;
 	}
 
-	int nInterleave = 32;
-	int nCyclesTotal[2] = { 2000000 / 58, 1500000 / 58 };
-//	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = 32;
+	INT32 nCyclesTotal[2] = { 2000000 / 58, 1500000 / 58 };
+//	INT32 nCyclesDone[2] = { 0, 0 };
 
 	M6502Open(0);
 	M6809Open(0);
 
 	vblank = 0x40;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		if (i == 1) vblank = 0x40;
 		if (i == 31) {
@@ -2879,12 +2879,12 @@ struct BurnDriver BurnDrvSrdarwnj = {
 
 
 
-static void gondo_i8751_write(int offset, int data)
+static void gondo_i8751_write(INT32 offset, INT32 data)
 {
-	static int coin1, coin2, latch,snd;
+	static INT32 coin1, coin2, latch,snd;
 	i8751_return = 0;
 
-	int coin = DrvInputs[4] ^ 3;
+	INT32 coin = DrvInputs[4] ^ 3;
 
 	switch (offset)
 	{
@@ -2915,12 +2915,12 @@ static void gondo_i8751_write(int offset, int data)
 	if ((i8751_value >> 8) == 0x0a) {i8751_return = 0xa00 | snd; if (snd) snd = 0; }
 }
 
-static void garyoret_i8751_write(int offset, int data)
+static void garyoret_i8751_write(INT32 offset, INT32 data)
 {
-	static int coin1, coin2, latch;
+	static INT32 coin1, coin2, latch;
 	i8751_return = 0;
 
-	int coin = DrvInputs[4] ^ 3;
+	INT32 coin = DrvInputs[4] ^ 3;
 
 	switch (offset)
 	{
@@ -2946,7 +2946,7 @@ static void garyoret_i8751_write(int offset, int data)
 	if ((i8751_value >> 8) == 0x06 && coin1 && !offset) {i8751_return = 0x600; coin1--; } /* Coin 1 clear */
 }
 
-void gondo_main_write(unsigned short address, unsigned char data)
+void gondo_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -2988,7 +2988,7 @@ void gondo_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char gondo_main_read(unsigned short address)
+UINT8 gondo_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -3030,7 +3030,7 @@ unsigned char gondo_main_read(unsigned short address)
 	return 0;
 }
 
-void gondo_sound_write(unsigned short address, unsigned char data)
+void gondo_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -3050,7 +3050,7 @@ void gondo_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-static int GondoDoReset()
+static INT32 GondoDoReset()
 {
 	DrvReset = 0;
 
@@ -3075,15 +3075,15 @@ static int GondoDoReset()
 
 
 
-static int GondoGfxDecode()
+static INT32 GondoGfxDecode()
 {
-	int Plane0[3] = { 0x6000*8,0x4000*8,0x2000*8 };
-	int Plane1[4] = { 0x60000*8,0x40000*8,0x20000*8,0x00000*8 };
-	int XOffs0[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-	int XOffs1[16]= {16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
-	int YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
+	INT32 Plane0[3] = { 0x6000*8,0x4000*8,0x2000*8 };
+	INT32 Plane1[4] = { 0x60000*8,0x40000*8,0x20000*8,0x00000*8 };
+	INT32 XOffs0[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	INT32 XOffs1[16]= {16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
+	INT32 YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)malloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -3108,12 +3108,12 @@ static int GondoGfxDecode()
 	return 0;
 }
 
-static int GondoInit()
+static INT32 GondoInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -3239,7 +3239,7 @@ static int GondoInit()
 	return 0;
 }
 
-static int GondoExit()
+static INT32 GondoExit()
 {
 	GenericTilesExit();
 	HD6309Exit();
@@ -3258,32 +3258,32 @@ static int GondoExit()
 
 static void gondo_draw_txt_layer()
 {
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 
 		sy -= 8;
 		if (sy < 0 || sy >= nScreenWidth) continue;
 
-		int code = DrvVidRAM[offs * 2 + 1] | (DrvVidRAM[offs * 2 + 0] << 8);
-		int color = (code >> 12) & 7;
+		INT32 code = DrvVidRAM[offs * 2 + 1] | (DrvVidRAM[offs * 2 + 0] << 8);
+		INT32 color = (code >> 12) & 7;
 
 		Render8x8Tile_Mask(pTransDraw, code & 0xfff, sx, sy, color, 3, 0, 0, DrvGfxROM0);
 	}
 }
 
-static void gondo_draw_layer(int priority, int layer)
+static void gondo_draw_layer(INT32 priority, INT32 layer)
 {
-	int scrolly = ((DrvPf0Ctrl[0x12] << 8) + DrvPf0Ctrl[0x13] + 8) & 0x1ff;
-	int scrollx = ((DrvPf0Ctrl[0x10] << 8) | DrvPf0Ctrl[0x11]);
+	INT32 scrolly = ((DrvPf0Ctrl[0x12] << 8) + DrvPf0Ctrl[0x13] + 8) & 0x1ff;
+	INT32 scrollx = ((DrvPf0Ctrl[0x10] << 8) | DrvPf0Ctrl[0x11]);
 
-	unsigned short trans = layer ? 0x00ff : 0xff00;
+	UINT16 trans = layer ? 0x00ff : 0xff00;
 
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 4;
-		int sy = (offs >> 5) << 4;
+		INT32 sx = (offs & 0x1f) << 4;
+		INT32 sy = (offs >> 5) << 4;
 
 		sx -= scrollx;
 		if (sx < -15) sx+=512;
@@ -3292,8 +3292,8 @@ static void gondo_draw_layer(int priority, int layer)
 
 		if (sx >= nScreenWidth || sy >= nScreenWidth) continue;
 
-		int code = DrvPf0RAM[offs * 2 + 1] | (DrvPf0RAM[offs * 2 + 0] << 8);
-		int color = code >> 12;
+		INT32 code = DrvPf0RAM[offs * 2 + 1] | (DrvPf0RAM[offs * 2 + 0] << 8);
+		INT32 color = code >> 12;
 
 		if (priority && color < 8) continue;
 
@@ -3302,21 +3302,21 @@ static void gondo_draw_layer(int priority, int layer)
 			color <<= 4;
 			color |= 0x300;
 
-			unsigned char *src = DrvGfxROM2 + (code << 8);
-			unsigned short *dst;
+			UINT8 *src = DrvGfxROM2 + (code << 8);
+			UINT16 *dst;
 
-			for (int y = 0; y < 16; y++, src+=16, sy++)
+			for (INT32 y = 0; y < 16; y++, src+=16, sy++)
 			{
 				if (sy < 0 || sy >= nScreenHeight) continue;
 
 				dst = pTransDraw + sy * nScreenWidth;
 
-				int xx = sx;
-				for (int x = 0; x < 16; x++, xx++)
+				INT32 xx = sx;
+				for (INT32 x = 0; x < 16; x++, xx++)
 				{
 					if (xx < 0 || xx >= nScreenWidth) continue;
 
-					int pxl = src[x];
+					INT32 pxl = src[x];
 
 					if (trans & (1 << pxl)) continue;
 
@@ -3329,9 +3329,9 @@ static void gondo_draw_layer(int priority, int layer)
 
 static void GondoPaletteRecalc()
 {
-	unsigned char r,g,b;
-	for (int i = 0; i < 0x400; i++) {
-		int d = (DrvPalRAM[i + 0]) | (DrvPalRAM[i + 0x400] << 8);
+	UINT8 r,g,b;
+	for (INT32 i = 0; i < 0x400; i++) {
+		INT32 d = (DrvPalRAM[i + 0]) | (DrvPalRAM[i + 0x400] << 8);
 		r = (d >> 0) & 0x0f;
 		g = (d >> 4) & 0x0f;
 		b = (d >> 8) & 0x0f;
@@ -3344,7 +3344,7 @@ static void GondoPaletteRecalc()
 	}
 }
 
-static int GondoDraw()
+static INT32 GondoDraw()
 {
 	if (DrvRecalc) {
 		GondoPaletteRecalc();
@@ -3361,7 +3361,7 @@ static int GondoDraw()
 	return 0;
 }
 
-static int GaryoretDraw()
+static INT32 GaryoretDraw()
 {
 	if (DrvRecalc) {
 		GondoPaletteRecalc();
@@ -3380,7 +3380,7 @@ static int GaryoretDraw()
 	return 0;
 }
 
-static int GondoFrame()
+static INT32 GondoFrame()
 {
 	if (DrvReset) {
 		GondoDoReset();
@@ -3391,7 +3391,7 @@ static int GondoFrame()
 
 	{
 		memset (DrvInputs, 0xff, 5);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -3400,16 +3400,16 @@ static int GondoFrame()
 		}
 	}
 
-	int nInterleave = 32;
-	int nCyclesTotal[2] = { 12000000 / 58, 1500000 / 58 };
-//	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = 32;
+	INT32 nCyclesTotal[2] = { 12000000 / 58, 1500000 / 58 };
+//	INT32 nCyclesDone[2] = { 0, 0 };
 
 	M6502Open(0);
 	HD6309Open(0);
 
 	vblank = 0x80;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		if (i == 1) vblank = 0;
 		if (i == 31) {
@@ -3598,7 +3598,7 @@ struct BurnDriver BurnDrvGaryoret = {
 
 
 
-unsigned char oscar_main_read(unsigned short address)
+UINT8 oscar_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -3621,7 +3621,7 @@ unsigned char oscar_main_read(unsigned short address)
 	return 0;
 }
 
-void oscar_main_write(unsigned short address, unsigned char data)
+void oscar_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -3670,7 +3670,7 @@ void oscar_main_write(unsigned short address, unsigned char data)
 }
 
 
-void oscar_sub_write(unsigned short address, unsigned char )
+void oscar_sub_write(UINT16 address, UINT8 )
 {
 	switch (address)
 	{
@@ -3702,7 +3702,7 @@ void oscar_sub_write(unsigned short address, unsigned char )
 	}
 }
 
-static int OscarDoReset()
+static INT32 OscarDoReset()
 {
 	DrvReset = 0;
 
@@ -3729,15 +3729,15 @@ static int OscarDoReset()
 	return 0;
 }
 
-static int OscarGfxDecode()
+static INT32 OscarGfxDecode()
 {
-	int Plane0[3] = { 0x3000*8,0x2000*8,0x1000*8 };
-	int Plane1[4] = { 0x60000*8,0x40000*8,0x20000*8,0x00000*8 };
-	int XOffs0[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-	int XOffs1[16]= {16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
-	int YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
+	INT32 Plane0[3] = { 0x3000*8,0x2000*8,0x1000*8 };
+	INT32 Plane1[4] = { 0x60000*8,0x40000*8,0x20000*8,0x00000*8 };
+	INT32 XOffs0[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	INT32 XOffs1[16]= {16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
+	INT32 YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)malloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -3762,12 +3762,12 @@ static int OscarGfxDecode()
 	return 0;
 }
 
-static int OscarInit()
+static INT32 OscarInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -3842,27 +3842,27 @@ static int OscarInit()
 
 static void oscar_draw_txt_layer()
 {
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 
 		sy -= 8;
 		if (sy < 0 || sy >= nScreenHeight) continue;
 
-		int code = (DrvVidRAM[offs * 2 + 1]) | (DrvVidRAM[offs * 2 + 0] << 8);
-		int color = code >> 14;
+		INT32 code = (DrvVidRAM[offs * 2 + 1]) | (DrvVidRAM[offs * 2 + 0] << 8);
+		INT32 color = code >> 14;
 
 		Render8x8Tile_Mask(pTransDraw, code & 0x3ff, sx, sy, color, 3, 0, 0x100, DrvGfxROM0);
 	}
 }
 
-static int OscarDraw()
+static INT32 OscarDraw()
 {
 	if (DrvRecalc) {
-		unsigned char r,g,b;
-		for (int i = 0; i < 0x400; i+=2) {
-			int d = (DrvPalRAM[i + 0] << 8) | DrvPalRAM[i + 1];
+		UINT8 r,g,b;
+		for (INT32 i = 0; i < 0x400; i+=2) {
+			INT32 d = (DrvPalRAM[i + 0] << 8) | DrvPalRAM[i + 1];
 			r = (d >> 0) & 0x0f;
 			g = (d >> 4) & 0x0f;
 			b = (d >> 8) & 0x0f;
@@ -3885,7 +3885,7 @@ static int OscarDraw()
 	return 0;
 }
 
-static int OscarFrame()
+static INT32 OscarFrame()
 {
 	if (DrvReset) {
 		OscarDoReset();
@@ -3896,7 +3896,7 @@ static int OscarFrame()
 
 	{
 		memset (DrvInputs, 0xff, 5);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -3905,24 +3905,24 @@ static int OscarFrame()
 		}
 	}
 
-	int nInterleave = 256;
-	int nCyclesTotal[3] = { 6000000 / 58, 6000000 / 58, 1500000 / 58 };
-	int nCyclesDone[3] = { 0, 0, 0 };
+	INT32 nInterleave = 256;
+	INT32 nCyclesTotal[3] = { 6000000 / 58, 6000000 / 58, 1500000 / 58 };
+	INT32 nCyclesDone[3] = { 0, 0, 0 };
 
 	M6502Open(0);
 
 	vblank = 0x80;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		if (i == 8) vblank = 0;
 
 		HD6309Open(0);
-		int nSegment = (nCyclesTotal[0] / nInterleave) * (i + 1);
+		INT32 nSegment = (nCyclesTotal[0] / nInterleave) * (i + 1);
 		nCyclesDone[0] += HD6309Run(nSegment - nCyclesDone[0]);
 
 		if (i == 247) {
-			static int latch = 1;
+			static INT32 latch = 1;
 			if ((DrvInputs[2] & 7) == 7) latch = 1;
 			if ((DrvInputs[2] & 7) != 7 && latch) {
 				latch = 0;
@@ -4126,12 +4126,12 @@ struct BurnDriver BurnDrvOscarj2 = {
 
 
 
-static void lastmiss_i8751_write(int offset, int data)
+static void lastmiss_i8751_write(INT32 offset, INT32 data)
 {
-	static int coin, latch = 0, snd;
+	static INT32 coin, latch = 0, snd;
 	i8751_return = 0;
 
-	int coininp = DrvInputs[2] & 3; //(~DrvInputs[2]) & 3;
+	INT32 coininp = DrvInputs[2] & 3; //(~DrvInputs[2]) & 3;
 
 	switch (offset)
 	{
@@ -4160,12 +4160,12 @@ static void lastmiss_i8751_write(int offset, int data)
 	}
 }
 
-static void shackled_i8751_write(int offset, int data)
+static void shackled_i8751_write(INT32 offset, INT32 data)
 {
-	static int coin1, coin2, latch = 0;
+	static INT32 coin1, coin2, latch = 0;
 	i8751_return = 0;
 
-	int coininp = DrvInputs[2] & 3;
+	INT32 coininp = DrvInputs[2] & 3;
 
 	switch (offset)
 	{
@@ -4192,10 +4192,10 @@ static void shackled_i8751_write(int offset, int data)
 }
 
 
-static int stopsubcpu = 0;
-static int nLastMiss = 0;
+static INT32 stopsubcpu = 0;
+static INT32 nLastMiss = 0;
 
-void lastmiss_main_write(unsigned short address, unsigned char data)
+void lastmiss_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -4285,7 +4285,7 @@ void lastmiss_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char lastmiss_main_read(unsigned short address)
+UINT8 lastmiss_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -4314,7 +4314,7 @@ unsigned char lastmiss_main_read(unsigned short address)
 	return 0;
 }
 
-static int LastmissDoReset()
+static INT32 LastmissDoReset()
 {
 	DrvReset = 0;
 
@@ -4343,15 +4343,15 @@ static int LastmissDoReset()
 	return 0;
 }
 
-static int LastmissGfxDecode()
+static INT32 LastmissGfxDecode()
 {
-	int Plane0[3] = { 0x6000*8,0x4000*8,0x2000*8 };
-	int Plane1[4] = { 0x60000*8,0x40000*8,0x20000*8,0x00000*8 };
-	int XOffs0[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-	int XOffs1[16]= {16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
-	int YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
+	INT32 Plane0[3] = { 0x6000*8,0x4000*8,0x2000*8 };
+	INT32 Plane1[4] = { 0x60000*8,0x40000*8,0x20000*8,0x00000*8 };
+	INT32 XOffs0[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+	INT32 XOffs1[16]= {16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
+	INT32 YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)malloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -4376,12 +4376,12 @@ static int LastmissGfxDecode()
 	return 0;
 }
 
-static int LastmissInit()
+static INT32 LastmissInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -4492,7 +4492,7 @@ static int LastmissInit()
 	return 0;
 }
 
-static int LastmissExit()
+static INT32 LastmissExit()
 {
 	GenericTilesExit();
 	M6809Exit();
@@ -4511,15 +4511,15 @@ static int LastmissExit()
 	return 0;
 }
 
-static void lastmiss_draw_bg_layer(int priority, int t)
+static void lastmiss_draw_bg_layer(INT32 priority, INT32 t)
 {
-	int scrolly = ((DrvPf0Ctrl[0x12] << 8) + DrvPf0Ctrl[0x13] + 8) & 0x1ff;
-	int scrollx = ((DrvPf0Ctrl[0x10] << 8) | DrvPf0Ctrl[0x11]) & 0x1ff;
+	INT32 scrolly = ((DrvPf0Ctrl[0x12] << 8) + DrvPf0Ctrl[0x13] + 8) & 0x1ff;
+	INT32 scrollx = ((DrvPf0Ctrl[0x10] << 8) | DrvPf0Ctrl[0x11]) & 0x1ff;
 
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 4;
-		int sy = (offs >> 5) << 4;
+		INT32 sx = (offs & 0x1f) << 4;
+		INT32 sy = (offs >> 5) << 4;
 
 		sx -= scrollx;
 		if (sx < -15) sx += 512;
@@ -4528,28 +4528,28 @@ static void lastmiss_draw_bg_layer(int priority, int t)
 
 		if (sx >= nScreenWidth || sy >= nScreenHeight) continue;
 
-		int ofst = (offs & 0x0f) | ((offs >> 1) & 0xf0) | ((offs & 0x10) << 4) | (offs & 0x200);
+		INT32 ofst = (offs & 0x0f) | ((offs >> 1) & 0xf0) | ((offs & 0x10) << 4) | (offs & 0x200);
 
-		int code  = (DrvPf0RAM[ofst * 2 + 1]) | (DrvPf0RAM[ofst * 2 + 0] << 8);
-		int color = code >> 12;
+		INT32 code  = (DrvPf0RAM[ofst * 2 + 1]) | (DrvPf0RAM[ofst * 2 + 0] << 8);
+		INT32 color = code >> 12;
 
 		if (priority && color < 8) continue;
 
 		{
 			color = (color << 4) | 0x300;
-			unsigned char *src = DrvGfxROM2 + ((code & 0xfff) << 8);
-			unsigned short *dst;
+			UINT8 *src = DrvGfxROM2 + ((code & 0xfff) << 8);
+			UINT16 *dst;
 
-			for (int y = 0; y < 16; y++, sy++, src+=16)
+			for (INT32 y = 0; y < 16; y++, sy++, src+=16)
 			{
 				if (sy < 0 || sy >= nScreenHeight) continue;
 
 				dst = pTransDraw + sy * nScreenWidth;
 
-				int xx = sx;
-				for (int x = 0; x < 16; x++, xx++)
+				INT32 xx = sx;
+				for (INT32 x = 0; x < 16; x++, xx++)
 				{
-					int pxl = src[x];
+					INT32 pxl = src[x];
 					if (t & (1 << pxl)) continue;
 
 					if (xx >= nScreenWidth || xx < 0) continue;
@@ -4565,26 +4565,26 @@ static void lastmiss_draw_bg_layer(int priority, int t)
 
 static void lastmiss_draw_txt_layer()
 {
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 
 		sy -= 8;
 		if (sy < 0 || sy >= nScreenHeight) continue;
 
-		int code  = (DrvVidRAM[offs * 2 + 1]) | (DrvVidRAM[offs * 2 + 0] << 8);
-		int color = code >> 14;
+		INT32 code  = (DrvVidRAM[offs * 2 + 1]) | (DrvVidRAM[offs * 2 + 0] << 8);
+		INT32 color = code >> 14;
 
 		Render8x8Tile_Mask(pTransDraw, code & 0xfff, sx, sy, color, 3, 0, 0, DrvGfxROM0);
 	}
 }
 
-static void DrvRecalcSplit(int len)
+static void DrvRecalcSplit(INT32 len)
 {
-	unsigned char r,g,b;
-	for (int i = 0; i < len; i++) {
-		int d = (DrvPalRAM[i + 0]) | (DrvPalRAM[i + len] << 8);
+	UINT8 r,g,b;
+	for (INT32 i = 0; i < len; i++) {
+		INT32 d = (DrvPalRAM[i + 0]) | (DrvPalRAM[i + len] << 8);
 		r = (d >> 0) & 0x0f;
 		g = (d >> 4) & 0x0f;
 		b = (d >> 8) & 0x0f;
@@ -4597,7 +4597,7 @@ static void DrvRecalcSplit(int len)
 	}
 }
 
-static int LastmissDraw()
+static INT32 LastmissDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcSplit(0x400);
@@ -4612,7 +4612,7 @@ static int LastmissDraw()
 	return 0;
 }
 
-static int ShackledDraw()
+static INT32 ShackledDraw()
 {
 	if (DrvRecalc) {
 		DrvRecalcSplit(0x400);
@@ -4630,7 +4630,7 @@ static int ShackledDraw()
 	return 0;
 }
 
-static int LastmissFrame()
+static INT32 LastmissFrame()
 {
 	if (DrvReset) {
 		LastmissDoReset();
@@ -4641,7 +4641,7 @@ static int LastmissFrame()
 
 	{
 		memset (DrvInputs, 0xff, 5);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -4650,15 +4650,15 @@ static int LastmissFrame()
 		}
 	}
 
-	int nInterleave = 256*2;
-	int nCyclesTotal[3] = { 2000000 / 58, 2000000 / 58, 1500000 / 58 };
-	int nCyclesDone[3] = { 0, 0, 0 };
+	INT32 nInterleave = 256*2;
+	INT32 nCyclesTotal[3] = { 2000000 / 58, 2000000 / 58, 1500000 / 58 };
+	INT32 nCyclesDone[3] = { 0, 0, 0 };
 
 	M6502Open(0);
 
 	vblank = 0x80;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		if (i == 8*2) vblank = 0x80;
 		if (i == 248*2) vblank = 0;
@@ -4668,7 +4668,7 @@ static int LastmissFrame()
 		M6809Close();
 
 		M6809Open(1);
-		int nSegment = (nCyclesTotal[1] / nInterleave) * (i + 1);
+		INT32 nSegment = (nCyclesTotal[1] / nInterleave) * (i + 1);
 		if (stopsubcpu) {
 			nCyclesDone[1] += nSegment - nCyclesDone[1];
 		} else {
@@ -4918,12 +4918,12 @@ struct BurnDriver BurnDrvBreywood = {
 
 
 
-static void csilver_i8751_write(int offset, int data)
+static void csilver_i8751_write(INT32 offset, INT32 data)
 {
-	static int coin, latch = 0, snd;
+	static INT32 coin, latch = 0, snd;
 	i8751_return = 0;
 
-	int coininp = DrvInputs[2];
+	INT32 coininp = DrvInputs[2];
 
 	switch (offset)
 	{
@@ -4950,7 +4950,7 @@ static void csilver_i8751_write(int offset, int data)
 	}
 }
 
-void csilver_main_write(unsigned short address, unsigned char data)
+void csilver_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -5010,7 +5010,7 @@ void csilver_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char csilver_main_read(unsigned short address)
+UINT8 csilver_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -5039,12 +5039,12 @@ unsigned char csilver_main_read(unsigned short address)
 	return 0;
 }
 
-static void csilver_sound_bank(int data)
+static void csilver_sound_bank(INT32 data)
 {
 	M6502MapMemory(DrvM6502ROM + 0x10000 + (data & 8) * 0x2000, 0x4000, 0x7fff, M6502_ROM);
 }
 
-void csilver_sound_write(unsigned short address, unsigned char data)
+void csilver_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -5068,7 +5068,7 @@ void csilver_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char csilver_sound_read(unsigned short address)
+UINT8 csilver_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -5082,12 +5082,12 @@ unsigned char csilver_sound_read(unsigned short address)
 	return 0;
 }
 
-static int CsilverInit()
+static INT32 CsilverInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -5171,7 +5171,7 @@ static int CsilverInit()
 
 
 
-static int CsilverFrame()
+static INT32 CsilverFrame()
 {
 	if (DrvReset) {
 		LastmissDoReset();
@@ -5182,7 +5182,7 @@ static int CsilverFrame()
 
 	{
 		memset (DrvInputs, 0xff, 5);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -5191,15 +5191,15 @@ static int CsilverFrame()
 		}
 	}
 
-	int nInterleave = 256;
-	int nCyclesTotal[3] = { 1500000 / 58, 1500000 / 58, 1500000 / 58 };
-	int nCyclesDone[3] = { 0, 0, 0 };
+	INT32 nInterleave = 256;
+	INT32 nCyclesTotal[3] = { 1500000 / 58, 1500000 / 58, 1500000 / 58 };
+	INT32 nCyclesDone[3] = { 0, 0, 0 };
 
 	M6502Open(0);
 
 	vblank = 0x80;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		if (i == 8) vblank = 0x80;
 
@@ -5208,7 +5208,7 @@ static int CsilverFrame()
 		M6809Close();
 
 		M6809Open(1);
-		int nSegment = (nCyclesTotal[1] / nInterleave) * (i + 1);
+		INT32 nSegment = (nCyclesTotal[1] / nInterleave) * (i + 1);
 		nCyclesDone[1] += M6809Run(nSegment - nCyclesDone[1]);
 		if (i == 247) {
 			vblank = 0;

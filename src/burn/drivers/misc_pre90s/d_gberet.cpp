@@ -4,19 +4,19 @@
 #include "tiles_generic.h"
 #include "sn76496.h"
 
-static unsigned char *Mem, *MemEnd, *Rom, *Gfx0, *Gfx1, *Prom;
-static unsigned int *Palette, *DrvPalette;
-static unsigned char DrvRecalcPal;
+static UINT8 *Mem, *MemEnd, *Rom, *Gfx0, *Gfx1, *Prom;
+static UINT32 *Palette, *DrvPalette;
+static UINT8 DrvRecalcPal;
 
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[4], DrvReset;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvDips[4], DrvReset;
 
-static unsigned char nmi_enable, irq_enable;
-static unsigned short gberetb_scroll;
-static unsigned char flipscreen;
-static unsigned char gberet_spritebank;
-static int mrgoemon_bank;
+static UINT8 nmi_enable, irq_enable;
+static UINT16 gberetb_scroll;
+static UINT8 flipscreen;
+static UINT8 gberet_spritebank;
+static INT32 mrgoemon_bank;
 
-static int game_type = 0; // 0 gberet / rushatck, 1 gberetb, 2 mrgoemon
+static INT32 game_type = 0; // 0 gberet / rushatck, 1 gberetb, 2 mrgoemon
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"Coin 1"       , BIT_DIGITAL  , DrvJoy3 + 0,	"p1 coin"   },
@@ -348,14 +348,14 @@ static struct BurnDIPInfo mrgoemonDIPList[]=
 
 STDDIPINFO(mrgoemon)
 
-static void mrgoemon_bankswitch(int nBank)
+static void mrgoemon_bankswitch(INT32 nBank)
 {
 	mrgoemon_bank = nBank;
 	ZetMapArea(0xf800, 0xffff, 0, Rom + 0x10000 + mrgoemon_bank);
 	ZetMapArea(0xf800, 0xffff, 2, Rom + 0x10000 + mrgoemon_bank);
 }
 
-void __fastcall gberet_write(unsigned short address, unsigned char data)
+void __fastcall gberet_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -413,9 +413,9 @@ void __fastcall gberet_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall gberet_read(unsigned short address)
+UINT8 __fastcall gberet_read(UINT16 address)
 {
-	unsigned char nRet = 0xff;
+	UINT8 nRet = 0xff;
 
 	switch (address)
 	{
@@ -432,7 +432,7 @@ unsigned char __fastcall gberet_read(unsigned short address)
 		{
 			if (game_type & 1) return DrvDips[3];
 
-			for (int i = 0; i < 8; i++) nRet ^= DrvJoy2[i] << i;
+			for (INT32 i = 0; i < 8; i++) nRet ^= DrvJoy2[i] << i;
 
 			return nRet;
 		}
@@ -440,7 +440,7 @@ unsigned char __fastcall gberet_read(unsigned short address)
 
 		case 0xf602:
 		{
-			for (int i = 0; i < 8; i++) nRet ^= DrvJoy1[i] << i;
+			for (INT32 i = 0; i < 8; i++) nRet ^= DrvJoy1[i] << i;
 
 			return nRet;
 		}
@@ -448,7 +448,7 @@ unsigned char __fastcall gberet_read(unsigned short address)
 
 		case 0xf603:
 		{
-			for (int i = 0; i < 8; i++) nRet ^= DrvJoy3[i] << i;
+			for (INT32 i = 0; i < 8; i++) nRet ^= DrvJoy3[i] << i;
 
 			return nRet;
 		}
@@ -467,7 +467,7 @@ unsigned char __fastcall gberet_read(unsigned short address)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -491,9 +491,9 @@ static int DrvDoReset()
 }
 
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Rom            = Next; Next += 0x14000;
 
@@ -502,8 +502,8 @@ static int MemIndex()
 
 	Prom           = Next; Next += 0x00220;
 
-	Palette	       = (unsigned int*)Next; Next += 0x00200 * sizeof(unsigned int);
-	DrvPalette     = (unsigned int*)Next; Next += 0x00200 * sizeof(unsigned int);
+	Palette	       = (UINT32*)Next; Next += 0x00200 * sizeof(UINT32);
+	DrvPalette     = (UINT32*)Next; Next += 0x00200 * sizeof(UINT32);
 
 	MemEnd         = Next;
 
@@ -512,12 +512,12 @@ static int MemIndex()
 
 static void DrvCreatePalette()
 {
-	unsigned int tmp[0x20];
+	UINT32 tmp[0x20];
 
-	for (int i = 0; i < 0x20; i++)
+	for (INT32 i = 0; i < 0x20; i++)
 	{
-		int bit0, bit1, bit2;
-		int r, g, b;
+		INT32 bit0, bit1, bit2;
+		INT32 r, g, b;
 
 		bit0 = (Prom[i] >> 0) & 0x01;
 		bit1 = (Prom[i] >> 1) & 0x01;
@@ -539,9 +539,9 @@ static void DrvCreatePalette()
 
 	Prom += 0x20;
 
-	for (int i = 0; i < 0x100; i++)
+	for (INT32 i = 0; i < 0x100; i++)
 	{
-		unsigned char ctabentry;
+		UINT8 ctabentry;
 
 		ctabentry = (Prom[0x000 + i] & 0x0f) | 0x10;
 		Palette[0x000 + i] = tmp[ctabentry];
@@ -551,9 +551,9 @@ static void DrvCreatePalette()
 	}
 }
 
-static void Graphics_Decode(int *CharPlanes, int *CharXOffs, int *CharYOffs, int *SprPlanes, int *SprXOffs, int *SprYOffs, int SprMod)
+static void Graphics_Decode(INT32 *CharPlanes, INT32 *CharXOffs, INT32 *CharYOffs, INT32 *SprPlanes, INT32 *SprXOffs, INT32 *SprYOffs, INT32 SprMod)
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)malloc(0x10000);
 	if (tmp == NULL) {
 		return;
 	}
@@ -574,35 +574,35 @@ static void Graphics_Decode(int *CharPlanes, int *CharXOffs, int *CharYOffs, int
 
 static void DrvGfxDecode()
 {
-	static int Planes[4] = { 0, 1, 2, 3 };
-	static int XOffs[16] = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
-	static int YOffs[16] = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+	static INT32 Planes[4] = { 0, 1, 2, 3 };
+	static INT32 XOffs[16] = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
+	static INT32 YOffs[16] = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
 
 	Graphics_Decode(Planes, XOffs, YOffs, Planes, XOffs, YOffs, 0x400);
 }
 
 static void BootGfxDecode()
 {
-	static int CharPlanes[4] = { 0, 1, 2, 3 };
-	static int CharXOffs[8]  = { 24, 28, 0, 4, 8, 12, 16, 20 };
-	static int CharYOffs[8]  = { 0, 32, 64, 96, 128, 160, 192, 224 };
-	static int SpriPlanes[4] = { 0, 0x20000, 0x40000, 0x60000 };
-	static int SpriXOffs[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
-	static int SpriYOffs[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+	static INT32 CharPlanes[4] = { 0, 1, 2, 3 };
+	static INT32 CharXOffs[8]  = { 24, 28, 0, 4, 8, 12, 16, 20 };
+	static INT32 CharYOffs[8]  = { 0, 32, 64, 96, 128, 160, 192, 224 };
+	static INT32 SpriPlanes[4] = { 0, 0x20000, 0x40000, 0x60000 };
+	static INT32 SpriXOffs[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
+	static INT32 SpriYOffs[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
 	Graphics_Decode(CharPlanes, CharXOffs, CharYOffs, SpriPlanes, SpriXOffs, SpriYOffs, 0x100);
 }
 
-static int GetRoms()
+static INT32 GetRoms()
 {
 	char* pRomName;
 	struct BurnRomInfo ri;
-	unsigned char *Load0 = Rom;
-	unsigned char *Load1 = Gfx0;
-	unsigned char *Load2 = Gfx1;
-	unsigned char *Load3 = Prom;
+	UINT8 *Load0 = Rom;
+	UINT8 *Load1 = Gfx0;
+	UINT8 *Load2 = Gfx1;
+	UINT8 *Load3 = Prom;
 
-	for (int i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
+	for (INT32 i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
 
 		BurnDrvGetRomInfo(&ri, i);
 
@@ -643,14 +643,14 @@ static int GetRoms()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -699,7 +699,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -716,44 +716,44 @@ static int DrvExit()
 	return 0;
 }
 
-static inline void put_pixel(int x, int y, int src, int color)
+static inline void put_pixel(INT32 x, INT32 y, INT32 src, INT32 color)
 {
-	int pxl = color | src;
+	INT32 pxl = color | src;
 
 	if (y < 0 || x < 0 || x >= nScreenWidth || y >= nScreenHeight || !Prom[pxl]) return;
 
 	pTransDraw[(y * nScreenWidth) + x] = pxl;
 }
 
-static void gberet_draw_16x16(int num, int sx, int sy, int color, int flipx, int flipy)
+static void gberet_draw_16x16(INT32 num, INT32 sx, INT32 sy, INT32 color, INT32 flipx, INT32 flipy)
 {
 	color |= 0x100;
-	unsigned char *src = Gfx1 + (num << 8);
+	UINT8 *src = Gfx1 + (num << 8);
 
 	if (flipy) {
 		if (flipx) {
-			for (int y = sy + 15; y >= sy; y--) {
-				for (int x = sx + 15; x >= sx; x--, src++) {
+			for (INT32 y = sy + 15; y >= sy; y--) {
+				for (INT32 x = sx + 15; x >= sx; x--, src++) {
 					put_pixel(x, y, *src, color);
 				}
 			}
 		} else {
-			for (int y = sy + 15; y >= sy; y--) {
-				for (int x = sx; x < sx + 16; x++, src++) {
+			for (INT32 y = sy + 15; y >= sy; y--) {
+				for (INT32 x = sx; x < sx + 16; x++, src++) {
 					put_pixel(x, y, *src, color);
 				}
 			}
 		}
 	} else {
 		if (flipx) {
-			for (int y = sy; y < sy + 16; y++) {
-				for (int x = sx + 15; x >= sx; x--, src++) {
+			for (INT32 y = sy; y < sy + 16; y++) {
+				for (INT32 x = sx + 15; x >= sx; x--, src++) {
 					put_pixel(x, y, *src, color);
 				}
 			}
 		} else {
-			for (int y = sy; y < sy + 16; y++) {
-				for (int x = sx; x < sx + 16; x++, src++) {
+			for (INT32 y = sy; y < sy + 16; y++) {
+				for (INT32 x = sx; x < sx + 16; x++, src++) {
 					put_pixel(x, y, *src, color);
 				}
 			}
@@ -763,19 +763,19 @@ static void gberet_draw_16x16(int num, int sx, int sy, int color, int flipx, int
 
 static void gberet_draw_sprites()
 {
-	unsigned char *sr = Rom + 0xd000 + ((~gberet_spritebank & 8) << 5);
+	UINT8 *sr = Rom + 0xd000 + ((~gberet_spritebank & 8) << 5);
 
-	for (int offs = 0; offs < 0xc0; offs += 4)
+	for (INT32 offs = 0; offs < 0xc0; offs += 4)
 	{
 		if (sr[offs + 3])
 		{
-			int attr = sr[offs + 1];
-			int code = sr[offs + 0] + ((attr & 0x40) << 2);
-			int sx = sr[offs + 2] - 2 * (attr & 0x80);
-			int sy = sr[offs + 3];
-			int color = (attr & 0x0f) << 4;
-			int flipx = attr & 0x10;
-			int flipy = attr & 0x20;
+			INT32 attr = sr[offs + 1];
+			INT32 code = sr[offs + 0] + ((attr & 0x40) << 2);
+			INT32 sx = sr[offs + 2] - 2 * (attr & 0x80);
+			INT32 sy = sr[offs + 3];
+			INT32 color = (attr & 0x0f) << 4;
+			INT32 flipx = attr & 0x10;
+			INT32 flipy = attr & 0x20;
 
 			if (flipscreen)
 			{
@@ -795,17 +795,17 @@ static void gberet_draw_sprites()
 
 static void gberetb_draw_sprites()
 {
-	for (int offs = 0x100 - 4; offs >= 0; offs -= 4)
+	for (INT32 offs = 0x100 - 4; offs >= 0; offs -= 4)
 	{
 		if (Rom[0xe901 + offs])
 		{
-			int attr = Rom[0xe903 + offs];
-			int code = Rom[0xe900 + offs] + ((attr & 0x40) << 2);
-			int sx = Rom[0xe902 + offs] - 2 * (attr & 0x80);
-			int sy = 240 - Rom[0xe901 + offs];
-			int color = (attr & 0x0f) << 4;
-			int flipx = attr & 0x10;
-			int flipy = attr & 0x20;
+			INT32 attr = Rom[0xe903 + offs];
+			INT32 code = Rom[0xe900 + offs] + ((attr & 0x40) << 2);
+			INT32 sx = Rom[0xe902 + offs] - 2 * (attr & 0x80);
+			INT32 sy = 240 - Rom[0xe901 + offs];
+			INT32 color = (attr & 0x0f) << 4;
+			INT32 flipx = attr & 0x10;
+			INT32 flipy = attr & 0x20;
 
 			if (flipscreen)
 			{
@@ -823,25 +823,25 @@ static void gberetb_draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalcPal) {
-		for (int i = 0; i < 0x200; i++) {
+		for (INT32 i = 0; i < 0x200; i++) {
 			DrvPalette[i] = BurnHighCol(Palette[i] >> 16, Palette[i] >> 8, Palette[i], 0);
 		}	
 	}
 
-	for (int offs = 0x40; offs < 0x7c0; offs++)
+	for (INT32 offs = 0x40; offs < 0x7c0; offs++)
 	{
-		int sx = (offs & 0x3f) << 3;
-		int sy = (offs >> 3) & 0xf8;
-		int attr = Rom[0xc000 + offs];
-		int code = Rom[0xc800 + offs] + ((attr & 0x40) << 2);
-		int color = attr & 0x0f;
-		int flipy = attr & 0x20;
-		int flipx = attr & 0x10;
+		INT32 sx = (offs & 0x3f) << 3;
+		INT32 sy = (offs >> 3) & 0xf8;
+		INT32 attr = Rom[0xc000 + offs];
+		INT32 code = Rom[0xc800 + offs] + ((attr & 0x40) << 2);
+		INT32 color = attr & 0x0f;
+		INT32 flipy = attr & 0x20;
+		INT32 flipx = attr & 0x10;
 
-		int scroll = 0;
+		INT32 scroll = 0;
 
 		if (game_type & 1) {
 			if (sy > 0x2f && sy < 0xe8) {
@@ -893,9 +893,9 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = game_type ? 16 : 32;
+	INT32 nInterleave = game_type ? 16 : 32;
 
 	if (DrvReset) {
 		DrvDoReset();
@@ -903,14 +903,14 @@ static int DrvFrame()
 
 	ZetOpen(0);
 
-	int nCyclesDone, nCyclesTotal;
+	INT32 nCyclesDone, nCyclesTotal;
 
 	nCyclesDone = 0;
 	nCyclesTotal = 3072000 / (nBurnFPS / 256);
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		int nCyclesSegment = (nCyclesTotal - nCyclesDone) / (nInterleave - i);
+		INT32 nCyclesSegment = (nCyclesTotal - nCyclesDone) / (nInterleave - i);
 
 		nCyclesDone = ZetRun(nCyclesSegment);
 
@@ -936,7 +936,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -1059,7 +1059,7 @@ static struct BurnRomInfo gberetbRomDesc[] = {
 STD_ROM_PICK(gberetb)
 STD_ROM_FN(gberetb)
 
-static int gberetbInit()
+static INT32 gberetbInit()
 {
 	game_type = 1;
 
@@ -1096,7 +1096,7 @@ static struct BurnRomInfo mrgoemonRomDesc[] = {
 STD_ROM_PICK(mrgoemon)
 STD_ROM_FN(mrgoemon)
 
-static int mrgoemonInit()
+static INT32 mrgoemonInit()
 {
 	game_type = 2;
 

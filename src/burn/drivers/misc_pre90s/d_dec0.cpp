@@ -5,64 +5,64 @@
 #include "burn_ym3812.h"
 #include "h6280_intf.h"
 
-static unsigned char DrvInputPort0[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort1[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort2[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[2]              = {0, 0};
-static unsigned char DrvInput[3]            = {0x00, 0x00, 0x00};
-static unsigned char DrvReset               = 0;
+static UINT8 DrvInputPort0[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort1[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort2[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDip[2]              = {0, 0};
+static UINT8 DrvInput[3]            = {0x00, 0x00, 0x00};
+static UINT8 DrvReset               = 0;
 
-static unsigned char *Mem                   = NULL;
-static unsigned char *MemEnd                = NULL;
-static unsigned char *RamStart              = NULL;
-static unsigned char *RamEnd                = NULL;
-static unsigned char *Drv68KRom             = NULL;
-static unsigned char *Drv68KRam             = NULL;
-static unsigned char *DrvM6502Rom           = NULL;
-static unsigned char *DrvM6502Ram           = NULL;
-static unsigned char *DrvH6280Rom           = NULL;
-static unsigned char *DrvH6280Ram           = NULL;
-static unsigned char *DrvCharRam            = NULL;
-static unsigned char *DrvCharCtrl0Ram       = NULL;
-static unsigned char *DrvCharCtrl1Ram       = NULL;
-static unsigned char *DrvCharColScrollRam   = NULL;
-static unsigned char *DrvCharRowScrollRam   = NULL;
-static unsigned char *DrvVideo1Ram          = NULL;
-static unsigned char *DrvVideo1Ctrl0Ram     = NULL;
-static unsigned char *DrvVideo1Ctrl1Ram     = NULL;
-static unsigned char *DrvVideo1ColScrollRam = NULL;
-static unsigned char *DrvVideo1RowScrollRam = NULL;
-static unsigned char *DrvVideo2Ram          = NULL;
-static unsigned char *DrvVideo2Ctrl0Ram     = NULL;
-static unsigned char *DrvVideo2Ctrl1Ram     = NULL;
-static unsigned char *DrvVideo2ColScrollRam = NULL;
-static unsigned char *DrvVideo2RowScrollRam = NULL;
-static unsigned char *DrvPaletteRam         = NULL;
-static unsigned char *DrvPalette2Ram        = NULL;
-static unsigned char *DrvSpriteRam          = NULL;
-static unsigned char *DrvSpriteDMABufferRam = NULL;
-static unsigned char *DrvSharedRam          = NULL;
-static unsigned char *DrvChars              = NULL;
-static unsigned char *DrvTiles1             = NULL;
-static unsigned char *DrvTiles2             = NULL;
-static unsigned char *DrvSprites            = NULL;
-static unsigned char *DrvTempRom            = NULL;
-static unsigned int  *DrvPalette            = NULL;
-static unsigned short *pCharLayerDraw       = NULL;
-static unsigned short *pTile1LayerDraw      = NULL;
-static unsigned short *pTile2LayerDraw      = NULL;
+static UINT8 *Mem                   = NULL;
+static UINT8 *MemEnd                = NULL;
+static UINT8 *RamStart              = NULL;
+static UINT8 *RamEnd                = NULL;
+static UINT8 *Drv68KRom             = NULL;
+static UINT8 *Drv68KRam             = NULL;
+static UINT8 *DrvM6502Rom           = NULL;
+static UINT8 *DrvM6502Ram           = NULL;
+static UINT8 *DrvH6280Rom           = NULL;
+static UINT8 *DrvH6280Ram           = NULL;
+static UINT8 *DrvCharRam            = NULL;
+static UINT8 *DrvCharCtrl0Ram       = NULL;
+static UINT8 *DrvCharCtrl1Ram       = NULL;
+static UINT8 *DrvCharColScrollRam   = NULL;
+static UINT8 *DrvCharRowScrollRam   = NULL;
+static UINT8 *DrvVideo1Ram          = NULL;
+static UINT8 *DrvVideo1Ctrl0Ram     = NULL;
+static UINT8 *DrvVideo1Ctrl1Ram     = NULL;
+static UINT8 *DrvVideo1ColScrollRam = NULL;
+static UINT8 *DrvVideo1RowScrollRam = NULL;
+static UINT8 *DrvVideo2Ram          = NULL;
+static UINT8 *DrvVideo2Ctrl0Ram     = NULL;
+static UINT8 *DrvVideo2Ctrl1Ram     = NULL;
+static UINT8 *DrvVideo2ColScrollRam = NULL;
+static UINT8 *DrvVideo2RowScrollRam = NULL;
+static UINT8 *DrvPaletteRam         = NULL;
+static UINT8 *DrvPalette2Ram        = NULL;
+static UINT8 *DrvSpriteRam          = NULL;
+static UINT8 *DrvSpriteDMABufferRam = NULL;
+static UINT8 *DrvSharedRam          = NULL;
+static UINT8 *DrvChars              = NULL;
+static UINT8 *DrvTiles1             = NULL;
+static UINT8 *DrvTiles2             = NULL;
+static UINT8 *DrvSprites            = NULL;
+static UINT8 *DrvTempRom            = NULL;
+static UINT32  *DrvPalette            = NULL;
+static UINT16 *pCharLayerDraw       = NULL;
+static UINT16 *pTile1LayerDraw      = NULL;
+static UINT16 *pTile2LayerDraw      = NULL;
 
-static int i8751RetVal;
-static unsigned char DrvVBlank;
-static unsigned char DrvSoundLatch;
-static unsigned char DrvFlipScreen;
-static int DrvPriority;
-static int DrvCharTilemapWidth;
-static int DrvCharTilemapHeight;
-static int DrvTile1TilemapWidth;
-static int DrvTile1TilemapHeight;
-static int DrvTile2TilemapWidth;
-static int DrvTile2TilemapHeight;
+static INT32 i8751RetVal;
+static UINT8 DrvVBlank;
+static UINT8 DrvSoundLatch;
+static UINT8 DrvFlipScreen;
+static INT32 DrvPriority;
+static INT32 DrvCharTilemapWidth;
+static INT32 DrvCharTilemapHeight;
+static INT32 DrvTile1TilemapWidth;
+static INT32 DrvTile1TilemapHeight;
+static INT32 DrvTile2TilemapWidth;
+static INT32 DrvTile2TilemapHeight;
 
 typedef void (*Dec0Render)();
 static Dec0Render Dec0DrawFunction;
@@ -70,10 +70,10 @@ static void BaddudesDraw();
 static void HbarrelDraw();
 static void RobocopDraw();
 
-static int nCyclesDone[3], nCyclesTotal[3];
-//static int nCyclesSegment;
+static INT32 nCyclesDone[3], nCyclesTotal[3];
+//static INT32 nCyclesSegment;
 
-static int Dec0Game = 0;
+static INT32 Dec0Game = 0;
 
 #define DEC0_GAME_BADDUDES	1
 #define DEC0_GAME_HBARREL	2
@@ -114,7 +114,7 @@ static struct BurnInputInfo Dec0InputList[] =
 
 STDINPUTINFO(Dec0)
 
-static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
+static inline void DrvClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -128,7 +128,7 @@ static inline void DrvMakeInputs()
 {
 	DrvInput[0] = DrvInput[1] = DrvInput[2] = 0x00;
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvInputPort0[i] & 1) << i;
 		DrvInput[1] |= (DrvInputPort1[i] & 1) << i;
 		DrvInput[2] |= (DrvInputPort2[i] & 1) << i;
@@ -633,9 +633,9 @@ static struct BurnRomInfo RobocopbRomDesc[] = {
 STD_ROM_PICK(Robocopb)
 STD_ROM_FN(Robocopb)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom              = Next; Next += 0x60000;
 	DrvM6502Rom            = Next; Next += 0x08000;
@@ -674,18 +674,18 @@ static int MemIndex()
 	DrvTiles1              = Next; Next += 0x1000 * 16 * 16;
 	DrvTiles2              = Next; Next += 0x0800 * 16 * 16;
 	DrvSprites             = Next; Next += 0x1000 * 16 * 16;
-	DrvPalette             = (unsigned int*)Next; Next += 0x00400 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 0x00400 * sizeof(UINT32);
 	
-	pCharLayerDraw         = (unsigned short*)Next; Next += (1024 * 256 * sizeof(unsigned short));
-	pTile1LayerDraw        = (unsigned short*)Next; Next += (1024 * 256 * sizeof(unsigned short));
-	pTile2LayerDraw        = (unsigned short*)Next; Next += (1024 * 256 * sizeof(unsigned short));
+	pCharLayerDraw         = (UINT16*)Next; Next += (1024 * 256 * sizeof(UINT16));
+	pTile1LayerDraw        = (UINT16*)Next; Next += (1024 * 256 * sizeof(UINT16));
+	pTile2LayerDraw        = (UINT16*)Next; Next += (1024 * 256 * sizeof(UINT16));
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -708,9 +708,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int RobocopDoReset()
+static INT32 RobocopDoReset()
 {
-	int nRet = DrvDoReset();
+	INT32 nRet = DrvDoReset();
 	
 	h6280Open(0);
 	h6280Reset();
@@ -719,7 +719,7 @@ static int RobocopDoReset()
 	return nRet;
 }
 
-static void BaddudesI8751Write(unsigned short Data)
+static void BaddudesI8751Write(UINT16 Data)
 {
 	i8751RetVal = 0;
 
@@ -743,11 +743,11 @@ static void BaddudesI8751Write(unsigned short Data)
 	}
 }
 
-static void HbarrelI8751Write(unsigned short Data)
+static void HbarrelI8751Write(UINT16 Data)
 {
-	static int Level, State;
+	static INT32 Level, State;
 
-	static const int Title[]={  1, 2, 5, 6, 9,10,13,14,17,18,21,22,25,26,29,30,33,34,37,38,41,42,0,
+	static const INT32 Title[]={  1, 2, 5, 6, 9,10,13,14,17,18,21,22,25,26,29,30,33,34,37,38,41,42,0,
                  3, 4, 7, 8,11,12,15,16,19,20,23,24,27,28,31,32,35,36,39,40,43,44,0,
                 45,46,49,50,53,54,57,58,61,62,65,66,69,70,73,74,77,78,81,82,0,
                 47,48,51,52,55,56,59,60,63,64,67,68,71,72,75,76,79,80,83,84,0,
@@ -758,7 +758,7 @@ static void HbarrelI8751Write(unsigned short Data)
                 0x10b1,0x10b2,0,0x10b3,0x10b4,-1
 	};
 
-	static const int WeaponsTable[][0x20]={
+	static const INT32 WeaponsTable[][0x20]={
 		{ 0x558,0x520,0x5c0,0x600,0x520,0x540,0x560,0x5c0,0x688,0x688,0x7a8,0x850,0x880,0x880,0x990,0x9b0,0x9b0,0x9e0,0xffff }, /* Level 1 */
 		{ 0x330,0x370,0x3d8,0x580,0x5b0,0x640,0x6a0,0x8e0,0x8e0,0x940,0x9f0,0xa20,0xa50,0xa80,0xffff }, /* Level 2 */
 		{ 0xb20,0xbd0,0xb20,0xb20,0xbd8,0xb50,0xbd8,0xb20,0xbe0,0xb40,0xb80,0xa18,0xa08,0xa08,0x980,0x8e0,0x780,0x790,0x650,0x600,0x5d0,0x5a0,0x570,0x590,0x5e0,0xffff }, /* Level 3 */
@@ -825,7 +825,7 @@ static void HbarrelI8751Write(unsigned short Data)
 	}
 }
 
-unsigned char __fastcall Dec068KReadByte(unsigned int a)
+UINT8 __fastcall Dec068KReadByte(UINT32 a)
 {
 	if (a >= 0x300000 && a <= 0x30001f) {
 		// rotary_r
@@ -857,7 +857,7 @@ unsigned char __fastcall Dec068KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Dec068KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Dec068KWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x30c011: {
@@ -884,7 +884,7 @@ void __fastcall Dec068KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Dec068KReadWord(unsigned int a)
+UINT16 __fastcall Dec068KReadWord(UINT32 a)
 {
 	if (a >= 0x300000 && a <= 0x30001f) {
 		// rotary_r
@@ -916,7 +916,7 @@ unsigned short __fastcall Dec068KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Dec068KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Dec068KWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x31c000 && a <= 0x31c7ff) {
 		// ???
@@ -1021,61 +1021,61 @@ void __fastcall Dec068KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall HippodrmShared68KReadByte(unsigned int a)
+UINT8 __fastcall HippodrmShared68KReadByte(UINT32 a)
 {
-	int Offset = (a - 0x180000) >> 1;
+	INT32 Offset = (a - 0x180000) >> 1;
 	return DrvSharedRam[Offset];
 }
 
-void __fastcall HippodrmShared68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall HippodrmShared68KWriteByte(UINT32 a, UINT8 d)
 {
-	int Offset = (a - 0x180000) >> 1;
+	INT32 Offset = (a - 0x180000) >> 1;
 	DrvSharedRam[Offset] = d;
 }
 
-unsigned short __fastcall HippodrmShared68KReadWord(unsigned int a)
+UINT16 __fastcall HippodrmShared68KReadWord(UINT32 a)
 {
-	int Offset = (a - 0x180000) >> 1;
+	INT32 Offset = (a - 0x180000) >> 1;
 	return DrvSharedRam[Offset];
 }
 
-void __fastcall HippodrmShared68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall HippodrmShared68KWriteWord(UINT32 a, UINT16 d)
 {
-	int Offset = (a - 0x180000) >> 1;
+	INT32 Offset = (a - 0x180000) >> 1;
 	DrvSharedRam[Offset] = d & 0xff;
 }
 
-unsigned char __fastcall RobocopShared68KReadByte(unsigned int a)
+UINT8 __fastcall RobocopShared68KReadByte(UINT32 a)
 {
-	int Offset = (a - 0x180000) >> 1;
+	INT32 Offset = (a - 0x180000) >> 1;
 	return DrvSharedRam[Offset];
 }
 
-void __fastcall RobocopShared68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall RobocopShared68KWriteByte(UINT32 a, UINT8 d)
 {
-	int Offset = (a - 0x180000) >> 1;
+	INT32 Offset = (a - 0x180000) >> 1;
 	DrvSharedRam[Offset] = d;
 	if (Offset == 0x7ff) {
 		bprintf(PRINT_NORMAL, _T("IRQ Raised\n"));
 	}
 }
 
-unsigned short __fastcall RobocopShared68KReadWord(unsigned int a)
+UINT16 __fastcall RobocopShared68KReadWord(UINT32 a)
 {
-	int Offset = (a - 0x180000) >> 1;
+	INT32 Offset = (a - 0x180000) >> 1;
 	return DrvSharedRam[Offset];
 }
 
-void __fastcall RobocopShared68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall RobocopShared68KWriteWord(UINT32 a, UINT16 d)
 {
-	int Offset = (a - 0x180000) >> 1;
+	INT32 Offset = (a - 0x180000) >> 1;
 	DrvSharedRam[Offset] = d & 0xff;
 	if (Offset == 0x7ff) {
 		bprintf(PRINT_NORMAL, _T("IRQ Raised\n"));
 	}
 }
 
-unsigned char Dec0SoundReadByte(unsigned short a)
+UINT8 Dec0SoundReadByte(UINT16 a)
 {
 	switch (a) {
 		case 0x3000: {
@@ -1094,7 +1094,7 @@ unsigned char Dec0SoundReadByte(unsigned short a)
 	return 0;
 }
 
-void Dec0SoundWriteByte(unsigned short a, unsigned char d)
+void Dec0SoundWriteByte(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0x0800: {
@@ -1128,38 +1128,38 @@ void Dec0SoundWriteByte(unsigned short a, unsigned char d)
 	}
 }
 
-void HippodrmH6280WriteIo(unsigned char Port, unsigned char Data)
+void HippodrmH6280WriteIo(UINT8 Port, UINT8 Data)
 {
 	bprintf(PRINT_NORMAL, _T("H6280 Write Port %x, %x\n"), Port, Data);
 }
 
-unsigned char HippodrmH6280ReadProg(unsigned int Address)
+UINT8 HippodrmH6280ReadProg(UINT32 Address)
 {
 	bprintf(PRINT_NORMAL, _T("H6280 Read Prog %x\n"), Address);
 	
 	return 0;
 }
 
-void HippodrmH6280WriteProg(unsigned int Address, unsigned char Data)
+void HippodrmH6280WriteProg(UINT32 Address, UINT8 Data)
 {
 	if (Address <= 0x00ffff) return;
 	
 	bprintf(PRINT_NORMAL, _T("H6280 Write Prog %x, %x\n"), Address, Data);
 }
 
-void RobocopH6280WriteIo(unsigned char Port, unsigned char Data)
+void RobocopH6280WriteIo(UINT8 Port, UINT8 Data)
 {
 	bprintf(PRINT_NORMAL, _T("H6280 Write Port %x, %x\n"), Port, Data);
 }
 
-unsigned char RobocopH6280ReadProg(unsigned int Address)
+UINT8 RobocopH6280ReadProg(UINT32 Address)
 {
 	bprintf(PRINT_NORMAL, _T("H6280 Read Prog %x\n"), Address);
 	
 	return 0;
 }
 
-void RobocopH6280WriteProg(unsigned int Address, unsigned char Data)
+void RobocopH6280WriteProg(UINT32 Address, UINT8 Data)
 {
 	if (Address <= 0x00ffff) return;
 	
@@ -1171,21 +1171,21 @@ void RobocopH6280WriteProg(unsigned int Address, unsigned char Data)
 	bprintf(PRINT_NORMAL, _T("H6280 Write Prog %x, %x\n"), Address, Data);
 }
 
-static int CharPlaneOffsets[4]         = { 0x000000, 0x040000, 0x020000, 0x060000 };
-static int RobocopCharPlaneOffsets[4]  = { 0x000000, 0x080000, 0x040000, 0x0c0000 };
-static int CharXOffsets[8]             = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int CharYOffsets[8]             = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int Tile1PlaneOffsets[4]        = { 0x080000, 0x180000, 0x000000, 0x100000 };
-static int HbarrelTile1PlaneOffsets[4] = { 0x100000, 0x300000, 0x000000, 0x200000 };
-static int Tile2PlaneOffsets[4]        = { 0x040000, 0x0c0000, 0x000000, 0x080000 };
-static int HbarrelTile2PlaneOffsets[4] = { 0x080000, 0x180000, 0x000000, 0x100000 };
-static int SpritePlaneOffsets[4]       = { 0x100000, 0x300000, 0x000000, 0x200000 };
-static int TileXOffsets[16]            = { 128, 129, 130, 131, 132, 133, 134, 135, 0, 1, 2, 3, 4, 5, 6, 7 };
-static int TileYOffsets[16]            = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+static INT32 CharPlaneOffsets[4]         = { 0x000000, 0x040000, 0x020000, 0x060000 };
+static INT32 RobocopCharPlaneOffsets[4]  = { 0x000000, 0x080000, 0x040000, 0x0c0000 };
+static INT32 CharXOffsets[8]             = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 CharYOffsets[8]             = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 Tile1PlaneOffsets[4]        = { 0x080000, 0x180000, 0x000000, 0x100000 };
+static INT32 HbarrelTile1PlaneOffsets[4] = { 0x100000, 0x300000, 0x000000, 0x200000 };
+static INT32 Tile2PlaneOffsets[4]        = { 0x040000, 0x0c0000, 0x000000, 0x080000 };
+static INT32 HbarrelTile2PlaneOffsets[4] = { 0x080000, 0x180000, 0x000000, 0x100000 };
+static INT32 SpritePlaneOffsets[4]       = { 0x100000, 0x300000, 0x000000, 0x200000 };
+static INT32 TileXOffsets[16]            = { 128, 129, 130, 131, 132, 133, 134, 135, 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 TileYOffsets[16]            = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-inline static int Dec0YM2203SynchroniseStream(int nSoundRate)
+inline static INT32 Dec0YM2203SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)SekTotalCycles() * nSoundRate / 10000000;
+	return (INT64)SekTotalCycles() * nSoundRate / 10000000;
 }
 
 inline static double Dec0YM2203GetTime()
@@ -1193,7 +1193,7 @@ inline static double Dec0YM2203GetTime()
 	return (double)SekTotalCycles() / 10000000;
 }
 
-static void Dec0YM3812IRQHandler(int, int nStatus)
+static void Dec0YM3812IRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		M6502SetIRQ(M6502_IRQ_LINE, M6502_IRQSTATUS_ACK);
@@ -1202,24 +1202,24 @@ static void Dec0YM3812IRQHandler(int, int nStatus)
 	}
 }
 
-static int Dec0YM3812SynchroniseStream(int nSoundRate)
+static INT32 Dec0YM3812SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)M6502TotalCycles() * nSoundRate / 1500000;
+	return (INT64)M6502TotalCycles() * nSoundRate / 1500000;
 }
 
-static int Dec0MachineInit()
+static INT32 Dec0MachineInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)malloc(0x80000);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1267,9 +1267,9 @@ static int Dec0MachineInit()
 	return 0;
 }
 
-static int BaddudesInit()
+static INT32 BaddudesInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 
 	Dec0MachineInit();
 
@@ -1334,9 +1334,9 @@ static int BaddudesInit()
 	return 0;
 }
 
-static int HbarrelInit()
+static INT32 HbarrelInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 
 	Dec0MachineInit();
 
@@ -1408,9 +1408,9 @@ static int HbarrelInit()
 	return 0;
 }
 
-static int HippodrmInit()
+static INT32 HippodrmInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 
 	Dec0MachineInit();
 	
@@ -1494,9 +1494,9 @@ static int HippodrmInit()
 	return 0;
 }
 
-static int RobocopInit()
+static INT32 RobocopInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 
 	Dec0MachineInit();
 	
@@ -1579,9 +1579,9 @@ static int RobocopInit()
 	return 0;
 }
 
-static int RobocopbInit()
+static INT32 RobocopbInit()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 
 	Dec0MachineInit();
 
@@ -1643,7 +1643,7 @@ static int RobocopbInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	SekExit();
 	M6502Exit();
@@ -1684,9 +1684,9 @@ static void DrvCalcPalette()
 	UINT16 *PaletteRam = (UINT16*)DrvPaletteRam;
 	UINT16 *Palette2Ram = (UINT16*)DrvPalette2Ram;
 	
-	int r, g, b;
+	INT32 r, g, b;
 	
-	for (int i = 0; i < 0x400; i++) {
+	for (INT32 i = 0; i < 0x400; i++) {
 		r = (PaletteRam[i] >> 0) & 0xff;
 		g = (PaletteRam[i] >> 8) & 0xff;
 		b = (Palette2Ram[i] >> 0) & 0xff;
@@ -1701,14 +1701,14 @@ static void DrvCalcPalette()
 #define PLOTPIXEL_MASK_FLIPX(x, a, mc, po) if (pTileData[a] != mc) {pPixel[x] = nPalette | pTileData[a] | po;}
 #define CLIPPIXEL(x, sx, mx, a) if ((sx + x) >= 0 && (sx + x) < mx) { a; };
 
-static void Dec0Render8x8Tile_Mask(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nMaskColour, int nPaletteOffset, unsigned char *pTile, int TilemapWidth)
+static void Dec0Render8x8Tile_Mask(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nMaskColour, INT32 nPaletteOffset, UINT8 *pTile, INT32 TilemapWidth)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 6);
 	
-	unsigned short* pPixel = pDestDraw + (StartY * TilemapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + (StartY * TilemapWidth) + StartX;
 
-	for (int y = 0; y < 8; y++, pPixel += TilemapWidth, pTileData += 8) {
+	for (INT32 y = 0; y < 8; y++, pPixel += TilemapWidth, pTileData += 8) {
 		PLOTPIXEL_MASK( 0, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK( 1, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK( 2, nMaskColour, nPaletteOffset);
@@ -1720,14 +1720,14 @@ static void Dec0Render8x8Tile_Mask(unsigned short* pDestDraw, int nTileNumber, i
 	}
 }
 
-static void Dec0Render8x8Tile_Mask_FlipXY(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nMaskColour, int nPaletteOffset, unsigned char *pTile, int TilemapWidth)
+static void Dec0Render8x8Tile_Mask_FlipXY(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nMaskColour, INT32 nPaletteOffset, UINT8 *pTile, INT32 TilemapWidth)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 6);
 	
-	unsigned short* pPixel = pDestDraw + ((StartY + 7) * TilemapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + ((StartY + 7) * TilemapWidth) + StartX;
 
-	for (int y = 7; y >= 0; y--, pPixel -= TilemapWidth, pTileData += 8) {
+	for (INT32 y = 7; y >= 0; y--, pPixel -= TilemapWidth, pTileData += 8) {
 		PLOTPIXEL_MASK_FLIPX(7, 0, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK_FLIPX(6, 1, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK_FLIPX(5, 2, nMaskColour, nPaletteOffset);
@@ -1739,14 +1739,14 @@ static void Dec0Render8x8Tile_Mask_FlipXY(unsigned short* pDestDraw, int nTileNu
 	}
 }
 
-static void Dec0Render16x16Tile(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nPaletteOffset, unsigned char *pTile, int TilemapWidth)
+static void Dec0Render16x16Tile(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nPaletteOffset, UINT8 *pTile, INT32 TilemapWidth)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 
-	unsigned short* pPixel = pDestDraw + (StartY * TilemapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + (StartY * TilemapWidth) + StartX;
 
-	for (int y = 0; y < 16; y++, pPixel += TilemapWidth, pTileData += 16) {
+	for (INT32 y = 0; y < 16; y++, pPixel += TilemapWidth, pTileData += 16) {
 		PLOTPIXEL( 0, nPaletteOffset);
 		PLOTPIXEL( 1, nPaletteOffset);
 		PLOTPIXEL( 2, nPaletteOffset);
@@ -1766,14 +1766,14 @@ static void Dec0Render16x16Tile(unsigned short* pDestDraw, int nTileNumber, int 
 	}
 }
 
-static void Dec0Render16x16Tile_FlipXY(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nPaletteOffset, unsigned char *pTile, int TilemapWidth)
+static void Dec0Render16x16Tile_FlipXY(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nPaletteOffset, UINT8 *pTile, INT32 TilemapWidth)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 
-	unsigned short* pPixel = pDestDraw + ((StartY + 15) * TilemapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + ((StartY + 15) * TilemapWidth) + StartX;
 
-	for (int y = 15; y >= 0; y--, pPixel -= TilemapWidth, pTileData += 16) {
+	for (INT32 y = 15; y >= 0; y--, pPixel -= TilemapWidth, pTileData += 16) {
 		PLOTPIXEL_FLIPX(15,  0, nPaletteOffset);
 		PLOTPIXEL_FLIPX(14,  1, nPaletteOffset);
 		PLOTPIXEL_FLIPX(13,  2, nPaletteOffset);
@@ -1793,14 +1793,14 @@ static void Dec0Render16x16Tile_FlipXY(unsigned short* pDestDraw, int nTileNumbe
 	}
 }
 
-static void Dec0Render16x16Tile_Mask(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nMaskColour, int nPaletteOffset, unsigned char *pTile, int TilemapWidth)
+static void Dec0Render16x16Tile_Mask(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nMaskColour, INT32 nPaletteOffset, UINT8 *pTile, INT32 TilemapWidth)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 	
-	unsigned short* pPixel = pDestDraw + (StartY * TilemapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + (StartY * TilemapWidth) + StartX;
 
-	for (int y = 0; y < 16; y++, pPixel += TilemapWidth, pTileData += 16) {
+	for (INT32 y = 0; y < 16; y++, pPixel += TilemapWidth, pTileData += 16) {
 		PLOTPIXEL_MASK( 0, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK( 1, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK( 2, nMaskColour, nPaletteOffset);
@@ -1820,14 +1820,14 @@ static void Dec0Render16x16Tile_Mask(unsigned short* pDestDraw, int nTileNumber,
 	}
 }
 
-static void Dec0Render16x16Tile_Mask_FlipXY(unsigned short* pDestDraw, int nTileNumber, int StartX, int StartY, int nTilePalette, int nColourDepth, int nMaskColour, int nPaletteOffset, unsigned char *pTile, int TilemapWidth)
+static void Dec0Render16x16Tile_Mask_FlipXY(UINT16* pDestDraw, INT32 nTileNumber, INT32 StartX, INT32 StartY, INT32 nTilePalette, INT32 nColourDepth, INT32 nMaskColour, INT32 nPaletteOffset, UINT8 *pTile, INT32 TilemapWidth)
 {
 	UINT32 nPalette = nTilePalette << nColourDepth;
 	pTileData = pTile + (nTileNumber << 8);
 	
-	unsigned short* pPixel = pDestDraw + ((StartY + 15) * TilemapWidth) + StartX;
+	UINT16* pPixel = pDestDraw + ((StartY + 15) * TilemapWidth) + StartX;
 
-	for (int y = 15; y >= 0; y--, pPixel -= TilemapWidth, pTileData += 16) {
+	for (INT32 y = 15; y >= 0; y--, pPixel -= TilemapWidth, pTileData += 16) {
 		PLOTPIXEL_MASK_FLIPX(15,  0, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK_FLIPX(14,  1, nMaskColour, nPaletteOffset);
 		PLOTPIXEL_MASK_FLIPX(13,  2, nMaskColour, nPaletteOffset);
@@ -1856,15 +1856,15 @@ static void Dec0Render16x16Tile_Mask_FlipXY(unsigned short* pDestDraw, int nTile
 #define TILEMAP_LAYER0		1
 #define TILEMAP_LAYER1		0
 
-static void DrvRenderCustomTilemap(unsigned short *pSrc, UINT16 *pControl0, UINT16 *pControl1, UINT16 *RowScrollRam, UINT16 *ColScrollRam, int TilemapWidth, int TilemapHeight, int Opaque, int DrawLayer)
+static void DrvRenderCustomTilemap(UINT16 *pSrc, UINT16 *pControl0, UINT16 *pControl1, UINT16 *RowScrollRam, UINT16 *ColScrollRam, INT32 TilemapWidth, INT32 TilemapHeight, INT32 Opaque, INT32 DrawLayer)
 {
-	int x, y, xSrc, ySrc, ColOffset = 0, pPixel;
+	INT32 x, y, xSrc, ySrc, ColOffset = 0, pPixel;
 	UINT32 xScroll = pControl1[0];
 	UINT32 yScroll = pControl1[1];
-	int WidthMask = TilemapWidth - 1;
-	int HeightMask = TilemapHeight - 1;
-	int RowScrollEnabled = pControl0[0] & 0x04;
-	int ColScrollEnabled = pControl0[0] & 0x08;
+	INT32 WidthMask = TilemapWidth - 1;
+	INT32 HeightMask = TilemapHeight - 1;
+	INT32 RowScrollEnabled = pControl0[0] & 0x04;
+	INT32 ColScrollEnabled = pControl0[0] & 0x08;
 	
 	ySrc = yScroll;
 	
@@ -1899,13 +1899,13 @@ static void DrvRenderCustomTilemap(unsigned short *pSrc, UINT16 *pControl0, UINT
 	}
 }
 
-static void DrvRenderTile1Layer(int Opaque, int DrawLayer)
+static void DrvRenderTile1Layer(INT32 Opaque, INT32 DrawLayer)
 {
-	int mx, my, Code, Attr, Colour, x, y, TileIndex, Layer;
+	INT32 mx, my, Code, Attr, Colour, x, y, TileIndex, Layer;
 	UINT16 *Control0 = (UINT16*)DrvVideo1Ctrl0Ram;
 	UINT16 *VideoRam = (UINT16*)DrvVideo1Ram;
 	
-	int RenderType = Control0[3] & 0x03;
+	INT32 RenderType = Control0[3] & 0x03;
 	
 	switch (RenderType) {
 		case 0x00: {
@@ -1927,7 +1927,7 @@ static void DrvRenderTile1Layer(int Opaque, int DrawLayer)
 		}
 	}
 	
-	memset(pTile1LayerDraw, 0, DrvTile1TilemapWidth * DrvTile1TilemapHeight * sizeof(unsigned short));
+	memset(pTile1LayerDraw, 0, DrvTile1TilemapWidth * DrvTile1TilemapHeight * sizeof(UINT16));
 	
 	for (my = 0; my < (DrvTile1TilemapHeight / 16); my++) {
 		for (mx = 0; mx < (DrvTile1TilemapWidth / 16); mx++) {
@@ -1972,13 +1972,13 @@ static void DrvRenderTile1Layer(int Opaque, int DrawLayer)
 	DrvRenderCustomTilemap(pTile1LayerDraw, (UINT16*)DrvVideo1Ctrl0Ram, (UINT16*)DrvVideo1Ctrl1Ram, (UINT16*)DrvVideo1RowScrollRam, (UINT16*)DrvVideo1ColScrollRam, DrvTile1TilemapWidth, DrvTile1TilemapHeight, Opaque, DrawLayer);
 }
 
-static void DrvRenderTile2Layer(int Opaque, int DrawLayer)
+static void DrvRenderTile2Layer(INT32 Opaque, INT32 DrawLayer)
 {
-	int mx, my, Code, Attr, Colour, x, y, TileIndex, Layer;
+	INT32 mx, my, Code, Attr, Colour, x, y, TileIndex, Layer;
 	UINT16 *Control0 = (UINT16*)DrvVideo2Ctrl0Ram;
 	UINT16 *VideoRam = (UINT16*)DrvVideo2Ram;
 	
-	int RenderType = Control0[3] & 0x03;
+	INT32 RenderType = Control0[3] & 0x03;
 	
 	switch (RenderType) {
 		case 0x00: {
@@ -2000,7 +2000,7 @@ static void DrvRenderTile2Layer(int Opaque, int DrawLayer)
 		}
 	}
 	
-	memset(pTile2LayerDraw, 0, DrvTile2TilemapWidth * DrvTile2TilemapHeight * sizeof(unsigned short));
+	memset(pTile2LayerDraw, 0, DrvTile2TilemapWidth * DrvTile2TilemapHeight * sizeof(UINT16));
 	
 	for (my = 0; my < (DrvTile2TilemapHeight / 16); my++) {
 		for (mx = 0; mx < (DrvTile2TilemapWidth / 16); mx++) {
@@ -2047,11 +2047,11 @@ static void DrvRenderTile2Layer(int Opaque, int DrawLayer)
 
 static void DrvRenderCharLayer()
 {
-	int mx, my, Code, Attr, Colour, x, y, TileIndex;
+	INT32 mx, my, Code, Attr, Colour, x, y, TileIndex;
 	UINT16 *Control0 = (UINT16*)DrvCharCtrl0Ram;
 	UINT16 *CharRam = (UINT16*)DrvCharRam;
 	
-	int RenderType = Control0[3] & 0x03;
+	INT32 RenderType = Control0[3] & 0x03;
 	
 	switch (RenderType) {
 		case 0x00: {
@@ -2073,7 +2073,7 @@ static void DrvRenderCharLayer()
 		}
 	}
 	
-	memset(pCharLayerDraw, 0, DrvCharTilemapWidth * DrvCharTilemapHeight * sizeof(unsigned short));
+	memset(pCharLayerDraw, 0, DrvCharTilemapWidth * DrvCharTilemapHeight * sizeof(UINT16));
 	
 	for (my = 0; my < (DrvCharTilemapHeight / 8); my++) {
 		for (mx = 0; mx < (DrvCharTilemapWidth / 8); mx++) {
@@ -2103,12 +2103,12 @@ static void DrvRenderCharLayer()
 	DrvRenderCustomTilemap(pCharLayerDraw, (UINT16*)DrvCharCtrl0Ram, (UINT16*)DrvCharCtrl1Ram, (UINT16*)DrvCharRowScrollRam, (UINT16*)DrvCharColScrollRam, DrvCharTilemapWidth, DrvCharTilemapHeight, 0, TILEMAP_BOTH_LAYERS);
 }
 
-static void DrvRenderSprites(int PriorityMask, int PriorityVal)
+static void DrvRenderSprites(INT32 PriorityMask, INT32 PriorityVal)
 {
 	UINT16 *SpriteRam = (UINT16*)DrvSpriteDMABufferRam;
 	
-	for (unsigned int Offset = 0; Offset < 0x400; Offset += 4) {
-		int x, y, Code, Colour, Multi, xFlip, yFlip, Inc, Flash, Mult, yPlot;
+	for (UINT32 Offset = 0; Offset < 0x400; Offset += 4) {
+		INT32 x, y, Code, Colour, Multi, xFlip, yFlip, Inc, Flash, Mult, yPlot;
 
 		y = SpriteRam[Offset + 0];
 		if ((y & 0x8000) == 0) continue;
@@ -2235,7 +2235,7 @@ static void HbarrelDraw()
 
 static void RobocopDraw()
 {
-	int Trans;
+	INT32 Trans;
 	UINT16 *Control0 = (UINT16*)DrvCharCtrl0Ram;
 	DrvFlipScreen = Control0[0] & 0x80;
 	
@@ -2272,9 +2272,9 @@ static void RobocopDraw()
 #undef TILEMAP_LAYER0
 #undef TILEMAP_LAYER1
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 264;
+	INT32 nInterleave = 264;
 
 	if (DrvReset) DrvDoReset();
 
@@ -2287,8 +2287,8 @@ static int DrvFrame()
 	SekNewFrame();
 	M6502NewFrame();
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU;
 
 		nCurrentCPU = 0;
 		SekOpen(0);
@@ -2327,9 +2327,9 @@ static int DrvFrame()
 	return 0;
 }
 
-static int RobocopFrame()
+static INT32 RobocopFrame()
 {
-	int nInterleave = 264;
+	INT32 nInterleave = 264;
 
 	if (DrvReset) RobocopDoReset();
 
@@ -2343,8 +2343,8 @@ static int RobocopFrame()
 	SekNewFrame();
 	M6502NewFrame();
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext, nCyclesSegment;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
 
 		nCurrentCPU = 0;
 		SekOpen(0);
@@ -2391,7 +2391,7 @@ static int RobocopFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

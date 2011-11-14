@@ -7,11 +7,11 @@ extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned int *Palette;
-static unsigned char *Mem,  *M68KRom, *Z80Rom, *Prom;
-static short *pFMBuffer, *pAY8910Buffer[3];
-static unsigned char DrvJoy1[9], DrvJoy2[8], DrvReset, DrvDips;
-static unsigned char soundlatch, deposits1, deposits2, credits;
+static UINT32 *Palette;
+static UINT8 *Mem,  *M68KRom, *Z80Rom, *Prom;
+static INT16 *pFMBuffer, *pAY8910Buffer[3];
+static UINT8 DrvJoy1[9], DrvJoy2[8], DrvReset, DrvDips;
+static UINT8 soundlatch, deposits1, deposits2, credits;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"Coin 1",		BIT_DIGITAL,	DrvJoy1 + 6,	"p1 coin"   },
@@ -71,9 +71,9 @@ static struct BurnDIPInfo DrvDIPList[] =
 STDDIPINFO(Drv)
 
 
-unsigned short inputs(int inp)
+UINT16 inputs(INT32 inp)
 {
-	unsigned char ret = 0;
+	UINT8 ret = 0;
 
 	switch (inp)
 	{
@@ -85,12 +85,12 @@ unsigned short inputs(int inp)
 		break;
 
 		case 0x01: { // player 1 controls
-			for (int i = 0; i < 6; i++) ret |= DrvJoy1[i] << i;
+			for (INT32 i = 0; i < 6; i++) ret |= DrvJoy1[i] << i;
 		}
 		break;
 
 		case 0x02: { // player 2 controls
-			for (int i = 0; i < 6; i++) ret |= DrvJoy2[i] << i;
+			for (INT32 i = 0; i < 6; i++) ret |= DrvJoy2[i] << i;
 		}
 		break;
 
@@ -105,18 +105,18 @@ unsigned short inputs(int inp)
 	return ret;
 }
 
-unsigned char soundlatch_r(unsigned int)
+UINT8 soundlatch_r(UINT32)
 {
 	return soundlatch;
 }
 
-unsigned char __fastcall alpha_mcu_r(unsigned char offset)
+UINT8 __fastcall alpha_mcu_r(UINT8 offset)
 {
-	static unsigned coinvalue = 0;
-	static const unsigned char coinage1[2][2] = { {1, 1}, {1, 2} };
-	static const unsigned char coinage2[2][2] = { {1, 5}, {2, 1} };
+	static UINT8 coinvalue = 0;
+	static const UINT8 coinage1[2][2] = { {1, 1}, {1, 2} };
+	static const UINT8 coinage2[2][2] = { {1, 5}, {2, 1} };
 
-	static int latch;
+	static INT32 latch;
 
 	switch (offset)
 	{
@@ -175,7 +175,7 @@ unsigned char __fastcall alpha_mcu_r(unsigned char offset)
 	return 0;
 }
 
-unsigned char __fastcall meijinsn_read_byte(unsigned int a)
+UINT8 __fastcall meijinsn_read_byte(UINT32 a)
 {
 	if ((a & ~0xff) == 0x080e00) {
 		return alpha_mcu_r(a & 0xff);
@@ -196,7 +196,7 @@ unsigned char __fastcall meijinsn_read_byte(unsigned int a)
 	return 0;
 }
 
-void __fastcall meijinsn_write_byte(unsigned int a, unsigned char d)
+void __fastcall meijinsn_write_byte(UINT32 a, UINT8 d)
 {
 	if (a == 0x1a0001) {
 		soundlatch = d & 0xff;
@@ -205,7 +205,7 @@ void __fastcall meijinsn_write_byte(unsigned int a, unsigned char d)
 }
 
 
-unsigned char __fastcall meijinsn_in_port(unsigned short a)
+UINT8 __fastcall meijinsn_in_port(UINT16 a)
 {
 	if ((a & 0xff) == 0x01) { // AY8910 read port
 		return AY8910Read(0);
@@ -214,7 +214,7 @@ unsigned char __fastcall meijinsn_in_port(unsigned short a)
 	return 0;
 }
 
-void __fastcall meijinsn_out_port(unsigned short a, unsigned char data)
+void __fastcall meijinsn_out_port(UINT16 a, UINT8 data)
 {
 	switch (a & 0xff)
 	{
@@ -232,7 +232,7 @@ void __fastcall meijinsn_out_port(unsigned short a, unsigned char data)
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -264,9 +264,9 @@ static void Pallete_Init()
 	float weights_g[3] = { 41.697944,  73.045335, 140.256721};
 	float weights_b[3] = { 83.228546, 159.809836,   0.000000};
 
-	for (int i = 0; i < 0x10; i++)
+	for (INT32 i = 0; i < 0x10; i++)
 	{
-		int bit0,bit1,bit2,r,g,b;
+		INT32 bit0,bit1,bit2,r,g,b;
 
 		// red component
 		bit0 = (Prom[i] >> 0) & 0x01;
@@ -289,9 +289,9 @@ static void Pallete_Init()
 	}
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	Mem = (unsigned char *)malloc(0x210060);
+	Mem = (UINT8 *)malloc(0x210060);
 	if (Mem == NULL) {
 		return 1;
 	}
@@ -299,9 +299,9 @@ static int DrvInit()
 	M68KRom = Mem + 0x000000;
 	Z80Rom  = Mem + 0x200000;
 	Prom    = Mem + 0x210000;
-	Palette = (unsigned int *)(Mem + 0x210020);
+	Palette = (UINT32 *)(Mem + 0x210020);
 
-	pFMBuffer = (short *)malloc (nBurnSoundLen * 3 * sizeof(short));
+	pFMBuffer = (INT16 *)malloc (nBurnSoundLen * 3 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -312,7 +312,7 @@ static int DrvInit()
 
 	// Load roms
 	{
-		int i;
+		INT32 i;
 		for (i = 0; i < 8; i+=2) {
 			BurnLoadRom(M68KRom + 0x100001, i + 0, 2);
 			BurnLoadRom(M68KRom + 0x100000, i + 1, 2);
@@ -355,7 +355,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	AY8910Exit(0);
 	SekExit();
@@ -378,11 +378,11 @@ static int DrvExit()
 }
 
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	for (int i = 0; i < 0x4000; i++)
+	for (INT32 i = 0; i < 0x4000; i++)
 	{
-		int sx, sy, x, data1, data2, color, data;
+		INT32 sx, sy, x, data1, data2, color, data;
 
 		sx = (i >> 6) & 0xfc;
 		sy = i & 0xff;
@@ -398,7 +398,7 @@ static int DrvDraw()
 			color = ((data1 >> x) & 1) | ((data1 >> (3 + x)) & 2);
 			data  = ((data2 >> x) & 1) | ((data2 >> (3 + x)) & 2);
 
-			unsigned int c = Palette[(color << 2) | data];
+			UINT32 c = Palette[(color << 2) | data];
 
 			PutPix(pBurnDraw + (sy + sx + (x ^ 3)) * nBurnBpp, BurnHighCol(c >> 16, c >> 8, c, 0));
 		}
@@ -408,17 +408,17 @@ static int DrvDraw()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
-	int nSoundBufferPos = 0;
-	int nInterleave = 160;
+	INT32 nSoundBufferPos = 0;
+	INT32 nInterleave = 160;
 
-	int nCyclesSegment;
-	int nCyclesDone[2], nCyclesTotal[2];
+	INT32 nCyclesSegment;
+	INT32 nCyclesDone[2], nCyclesTotal[2];
 
 	nCyclesTotal[0] = 9000000 / 60;
 	nCyclesTotal[1] = 4000000 / 60;
@@ -427,8 +427,8 @@ static int DrvFrame()
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext;
 
 		nNext = (i + 1) * nCyclesTotal[0] / nInterleave;
 		nCyclesSegment = nNext - nCyclesDone[0];
@@ -444,11 +444,11 @@ static int DrvFrame()
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
@@ -475,12 +475,12 @@ static int DrvFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
@@ -509,7 +509,7 @@ static int DrvFrame()
 }
 
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

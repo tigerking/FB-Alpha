@@ -10,45 +10,45 @@ extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvVecRAM;
-static unsigned char *DrvNVRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvVecRAM;
+static UINT8 *DrvNVRAM;
 
-static unsigned int  *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32  *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *soundlatch;
-static int sound_irq_timer;
-static int sound_status;
+static UINT8 *soundlatch;
+static INT32 sound_irq_timer;
+static INT32 sound_status;
 
-static int sound_initialized = 0;
-static short *pFMBuffer[12];
+static INT32 sound_initialized = 0;
+static INT16 *pFMBuffer[12];
 
-static int xcenter;
-static int ycenter;
+static INT32 xcenter;
+static INT32 ycenter;
 
-static int watchdog;
+static INT32 watchdog;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvInputs[1];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvInputs[1];
+static UINT8 DrvReset;
 
-static short DrvAnalogPort0;
-static short DrvAnalogPort1;
+static INT16 DrvAnalogPort0;
+static INT16 DrvAnalogPort1;
 
-static unsigned char xAxis = 0;
-static unsigned char yAxis = 0;
-static unsigned char Dial = 0;
-static unsigned char DialInputs[2];
+static UINT8 xAxis = 0;
+static UINT8 yAxis = 0;
+static UINT8 Dial = 0;
+static UINT8 DialInputs[2];
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo AztaracInputList[] = {
 	{"P1 Coin",			BIT_DIGITAL,	DrvJoy1 + 4,		"p1 coin"	},
@@ -70,7 +70,7 @@ STDINPUTINFO(Aztarac)
 
 #undef A
 
-static inline void read_vectorram (int addr, int *x, int *y, int *c)
+static inline void read_vectorram (INT32 addr, INT32 *x, INT32 *y, INT32 *c)
 {
 	*c = SekReadWord(0xff8000 + addr);
 	*x = SekReadWord(0xff9000 + addr) & 0x03ff;
@@ -81,8 +81,8 @@ static inline void read_vectorram (int addr, int *x, int *y, int *c)
 
 static void aztarac_process_vector_list()
 {
-	int x, y, c, intensity, xoffset, yoffset, color;
-	int defaddr, objaddr, ndefs;
+	INT32 x, y, c, intensity, xoffset, yoffset, color;
+	INT32 defaddr, objaddr, ndefs;
 
 	vector_reset();
 
@@ -134,15 +134,15 @@ static void aztarac_process_vector_list()
 
 static inline void sync_cpu()
 {
-	int cycles = (SekTotalCycles() / 4) - ZetTotalCycles();
+	INT32 cycles = (SekTotalCycles() / 4) - ZetTotalCycles();
 
 	if (cycles > 0)	ZetRun(cycles);
 }
 
-void __fastcall aztarac_write_word(unsigned int address, unsigned short data)
+void __fastcall aztarac_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfffff00) == 0x022000) {
-		*((unsigned short*)(DrvNVRAM + (address & 0xfe))) = data | 0xfff0;
+		*((UINT16*)(DrvNVRAM + (address & 0xfe))) = data | 0xfff0;
 		return;
 	}
 
@@ -152,7 +152,7 @@ void __fastcall aztarac_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-void __fastcall aztarac_write_byte(unsigned int address, unsigned char data)
+void __fastcall aztarac_write_byte(UINT32 address, UINT8 data)
 {
 	if (address == 0x027009) {
 		sync_cpu();
@@ -170,7 +170,7 @@ void __fastcall aztarac_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-unsigned short __fastcall aztarac_read_word(unsigned int address)
+UINT16 __fastcall aztarac_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -185,7 +185,7 @@ unsigned short __fastcall aztarac_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall aztarac_read_byte(unsigned int address)
+UINT8 __fastcall aztarac_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -209,7 +209,7 @@ unsigned char __fastcall aztarac_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall aztarac_sound_write(unsigned short address, unsigned char data)
+void __fastcall aztarac_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -230,7 +230,7 @@ void __fastcall aztarac_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall aztarac_sound_read(unsigned short address)
+UINT8 __fastcall aztarac_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -255,12 +255,12 @@ unsigned char __fastcall aztarac_sound_read(unsigned short address)
 	return 0;
 }
 
-static int __fastcall aztarac_irq_callback(int)
+static INT32 __fastcall aztarac_irq_callback(INT32)
 {
 	return 0x0c;
 }
 
-static int DrvDoReset(int reset_ram)
+static INT32 DrvDoReset(INT32 reset_ram)
 {
 	if (reset_ram) {
 		memset (AllRam, 0, RamEnd - AllRam);
@@ -291,16 +291,16 @@ static int DrvDoReset(int reset_ram)
 
 static void sound_init() // Changed refresh rate causes crashes
 {
-	for (int i = 0; i < 12; i++) {
-		pFMBuffer[i] = (short*)malloc(nBurnSoundLen * sizeof(short));
+	for (INT32 i = 0; i < 12; i++) {
+		pFMBuffer[i] = (INT16*)malloc(nBurnSoundLen * sizeof(INT16));
 	}
 
 	sound_initialized = 1;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM		= Next; Next += 0x010000;
 	DrvZ80ROM		= Next; Next += 0x002000;
@@ -317,7 +317,7 @@ static int MemIndex()
 
 	RamEnd			= Next;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x0040 * 256 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x0040 * 256 * sizeof(UINT32);
 
 	MemEnd			= Next;
 
@@ -326,17 +326,17 @@ static int MemIndex()
 
 static void DrvPaletteInit()
 {
-	for (int i = 0; i < 0x40; i++) // color
+	for (INT32 i = 0; i < 0x40; i++) // color
 	{
-		for (int j = 0; j < 256; j++) // intensity
+		for (INT32 j = 0; j < 256; j++) // intensity
 		{
-			int r = (i >> 4) & 3;
+			INT32 r = (i >> 4) & 3;
 			r = (r << 6) | (r << 4) | (r << 2) | (r << 0);
 	
-			int g = (i >> 2) & 3;
+			INT32 g = (i >> 2) & 3;
 			g = (g << 6) | (g << 4) | (g << 2) | (g << 0);
 	
-			int b = (i >> 0) & 3;
+			INT32 b = (i >> 0) & 3;
 			b = (b << 6) | (b << 4) | (b << 2) | (b << 0);
 
 			r = (r * j) / 255;
@@ -348,14 +348,14 @@ static void DrvPaletteInit()
 	}
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	BurnSetRefreshRate(40.0);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -421,7 +421,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	vector_exit();
 
@@ -437,7 +437,7 @@ static int DrvExit()
 	AllMem = NULL;
 
 	sound_initialized = 0;
-	for (int i = 0; i < 12; i++) {
+	for (INT32 i = 0; i < 12; i++) {
 		free (pFMBuffer[i]);
 		pFMBuffer[i] = NULL;
 	}
@@ -445,7 +445,7 @@ static int DrvExit()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvPaletteInit();
@@ -457,7 +457,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (sound_initialized == 0) {
 		if (pBurnSoundOut) {
@@ -479,7 +479,7 @@ static int DrvFrame()
 
 	{
 		DrvInputs[0] = 0xff;
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 		}
 		
@@ -498,14 +498,14 @@ static int DrvFrame()
 		}
 	}
 
-	int nInterleave = 100;
-	int nCyclesTotal[2] = { 8000000 / 40, 2000000 / 40 };
-	int nCyclesDone[2]  = { 0, 0 };
+	INT32 nInterleave = 100;
+	INT32 nCyclesTotal[2] = { 8000000 / 40, 2000000 / 40 };
+	INT32 nCyclesDone[2]  = { 0, 0 };
 
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++, sound_irq_timer++)
+	for (INT32 i = 0; i < nInterleave; i++, sound_irq_timer++)
 	{
 		nCyclesDone[0] += SekRun(nCyclesTotal[0] / nInterleave);
 		if (i == (nInterleave - 1)) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
@@ -523,13 +523,13 @@ static int DrvFrame()
 	ZetClose();
 
 	if (pBurnSoundOut) {
-		int nSample;
+		INT32 nSample;
 
 		AY8910Update(0, &pFMBuffer[0], nBurnSoundLen);
 		AY8910Update(1, &pFMBuffer[3], nBurnSoundLen);
 		AY8910Update(2, &pFMBuffer[6], nBurnSoundLen);
 		AY8910Update(3, &pFMBuffer[9], nBurnSoundLen);
-		for (int n = 0; n < nBurnSoundLen; n++) {
+		for (INT32 n = 0; n < nBurnSoundLen; n++) {
 			nSample  = pFMBuffer[ 0][n] / 2;
 			nSample += pFMBuffer[ 1][n] / 2;
 			nSample += pFMBuffer[ 2][n] / 2;
@@ -565,7 +565,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

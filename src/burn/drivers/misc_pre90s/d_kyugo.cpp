@@ -5,56 +5,56 @@ extern "C" {
  #include "ay8910.h"
 }
 
-static unsigned char KyugoInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char KyugoInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char KyugoInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char KyugoDip[2]        = {0, 0};
-static unsigned char KyugoInput[3]      = {0x00, 0x00, 0x00};
-static unsigned char KyugoReset         = 0;
+static UINT8 KyugoInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 KyugoInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 KyugoInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 KyugoDip[2]        = {0, 0};
+static UINT8 KyugoInput[3]      = {0x00, 0x00, 0x00};
+static UINT8 KyugoReset         = 0;
 
-static unsigned char *Mem                   = NULL;
-static unsigned char *MemEnd                = NULL;
-static unsigned char *RamStart              = NULL;
-static unsigned char *RamEnd                = NULL;
-static unsigned char *KyugoZ80Rom1          = NULL;
-static unsigned char *KyugoZ80Rom2          = NULL;
-static unsigned char *KyugoSharedZ80Ram     = NULL;
-static unsigned char *KyugoZ80Ram2          = NULL;
-static unsigned char *KyugoSprite1Ram       = NULL;
-static unsigned char *KyugoSprite2Ram       = NULL;
-static unsigned char *KyugoFgVideoRam       = NULL;
-static unsigned char *KyugoBgVideoRam       = NULL;
-static unsigned char *KyugoBgAttrRam        = NULL;
-static unsigned char *KyugoPromRed          = NULL;
-static unsigned char *KyugoPromGreen        = NULL;
-static unsigned char *KyugoPromBlue         = NULL;
-static unsigned char *KyugoPromCharLookup   = NULL;
-static unsigned char *KyugoChars            = NULL;
-static unsigned char *KyugoTiles            = NULL;
-static unsigned char *KyugoSprites          = NULL;
-static unsigned char *KyugoTempRom          = NULL;
-static unsigned int  *KyugoPalette          = NULL;
-static short* pFMBuffer;
-static short* pAY8910Buffer[6];
+static UINT8 *Mem                   = NULL;
+static UINT8 *MemEnd                = NULL;
+static UINT8 *RamStart              = NULL;
+static UINT8 *RamEnd                = NULL;
+static UINT8 *KyugoZ80Rom1          = NULL;
+static UINT8 *KyugoZ80Rom2          = NULL;
+static UINT8 *KyugoSharedZ80Ram     = NULL;
+static UINT8 *KyugoZ80Ram2          = NULL;
+static UINT8 *KyugoSprite1Ram       = NULL;
+static UINT8 *KyugoSprite2Ram       = NULL;
+static UINT8 *KyugoFgVideoRam       = NULL;
+static UINT8 *KyugoBgVideoRam       = NULL;
+static UINT8 *KyugoBgAttrRam        = NULL;
+static UINT8 *KyugoPromRed          = NULL;
+static UINT8 *KyugoPromGreen        = NULL;
+static UINT8 *KyugoPromBlue         = NULL;
+static UINT8 *KyugoPromCharLookup   = NULL;
+static UINT8 *KyugoChars            = NULL;
+static UINT8 *KyugoTiles            = NULL;
+static UINT8 *KyugoSprites          = NULL;
+static UINT8 *KyugoTempRom          = NULL;
+static UINT32  *KyugoPalette          = NULL;
+static INT16* pFMBuffer;
+static INT16* pAY8910Buffer[6];
 
-static unsigned char KyugoIRQEnable;
-static unsigned char KyugoSubCPUEnable;
-static unsigned char KyugoFgColour;
-static unsigned char KyugoBgPaletteBank;
-static unsigned char KyugoBgScrollXHi;
-static unsigned char KyugoBgScrollXLo;
-static unsigned char KyugoBgScrollY;
-static unsigned char KyugoFlipScreen;
+static UINT8 KyugoIRQEnable;
+static UINT8 KyugoSubCPUEnable;
+static UINT8 KyugoFgColour;
+static UINT8 KyugoBgPaletteBank;
+static UINT8 KyugoBgScrollXHi;
+static UINT8 KyugoBgScrollXLo;
+static UINT8 KyugoBgScrollY;
+static UINT8 KyugoFlipScreen;
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
-static int KyugoNumZ80Rom1;
-static int KyugoNumZ80Rom2;
-static int KyugoNumSpriteRom;
-static int KyugoSizeZ80Rom1;
-static int KyugoSizeZ80Rom2;
-static int KyugoSizeSpriteRom;
+static INT32 KyugoNumZ80Rom1;
+static INT32 KyugoNumZ80Rom2;
+static INT32 KyugoNumSpriteRom;
+static INT32 KyugoSizeZ80Rom1;
+static INT32 KyugoSizeZ80Rom2;
+static INT32 KyugoSizeSpriteRom;
 
 static struct BurnInputInfo KyugoInputList[] =
 {
@@ -86,7 +86,7 @@ static struct BurnInputInfo KyugoInputList[] =
 
 STDINPUTINFO(Kyugo)
 
-inline void KyugoClearOpposites(unsigned char* nJoystickInputs)
+inline void KyugoClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -102,7 +102,7 @@ inline void KyugoMakeInputs()
 	KyugoInput[0] = KyugoInput[1] = KyugoInput[2] = 0x00;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		KyugoInput[0] |= (KyugoInputPort0[i] & 1) << i;
 		KyugoInput[1] |= (KyugoInputPort1[i] & 1) << i;
 		KyugoInput[2] |= (KyugoInputPort2[i] & 1) << i;
@@ -1092,9 +1092,9 @@ static struct BurnRomInfo FxRomDesc[] = {
 STD_ROM_PICK(Fx)
 STD_ROM_FN(Fx)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	KyugoZ80Rom1             = Next; Next += 0x08000;
 	KyugoZ80Rom2             = Next; Next += 0x08000;
@@ -1118,23 +1118,23 @@ static int MemIndex()
 	KyugoChars               = Next; Next += 0x100 * 8 * 8;
 	KyugoTiles               = Next; Next += 0x400 * 8 * 8;
 	KyugoSprites             = Next; Next += 0x400 * 16 * 16;
-	pFMBuffer              = (short*)Next; Next += nBurnSoundLen * 6 * sizeof(short);
-	KyugoPalette             = (unsigned int*)Next; Next += 256 * sizeof(unsigned int);
+	pFMBuffer              = (INT16*)Next; Next += nBurnSoundLen * 6 * sizeof(INT16);
+	KyugoPalette             = (UINT32*)Next; Next += 256 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int KyugoDoReset()
+static INT32 KyugoDoReset()
 {
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		ZetOpen(i);
 		ZetReset();
 		ZetClose();
 	}
 	
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		AY8910Reset(i);
 	}
 	
@@ -1150,7 +1150,7 @@ static int KyugoDoReset()
 	return 0;
 }
 
-unsigned char __fastcall KyugoRead1(unsigned short a)
+UINT8 __fastcall KyugoRead1(UINT16 a)
 {
 	if (a >= 0x9800 && a <= 0x9fff) {
 		return KyugoSprite2Ram[a - 0x9800] | 0xf0;
@@ -1165,7 +1165,7 @@ unsigned char __fastcall KyugoRead1(unsigned short a)
 	return 0;
 }
 
-void __fastcall KyugoWrite1(unsigned short a, unsigned char d)
+void __fastcall KyugoWrite1(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xa800: {
@@ -1197,7 +1197,7 @@ void __fastcall KyugoWrite1(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall FlashgalPortWrite1(unsigned short a, unsigned char d)
+void __fastcall FlashgalPortWrite1(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1223,7 +1223,7 @@ void __fastcall FlashgalPortWrite1(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall FlashgalaPortWrite1(unsigned short a, unsigned char d)
+void __fastcall FlashgalaPortWrite1(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1249,7 +1249,7 @@ void __fastcall FlashgalaPortWrite1(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall GyrodinePortWrite1(unsigned short a, unsigned char d)
+void __fastcall GyrodinePortWrite1(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1275,7 +1275,7 @@ void __fastcall GyrodinePortWrite1(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall SrdmissnPortWrite1(unsigned short a, unsigned char d)
+void __fastcall SrdmissnPortWrite1(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1301,7 +1301,7 @@ void __fastcall SrdmissnPortWrite1(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall FlashgalRead2(unsigned short a)
+UINT8 __fastcall FlashgalRead2(UINT16 a)
 {
 	switch (a) {
 		case 0xc000: {
@@ -1324,7 +1324,7 @@ unsigned char __fastcall FlashgalRead2(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall FlashgalaRead2(unsigned short a)
+UINT8 __fastcall FlashgalaRead2(UINT16 a)
 {
 	switch (a) {
 		case 0xc040: {
@@ -1347,7 +1347,7 @@ unsigned char __fastcall FlashgalaRead2(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall GyrodineRead2(unsigned short a)
+UINT8 __fastcall GyrodineRead2(UINT16 a)
 {
 	switch (a) {
 		case 0x8000: {
@@ -1370,7 +1370,7 @@ unsigned char __fastcall GyrodineRead2(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall SrdmissnRead2(unsigned short a)
+UINT8 __fastcall SrdmissnRead2(UINT16 a)
 {
 	switch (a) {
 		case 0xf400: {
@@ -1393,7 +1393,7 @@ unsigned char __fastcall SrdmissnRead2(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall LegendRead2(unsigned short a)
+UINT8 __fastcall LegendRead2(UINT16 a)
 {
 	switch (a) {
 		case 0xf800: {
@@ -1416,7 +1416,7 @@ unsigned char __fastcall LegendRead2(unsigned short a)
 	return 0;
 }
 
-void __fastcall KyugoWrite2(unsigned short a, unsigned char d)
+void __fastcall KyugoWrite2(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		default: {
@@ -1425,7 +1425,7 @@ void __fastcall KyugoWrite2(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall KyugoPortRead2(unsigned short a)
+UINT8 __fastcall KyugoPortRead2(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -1442,7 +1442,7 @@ unsigned char __fastcall KyugoPortRead2(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall FlashgalaPortRead2(unsigned short a)
+UINT8 __fastcall FlashgalaPortRead2(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -1459,7 +1459,7 @@ unsigned char __fastcall FlashgalaPortRead2(unsigned short a)
 	return 0;
 }
 
-unsigned char __fastcall SrdmissnPortRead2(unsigned short a)
+UINT8 __fastcall SrdmissnPortRead2(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -1476,7 +1476,7 @@ unsigned char __fastcall SrdmissnPortRead2(unsigned short a)
 	return 0;
 }
 
-void __fastcall FlashgalPortWrite2(unsigned short a, unsigned char d)
+void __fastcall FlashgalPortWrite2(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1507,7 +1507,7 @@ void __fastcall FlashgalPortWrite2(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall FlashgalaPortWrite2(unsigned short a, unsigned char d)
+void __fastcall FlashgalaPortWrite2(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1538,7 +1538,7 @@ void __fastcall FlashgalaPortWrite2(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall GyrodinePortWrite2(unsigned short a, unsigned char d)
+void __fastcall GyrodinePortWrite2(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1569,7 +1569,7 @@ void __fastcall GyrodinePortWrite2(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall SrdmissnPortWrite2(unsigned short a, unsigned char d)
+void __fastcall SrdmissnPortWrite2(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -1600,29 +1600,29 @@ void __fastcall SrdmissnPortWrite2(unsigned short a, unsigned char d)
 	}
 }
 
-static int CharPlaneOffsets[2]   = { 0, 4 };
-static int CharXOffsets[8]       = { 0, 1, 2, 3, 64, 65, 66, 67 };
-static int CharYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int TilePlaneOffsets[3]   = { 0, 0x10000, 0x20000 };
-static int TileXOffsets[8]       = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int TileYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int SpritePlaneOffsets[3] = { 0, 0x40000, 0x80000 };
-static int SpriteXOffsets[16]    = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
-static int SpriteYOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
+static INT32 CharPlaneOffsets[2]   = { 0, 4 };
+static INT32 CharXOffsets[8]       = { 0, 1, 2, 3, 64, 65, 66, 67 };
+static INT32 CharYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 TilePlaneOffsets[3]   = { 0, 0x10000, 0x20000 };
+static INT32 TileXOffsets[8]       = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 TileYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 SpritePlaneOffsets[3] = { 0, 0x40000, 0x80000 };
+static INT32 SpriteXOffsets[16]    = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
+static INT32 SpriteYOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
 
-static unsigned char KyugoDip0Read(unsigned int /*a*/)
+static UINT8 KyugoDip0Read(UINT32 /*a*/)
 {
 	return KyugoDip[0];
 }
 
-static unsigned char KyugoDip1Read(unsigned int /*a*/)
+static UINT8 KyugoDip1Read(UINT32 /*a*/)
 {
 	return KyugoDip[1];
 }
 
-static int KyugoInit()
+static INT32 KyugoInit()
 {
-	int nRet = 0, nLen, i;
+	INT32 nRet = 0, nLen, i;
 	
 	KyugoNumZ80Rom1 = 4;
 	KyugoNumZ80Rom2 = 4;
@@ -1663,12 +1663,12 @@ static int KyugoInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	KyugoTempRom = (unsigned char *)malloc(0x18000);
+	KyugoTempRom = (UINT8 *)malloc(0x18000);
 
 	// Load Z80 #1 Program Roms
 	for (i = 0; i < KyugoNumZ80Rom1; i++) {
@@ -1697,7 +1697,7 @@ static int KyugoInit()
 		nRet = BurnLoadRom(KyugoTempRom + (KyugoSizeSpriteRom * (i - KyugoNumZ80Rom2 - KyugoNumZ80Rom1 - 4)),  i, 1); if (nRet != 0) return 1;
 	}
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "airwolf") || !strcmp(BurnDrvGetTextA(DRV_NAME), "airwolfa")) {
-		unsigned char *Temp = (unsigned char*)malloc(0x18000);
+		UINT8 *Temp = (UINT8*)malloc(0x18000);
 		memcpy(Temp, KyugoTempRom, 0x18000);
 		memcpy(KyugoTempRom + 0x00000, Temp + 0x00000, 0x2000);
 		memcpy(KyugoTempRom + 0x04000, Temp + 0x02000, 0x2000);
@@ -1901,20 +1901,20 @@ static int KyugoInit()
 	return 0;
 }
 
-static int Skywolf3Init()
+static INT32 Skywolf3Init()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	KyugoTempRom = (unsigned char *)malloc(0x18000);
-	unsigned char *pTemp = (unsigned char*)malloc(0x8000);
+	KyugoTempRom = (UINT8 *)malloc(0x18000);
+	UINT8 *pTemp = (UINT8*)malloc(0x8000);
 	
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(pTemp, 0, 1); if (nRet != 0) return 1;
@@ -2034,11 +2034,11 @@ static int Skywolf3Init()
 	return 0;
 }
 
-static int KyugoExit()
+static INT32 KyugoExit()
 {
 	ZetExit();
 	
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		AY8910Exit(i);
 	}
 	
@@ -2070,10 +2070,10 @@ static int KyugoExit()
 
 static void KyugoCalcPalette()
 {
-	int i;
+	INT32 i;
 	
 	for (i = 0; i < 256; i++) {
-		int bit0, bit1, bit2, bit3, r, g, b;
+		INT32 bit0, bit1, bit2, bit3, r, g, b;
 		
 		bit0 = (KyugoPromRed[i] >> 0) & 0x01;
 		bit1 = (KyugoPromRed[i] >> 1) & 0x01;
@@ -2099,7 +2099,7 @@ static void KyugoCalcPalette()
 
 static void KyugoRenderBgLayer()
 {
-	int mx, my, Code, Attr, Colour, x, y, TileIndex = 0, xScroll, Flip, xFlip, yFlip;
+	INT32 mx, my, Code, Attr, Colour, x, y, TileIndex = 0, xScroll, Flip, xFlip, yFlip;
 	
 	xScroll = KyugoBgScrollXLo + (KyugoBgScrollXHi * 256);
 	
@@ -2173,14 +2173,14 @@ static void KyugoRenderBgLayer()
 
 static void KyugoRenderSpriteLayer()
 {
-	unsigned char *SpriteRam_Area1 = &KyugoSprite1Ram[0x28];
-	unsigned char *SpriteRam_Area2 = &KyugoSprite2Ram[0x28];
-	unsigned char *SpriteRam_Area3 = &KyugoFgVideoRam[0x28];
+	UINT8 *SpriteRam_Area1 = &KyugoSprite1Ram[0x28];
+	UINT8 *SpriteRam_Area2 = &KyugoSprite2Ram[0x28];
+	UINT8 *SpriteRam_Area3 = &KyugoFgVideoRam[0x28];
 	
-	int i;
+	INT32 i;
 	
 	for (i = 0; i < 24; i++) {
-		int Offset, y, sy, sx, Colour;
+		INT32 Offset, y, sy, sx, Colour;
 		
 		Offset = 2 * (i % 12) + 64 * (i / 12);
 		
@@ -2194,7 +2194,7 @@ static void KyugoRenderSpriteLayer()
 		Colour = SpriteRam_Area1[Offset + 1] & 0x1f;
 		
 		for (y = 0; y < 16; y++) {
-			int Code, Attr, FlipX, FlipY, yPos;
+			INT32 Code, Attr, FlipX, FlipY, yPos;
 
 			Code = SpriteRam_Area3[Offset + 128 * y];
 			Attr = SpriteRam_Area2[Offset + 128 * y];
@@ -2247,7 +2247,7 @@ static void KyugoRenderSpriteLayer()
 
 static void KyugoRenderCharLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0, FlipX = 0, FlipY = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0, FlipX = 0, FlipY = 0;
 	
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 64; mx++) {
@@ -2312,10 +2312,10 @@ static void KyugoDraw()
 	BurnTransferCopy(KyugoPalette);
 }
 
-static int KyugoFrame()
+static INT32 KyugoFrame()
 {
-	int nInterleave = 10;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
 
 	if (KyugoReset) KyugoDoReset();
 
@@ -2325,8 +2325,8 @@ static int KyugoFrame()
 	nCyclesTotal[1] = (18432000 / 6) / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run Z80 #1
 		nCurrentCPU = 0;
@@ -2351,12 +2351,12 @@ static int KyugoFrame()
 		
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -2382,13 +2382,13 @@ static int KyugoFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -2416,7 +2416,7 @@ static int KyugoFrame()
 	return 0;
 }
 
-static int KyugoScan(int nAction, int *pnMin)
+static INT32 KyugoScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

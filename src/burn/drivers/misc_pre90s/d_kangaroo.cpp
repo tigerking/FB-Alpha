@@ -5,29 +5,29 @@ extern "C" {
  #include "ay8910.h"
 }
 
-static unsigned char *Mem, *MemEnd, *AllRAM;
-static unsigned char *DrvZ80ROM0;
-static unsigned char *DrvZ80ROM1;
-static unsigned char *DrvZ80RAM0;
-static unsigned char *DrvZ80RAM1;
-static unsigned char *DrvGfxROM;
-static unsigned int *DrvPalette;
-static unsigned int *Palette;
-static unsigned char DrvRecalc;
+static UINT8 *Mem, *MemEnd, *AllRAM;
+static UINT8 *DrvZ80ROM0;
+static UINT8 *DrvZ80ROM1;
+static UINT8 *DrvZ80RAM0;
+static UINT8 *DrvZ80RAM1;
+static UINT8 *DrvGfxROM;
+static UINT32 *DrvPalette;
+static UINT32 *Palette;
+static UINT8 DrvRecalc;
 
-static unsigned int *DrvVidRAM32;
+static UINT32 *DrvVidRAM32;
 
-static short* pAY8910Buffer[3];
-static short *pFMBuffer;
+static INT16* pAY8910Buffer[3];
+static INT16 *pFMBuffer;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
 
-static unsigned char kangaroo_clock;
-static unsigned char soundlatch;
-static unsigned char *DrvVidControl;
+static UINT8 kangaroo_clock;
+static UINT8 soundlatch;
+static UINT8 *DrvVidControl;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin"    ,   BIT_DIGITAL  , DrvJoy1 + 0,	"p1 coin"  },
@@ -111,9 +111,9 @@ static struct BurnDIPInfo DrvDIPList[]=
 STDDIPINFO(Drv)
 
 
-static void videoram_write(unsigned short offset, unsigned char data, unsigned char mask)
+static void videoram_write(UINT16 offset, UINT8 data, UINT8 mask)
 {
-	unsigned int expdata, layermask;
+	UINT32 expdata, layermask;
 
 	// data contains 4 2-bit values packed as DCBADCBA; expand these into 4 8-bit values
 	expdata = 0;
@@ -139,28 +139,28 @@ static void videoram_write(unsigned short offset, unsigned char data, unsigned c
 
 static void blitter_execute()
 {
-	unsigned short src = DrvVidControl[0] | (DrvVidControl[1] << 8);
-	unsigned short dst = DrvVidControl[2] | (DrvVidControl[3] << 8);
-	unsigned char height = DrvVidControl[5];
-	unsigned char width = DrvVidControl[4];
-	unsigned char mask = DrvVidControl[8];
+	UINT16 src = DrvVidControl[0] | (DrvVidControl[1] << 8);
+	UINT16 dst = DrvVidControl[2] | (DrvVidControl[3] << 8);
+	UINT8 height = DrvVidControl[5];
+	UINT8 width = DrvVidControl[4];
+	UINT8 mask = DrvVidControl[8];
 
 	// during DMA operations, the top 2 bits are ORed together, as well as the bottom 2 bits
 	// adjust the mask to account for this
 	mask |= ((mask & 0x41) << 1) | ((mask & 0x82) >> 1);
 
 	// loop over height, then width
-	for (int y = 0; y <= height; y++, dst += 256) {
-		for (int x = 0; x <= width; x++) {
-			unsigned short effdst = (dst + x) & 0x3fff;
-			unsigned short effsrc = src++ & 0x1fff;
+	for (INT32 y = 0; y <= height; y++, dst += 256) {
+		for (INT32 x = 0; x <= width; x++) {
+			UINT16 effdst = (dst + x) & 0x3fff;
+			UINT16 effsrc = src++ & 0x1fff;
 			videoram_write(effdst, DrvGfxROM[0x0000 + effsrc], mask & 0x05);
 			videoram_write(effdst, DrvGfxROM[0x2000 + effsrc], mask & 0x0a);
 		}
 	}
 }
 
-void __fastcall kangaroo_main_write(unsigned short address, unsigned char data)
+void __fastcall kangaroo_main_write(UINT16 address, UINT8 data)
 {
 	if (address >= 0x8000 && address <= 0xbfff) {
 		videoram_write(address & 0x3fff, data, DrvVidControl[8]);
@@ -218,7 +218,7 @@ void __fastcall kangaroo_main_write(unsigned short address, unsigned char data)
 	return;
 }
 
-unsigned char __fastcall kangaroo_main_read(unsigned short address)
+UINT8 __fastcall kangaroo_main_read(UINT16 address)
 {
 	if ((address & 0xec00) == 0xe400) address &= 0xfc00;
 	if ((address & 0xec00) == 0xec00) address &= 0xff00;
@@ -230,7 +230,7 @@ unsigned char __fastcall kangaroo_main_read(unsigned short address)
 
 		case 0xec00: // in0
 		{
-			unsigned char ret = DrvDips[0];
+			UINT8 ret = DrvDips[0];
 			if (DrvJoy1[7]) ret |= 0x01;	// service
 			if (DrvJoy1[1]) ret |= 0x02;
 			if (DrvJoy2[1]) ret |= 0x04;
@@ -241,7 +241,7 @@ unsigned char __fastcall kangaroo_main_read(unsigned short address)
 
 		case 0xed00: // in1
 		{
-			unsigned char ret = 0;
+			UINT8 ret = 0;
 			if (DrvJoy1[2]) ret |= 0x01;
 			if (DrvJoy1[3]) ret |= 0x02;
 			if (DrvJoy1[4]) ret |= 0x04;
@@ -254,7 +254,7 @@ unsigned char __fastcall kangaroo_main_read(unsigned short address)
 
 		case 0xee00: // in2
 		{
-			unsigned char ret = 0;
+			UINT8 ret = 0;
 			if (DrvJoy2[2]) ret |= 0x01;
 			if (DrvJoy2[3]) ret |= 0x02;
 			if (DrvJoy2[4]) ret |= 0x04;
@@ -272,7 +272,7 @@ unsigned char __fastcall kangaroo_main_read(unsigned short address)
 	return 0;
 }
 
-unsigned char __fastcall kangaroo_sound_read(unsigned short address)
+UINT8 __fastcall kangaroo_sound_read(UINT16 address)
 {
 	switch (address & 0xf000)
 	{
@@ -285,7 +285,7 @@ unsigned char __fastcall kangaroo_sound_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall kangaroo_sound_write(unsigned short address, unsigned char data)
+void __fastcall kangaroo_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address & 0xf000)
 	{
@@ -303,9 +303,9 @@ void __fastcall kangaroo_sound_write(unsigned short address, unsigned char data)
 	return;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next;
+	UINT8 *Next;
 
 	Next		= Mem; Next += 0x10000; // buffer
 
@@ -313,26 +313,26 @@ static int MemIndex()
 	DrvZ80ROM1	= Next; Next += 0x01000;
 	DrvGfxROM	= Next; Next += 0x04000;
 
-	Palette		= (unsigned int*)Next; Next += 0x00008 * sizeof(unsigned int);
-	DrvPalette	= (unsigned int*)Next; Next += 0x00008 * sizeof(unsigned int);
+	Palette		= (UINT32*)Next; Next += 0x00008 * sizeof(UINT32);
+	DrvPalette	= (UINT32*)Next; Next += 0x00008 * sizeof(UINT32);
 
 	AllRAM		= Next;
 
 	DrvZ80RAM0	= Next; Next += 0x00400;
 	DrvZ80RAM1	= Next; Next += 0x00400;
 
-	DrvVidRAM32	= (unsigned int*)Next; Next += 0x4000 * sizeof(unsigned int);
+	DrvVidRAM32	= (UINT32*)Next; Next += 0x4000 * sizeof(UINT32);
 
 	DrvVidControl	= Next; Next += 16;
 
-	pFMBuffer	= (short *)Next; Next += nBurnSoundLen * 3 * sizeof(short);
+	pFMBuffer	= (INT16 *)Next; Next += nBurnSoundLen * 3 * sizeof(INT16);
 
 	MemEnd		= Next;
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -355,35 +355,35 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	for (int i = 0; i < 3; i++)
+	for (INT32 i = 0; i < 3; i++)
 		pAY8910Buffer[i] = pFMBuffer + nBurnSoundLen * i;
 
 	// kangaroo
 	if (strncmp ("kangaro", BurnDrvGetTextA(DRV_NAME), 7) == 0)
 	{
-		for (int i = 0; i < 6; i++)
+		for (INT32 i = 0; i < 6; i++)
 			if (BurnLoadRom(DrvZ80ROM0 + i * 0x1000, 0 + i, 0)) return 1;
 
 		if (BurnLoadRom(DrvZ80ROM1, 6, 0)) return 1;
 
-		for (int i = 0; i < 4; i++)
+		for (INT32 i = 0; i < 4; i++)
 			if (BurnLoadRom(DrvGfxROM  + i * 0x1000, 7 + i, 0)) return 1;
 	}
 	// funkyfish
 	else
 	{
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			if (BurnLoadRom(DrvZ80ROM0 + i * 0x1000, 0 + i, 0)) return 1;
 			if (BurnLoadRom(DrvGfxROM  + i * 0x1000, 5 + i, 0)) return 1;
 		}
@@ -391,7 +391,7 @@ static int DrvInit()
 		if (BurnLoadRom(DrvZ80ROM1, 4, 0)) return 1;
 	}
 
-	for (int i = 0; i < 8; i++)
+	for (INT32 i = 0; i < 8; i++)
 		Palette[i] = ((i & 4 ? 0xff : 0) << 16) | ((i & 2 ? 0xff : 0) << 8) | (i & 1 ? 0xff : 0);
 
 
@@ -436,7 +436,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	if (Mem) {
 		free (Mem);
@@ -451,23 +451,23 @@ static int DrvExit()
 }
 
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	unsigned char scrolly = DrvVidControl[6];
-	unsigned char scrollx = DrvVidControl[7];
-	unsigned char maska = (DrvVidControl[10] & 0x28) >> 3;
-	unsigned char maskb = (DrvVidControl[10] & 0x07) >> 0;
-	unsigned char xora = (DrvVidControl[9] & 0x20) ? 0xff : 0x00;
-	unsigned char xorb = (DrvVidControl[9] & 0x10) ? 0xff : 0x00;
-	unsigned char enaa = (DrvVidControl[9] & 0x08);
-	unsigned char enab = (DrvVidControl[9] & 0x04);
-	unsigned char pria = (~DrvVidControl[9] & 0x02);
-	unsigned char prib = (~DrvVidControl[9] & 0x01);
-	int x, y;
+	UINT8 scrolly = DrvVidControl[6];
+	UINT8 scrollx = DrvVidControl[7];
+	UINT8 maska = (DrvVidControl[10] & 0x28) >> 3;
+	UINT8 maskb = (DrvVidControl[10] & 0x07) >> 0;
+	UINT8 xora = (DrvVidControl[9] & 0x20) ? 0xff : 0x00;
+	UINT8 xorb = (DrvVidControl[9] & 0x10) ? 0xff : 0x00;
+	UINT8 enaa = (DrvVidControl[9] & 0x08);
+	UINT8 enab = (DrvVidControl[9] & 0x04);
+	UINT8 pria = (~DrvVidControl[9] & 0x02);
+	UINT8 prib = (~DrvVidControl[9] & 0x01);
+	INT32 x, y;
 
 	if (DrvRecalc) {
 		for (x = 0; x < 8; x++) {
-			unsigned int col = Palette[x];
+			UINT32 col = Palette[x];
 			DrvPalette[x] = BurnHighCol(col >> 16, col >> 8, col, 0);
 		}
 	}
@@ -475,17 +475,17 @@ static int DrvDraw()
 	// iterate over pixels
 	for (y = 0; y < nScreenHeight; y++)
 	{
-		unsigned short *dest = pTransDraw + (y * nScreenWidth);
+		UINT16 *dest = pTransDraw + (y * nScreenWidth);
 
 		for (x = 0; x < nScreenWidth; x += 2)
 		{
-			unsigned char effxa = scrollx + ((x / 2) ^ xora);
-			unsigned char effya = scrolly + (y ^ xora);
-			unsigned char effxb = (x / 2) ^ xorb;
-			unsigned char effyb = y ^ xorb;
-			unsigned char pixa = (DrvVidRAM32[effya + 256 * (effxa / 4)] >> (8 * (effxa % 4) + 0)) & 0x0f;
-			unsigned char pixb = (DrvVidRAM32[effyb + 256 * (effxb / 4)] >> (8 * (effxb % 4) + 4)) & 0x0f;
-			unsigned char finalpens;
+			UINT8 effxa = scrollx + ((x / 2) ^ xora);
+			UINT8 effya = scrolly + (y ^ xora);
+			UINT8 effxb = (x / 2) ^ xorb;
+			UINT8 effyb = y ^ xorb;
+			UINT8 pixa = (DrvVidRAM32[effya + 256 * (effxa / 4)] >> (8 * (effxa % 4) + 0)) & 0x0f;
+			UINT8 pixb = (DrvVidRAM32[effyb + 256 * (effxb / 4)] >> (8 * (effxb % 4) + 4)) & 0x0f;
+			UINT8 finalpens;
 
 			// for each layer, contribute bits if (a) enabled, and (b) either has priority or the opposite plane is 0
 			finalpens = 0;
@@ -521,7 +521,7 @@ static int DrvDraw()
 	return 0;
 }
 
-int DrvFrame()
+INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -529,11 +529,11 @@ int DrvFrame()
 
 	ZetNewFrame();
 
-	int nSoundBufferPos = 0;
-	int nInterleave = 10;
-	int nCyclesDone[2] = { 2500000 / 60, 1250000 / 60 };
+	INT32 nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nCyclesDone[2] = { 2500000 / 60, 1250000 / 60 };
 
-	for (int i = 0; i < nInterleave; i++) {
+	for (INT32 i = 0; i < nInterleave; i++) {
 
 		// Run Z80 #0
 
@@ -550,11 +550,11 @@ int DrvFrame()
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
@@ -578,12 +578,12 @@ int DrvFrame()
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];

@@ -4,41 +4,41 @@
 #include "m6809_intf.h"
 #include "burn_ym3526.h"
 
-static unsigned char DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[2]        = {0, 0};
-static unsigned char DrvInput[3]      = {0x00, 0x00, 0x00};
-static unsigned char DrvReset         = 0;
+static UINT8 DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDip[2]        = {0, 0};
+static UINT8 DrvInput[3]      = {0x00, 0x00, 0x00};
+static UINT8 DrvReset         = 0;
 
-static unsigned char *Mem                 = NULL;
-static unsigned char *MemEnd              = NULL;
-static unsigned char *RamStart            = NULL;
-static unsigned char *RamEnd              = NULL;
-static unsigned char *DrvM6502Rom         = NULL;
-static unsigned char *DrvM6809Rom         = NULL;
-static unsigned char *DrvM68705Rom        = NULL;
-static unsigned char *DrvM68705Ram        = NULL;
-static unsigned char *DrvADPCMRom         = NULL;
-static unsigned char *DrvM6502Ram         = NULL;
-static unsigned char *DrvM6809Ram         = NULL;
-static unsigned char *DrvVideoRam1        = NULL;
-static unsigned char *DrvVideoRam2        = NULL;
-static unsigned char *DrvSpriteRam        = NULL;
-static unsigned char *DrvPaletteRam1      = NULL;
-static unsigned char *DrvPaletteRam2      = NULL;
-static unsigned char *DrvChars            = NULL;
-static unsigned char *DrvTiles            = NULL;
-static unsigned char *DrvSprites          = NULL;
-static unsigned char *DrvTempRom          = NULL;
-static unsigned int  *DrvPalette          = NULL;
+static UINT8 *Mem                 = NULL;
+static UINT8 *MemEnd              = NULL;
+static UINT8 *RamStart            = NULL;
+static UINT8 *RamEnd              = NULL;
+static UINT8 *DrvM6502Rom         = NULL;
+static UINT8 *DrvM6809Rom         = NULL;
+static UINT8 *DrvM68705Rom        = NULL;
+static UINT8 *DrvM68705Ram        = NULL;
+static UINT8 *DrvADPCMRom         = NULL;
+static UINT8 *DrvM6502Ram         = NULL;
+static UINT8 *DrvM6809Ram         = NULL;
+static UINT8 *DrvVideoRam1        = NULL;
+static UINT8 *DrvVideoRam2        = NULL;
+static UINT8 *DrvSpriteRam        = NULL;
+static UINT8 *DrvPaletteRam1      = NULL;
+static UINT8 *DrvPaletteRam2      = NULL;
+static UINT8 *DrvChars            = NULL;
+static UINT8 *DrvTiles            = NULL;
+static UINT8 *DrvSprites          = NULL;
+static UINT8 *DrvTempRom          = NULL;
+static UINT32  *DrvPalette          = NULL;
 
-static unsigned char DrvRomBank;
-static unsigned char DrvVBlank;
-static unsigned char DrvScrollX[2];
-static unsigned char DrvSoundLatch;
+static UINT8 DrvRomBank;
+static UINT8 DrvVBlank;
+static UINT8 DrvScrollX[2];
+static UINT8 DrvSoundLatch;
 
-static int nCyclesTotal[3];
+static INT32 nCyclesTotal[3];
 
 // MCU Simulation Variables
 #define MCU_TYPE_NONE		0
@@ -51,18 +51,18 @@ static UINT8 mcu_input_size;
 static UINT8 mcu_output_byte;
 static INT8 mcu_key;
 
-static int mcu_type;
+static INT32 mcu_type;
 static const UINT8 *mcu_encrypt_table;
-static int mcu_encrypt_table_len;
+static INT32 mcu_encrypt_table_len;
 
-static int DisableMCUEmulation = 0;
+static INT32 DisableMCUEmulation = 0;
 
 // MCU Emulation Variables
-static int nSimulateMCU;
-static int MCUFromMain;
-static int MCUFromMcu;
-static int MCUMainSent;
-static int MCUMcuSent;
+static INT32 nSimulateMCU;
+static INT32 MCUFromMain;
+static INT32 MCUFromMcu;
+static INT32 MCUMainSent;
+static INT32 MCUMcuSent;
 static UINT8 MCUDdrA;
 static UINT8 MCUDdrB;
 static UINT8 MCUDdrC;
@@ -112,7 +112,7 @@ static inline void DrvMakeInputs()
 	DrvInput[2] = 0x9c;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] -= (DrvInputPort0[i] & 1) << i;
 		DrvInput[1] -= (DrvInputPort1[i] & 1) << i;
 		DrvInput[2] -= (DrvInputPort2[i] & 1) << i;
@@ -276,9 +276,9 @@ static struct BurnRomInfo DrvbRomDesc[] = {
 STD_ROM_PICK(Drvb)
 STD_ROM_FN(Drvb)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	DrvM6502Rom            = Next; Next += 0x10000;
 	DrvM6809Rom            = Next; Next += 0x08000;
@@ -301,7 +301,7 @@ static int MemIndex()
 	DrvChars               = Next; Next += 0x0400 * 8 * 8;
 	DrvTiles               = Next; Next += 0x0800 * 16 * 16;
 	DrvSprites             = Next; Next += 0x1000 * 16 * 16;
-	DrvPalette             = (unsigned int*)Next; Next += 0x00100 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 0x00100 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
@@ -318,7 +318,7 @@ static const UINT8 kuniokun_xor_table[0x2a] =
 	0x68, 0x60
 };
 
-static unsigned char mcu_reset_r()
+static UINT8 mcu_reset_r()
 {
 	if (nSimulateMCU) {
 		mcu_key = -1;
@@ -333,7 +333,7 @@ static unsigned char mcu_reset_r()
 	return 0;
 }
 
-static void mcu_w(unsigned char data)
+static void mcu_w(UINT8 data)
 {
 	if (nSimulateMCU) {
 		mcu_output_byte = 0;
@@ -369,7 +369,7 @@ static void mcu_process_command(void)
 			break;
 
 		case 0x26: {
-			int sound_code = mcu_buffer[1];
+			INT32 sound_code = mcu_buffer[1];
 			static const UINT8 sound_command_table[256] = {
 				0xa0, 0xa1, 0xa2, 0x80, 0x81, 0x82, 0x83, 0x84,
 				0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8c,
@@ -411,7 +411,7 @@ static void mcu_process_command(void)
 		
 
 		case 0x33: {
-			int joy_bits = mcu_buffer[2];
+			INT32 joy_bits = mcu_buffer[2];
 			static const UINT8 joy_table[0x10] = {
 				0, 3, 7, 0, 1, 2, 8, 0, 5, 4, 6, 0, 0, 0, 0, 0
 			};
@@ -422,10 +422,10 @@ static void mcu_process_command(void)
 		
 
 		case 0x44: {
-			int difficulty = mcu_buffer[2] & 0x3;
-			int stage = mcu_buffer[3];
+			INT32 difficulty = mcu_buffer[2] & 0x3;
+			INT32 stage = mcu_buffer[3];
 			static const UINT8 difficulty_table[4] = { 5, 3, 1, 2 };
-			int result = difficulty_table[difficulty];
+			INT32 result = difficulty_table[difficulty];
 
 			if (stage == 0)
 				result--;
@@ -439,7 +439,7 @@ static void mcu_process_command(void)
 		}
 		
 		case 0x55: {
-			int difficulty = mcu_buffer[4] & 0x3;
+			INT32 difficulty = mcu_buffer[4] & 0x3;
 			static const UINT16 table[4] = {
 				0x4001, 0x5001, 0x1502, 0x0002
 			};
@@ -460,9 +460,9 @@ static void mcu_process_command(void)
 		
 
 		case 0x40: {
-			int difficulty = mcu_buffer[2];
-			int enemy_type = mcu_buffer[3];
-			int health;
+			INT32 difficulty = mcu_buffer[2];
+			INT32 enemy_type = mcu_buffer[3];
+			INT32 health;
 
 			if (enemy_type <= 4) {
 				health = 0x18 + difficulty * 2;
@@ -480,18 +480,18 @@ static void mcu_process_command(void)
 		
 
 		case 0x42: {
-			int stage = mcu_buffer[2] & 0x3;
-			int indx = mcu_buffer[3];
-			int enemy_type=0;
+			INT32 stage = mcu_buffer[2] & 0x3;
+			INT32 indx = mcu_buffer[3];
+			INT32 enemy_type=0;
 
-			static const int table[] = {
+			static const INT32 table[] = {
 				0x01, 0x06, 0x06, 0x05, 0x05, 0x05, 0x05, 0x05,	/* for stage#: 0 */
 				0x02, 0x0a, 0x0a, 0x09, 0x09, 0x09, 0x09,	/* for stage#: 1 */
 				0x03, 0x0e, 0x0e, 0x0e, 0x0d, 0x0d, 0x0d, 0x0d,	/* for stage#: 2 */
 				0x04, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12,	/* for stage#: 3 */
 				0x3d, 0x23, 0x26, 0x0a, 0xb6, 0x11, 0xa4, 0x0f,	/* strange data (maybe out of table) */
 			};
-			int offset = stage * 8 + indx;
+			INT32 offset = stage * 8 + indx;
 
 			if (stage >= 2)
 				offset--;
@@ -505,10 +505,10 @@ static void mcu_process_command(void)
 	}
 }
 
-static unsigned char mcu_r()
+static UINT8 mcu_r()
 {
 	if (nSimulateMCU) {
-		int result = 1;
+		INT32 result = 1;
 
 		if (mcu_input_size)
 			mcu_process_command();
@@ -523,7 +523,7 @@ static unsigned char mcu_r()
 	}
 }
 
-static unsigned char mcu_status_r()
+static UINT8 mcu_status_r()
 {
 	UINT8 Res = 0;
 
@@ -554,14 +554,14 @@ static struct renegade_adpcm_state
 	UINT8 *base;
 } renegade_adpcm;
 
-static int diff_lookup[49*16];
-static int tables_computed = 0;
+static INT32 diff_lookup[49*16];
+static INT32 tables_computed = 0;
 
-static unsigned int nUpdateStep;
+static UINT32 nUpdateStep;
 
 static void compute_tables(void)
 {
-	static const int nbl2bit[16][4] =
+	static const INT32 nbl2bit[16][4] =
 	{
 		{ 1, 0, 0, 0}, { 1, 0, 0, 1}, { 1, 0, 1, 0}, { 1, 0, 1, 1},
 		{ 1, 1, 0, 0}, { 1, 1, 0, 1}, { 1, 1, 1, 0}, { 1, 1, 1, 1},
@@ -569,11 +569,11 @@ static void compute_tables(void)
 		{-1, 1, 0, 0}, {-1, 1, 0, 1}, {-1, 1, 1, 0}, {-1, 1, 1, 1}
 	};
 
-	int step, nib;
+	INT32 step, nib;
 
 	for (step = 0; step <= 48; step++)
 	{
-		int stepval = (int)floor(16.0 * pow(11.0 / 10.0, (double)step));
+		INT32 stepval = (INT32)floor(16.0 * pow(11.0 / 10.0, (double)step));
 		
 		for (nib = 0; nib < 16; nib++)
 		{
@@ -597,17 +597,17 @@ static void reset_adpcm(struct adpcm_state *state)
 	state->step = 0;
 }
 
-static void RenegadeADPCMInit(int clock)
+static void RenegadeADPCMInit(INT32 clock)
 {
 	struct renegade_adpcm_state *state = &renegade_adpcm;
 	state->playing = 0;
 	state->base = DrvADPCMRom;
 	reset_adpcm(&state->adpcm);
 	
-	nUpdateStep = (int)(((float)clock / nBurnSoundRate) * 32768);
+	nUpdateStep = (INT32)(((float)clock / nBurnSoundRate) * 32768);
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	M6502Open(0);
 	M6502Reset();
@@ -648,7 +648,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-unsigned char RenegadeReadByte(unsigned short Address)
+UINT8 RenegadeReadByte(UINT16 Address)
 {
 	switch (Address) {
 		case 0x3800: {
@@ -660,7 +660,7 @@ unsigned char RenegadeReadByte(unsigned short Address)
 		}
 		
 		case 0x3802: {
-			unsigned char MCUStatus = mcu_status_r();
+			UINT8 MCUStatus = mcu_status_r();
 			if (MCUStatus) MCUStatus = (MCUStatus - 1) * 0x10;
 			return DrvInput[2] + DrvDip[1] + (DrvVBlank ? 0x40 : 0) + MCUStatus;
 		}
@@ -690,7 +690,7 @@ unsigned char RenegadeReadByte(unsigned short Address)
 	return 0;
 }
 
-void RenegadeWriteByte(unsigned short Address, unsigned char Data)
+void RenegadeWriteByte(UINT16 Address, UINT8 Data)
 {
 	switch (Address) {
 		case 0x3800: {
@@ -743,7 +743,7 @@ void RenegadeWriteByte(unsigned short Address, unsigned char Data)
 	}
 }
 
-unsigned char RenegadeM6809ReadByte(unsigned short Address)
+UINT8 RenegadeM6809ReadByte(UINT16 Address)
 {
 	switch (Address) {
 		case 0x1000: {
@@ -758,7 +758,7 @@ unsigned char RenegadeM6809ReadByte(unsigned short Address)
 	return 0;
 }
 
-void RenegadeM6809WriteByte(unsigned short Address, unsigned char Data)
+void RenegadeM6809WriteByte(UINT16 Address, UINT8 Data)
 {
 	switch (Address) {
 		case 0x1800: {
@@ -804,7 +804,7 @@ void RenegadeM6809WriteByte(unsigned short Address, unsigned char Data)
 	}
 }
 
-unsigned char MCUReadByte(unsigned short address)
+UINT8 MCUReadByte(UINT16 address)
 {
 	switch (address & 0x7ff) {
 		case 0x000: {
@@ -831,7 +831,7 @@ unsigned char MCUReadByte(unsigned short address)
 	return 0;
 }
 
-void MCUWriteByte(unsigned short address, unsigned char data)
+void MCUWriteByte(UINT16 address, UINT8 data)
 {
 	switch (address & 0x7ff) {
 		case 0x000: {
@@ -884,17 +884,17 @@ void MCUWriteByte(unsigned short address, unsigned char data)
 	}
 }
 
-static int CharPlaneOffsets[3]   = { 2, 4, 6 };
-static int CharXOffsets[8]       = { 1, 0, 65, 64, 129, 128, 193, 192 };
-static int CharYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int Tile1PlaneOffsets[3]  = { 0x00004, 0x40000, 0x40004 };
-static int Tile2PlaneOffsets[3]  = { 0x00000, 0x60000, 0x60004 };
-static int Tile3PlaneOffsets[3]  = { 0x20004, 0x80000, 0x80004 };
-static int Tile4PlaneOffsets[3]  = { 0x20000, 0xa0000, 0xa0004 };
-static int TileXOffsets[16]      = { 3, 2, 1, 0, 131, 130, 129, 128, 259, 258, 257, 256, 387, 386, 385, 384 };
-static int TileYOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+static INT32 CharPlaneOffsets[3]   = { 2, 4, 6 };
+static INT32 CharXOffsets[8]       = { 1, 0, 65, 64, 129, 128, 193, 192 };
+static INT32 CharYOffsets[8]       = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 Tile1PlaneOffsets[3]  = { 0x00004, 0x40000, 0x40004 };
+static INT32 Tile2PlaneOffsets[3]  = { 0x00000, 0x60000, 0x60004 };
+static INT32 Tile3PlaneOffsets[3]  = { 0x20004, 0x80000, 0x80004 };
+static INT32 Tile4PlaneOffsets[3]  = { 0x20000, 0xa0000, 0xa0004 };
+static INT32 TileXOffsets[16]      = { 3, 2, 1, 0, 131, 130, 129, 128, 259, 258, 257, 256, 387, 386, 385, 384 };
+static INT32 TileYOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-static void DrvFMIRQHandler(int, int nStatus)
+static void DrvFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		M6809SetIRQ(M6809_FIRQ_LINE, M6809_IRQSTATUS_ACK);
@@ -903,23 +903,23 @@ static void DrvFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)M6809TotalCycles() * nSoundRate / 1500000;
+	return (INT64)M6809TotalCycles() * nSoundRate / 1500000;
 }
 
-static int DrvInit(int nMcuType)
+static INT32 DrvInit(INT32 nMcuType)
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x60000);
+	DrvTempRom = (UINT8 *)malloc(0x60000);
 
 	nRet = BurnLoadRom(DrvM6502Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvM6502Rom + 0x08000, 1, 1); if (nRet != 0) return 1;
@@ -1043,22 +1043,22 @@ static int DrvInit(int nMcuType)
 	return 0;
 }
 
-static int RenegadeInit()
+static INT32 RenegadeInit()
 {
 	return DrvInit(MCU_TYPE_RENEGADE);
 }
 
-static int KuniokunInit()
+static INT32 KuniokunInit()
 {
 	return DrvInit(MCU_TYPE_KUNIOKUN);
 }
 
-static int KuniokunbInit()
+static INT32 KuniokunbInit()
 {
 	return DrvInit(MCU_TYPE_NONE);
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	M6502Exit();
 	M6809Exit();
@@ -1107,15 +1107,15 @@ static int DrvExit()
 	return 0;
 }
 
-static inline unsigned char pal4bit(unsigned char bits)
+static inline UINT8 pal4bit(UINT8 bits)
 {
 	bits &= 0x0f;
 	return (bits << 4) | bits;
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = pal4bit(nColour >> 0);
 	g = pal4bit(nColour >> 4);
@@ -1126,8 +1126,8 @@ inline static unsigned int CalcCol(unsigned short nColour)
 
 static void DrvCalcPalette()
 {
-	for (int i = 0; i < 0x100; i++) {
-		int Val = DrvPaletteRam1[i] + (DrvPaletteRam2[i] << 8);
+	for (INT32 i = 0; i < 0x100; i++) {
+		INT32 Val = DrvPaletteRam1[i] + (DrvPaletteRam2[i] << 8);
 		
 		DrvPalette[i] = CalcCol(Val);
 	}
@@ -1135,7 +1135,7 @@ static void DrvCalcPalette()
 
 static void DrvRenderBgLayer()
 {
-	int mx, my, Attr, Code, Colour, x, y, TileIndex = 0, xScroll;
+	INT32 mx, my, Attr, Code, Colour, x, y, TileIndex = 0, xScroll;
 	
 	xScroll = DrvScrollX[0] + (DrvScrollX[1] << 8);
 	xScroll &= 0x3ff;
@@ -1172,15 +1172,15 @@ static void DrvRenderSprites()
 	UINT8 *Finish = Source + 96 * 4;
 
 	while (Source < Finish) {
-		int sy = 240 - Source[0];
+		INT32 sy = 240 - Source[0];
 
 		if (sy >= 16) {
-			int Attr = Source[1];
-			int sx = Source[3];
-			int Code = Source[2];
-			int SpriteBank = Attr & 0xf;
-			int Colour = (Attr >> 4) & 0x3;
-			int xFlip = Attr & 0x40;
+			INT32 Attr = Source[1];
+			INT32 sx = Source[3];
+			INT32 Code = Source[2];
+			INT32 SpriteBank = Attr & 0xf;
+			INT32 Colour = (Attr >> 4) & 0x3;
+			INT32 xFlip = Attr & 0x40;
 
 			if (sx > 248) sx -= 256;
 			
@@ -1225,7 +1225,7 @@ static void DrvRenderSprites()
 
 static void DrvRenderCharLayer()
 {
-	int mx, my, Attr, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Attr, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 32; my++) {
 		for (mx = 0; mx < 32; mx++) {
@@ -1261,7 +1261,7 @@ static void DrvDraw()
 
 static void DrvInterrupt()
 {
-	static int Count;
+	static INT32 Count;
 	Count = !Count;
 	if (Count) {
 		M6502SetIRQ(M6502_INPUT_LINE_NMI, M6502_IRQSTATUS_AUTO);
@@ -1270,7 +1270,7 @@ static void DrvInterrupt()
 	}
 }
 
-static const int index_shift[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
+static const INT32 index_shift[8] = { -1, -1, -1, -1, 2, 4, 6, 8 };
 
 INT16 clock_adpcm(struct adpcm_state *state, UINT8 nibble)
 {
@@ -1291,10 +1291,10 @@ INT16 clock_adpcm(struct adpcm_state *state, UINT8 nibble)
 }
 
 #define CLIP(A) ((A) < -0x8000 ? -0x8000 : (A) > 0x7fff ? 0x7fff : (A))
-static void RenderADPCMSample(short *pSoundBuf, int nLength)
+static void RenderADPCMSample(INT16 *pSoundBuf, INT32 nLength)
 {
 	while (renegade_adpcm.playing && nLength > 0) {
-		int val = (renegade_adpcm.base[renegade_adpcm.current >> 15] >> renegade_adpcm.nibble) & 15;
+		INT32 val = (renegade_adpcm.base[renegade_adpcm.current >> 15] >> renegade_adpcm.nibble) & 15;
 		
 		renegade_adpcm.nibble ^= 4;
 		if (renegade_adpcm.nibble == 4) {
@@ -1313,9 +1313,9 @@ static void RenderADPCMSample(short *pSoundBuf, int nLength)
 	}
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 262;
+	INT32 nInterleave = 262;
 	
 	if (DrvReset) DrvDoReset();
 
@@ -1325,16 +1325,16 @@ static int DrvFrame()
 	nCyclesTotal[1] = (12000000 / 8) / 60;
 	nCyclesTotal[2] = (12000000 / 4) / 60;
 	
-	int nCyclesDone[3] = { 0, 0, 0 };
-	int nCyclesSegment;
+	INT32 nCyclesDone[3] = { 0, 0, 0 };
+	INT32 nCyclesSegment;
 	
 	DrvVBlank = 0;
 	
 	M6502NewFrame();
 	M6809NewFrame();
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 		
 		M6502Open(0);
 		nCurrentCPU = 0;
@@ -1374,7 +1374,7 @@ static int DrvFrame()
 }
 
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

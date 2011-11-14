@@ -3,16 +3,16 @@
 
 #include "tiles_generic.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvZ80RAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvZ80RAM;
 
-static unsigned char DrvJoy1[4];
-static unsigned char DrvInputs[1];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[4];
+static UINT8 DrvInputs[1];
+static UINT8 DrvReset;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 3,	"p1 coin"  },
@@ -25,7 +25,7 @@ static struct BurnInputInfo DrvInputList[] = {
 
 STDINPUTINFO(Drv)
 
-unsigned char __fastcall minivdr_read(unsigned short address)
+UINT8 __fastcall minivdr_read(UINT16 address)
 {
 	if (address == 0xe008) {
 		return DrvInputs[0];
@@ -34,7 +34,7 @@ unsigned char __fastcall minivdr_read(unsigned short address)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -47,9 +47,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM	= Next; Next += 0x010000;
 
@@ -64,12 +64,12 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -95,7 +95,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -109,20 +109,20 @@ static int DrvExit()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
-	unsigned int DrvPalette[2];
+	UINT32 DrvPalette[2];
 
 	DrvPalette[0] = 0;
 	DrvPalette[1] = BurnHighCol(0xff, 0xff, 0xff, 0);
 
-	for (int offs = 0x200; offs < 0x1e00; offs++)
+	for (INT32 offs = 0x200; offs < 0x1e00; offs++)
 	{
-		int sx = (offs << 3) & 0xf8;
-		int sy = ((offs >> 5) - 0x10) << 8;
-		int d = DrvZ80RAM[offs];
+		INT32 sx = (offs << 3) & 0xf8;
+		INT32 sy = ((offs >> 5) - 0x10) << 8;
+		INT32 d = DrvZ80RAM[offs];
 
-		for (int i = 0; i < 8; i++, sx++)
+		for (INT32 i = 0; i < 8; i++, sx++)
 		{
 			pTransDraw[sx + sy] = (d >> (7 - i)) & 1;
 		}
@@ -133,7 +133,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -141,7 +141,7 @@ static int DrvFrame()
 
 	{
 		DrvInputs[0] = 0xff;
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 		}
 	}
@@ -158,7 +158,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

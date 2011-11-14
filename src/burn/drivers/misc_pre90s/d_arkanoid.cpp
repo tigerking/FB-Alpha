@@ -8,41 +8,41 @@ extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *AllMem;
-static unsigned char *RamEnd;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvMcuROM;
-static unsigned char *DrvGfxROM;
-static unsigned char *DrvColPROM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvMcuRAM;
-static unsigned char *DrvVidRAM;
-static unsigned char *DrvSprRAM;
-static short *pAY8910Buffer[3];
+static UINT8 *AllMem;
+static UINT8 *RamEnd;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvMcuROM;
+static UINT8 *DrvGfxROM;
+static UINT8 *DrvColPROM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvMcuRAM;
+static UINT8 *DrvVidRAM;
+static UINT8 *DrvSprRAM;
+static INT16 *pAY8910Buffer[3];
 
-static unsigned int  *DrvPalette;
-static unsigned char  DrvRecalc;
+static UINT32  *DrvPalette;
+static UINT8  DrvRecalc;
 
-static unsigned char *flipscreen;
-static unsigned char *gfxbank;
-static unsigned char *palettebank;
-static unsigned char *paddleselect;
-static unsigned char *bankselect;
+static UINT8 *flipscreen;
+static UINT8 *gfxbank;
+static UINT8 *palettebank;
+static UINT8 *paddleselect;
+static UINT8 *bankselect;
 
-static unsigned char DrvInputs[4];
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvDips[1];
-static unsigned char DrvReset;
-static unsigned short DrvAxis[2];
-static unsigned int nAnalogAxis[2] = {0,0};
+static UINT8 DrvInputs[4];
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvDips[1];
+static UINT8 DrvReset;
+static UINT16 DrvAxis[2];
+static UINT32 nAnalogAxis[2] = {0,0};
 
-static int arkanoid_bootleg_id;
-static int use_mcu;
+static INT32 arkanoid_bootleg_id;
+static INT32 use_mcu;
 
-static unsigned char arkanoid_bootleg_cmd;
+static UINT8 arkanoid_bootleg_cmd;
 
 enum {
 	ARKUNK=0,
@@ -56,7 +56,7 @@ enum {
 	TETRSARK
 };
 
-#define A(a, b, c, d) { a, b, (unsigned char*)(c), d }
+#define A(a, b, c, d) { a, b, (UINT8*)(c), d }
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin"      , BIT_DIGITAL  , DrvJoy1 + 4,	"p1 coin"  },
@@ -450,9 +450,9 @@ static struct BurnDIPInfo HexaDIPList[]=
 
 STDDIPINFO(Hexa)
 
-static unsigned char arkanoid_bootleg_f002_read()
+static UINT8 arkanoid_bootleg_f002_read()
 {
-	unsigned char arkanoid_bootleg_val = 0x00;
+	UINT8 arkanoid_bootleg_val = 0x00;
 
 	switch (arkanoid_bootleg_id)
 	{
@@ -512,7 +512,7 @@ static unsigned char arkanoid_bootleg_f002_read()
 	return arkanoid_bootleg_val;
 }
 
-static void arkanoid_bootleg_d018_write(unsigned char data)
+static void arkanoid_bootleg_d018_write(UINT8 data)
 {
 	arkanoid_bootleg_cmd = 0x00;
 
@@ -747,7 +747,7 @@ static void arkanoid_bootleg_d018_write(unsigned char data)
 	}
 }
 
-static unsigned char arkanoid_bootleg_d008_read()
+static UINT8 arkanoid_bootleg_d008_read()
 {
 	switch (arkanoid_bootleg_id)
 	{
@@ -774,7 +774,7 @@ static unsigned char arkanoid_bootleg_d008_read()
 	return 0;
 }
 
-unsigned char __fastcall arkanoid_read(unsigned short address)
+UINT8 __fastcall arkanoid_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -786,7 +786,7 @@ unsigned char __fastcall arkanoid_read(unsigned short address)
 
 		case 0xd00c:
 		{
-			int ret = DrvInputs[0];
+			INT32 ret = DrvInputs[0];
 			if (use_mcu) {
 				ret &= 0x3f;
 
@@ -815,7 +815,7 @@ unsigned char __fastcall arkanoid_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall arkanoid_write(unsigned short address, unsigned char data)
+void __fastcall arkanoid_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -847,17 +847,17 @@ void __fastcall arkanoid_write(unsigned short address, unsigned char data)
 	}
 }
 
-static void bankswitch(int data)
+static void bankswitch(INT32 data)
 {
 	bankselect[0] = data;
 
-	int bank = 0x8000 + ((data & 0x10) >> 4) * 0x4000;
+	INT32 bank = 0x8000 + ((data & 0x10) >> 4) * 0x4000;
 
 	ZetMapArea(0x8000, 0xbfff, 0, DrvZ80ROM + bank);
 	ZetMapArea(0x8000, 0xbfff, 2, DrvZ80ROM + bank);
 }
 
-void __fastcall hexa_write(unsigned short address, unsigned char data)
+void __fastcall hexa_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -874,7 +874,7 @@ void __fastcall hexa_write(unsigned short address, unsigned char data)
 	}
 }
 
-static void arkanoid_m68705_portC_write(unsigned char *data)
+static void arkanoid_m68705_portC_write(UINT8 *data)
 {
 	if ((ddrC & 0x04) && (~*data & 0x04) && (portC_out & 0x04))
 	{
@@ -906,27 +906,28 @@ static m68705_interface arkanoid_m68705_interface = {
 	NULL,
 	arkanoid_m68705_portB_read,
 	standard_m68705_portC_in
-};
-static unsigned char ay8910_read_port_4(unsigned int)
+};
+
+static UINT8 ay8910_read_port_4(UINT32)
 {
-	int ret = DrvDips[0];
+	INT32 ret = DrvDips[0];
 	if (arkanoid_bootleg_id == TETRSARK) ret |= DrvInputs[1];
 
 	return ret;
 }
 
-static unsigned char ay8910_read_port_5(unsigned int)
+static UINT8 ay8910_read_port_5(UINT32)
 {
 	return DrvInputs[0];
 }
 
 static void DrvPaletteInit()
 {
-	int len = BurnDrvGetPaletteEntries();
+	INT32 len = BurnDrvGetPaletteEntries();
 
-	for (int i = 0; i < len; i++)
+	for (INT32 i = 0; i < len; i++)
 	{
-		int bit0,bit1,bit2,bit3,r,g,b;
+		INT32 bit0,bit1,bit2,bit3,r,g,b;
 
 		bit0 = (DrvColPROM[i + len * 0] >> 0) & 0x01;
 		bit1 = (DrvColPROM[i + len * 0] >> 1) & 0x01;
@@ -952,8 +953,8 @@ static void DrvPaletteInit()
 
 static void DrvGfxDecode()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x40000);
-	for (int i = 0; i < 0x40000; i++) {
+	UINT8 *tmp = (UINT8*)malloc(0x40000);
+	for (INT32 i = 0; i < 0x40000; i++) {
 		tmp[i]  = ((DrvGfxROM[(i / 8) + 0x00000] >> (i & 7)) & 1) << 0;
 		tmp[i] |= ((DrvGfxROM[(i / 8) + 0x08000] >> (i & 7)) & 1) << 1;
 		tmp[i] |= ((DrvGfxROM[(i / 8) + 0x10000] >> (i & 7)) & 1) << 2;
@@ -966,16 +967,16 @@ static void DrvGfxDecode()
 	}
 }
 
-static int GetRoms()
+static INT32 GetRoms()
 {
 	char* pRomName;
 	struct BurnRomInfo ri;
-	unsigned char *RomLoad = DrvZ80ROM;
-	unsigned char *GfxLoad = DrvGfxROM;
-	unsigned char *PrmLoad = DrvColPROM;
+	UINT8 *RomLoad = DrvZ80ROM;
+	UINT8 *GfxLoad = DrvGfxROM;
+	UINT8 *PrmLoad = DrvColPROM;
 	use_mcu = 0;
 
-	for (int i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
+	for (INT32 i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
 
 		BurnDrvGetRomInfo(&ri, i);
 
@@ -1007,7 +1008,7 @@ static int GetRoms()
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 	memset (AllRam, 0, RamEnd - AllRam);
@@ -1027,9 +1028,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM		= Next; Next += 0x010000;
 	DrvMcuROM		= Next; Next += 0x000800;
@@ -1038,7 +1039,7 @@ static int MemIndex()
 
 	DrvColPROM		= Next; Next += 0x000800;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x0200 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x0200 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -1055,21 +1056,21 @@ static int MemIndex()
 
 	RamEnd			= Next;
 
-	pAY8910Buffer[0]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[1]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[2]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[0]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[1]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[2]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
 
 	MemEnd			= Next;
 
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1112,7 +1113,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -1133,10 +1134,10 @@ static int DrvExit()
 
 static void draw_background_layer()
 {
-	for (int offs = 0; offs < 32 * 30; offs++)
+	for (INT32 offs = 0; offs < 32 * 30; offs++)
 	{
-		int sx = (offs & 0x1f) << 3;
-		int sy = (offs >> 5) << 3;
+		INT32 sx = (offs & 0x1f) << 3;
+		INT32 sy = (offs >> 5) << 3;
 
 		if (*flipscreen) {
 			sx ^= 0xf8;
@@ -1147,9 +1148,9 @@ static void draw_background_layer()
 
 		if (sy < 0 || sy >= nScreenHeight) continue;
 
-		int attr  = DrvVidRAM[offs * 2 + 0];
-		int code  = DrvVidRAM[offs * 2 + 1] | ((attr & 0x07) << 8) | (*gfxbank << 11);
-		int color = ((attr & 0xf8) >> 3) | (*palettebank << 5);
+		INT32 attr  = DrvVidRAM[offs * 2 + 0];
+		INT32 code  = DrvVidRAM[offs * 2 + 1] | ((attr & 0x07) << 8) | (*gfxbank << 11);
+		INT32 color = ((attr & 0xf8) >> 3) | (*palettebank << 5);
 
 		if (*flipscreen) {
 			Render8x8Tile_FlipY(pTransDraw, code, sx, sy, color, 3, 0, DrvGfxROM);
@@ -1161,13 +1162,13 @@ static void draw_background_layer()
 
 static void draw_sprites()
 {
-	for (int offs = 0; offs < 0x40; offs+=4)
+	for (INT32 offs = 0; offs < 0x40; offs+=4)
 	{
-		int sx    = DrvSprRAM[offs + 0];
-		int sy    = 248 - DrvSprRAM[offs + 1];
-		int attr  = DrvSprRAM[offs + 2];
-		int code  = DrvSprRAM[offs + 3] | ((attr & 0x03) << 8) | (*gfxbank << 10);
-		int color = ((attr & 0xf8) >> 3) | (*palettebank << 5);
+		INT32 sx    = DrvSprRAM[offs + 0];
+		INT32 sy    = 248 - DrvSprRAM[offs + 1];
+		INT32 attr  = DrvSprRAM[offs + 2];
+		INT32 code  = DrvSprRAM[offs + 3] | ((attr & 0x03) << 8) | (*gfxbank << 10);
+		INT32 color = ((attr & 0xf8) >> 3) | (*palettebank << 5);
 
 		if (*flipscreen) {
 			sx = 248 - sx;
@@ -1182,7 +1183,7 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvPaletteInit();
@@ -1197,7 +1198,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -1208,7 +1209,7 @@ static int DrvFrame()
 
 		if (arkanoid_bootleg_id != HEXA) DrvInputs[0] = 0x4f;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
@@ -1220,16 +1221,16 @@ static int DrvFrame()
 		DrvInputs[3] = (~nAnalogAxis[1] >> 8) & 0xfe;
 	}
 
-	int nSoundBufferPos = 0;
-	int nInterleave = 100;
-	int nCyclesTotal[2] = { 6000000 / 60, 3000000 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
+	INT32 nCyclesTotal[2] = { 6000000 / 60, 3000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	ZetOpen(0);
 	m6805Open(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nSegment = nCyclesTotal[0] / nInterleave;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nSegment = nCyclesTotal[0] / nInterleave;
 		nCyclesDone[0] += ZetRun(nSegment);
 
 		if (use_mcu) {
@@ -1244,12 +1245,12 @@ static int DrvFrame()
 	ZetClose();
 
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n];
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
@@ -1277,7 +1278,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -1309,7 +1310,7 @@ static int DrvScan(int nAction,int *pnMin)
 	return 0;
 }
 
-static int HexaScan(int nAction, int *pnMin)
+static INT32 HexaScan(INT32 nAction, INT32 *pnMin)
 {
 	DrvScan(nAction, pnMin);
 
@@ -1564,7 +1565,7 @@ static struct BurnRomInfo arkangcRomDesc[] = {
 STD_ROM_PICK(arkangc)
 STD_ROM_FN(arkangc)
 
-static int arkangcInit()
+static INT32 arkangcInit()
 {
 	arkanoid_bootleg_id = ARKANGC;
 
@@ -1600,7 +1601,7 @@ static struct BurnRomInfo arkangc2RomDesc[] = {
 STD_ROM_PICK(arkangc2)
 STD_ROM_FN(arkangc2)
 
-static int arkangc2Init()
+static INT32 arkangc2Init()
 {
 	arkanoid_bootleg_id = ARKANGC2;
 
@@ -1636,7 +1637,7 @@ static struct BurnRomInfo arkblockRomDesc[] = {
 STD_ROM_PICK(arkblock)
 STD_ROM_FN(arkblock)
 
-static int arkblockInit()
+static INT32 arkblockInit()
 {
 	arkanoid_bootleg_id = ARKBLOCK;
 
@@ -1672,7 +1673,7 @@ static struct BurnRomInfo arkbloc2RomDesc[] = {
 STD_ROM_PICK(arkbloc2)
 STD_ROM_FN(arkbloc2)
 
-static int arkbloc2Init()
+static INT32 arkbloc2Init()
 {
 	arkanoid_bootleg_id = ARKBLOC2;
 
@@ -1713,7 +1714,7 @@ static struct BurnRomInfo arkgcblRomDesc[] = {
 STD_ROM_PICK(arkgcbl)
 STD_ROM_FN(arkgcbl)
 
-static int arkgcblInit()
+static INT32 arkgcblInit()
 {
 	arkanoid_bootleg_id = ARKGCBL;
 
@@ -1749,7 +1750,7 @@ static struct BurnRomInfo paddle2RomDesc[] = {
 STD_ROM_PICK(paddle2)
 STD_ROM_FN(paddle2)
 
-static int paddle2Init()
+static INT32 paddle2Init()
 {
 	arkanoid_bootleg_id = PADDLE2;
 
@@ -1843,14 +1844,14 @@ static struct BurnRomInfo tetrsarkRomDesc[] = {
 STD_ROM_PICK(tetrsark)
 STD_ROM_FN(tetrsark)
 
-static int tetrsarkInit()
+static INT32 tetrsarkInit()
 {
 	arkanoid_bootleg_id = TETRSARK;
 
-	int nRet = DrvInit();
+	INT32 nRet = DrvInit();
 
 	if (nRet == 0) {
-		for (int i = 0; i < 0x8000; i++) {
+		for (INT32 i = 0; i < 0x8000; i++) {
 			DrvZ80ROM[i] ^= 0x94;
 		}
 	}
@@ -1887,7 +1888,7 @@ static struct BurnRomInfo hexaRomDesc[] = {
 STD_ROM_PICK(hexa)
 STD_ROM_FN(hexa)
 
-static int HexaInit()
+static INT32 HexaInit()
 {
 	arkanoid_bootleg_id = HEXA;
 

@@ -9,47 +9,47 @@ extern "C" {
 #include "ay8910.h"
 }
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvZ80ROM0;
-static unsigned char *DrvZ80ROM1;
-static unsigned char *DrvM6809ROM;
-static unsigned char *DrvM6809DecROM;
-static unsigned char *DrvI8039ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvColPROM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvColRAM;
-static unsigned char *DrvVidRAM;
-static unsigned char *DrvZ80RAM0;
-static unsigned char *DrvZ80RAM1;
-static unsigned char *DrvShareRAM;
-static unsigned char *DrvM6809RAM;
-static unsigned int  *DrvPalette;
-static unsigned int  *Palette;
-static unsigned char DrvRecalc;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvZ80ROM0;
+static UINT8 *DrvZ80ROM1;
+static UINT8 *DrvM6809ROM;
+static UINT8 *DrvM6809DecROM;
+static UINT8 *DrvI8039ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvColPROM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvColRAM;
+static UINT8 *DrvVidRAM;
+static UINT8 *DrvZ80RAM0;
+static UINT8 *DrvZ80RAM1;
+static UINT8 *DrvShareRAM;
+static UINT8 *DrvM6809RAM;
+static UINT32  *DrvPalette;
+static UINT32  *Palette;
+static UINT8 DrvRecalc;
 
-static short *pAY8910Buffer[15];
+static INT16 *pAY8910Buffer[15];
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvDips[3];
-static unsigned char DrvInputs[3];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvDips[3];
+static UINT8 DrvInputs[3];
+static UINT8 DrvReset;
 
-static unsigned char *soundlatch;
-static unsigned char *soundlatch2;
-static unsigned char *flipscreen;
-static unsigned char *interrupt_enable0;
-static unsigned char *interrupt_enable1;
+static UINT8 *soundlatch;
+static UINT8 *soundlatch2;
+static UINT8 *flipscreen;
+static UINT8 *interrupt_enable0;
+static UINT8 *interrupt_enable1;
 
-static int scanline;
-static unsigned short *pTemp;
+static INT32 scanline;
+static UINT16 *pTemp;
 
 static struct BurnInputInfo GyrussInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -234,7 +234,7 @@ static struct BurnDIPInfo GyrussceDIPList[]=
 
 STDDIPINFO(Gyrussce)
 
-void __fastcall gyruss_main_write(unsigned short address, unsigned char data)
+void __fastcall gyruss_main_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -263,7 +263,7 @@ void __fastcall gyruss_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall gyruss_main_read(unsigned short address)
+UINT8 __fastcall gyruss_main_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -289,7 +289,7 @@ unsigned char __fastcall gyruss_main_read(unsigned short address)
 	return 0;
 }
 
-void gyruss_sub_write(unsigned short address, unsigned char data)
+void gyruss_sub_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -299,7 +299,7 @@ void gyruss_sub_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char gyruss_sub_read(unsigned short address)
+UINT8 gyruss_sub_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -310,7 +310,7 @@ unsigned char gyruss_sub_read(unsigned short address)
 	return 0;
 }
 
-unsigned char __fastcall gyruss_sound0_read(unsigned short address)
+UINT8 __fastcall gyruss_sound0_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -321,7 +321,7 @@ unsigned char __fastcall gyruss_sound0_read(unsigned short address)
 	return 0;
 }
 
-unsigned char __fastcall gyruss_sound0_in(unsigned short port)
+UINT8 __fastcall gyruss_sound0_in(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -344,7 +344,7 @@ unsigned char __fastcall gyruss_sound0_in(unsigned short port)
 	return 0;
 }
 
-void __fastcall gyruss_sound0_out(unsigned short port, unsigned char data)
+void __fastcall gyruss_sound0_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
@@ -397,9 +397,9 @@ void __fastcall gyruss_sound0_out(unsigned short port, unsigned char data)
 	}
 }
 
-unsigned char AY8910_3_portA(unsigned int)
+UINT8 AY8910_3_portA(UINT32)
 {
-	static const int gyruss_timer[10] =
+	static const INT32 gyruss_timer[10] =
 	{
 		0x00, 0x01, 0x02, 0x03, 0x04, 0x09, 0x0a, 0x0b, 0x0a, 0x0d
 	};
@@ -407,9 +407,9 @@ unsigned char AY8910_3_portA(unsigned int)
 	return gyruss_timer[((ZetTotalCycles() * 60) >> 10) % 10];
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM0		= Next; Next += 0x010000;
 	DrvZ80ROM1		= Next; Next += 0x010000;
@@ -425,26 +425,26 @@ static int MemIndex()
 
 	DrvColPROM		= Next; Next += 0x000300;
 
-	Palette			= (unsigned int*)Next; Next += 0x0140 * sizeof(int);
-	DrvPalette		= (unsigned int*)Next; Next += 0x0140 * sizeof(int);
+	Palette			= (UINT32*)Next; Next += 0x0140 * sizeof(UINT32);
+	DrvPalette		= (UINT32*)Next; Next += 0x0140 * sizeof(UINT32);
 
-	pAY8910Buffer[ 0]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[ 1]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[ 2]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[ 3]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[ 4]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[ 5]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[ 6]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[ 7]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[ 8]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[ 9]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[10]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[11]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[12]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[13]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
-	pAY8910Buffer[14]	= (short*)Next; Next += nBurnSoundLen * sizeof(short);
+	pAY8910Buffer[ 0]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[ 1]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[ 2]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[ 3]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[ 4]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[ 5]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[ 6]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[ 7]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[ 8]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[ 9]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[10]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[11]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[12]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[13]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
+	pAY8910Buffer[14]	= (INT16*)Next; Next += nBurnSoundLen * sizeof(INT16);
 
-	pTemp			= (unsigned short*)Next; Next += 0x10000 * 2;
+	pTemp			= (UINT16*)Next; Next += 0x10000 * 2;
 
 	AllRam			= Next;
 
@@ -472,14 +472,14 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	int Plane[4] = { 0x20004, 0x20000, 4, 0 };
-	int XOffs[8] = { 0, 1, 2, 3, 64, 65, 66, 67 };
-	int YOffs[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,
+	INT32 Plane[4] = { 0x20004, 0x20000, 4, 0 };
+	INT32 XOffs[8] = { 0, 1, 2, 3, 64, 65, 66, 67 };
+	INT32 YOffs[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,
 			32*8, 33*8, 34*8, 35*8, 36*8, 37*8, 38*8, 39*8 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)malloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -501,40 +501,40 @@ static int DrvGfxDecode()
 	return 0;
 }
 
-static int DrvPaletteInit()
+static INT32 DrvPaletteInit()
 {
-	unsigned char *color_prom = DrvColPROM;
-	unsigned int *tmp = (unsigned int*)malloc(32 * sizeof(int));
+	UINT8 *color_prom = DrvColPROM;
+	UINT32 *tmp = (UINT32*)malloc(32 * sizeof(UINT32));
 	if (tmp == NULL) {
 		return 1;
 	}
 	
-	for (int i = 0; i < 0x20; i++)
+	for (INT32 i = 0; i < 0x20; i++)
 	{
-		int bit0, bit1, bit2;
-		unsigned char r, g, b;
+		INT32 bit0, bit1, bit2;
+		UINT8 r, g, b;
 
 		bit0 = (color_prom[i] >> 0) & 0x01;
 		bit1 = (color_prom[i] >> 1) & 0x01;
 		bit2 = (color_prom[i] >> 2) & 0x01;
-		r = (int)(double((bit0 * 33 + bit1 * 70 + bit2 * 151)+0.5));
+		r = (INT32)(double((bit0 * 33 + bit1 * 70 + bit2 * 151)+0.5));
 
 		bit0 = (color_prom[i] >> 3) & 0x01;
 		bit1 = (color_prom[i] >> 4) & 0x01;
 		bit2 = (color_prom[i] >> 5) & 0x01;
-		g = (int)(double((bit0 * 33 + bit1 * 70 + bit2 * 151)+0.5));
+		g = (INT32)(double((bit0 * 33 + bit1 * 70 + bit2 * 151)+0.5));
 
 		bit0 = (color_prom[i] >> 6) & 0x01;
 		bit1 = (color_prom[i] >> 7) & 0x01;
-		b = (int)(double((bit0 * 78 + bit1 * 151)+0.5));
+		b = (INT32)(double((bit0 * 78 + bit1 * 151)+0.5));
 
 		tmp[i] = (r << 16) | (g << 8) | b;
 	}
 
 	color_prom += 32;
 
-	for (int i = 0; i < 0x140; i++) {
-		unsigned char ctabentry = color_prom[i] & 0x0f;
+	for (INT32 i = 0; i < 0x140; i++) {
+		UINT8 ctabentry = color_prom[i] & 0x0f;
 		Palette[i] = tmp[ctabentry | ((i >> 4) & 0x10)];
 	}
 
@@ -547,9 +547,9 @@ static int DrvPaletteInit()
 
 static void gyrussDecode()
 {
-	for (int i = 0xe000; i < 0x10000; i++)
+	for (INT32 i = 0xe000; i < 0x10000; i++)
 	{
-		unsigned char xor1 = 0;
+		UINT8 xor1 = 0;
 
 		if ( i & 0x02) xor1 |= 0x80;
 		else           xor1 |= 0x20;
@@ -560,7 +560,7 @@ static void gyrussDecode()
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -587,12 +587,12 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -682,7 +682,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 	ZetExit();
@@ -702,20 +702,20 @@ static int DrvExit()
 	return 0;
 }
 
-static void draw_background(int transp)
+static void draw_background(INT32 transp)
 {
-	for (int offs = 0x40; offs < 0x3c0; offs++)
+	for (INT32 offs = 0x40; offs < 0x3c0; offs++)
 	{
-		int sx    = (offs & 0x1f) << 3;
-		int sy    = (offs >> 5) << 3;
+		INT32 sx    = (offs & 0x1f) << 3;
+		INT32 sy    = (offs >> 5) << 3;
 
-		int attr  = DrvColRAM[offs];
-		int code  = ((attr & 0x20) << 3) | DrvVidRAM[offs];
-		int color =   attr & 0x0f;
-		int flipx =  (attr >> 6) & 1;
-		int flipy =   attr >> 7;
+		INT32 attr  = DrvColRAM[offs];
+		INT32 code  = ((attr & 0x20) << 3) | DrvVidRAM[offs];
+		INT32 color =   attr & 0x0f;
+		INT32 flipx =  (attr >> 6) & 1;
+		INT32 flipy =   attr >> 7;
 
-		int group = ((~DrvColRAM[offs] >> 4) & 1);
+		INT32 group = ((~DrvColRAM[offs] >> 4) & 1);
 		if (transp && group == 0) continue;
 
 		if (*flipscreen) {
@@ -743,25 +743,25 @@ static void draw_background(int transp)
 	}
 }
 
-static void draw_8x16_tile_line(int sx, int sy, int color, unsigned char *gfx_base, int code, int flipx, int flipy, int line)
+static void draw_8x16_tile_line(INT32 sx, INT32 sy, INT32 color, UINT8 *gfx_base, INT32 code, INT32 flipx, INT32 flipy, INT32 line)
 {
 	line -= 16;
 
 	if (line < 0 || line >= nScreenHeight) return;
 
-	int y = line - sy; // right?
+	INT32 y = line - sy; // right?
 	if (y < 0 || y >= 16) return;
 
 	if (flipy) flipy = 0x78;
 
-	unsigned char *src = gfx_base + (code * 0x80) + ((y << 3) ^ flipy);
+	UINT8 *src = gfx_base + (code * 0x80) + ((y << 3) ^ flipy);
 	color <<= 4;
 
 	if (flipx) flipx = 0x07;
 
-	for (int x = 0; x < 8; x++, sx++)
+	for (INT32 x = 0; x < 8; x++, sx++)
 	{
-		int pxl = src[x ^ flipx];
+		INT32 pxl = src[x ^ flipx];
 
 		if (sx < 0 || sx >= nScreenWidth || !pxl) continue;
 
@@ -769,32 +769,32 @@ static void draw_8x16_tile_line(int sx, int sy, int color, unsigned char *gfx_ba
 	}
 }
 
-static void draw_sprites(int line)
+static void draw_sprites(INT32 line)
 {
-	for (int offs = 0xbc; offs >= 0; offs -= 4)
+	for (INT32 offs = 0xbc; offs >= 0; offs -= 4)
 	{
-		int sx = DrvSprRAM[offs];
-		int sy = (241 - DrvSprRAM[offs + 3]);
+		INT32 sx = DrvSprRAM[offs];
+		INT32 sy = (241 - DrvSprRAM[offs + 3]);
 
 		if (sy <= (line-16) || sy >= (line+16)) continue;
 
-		int bank =   DrvSprRAM[offs + 1] & 0x01;
-		int code = ((DrvSprRAM[offs + 2] & 0x20) << 2) | (DrvSprRAM[offs + 1] >> 1);
-		int color =  DrvSprRAM[offs + 2] & 0x0f;
-		int flipx = ~DrvSprRAM[offs + 2] & 0x40;
-		int flipy =  DrvSprRAM[offs + 2] & 0x80;
+		INT32 bank =   DrvSprRAM[offs + 1] & 0x01;
+		INT32 code = ((DrvSprRAM[offs + 2] & 0x20) << 2) | (DrvSprRAM[offs + 1] >> 1);
+		INT32 color =  DrvSprRAM[offs + 2] & 0x0f;
+		INT32 flipx = ~DrvSprRAM[offs + 2] & 0x40;
+		INT32 flipy =  DrvSprRAM[offs + 2] & 0x80;
 
-		unsigned char *gfx_base = bank ? DrvGfxROM1 : DrvGfxROM0;
+		UINT8 *gfx_base = bank ? DrvGfxROM1 : DrvGfxROM0;
 
 		draw_8x16_tile_line(sx, sy-16, color, gfx_base, code, flipx, flipy, line);
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x140; i++) {
-			int rgb = Palette[i];
+		for (INT32 i = 0; i < 0x140; i++) {
+			INT32 rgb = Palette[i];
 			DrvPalette[i] = BurnHighCol(rgb >> 16, rgb >> 8, rgb, 0);
 		}
 	}
@@ -808,7 +808,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -816,7 +816,7 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 3);
-		for (int i = 0; i < 5; i++) {
+		for (INT32 i = 0; i < 5; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
  			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -825,16 +825,16 @@ static int DrvFrame()
 
 	ZetNewFrame();
 
-	int nCyclesSegment;
-	int nInterleave = 256;
-	int nCyclesTotal[4] = { 3072000 / 60, 2000000 / 60, 3579545 / 60, 8000000 / 60 };
-	int nCyclesDone[4] = { 0, 0, 0, 0 };
+	INT32 nCyclesSegment;
+	INT32 nInterleave = 256;
+	INT32 nCyclesTotal[4] = { 3072000 / 60, 2000000 / 60, 3579545 / 60, 8000000 / 60 };
+	INT32 nCyclesDone[4] = { 0, 0, 0, 0 };
 
 	DrvDraw();
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		int nNext;
+		INT32 nNext;
 		scanline = i;
 
 		ZetOpen(0);
@@ -865,13 +865,13 @@ static int DrvFrame()
 	}
 
 	if (pBurnSoundOut) {
-		int nSample;
+		INT32 nSample;
 		AY8910Update(0, &pAY8910Buffer[ 0], nBurnSoundLen);
 		AY8910Update(1, &pAY8910Buffer[ 3], nBurnSoundLen);
 		AY8910Update(2, &pAY8910Buffer[ 6], nBurnSoundLen);
 		AY8910Update(3, &pAY8910Buffer[ 9], nBurnSoundLen);
 		AY8910Update(4, &pAY8910Buffer[12], nBurnSoundLen);
-		for (int n = 0; n < nBurnSoundLen; n++) {
+		for (INT32 n = 0; n < nBurnSoundLen; n++) {
 			nSample  = pAY8910Buffer[ 0][n] >> 4;
 			nSample += pAY8910Buffer[ 1][n] >> 4;
 			nSample += pAY8910Buffer[ 2][n] >> 4;
@@ -908,7 +908,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

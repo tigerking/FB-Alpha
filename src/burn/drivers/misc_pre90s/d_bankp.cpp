@@ -4,11 +4,11 @@
 #include "tiles_generic.h"
 #include "sn76496.h"
 
-static unsigned char *Mem, *Rom, *Gfx0, *Gfx1, *Prom;
-static unsigned char DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvReset, DrvDips;
-static int *Palette;
+static UINT8 *Mem, *Rom, *Gfx0, *Gfx1, *Prom;
+static UINT8 DrvJoy1[8], DrvJoy2[8], DrvJoy3[8], DrvReset, DrvDips;
+static INT32 *Palette;
 
-static unsigned char scroll_x, priority, flipscreen, interrupt_enable;
+static UINT8 scroll_x, priority, flipscreen, interrupt_enable;
 
 static struct BurnInputInfo bankpInputList[] = {
 	{"Coin 1"       , BIT_DIGITAL  , DrvJoy1 + 5,	"p1 coin"  },
@@ -133,15 +133,15 @@ static struct BurnDIPInfo combhDIPList[]=
 
 STDDIPINFO(combh)
 
-unsigned char __fastcall bankp_in(unsigned short address)
+UINT8 __fastcall bankp_in(UINT16 address)
 {
-	unsigned char ret = 0;
+	UINT8 ret = 0;
 
 	switch (address & 0xff)
 	{
 		case 0x00:
 		{
-			for (int i = 0; i < 8; i++) ret |= DrvJoy1[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret |= DrvJoy1[i] << i;
 
 			// limit controls to 2-way
 			if ((ret & 0x05) == 0x05) ret &= 0xfa;
@@ -152,7 +152,7 @@ unsigned char __fastcall bankp_in(unsigned short address)
 
 		case 0x01:
 		{
-			for (int i = 0; i < 8; i++) ret |= DrvJoy2[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret |= DrvJoy2[i] << i;
 
 			// limit controls to 2-way
 			if ((ret & 0x05) == 0x05) ret &= 0xfa;
@@ -163,7 +163,7 @@ unsigned char __fastcall bankp_in(unsigned short address)
 
 		case 0x02:
 		{
-			for (int i = 0; i < 8; i++) ret |= DrvJoy3[i] << i;
+			for (INT32 i = 0; i < 8; i++) ret |= DrvJoy3[i] << i;
 
 			return ret;
 		}
@@ -175,7 +175,7 @@ unsigned char __fastcall bankp_in(unsigned short address)
 	return 0;
 }
 
-void __fastcall bankp_out(unsigned short address, unsigned char data)
+void __fastcall bankp_out(UINT16 address, UINT8 data)
 {
 	switch (address & 0xff)
 	{
@@ -207,7 +207,7 @@ void __fastcall bankp_out(unsigned short address, unsigned char data)
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	DrvReset = 0;
 
@@ -223,16 +223,16 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int bankp_palette_init()
+static INT32 bankp_palette_init()
 {
-	int i;
+	INT32 i;
 
-	unsigned int t_pal[32];
-	unsigned char *color_prom = Prom;
+	UINT32 t_pal[32];
+	UINT8 *color_prom = Prom;
 
 	for (i = 0;i < 32;i++)
 	{
-		int bit0,bit1,bit2,r,g,b;
+		INT32 bit0,bit1,bit2,r,g,b;
 
 		bit0 = (*color_prom >> 0) & 0x01;
 		bit1 = (*color_prom >> 1) & 0x01;
@@ -269,20 +269,20 @@ static int bankp_palette_init()
 	return 0;
 }
 
-static int bankp_gfx_decode()
+static INT32 bankp_gfx_decode()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)malloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
 
 	memcpy (tmp, Gfx0, 0x10000);
 
-	static int Char1PlaneOffsets[2] = { 0x00, 0x04 };
-	static int Char2PlaneOffsets[3] = { 0x00, 0x20000, 0x40000 };
-	static int Char1XOffsets[8]     = { 0x43, 0x42, 0x41, 0x40, 0x03, 0x02, 0x01, 0x00 };
-	static int Char2XOffsets[8]     = { 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
-	static int CharYOffsets[8]      = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38 };
+	static INT32 Char1PlaneOffsets[2] = { 0x00, 0x04 };
+	static INT32 Char2PlaneOffsets[3] = { 0x00, 0x20000, 0x40000 };
+	static INT32 Char1XOffsets[8]     = { 0x43, 0x42, 0x41, 0x40, 0x03, 0x02, 0x01, 0x00 };
+	static INT32 Char2XOffsets[8]     = { 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00 };
+	static INT32 CharYOffsets[8]      = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38 };
 
 	GfxDecode(0x400, 2, 8, 8, Char1PlaneOffsets, Char1XOffsets, CharYOffsets, 0x080, tmp, Gfx0);
 
@@ -290,7 +290,7 @@ static int bankp_gfx_decode()
 
 	GfxDecode(0x800, 3, 8, 8, Char2PlaneOffsets, Char2XOffsets, CharYOffsets, 0x040, tmp, Gfx1);
 
-	for (int i = 0; i < 0x20000; i++) {
+	for (INT32 i = 0; i < 0x20000; i++) {
 		Gfx1[i] |= 0x80;
 	}
 
@@ -302,9 +302,9 @@ static int bankp_gfx_decode()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	Mem = (unsigned char*)malloc(0x10000 + 0x10000 + 0x20000 + 0x300 + 0x800);
+	Mem = (UINT8*)malloc(0x10000 + 0x10000 + 0x20000 + 0x300 + 0x800);
 	if (Mem == NULL) {
 		return 1;
 	}
@@ -313,16 +313,16 @@ static int DrvInit()
 	Gfx0 = Mem + 0x10000;
 	Gfx1 = Mem + 0x20000;
 	Prom = Mem + 0x40000;
-	Palette = (int*)(Mem + 0x40200);
+	Palette = (INT32*)(Mem + 0x40200);
 
 	{
-		for (int i = 0; i < 4; i++)
+		for (INT32 i = 0; i < 4; i++)
 			if (BurnLoadRom(Rom + i * 0x4000, i +  0, 1)) return 1;
 
 		if (BurnLoadRom(Gfx0 + 0x0000, 4, 1)) return 1;
 		if (BurnLoadRom(Gfx0 + 0x2000, 5, 1)) return 1;
 
-		for (int i = 0; i < 6; i++)
+		for (INT32 i = 0; i < 6; i++)
 			if (BurnLoadRom(Gfx1 + i * 0x2000, i +  6, 1)) return 1;
 
 		if (BurnLoadRom(Prom + 0x0000, 12, 1)) return 1;
@@ -356,7 +356,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ZetExit();
 	
@@ -376,47 +376,47 @@ static int DrvExit()
 }
 
 
-static void bankp_plot_pixel(int x, int y, int color, unsigned char src, int transp)
+static void bankp_plot_pixel(INT32 x, INT32 y, INT32 color, UINT8 src, INT32 transp)
 {
 	if (x > 223 || x < 0 || y > 223 || y < 0) return;
 
-	int pxl = Palette[color | src];
+	INT32 pxl = Palette[color | src];
 	if (transp && !pxl) return;
 
 	PutPix(pBurnDraw + (y * 224 + x) * nBurnBpp, BurnHighCol(pxl >> 16, pxl >> 8, pxl, 0));
 }
 
 
-static void draw_8x8_tiles(unsigned char *gfx_base, int code, int color, int sx, int sy, int flipx, int flipy, int transp)
+static void draw_8x8_tiles(UINT8 *gfx_base, INT32 code, INT32 color, INT32 sx, INT32 sy, INT32 flipx, INT32 flipy, INT32 transp)
 {
-	unsigned char *src = gfx_base + (code << 6);
+	UINT8 *src = gfx_base + (code << 6);
 
 	if (flipy)
 	{
-		for (int y = sy + 7; y >= sy; y--)
+		for (INT32 y = sy + 7; y >= sy; y--)
 		{
 			if (flipx)
 			{
-				for (int x = sx + 7; x >= sx; x--, src++) {
+				for (INT32 x = sx + 7; x >= sx; x--, src++) {
 					bankp_plot_pixel(x, y, color, *src, transp);
 				}
 			} else {
-				for (int x = sx; x < sx + 8; x++, src++) {
+				for (INT32 x = sx; x < sx + 8; x++, src++) {
 					bankp_plot_pixel(x, y, color, *src, transp);
 				}
 			}
 		}	
 	} else {
-		for (int y = sy; y < sy + 8; y++)
+		for (INT32 y = sy; y < sy + 8; y++)
 		{
 			if (flipx)
 			{
-				for (int x = sx + 7; x >= sx; x--, src++) {
+				for (INT32 x = sx + 7; x >= sx; x--, src++) {
 					bankp_plot_pixel(x, y, color, *src, transp);
 
 				}
 			} else {
-				for (int x = sx; x < sx + 8; x++, src++) {
+				for (INT32 x = sx; x < sx + 8; x++, src++) {
 					bankp_plot_pixel(x, y, color, *src, transp);
 
 				}
@@ -425,11 +425,11 @@ static void draw_8x8_tiles(unsigned char *gfx_base, int code, int color, int sx,
 	}
 }
 
-static void draw_bg_tiles(int prio)
+static void draw_bg_tiles(INT32 prio)
 {
-	for (int offs = 0; offs < 0x400; offs++)
+	for (INT32 offs = 0; offs < 0x400; offs++)
 	{
-		int code, color, flipx, sx, sy;
+		INT32 code, color, flipx, sx, sy;
 
 		code = Rom[0xf800 + offs] | ((Rom[0xfc00 + offs] & 7) << 8);
 		color = (Rom[0xfc00 + offs] >> 1) & 0x78;
@@ -448,11 +448,11 @@ static void draw_bg_tiles(int prio)
 	}
 }
 
-static void draw_fg_tiles(int prio)
+static void draw_fg_tiles(INT32 prio)
 {
-	for (int offs = 0; offs < 0x400; offs++)
+	for (INT32 offs = 0; offs < 0x400; offs++)
 	{
-		int code, color, flipx, sx, sy;
+		INT32 code, color, flipx, sx, sy;
 
 		code = Rom[0xf000 + offs] | ((Rom[0xf400 + offs] & 3) << 8);
 		color = (Rom[0xf400 + offs] >> 1) & 0x7c;
@@ -471,7 +471,7 @@ static void draw_fg_tiles(int prio)
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (priority & 0x02)
 	{
@@ -486,7 +486,7 @@ static int DrvDraw()
 }
 
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -508,7 +508,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -553,7 +553,7 @@ static struct BurnRomInfo bankpRomDesc[] = {
 	{ "epr-6168.5h",       0x2000, 0x05f3a867, 3 | BRF_GRA },	       // 10
 	{ "epr-6167.5i",       0x2000, 0x3fa337e1, 3 | BRF_GRA },	       // 11
 
-	{ "pr-6177.8a",        0x0020, 0xeb70c5ae, 4 | BRF_GRA },	       // 12 (unsigned int*)Palette
+	{ "pr-6177.8a",        0x0020, 0xeb70c5ae, 4 | BRF_GRA },	       // 12 (UINT32*)Palette
 	{ "pr-6178.6f",        0x0100, 0x0acca001, 4 | BRF_GRA },	       // 13 Charset #1 lut
 	{ "pr-6179.5a",        0x0100, 0xe53bafdb, 4 | BRF_GRA },	       // 14 Charset #2 lut
 
@@ -592,7 +592,7 @@ static struct BurnRomInfo combhRomDesc[] = {
 	{ "epr-10911.5h",      0x2000, 0x565d9e6d, 3 | BRF_GRA },	       // 10
 	{ "epr-10912.5i",      0x2000, 0xcbe22738, 3 | BRF_GRA },	       // 11
 
-	{ "pr-10900.8a",       0x0020, 0xf95fcd66, 4 | BRF_GRA },	       // 12 (unsigned int*)Palette
+	{ "pr-10900.8a",       0x0020, 0xf95fcd66, 4 | BRF_GRA },	       // 12 (UINT32*)Palette
 	{ "pr-10901.6f",       0x0100, 0x6fd981c8, 4 | BRF_GRA },	       // 13 Charset #1 lut
 	{ "pr-10902.5a",       0x0100, 0x84d6bded, 4 | BRF_GRA },	       // 14 Charset #2 lut
 

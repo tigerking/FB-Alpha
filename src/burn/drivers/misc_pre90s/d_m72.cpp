@@ -14,67 +14,67 @@
 #include "irem_cpu.h"
 #include "dac.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvV30ROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-static unsigned char *DrvSndROM;
-static unsigned char *DrvVidRAM0;
-static unsigned char *DrvVidRAM1;
-static unsigned char *DrvV30RAM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvSprBuf;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvProtRAM;
-static unsigned char *DrvRowScroll;
-static unsigned char *DrvSprRAM2;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvV30ROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+static UINT8 *DrvSndROM;
+static UINT8 *DrvVidRAM0;
+static UINT8 *DrvVidRAM1;
+static UINT8 *DrvV30RAM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvSprBuf;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvProtRAM;
+static UINT8 *DrvRowScroll;
+static UINT8 *DrvSprRAM2;
 
-static unsigned char *scroll;
+static UINT8 *scroll;
 
-static unsigned char *RamPrioBitmap;
-static short *dacbuffer;
+static UINT8 *RamPrioBitmap;
+static INT16 *dacbuffer;
 
-static unsigned char *soundlatch;
-static unsigned char *video_enable;
+static UINT8 *soundlatch;
+static UINT8 *video_enable;
 
-static unsigned int *DrvPalette;
-static unsigned char DrvRecalc;
-static int ym2151_previous = 0;
-static unsigned char irqvector;
-static int sample_address;
-static int irq_raster_position;
-static int z80_reset = 0;
-static int majtitle_rowscroll_enable = 0;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
+static INT32 ym2151_previous = 0;
+static UINT8 irqvector;
+static INT32 sample_address;
+static INT32 irq_raster_position;
+static INT32 z80_reset = 0;
+static INT32 majtitle_rowscroll_enable = 0;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvJoy4[8];
-static unsigned char DrvJoy5[8];
-static unsigned char DrvDips[2];
-static unsigned char DrvInputs[5];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvJoy4[8];
+static UINT8 DrvJoy5[8];
+static UINT8 DrvDips[2];
+static UINT8 DrvInputs[5];
+static UINT8 DrvReset;
 
-const static int nInterleave = 284;
-static int nCurrentCycles;
-static int nCyclesDone[2];
-static int nCyclesTotal[2];
+const static INT32 nInterleave = 284;
+static INT32 nCurrentCycles;
+static INT32 nCyclesDone[2];
+static INT32 nCyclesTotal[2];
 
-static int ym2151_frame = 0;
-static int m72_video_type = 0;
-static int z80_nmi_enable = 0;
-static int enable_z80_reset = 0; // only if z80 is not rom-based!
-static int m72_irq_base = 0x80;
-static int code_mask[4];
-static int graphics_length[4];
-static int video_offsets[2] = { 0, 0 };
+static INT32 ym2151_frame = 0;
+static INT32 m72_video_type = 0;
+static INT32 z80_nmi_enable = 0;
+static INT32 enable_z80_reset = 0; // only if z80 is not rom-based!
+static INT32 m72_irq_base = 0x80;
+static INT32 code_mask[4];
+static INT32 graphics_length[4];
+static INT32 video_offsets[2] = { 0, 0 };
 
 enum { Z80_NO_NMI=0, Z80_REAL_NMI, Z80_FAKE_NMI };
 enum { VECTOR_INIT, YM2151_ASSERT, YM2151_CLEAR, Z80_ASSERT, Z80_CLEAR };
@@ -684,11 +684,11 @@ STDDIPINFO(Poundfor)
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 // Protection handlers
 
-static const unsigned char *protection_code = NULL;
-static const unsigned char *protection_crc = NULL;
-static const int           *protection_sample_offsets = NULL;
+static const UINT8 *protection_code = NULL;
+static const UINT8 *protection_crc = NULL;
+static const INT32           *protection_sample_offsets = NULL;
 
-static unsigned char protection_read(int address)
+static UINT8 protection_read(INT32 address)
 {
 	if (address == 0xb0ffb) {
 		if (protection_code != NULL) {
@@ -699,7 +699,7 @@ static unsigned char protection_read(int address)
 	return DrvProtRAM[address & 0xfff];
 }
 
-static void protection_write(int address, unsigned char data)
+static void protection_write(INT32 address, UINT8 data)
 {
 	DrvProtRAM[address & 0xfff] = data ^ 0xff;
 
@@ -710,7 +710,7 @@ static void protection_write(int address, unsigned char data)
 	}
 }
 
-static void protection_sample_offset_write(unsigned char data)
+static void protection_sample_offset_write(UINT8 data)
 {
 	if (protection_sample_offsets != NULL) {
 		if (data < protection_sample_offsets[0]) {
@@ -719,7 +719,7 @@ static void protection_sample_offset_write(unsigned char data)
 	}
 }
 
-static void m72_install_protection(const unsigned char *code, const unsigned char *crc, const int *offs)
+static void m72_install_protection(const UINT8 *code, const UINT8 *crc, const INT32 *offs)
 {
 	protection_code = code;
 	protection_crc = crc;
@@ -729,9 +729,9 @@ static void m72_install_protection(const unsigned char *code, const unsigned cha
 #define install_protection(name) m72_install_protection(name##_code, name##_crc, name##_sample_offsets)
 
 /* Battle Chopper / Mr. Heli */
-static const int bchopper_sample_offsets[7] = { 6, 0x0000, 0x0010, 0x2510, 0x6510, 0x8510, 0x9310 };
+static const INT32 bchopper_sample_offsets[7] = { 6, 0x0000, 0x0010, 0x2510, 0x6510, 0x8510, 0x9310 };
 
-static const unsigned char bchopper_code[96] =
+static const UINT8 bchopper_code[96] =
 {
 	0x68,0x00,0xa0,			// push 0a000h
 	0x1f,				// pop ds
@@ -756,40 +756,40 @@ static const unsigned char bchopper_code[96] =
 	0xea,0x68,0x01,0x40,0x00	// jmp  0040:$0168
 };
 
-static const unsigned char bchopper_crc[18] = {
+static const UINT8 bchopper_crc[18] = {
 	0x1a,0x12,0x5c,0x08,0x84,0xb6,0x73,0xd1,0x54,0x91,0x94,0xeb,0x00,0x00
 };
 
-static const unsigned char mrheli_crc[18] = {
+static const UINT8 mrheli_crc[18] = {
 	0x24,0x21,0x1f,0x14,0xf9,0x28,0xfb,0x47,0x4c,0x77,0x9e,0xc2,0x00,0x00
 };
 
 /* X Multiply */
-static const int xmultiplm72_sample_offsets[4] = { 3, 0x0000, 0x0020, 0x1a40 };
+static const INT32 xmultiplm72_sample_offsets[4] = { 3, 0x0000, 0x0020, 0x1a40 };
 
-static const unsigned char xmultiplm72_code[96] = {
+static const UINT8 xmultiplm72_code[96] = {
 	0xea,0x30,0x02,0x00,0x0e	// jmp  0e00:$0230
 };
 
-static const unsigned char xmultiplm72_crc[18] = {
+static const UINT8 xmultiplm72_crc[18] = {
 	0x73,0x82,0x4e,0x3f, 0xfc,0x56,0x59,0x06,0x05,0x48,0xa8,0xf4,0x00,0x00
 };
 
 /* Dragon Breed */
-static const int dbreedm72_sample_offsets[10] = { 9, 0x00000, 0x00020, 0x02c40, 0x08160, 0x0c8c0, 0x0ffe0, 0x13000, 0x15820, 0x15f40 };
+static const INT32 dbreedm72_sample_offsets[10] = { 9, 0x00000, 0x00020, 0x02c40, 0x08160, 0x0c8c0, 0x0ffe0, 0x13000, 0x15820, 0x15f40 };
 
-static const unsigned char dbreedm72_code[96] = {
+static const UINT8 dbreedm72_code[96] = {
 	0xea,0x6c,0x00,0x00,0x00	// jmp  0000:$006c
 };
 
-static const unsigned char dbreedm72_crc[18] ={
+static const UINT8 dbreedm72_crc[18] ={
 	0xa4,0x96,0x5f,0xc0, 0xab,0x49,0x9f,0x19,0x84,0xe6,0xd6,0xca,0x00,0x00
 };
 
 /* Ninja Spirit */
-static const int nspirit_sample_offsets[10] = { 9, 0x0000, 0x0020, 0x2020, 0, 0x5720, 0, 0x7b60, 0x9b60, 0xc360 };
+static const INT32 nspirit_sample_offsets[10] = { 9, 0x0000, 0x0020, 0x2020, 0, 0x5720, 0, 0x7b60, 0x9b60, 0xc360 };
 
-static const unsigned char nspirit_code[96] =
+static const UINT8 nspirit_code[96] =
 {
 	0x68,0x00,0xa0,			// push 0a000h
 	0x1f,				// pop ds
@@ -814,18 +814,18 @@ static const unsigned char nspirit_code[96] =
 	0xea,0x00,0x00,0x40,0x00	// jmp  0040:$0000
 };
 
-static const unsigned char nspirit_crc[18] = {
+static const UINT8 nspirit_crc[18] = {
 	0xfe,0x94,0x6e,0x4e, 0xc8,0x33,0xa7,0x2d,0xf2,0xa3,0xf9,0xe1, 0xa9,0x6c,0x02,0x95, 0x00,0x00
 };
 
-static const unsigned char nspiritj_crc[18] = {
+static const UINT8 nspiritj_crc[18] = {
 	0x26,0xa3,0xa5,0xe9, 0xc8,0x33,0xa7,0x2d,0xf2,0xa3,0xf9,0xe1, 0xbc,0x6c,0x01,0x95, 0x00,0x00
 };
 
 /* Image Fight */
-static const int imgfight_sample_offsets[8] = { 7, 0x0000, 0x0020, 0x44e0, 0x98a0, 0xc820, 0xf7a0, 0x108c0 };
+static const INT32 imgfight_sample_offsets[8] = { 7, 0x0000, 0x0020, 0x44e0, 0x98a0, 0xc820, 0xf7a0, 0x108c0 };
 
-static const unsigned char imgfight_code[96] =
+static const UINT8 imgfight_code[96] =
 {
 	0x68,0x00,0xa0,			// push 0a000h
 	0x1f,				// pop ds
@@ -853,17 +853,17 @@ static const unsigned char imgfight_code[96] =
 	0xea,0x00,0x00,0x40,0x00	// jmp  0040:$0000
 };
 
-static const unsigned char imgfight_crc[18] = {
+static const UINT8 imgfight_crc[18] = {
 	0x7e,0xcc,0xec,0x03, 0x04,0x33,0xb6,0xc5, 0xbf,0x37,0x92,0x94, 0x00,0x00
 };
 
 /* Air Duel */
-static const int airduel_sample_offsets[17] = {
+static const INT32 airduel_sample_offsets[17] = {
 	16,
 	0x00000, 0x00020, 0x03ec0, 0x05640, 0x06dc0, 0x083a0, 0x0c000, 0x0eb60,
 	0x112e0, 0x13dc0, 0x16520, 0x16d60, 0x18ae0, 0x1a5a0, 0x1bf00, 0x1c340 };
 
-static const unsigned char airduel_code[96] =
+static const UINT8 airduel_code[96] =
 {
 	0x68,0x00,0xd0,			// push 0d000h
 	0x1f,				// pop ds
@@ -874,30 +874,30 @@ static const unsigned char airduel_code[96] =
 	0xea,0x69,0x0b,0x00,0x00	// jmp  0000:$0b69
 };
 
-static const unsigned char airduel_crc[18] = {
+static const UINT8 airduel_crc[18] = {
 	0x72,0x9c,0xca,0x85, 0xc9,0x12,0xcc,0xea, 0x00,0x00
 };
 
 /* Daiku no Gensan */
-static const int dkgenm72_sample_offsets[29] = {
+static const INT32 dkgenm72_sample_offsets[29] = {
 	28,
 	0x00000, 0x00020, 0x01800, 0x02da0, 0x03be0, 0x05ae0, 0x06100, 0x06de0,
 	0x07260, 0x07a60, 0x08720, 0x0a5c0, 0x0c3c0, 0x0c7a0, 0x0e140, 0x0fb00,
 	0x10fa0, 0x10fc0, 0x10fe0, 0x11f40, 0x12b20, 0x130a0, 0x13c60, 0x14740,
 	0x153c0, 0x197e0, 0x1af40, 0x1c080 };
 
-static const unsigned char dkgenm72_code[96] = {
+static const UINT8 dkgenm72_code[96] = {
 	0xea,0x3d,0x00,0x00,0x10	// jmp  1000:$003d
 };
 
-static const unsigned char dkgenm72_crc[18] = {
+static const UINT8 dkgenm72_crc[18] = {
 	0xc8,0xb4,0xdc,0xf8, 0xd3,0xba,0x48,0xed,0x79,0x08,0x1c,0xb3, 0x00,0x00
 };
 
 /* Legend of Hero Tonma */
-static const int loht_sample_offsets[8] = { 7, 0x0000, 0x0020, 0, 0x2c40, 0x4320, 0x7120, 0xb200 };
+static const INT32 loht_sample_offsets[8] = { 7, 0x0000, 0x0020, 0, 0x2c40, 0x4320, 0x7120, 0xb200 };
 
-static const unsigned char loht_code[96] =
+static const UINT8 loht_code[96] =
 {
 	0x68,0x00,0xa0,			// push 0a000h
 	0x1f,				// pop ds
@@ -918,12 +918,12 @@ static const unsigned char loht_code[96] =
 	0xea,0x5d,0x01,0x40,0x00	// jmp  0040:$015d
 };
 
-static const unsigned char loht_crc[18] = {
+static const UINT8 loht_crc[18] = {
 	0x39,0x00,0x82,0xae, 0x2c,0x9d,0x4b,0x73,0xfb,0xac,0xd4,0x6d, 0x6d,0x5b,0x77,0xc0, 0x00,0x00
 };
 
 /* Gallop - Armed police Unit */
-static const int gallop_sample_offsets[32] = {
+static const INT32 gallop_sample_offsets[32] = {
 	31,
 	0x00000, 0x00020, 0x00040, 0x01360, 0x02580, 0x04f20, 0x06240, 0x076e0,
 	0x08660, 0x092a0, 0x09ba0, 0x0a560, 0x0cee0, 0x0de20, 0x0e620, 0x0f1c0,
@@ -933,7 +933,7 @@ static const int gallop_sample_offsets[32] = {
 //--------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-static void setvector_callback(int param)
+static void setvector_callback(INT32 param)
 {
 	switch (param)
 	{
@@ -950,7 +950,7 @@ static void setvector_callback(int param)
 
 static void sync_cpus()
 {
-	int cycles = (int)((float)(VezTotalCycles() * 0.447443125));
+	INT32 cycles = (INT32)((float)(VezTotalCycles() * 0.447443125));
 
 	cycles -= nCyclesDone[1];
 
@@ -968,14 +968,14 @@ static void sync_ym2151()
 {
 	if (z80_reset) return;
 
-	int cycles = ((nBurnSoundLen * ZetTotalCycles()) / nCyclesTotal[1]) + 1;
+	INT32 cycles = ((nBurnSoundLen * ZetTotalCycles()) / nCyclesTotal[1]) + 1;
 
 	if (cycles != ym2151_previous) {
 		if (cycles > nBurnSoundLen) return;
 
-		if ((int)nCurrentFrame != ym2151_frame) {
+		if ((INT32)nCurrentFrame != ym2151_frame) {
 			ym2151_previous = 0;
-			ym2151_frame = (int)nCurrentFrame;
+			ym2151_frame = (INT32)nCurrentFrame;
 		}
 
 		if (cycles > 0) {
@@ -986,27 +986,27 @@ static void sync_ym2151()
 	}
 }
 
-static void palette_write(int offset, int offset2)
+static void palette_write(INT32 offset, INT32 offset2)
 {
 	if (offset & 1) return;
 
-	unsigned short *pal = (unsigned short*)DrvPalRAM;
+	UINT16 *pal = (UINT16*)DrvPalRAM;
 	offset = (offset / 2) & 0x00ff;
 
-	int offset3 = offset;
+	INT32 offset3 = offset;
 	if (offset2) {
 		offset3 |= 0x0100;
 		pal += 0x1000 / 2;
 	}
 
-	int r = pal[offset + 0x000] & 0x1f;
-	int g = pal[offset + 0x200] & 0x1f;
-	int b = pal[offset + 0x400] & 0x1f;
+	INT32 r = pal[offset + 0x000] & 0x1f;
+	INT32 g = pal[offset + 0x200] & 0x1f;
+	INT32 b = pal[offset + 0x400] & 0x1f;
 
 	DrvPalette[offset3] = BurnHighCol((r << 3) | (r >> 2), (g << 3) | (g >> 2), (b << 3) | (b >> 2), 0);
 }
 
-unsigned char __fastcall m72_main_read(unsigned int address)
+UINT8 __fastcall m72_main_read(UINT32 address)
 {
 	if ((address & 0xff000) == 0xb0000) {
 		return protection_read(address);
@@ -1015,7 +1015,7 @@ unsigned char __fastcall m72_main_read(unsigned int address)
 	return 0;
 }
 
-void __fastcall m72_main_write(unsigned int address, unsigned char data)
+void __fastcall m72_main_write(UINT32 address, UINT8 data)
 {
 	if ((address & 0xff000) == 0xb0000) {
 		protection_write(address, data);
@@ -1037,7 +1037,7 @@ void __fastcall m72_main_write(unsigned int address, unsigned char data)
 	}
 }
 
-void __fastcall rtype2_main_write(unsigned int address, unsigned char data)
+void __fastcall rtype2_main_write(UINT32 address, UINT8 data)
 {
 	if ((address & 0xff000) == 0xc8000 || (address & 0xff000) == 0xa0000 || (address & 0xff000) == 0xcc000) {
 		if (address & 1) data = 0xff;
@@ -1074,7 +1074,7 @@ void __fastcall rtype2_main_write(unsigned int address, unsigned char data)
 	}
 }
 
-void __fastcall m72_main_write_port(unsigned int port, unsigned char data)
+void __fastcall m72_main_write_port(UINT32 port, UINT8 data)
 {
 //	bprintf (0, _T("%2.2x, %2.2x wp\n"), port, data);
 
@@ -1155,15 +1155,15 @@ void __fastcall m72_main_write_port(unsigned int port, unsigned char data)
 	}
 }
 
-static unsigned short poundfor_trackball_r(int offset)
+static UINT16 poundfor_trackball_r(INT32 offset)
 {
-	static int prev[4],diff[4];
+	static INT32 prev[4],diff[4];
 //	static const char *const axisnames[] = { "TRACK0_X", "TRACK0_Y", "TRACK1_X", "TRACK1_Y" };
 
 #if 0
 	if (offset == 0)
 	{
-		int i,curr;
+		INT32 i,curr;
 
 		for (i = 0;i < 4;i++)
 		{
@@ -1175,7 +1175,7 @@ static unsigned short poundfor_trackball_r(int offset)
 #endif
 	prev[0] = 0;
 	diff[0] = diff[1] = diff[2] = diff[3] = ~0;
-	int input = DrvInputs[0] | (DrvInputs[3] << 8);
+	INT32 input = DrvInputs[0] | (DrvInputs[3] << 8);
 
 	switch (offset)
 	{
@@ -1193,7 +1193,7 @@ static unsigned short poundfor_trackball_r(int offset)
 	return 0;
 }
 
-unsigned char __fastcall m72_main_read_port(unsigned int port)
+UINT8 __fastcall m72_main_read_port(UINT32 port)
 {
 	switch (port)
 	{
@@ -1206,7 +1206,7 @@ unsigned char __fastcall m72_main_read_port(unsigned int port)
 	}
 
 	if ((port & 0xf8) == 0x08) {
-		int ret = poundfor_trackball_r((port / 2) & 0x03);
+		INT32 ret = poundfor_trackball_r((port / 2) & 0x03);
 		if (port & 1) return ret >> 8;
 		else return ret;
 	}
@@ -1214,7 +1214,7 @@ unsigned char __fastcall m72_main_read_port(unsigned int port)
 	return 0;
 }
 
-void __fastcall m72_sound_write_port(unsigned short port, unsigned char data)
+void __fastcall m72_sound_write_port(UINT16 port, UINT8 data)
 {
 //	bprintf (0, _T("%2.2x, %2.2x wp\n"), port & 0xff, data);
 
@@ -1270,7 +1270,7 @@ void __fastcall m72_sound_write_port(unsigned short port, unsigned char data)
 	}
 }
 
-unsigned char __fastcall m72_sound_read_port(unsigned short port)
+UINT8 __fastcall m72_sound_read_port(UINT16 port)
 {
 //	if ((port & 0xff) != 0x84 && (port & 0xfe) != 0x00) bprintf (0, _T("%2.2x, rp\n"), port & 0xff);
 
@@ -1295,12 +1295,12 @@ unsigned char __fastcall m72_sound_read_port(unsigned short port)
 	return 0;
 }
 
-static void m72YM2151IRQHandler(int nStatus)
+static void m72YM2151IRQHandler(INT32 nStatus)
 {
 	setvector_callback(nStatus ? YM2151_ASSERT : YM2151_CLEAR);
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -1326,7 +1326,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static void common_main_cpu_map(int romaddr, int ramaddr)
+static void common_main_cpu_map(INT32 romaddr, INT32 ramaddr)
 {
 	VezInit(0, V30_TYPE);
 
@@ -1517,13 +1517,13 @@ static void sound_rom_map()
 	enable_z80_reset = 0;
 }
 
-static int DrvGfxDecode(unsigned char *gfx, int len, int type)
+static INT32 DrvGfxDecode(UINT8 *gfx, INT32 len, INT32 type)
 {
-	int Planes[4] = { ((len / 4) * 8) * 3, ((len / 4) * 8) * 2, ((len / 4) * 8) * 1, ((len / 4) * 8) * 0 };
-	int XOffs[16] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87 };
-	int YOffs[16] = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38, 0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78 };
+	INT32 Planes[4] = { ((len / 4) * 8) * 3, ((len / 4) * 8) * 2, ((len / 4) * 8) * 1, ((len / 4) * 8) * 0 };
+	INT32 XOffs[16] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87 };
+	INT32 YOffs[16] = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38, 0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78 };
 
-	unsigned char *tmp = (unsigned char*)malloc(len);
+	UINT8 *tmp = (UINT8*)malloc(len);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -1544,20 +1544,20 @@ static int DrvGfxDecode(unsigned char *gfx, int len, int type)
 	return 0;
 }
 
-static int GetRoms(int bLoad)
+static INT32 GetRoms(INT32 bLoad)
 {
 	char* pRomName;
 	struct BurnRomInfo ri;
-	unsigned char *V30ROM = DrvV30ROM;
-	unsigned char *Z80ROM = DrvZ80ROM;
-	unsigned char *GFXROM0 = DrvGfxROM0;
-	unsigned char *GFXROM1 = DrvGfxROM1;
-	unsigned char *GFXROM2 = DrvGfxROM2;
-	unsigned char *GFXROM3 = DrvGfxROM3;
-	unsigned char *SNDROM = DrvSndROM;
-	int pglen = 0;
+	UINT8 *V30ROM = DrvV30ROM;
+	UINT8 *Z80ROM = DrvZ80ROM;
+	UINT8 *GFXROM0 = DrvGfxROM0;
+	UINT8 *GFXROM1 = DrvGfxROM1;
+	UINT8 *GFXROM2 = DrvGfxROM2;
+	UINT8 *GFXROM3 = DrvGfxROM3;
+	UINT8 *SNDROM = DrvSndROM;
+	INT32 pglen = 0;
 
-	for (int i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
+	for (INT32 i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
 
 		BurnDrvGetRomInfo(&ri, i);
 
@@ -1619,9 +1619,9 @@ static int GetRoms(int bLoad)
 		memcpy (DrvV30ROM + 0xffff0, V30ROM - 0x10, 0x010);
 
 		// mirror sound rom
-		int sndlen = SNDROM - DrvSndROM;
+		INT32 sndlen = SNDROM - DrvSndROM;
 		if (sndlen < 0x40000 && sndlen) {
-			for (int i = 0; i < 0x40000; i++) {
+			for (INT32 i = 0; i < 0x40000; i++) {
 				DrvSndROM[i] = DrvSndROM[i % sndlen];
 			}
 		}
@@ -1647,7 +1647,7 @@ static int GetRoms(int bLoad)
 		graphics_length[2] = GFXROM2 - DrvGfxROM2;
 		graphics_length[3] = GFXROM3 - DrvGfxROM3;
 
-		for (int i = 1, j = 0; j < 4; graphics_length[j] = i, j++, i = 1) {
+		for (INT32 i = 1, j = 0; j < 4; graphics_length[j] = i, j++, i = 1) {
 			while (i < graphics_length[j]) i <<= 1;
 		}
 
@@ -1660,9 +1660,9 @@ static int GetRoms(int bLoad)
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvV30ROM 	= Next; Next += 0x200000;
 	DrvZ80ROM	= Next; Next += 0x010000;
@@ -1673,7 +1673,7 @@ static int MemIndex()
 	DrvSndROM	= Next; Next += 0x040000;
 
 	RamPrioBitmap	= Next; Next += nScreenWidth * nScreenHeight;
-	dacbuffer	= (short*)Next; Next += 284 * 2 * sizeof(short);
+	dacbuffer	= (INT16*)Next; Next += 284 * 2 * sizeof(INT16);
 
 	AllRam	= Next;
 
@@ -1695,7 +1695,7 @@ static int MemIndex()
 
 	RamEnd		= Next;
 
-	DrvPalette	= (unsigned int *) Next; Next += 0x200 * sizeof(int);
+	DrvPalette	= (UINT32 *) Next; Next += 0x200 * sizeof(UINT32);
 
 	MemEnd		= Next;
 
@@ -1703,7 +1703,7 @@ static int MemIndex()
 }
 
 
-static int DrvInit(void (*pCPUMapCallback)(), void (*pSNDMapCallback)(), int (*pRomLoadCallback)(), int irqbase, int z80_nmi, int video_type)
+static INT32 DrvInit(void (*pCPUMapCallback)(), void (*pSNDMapCallback)(), INT32 (*pRomLoadCallback)(), INT32 irqbase, INT32 z80_nmi, INT32 video_type)
 {
 	BurnSetRefreshRate(55.00);
 
@@ -1713,8 +1713,8 @@ static int DrvInit(void (*pCPUMapCallback)(), void (*pSNDMapCallback)(), int (*p
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1769,7 +1769,7 @@ static int DrvInit(void (*pCPUMapCallback)(), void (*pSNDMapCallback)(), int (*p
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -1795,37 +1795,37 @@ static int DrvExit()
 	return 0;
 }
 
-static void draw_layer(int layer, int forcelayer, int type, int start, int finish) // bg = layer 1, fg = layer 0
+static void draw_layer(INT32 layer, INT32 forcelayer, INT32 type, INT32 start, INT32 finish) // bg = layer 1, fg = layer 0
 {
-	int codeand = code_mask[1+layer];
-	unsigned short *vram = (unsigned short*)(layer ? DrvVidRAM1 : DrvVidRAM0);
-	unsigned char  *gfx  = (layer) ? DrvGfxROM2 : DrvGfxROM1;
+	INT32 codeand = code_mask[1+layer];
+	UINT16 *vram = (UINT16*)(layer ? DrvVidRAM1 : DrvVidRAM0);
+	UINT8  *gfx  = (layer) ? DrvGfxROM2 : DrvGfxROM1;
 
 	//	    layer, prio, forcelayer
-	const unsigned short transmask[2][3][2] = {
+	const UINT16 transmask[2][3][2] = {
 		{ { 0xffff, 0x0001 }, { 0x00ff, 0xff01 }, { 0x0001, 0xffff } },
 		{ { 0xffff, 0x0000 }, { 0x00ff, 0xff00 }, { (type == 0) ? 0x0007 : 0x0001, (type == 0) ? 0xfff8 : 0xfffe } }
 	};
 
-	int scrolly = scroll[layer * 4 + 0] | (scroll[layer * 4 + 1] << 8);
-	int scrollx = scroll[layer * 4 + 2] | (scroll[layer * 4 + 3] << 8);
+	INT32 scrolly = scroll[layer * 4 + 0] | (scroll[layer * 4 + 1] << 8);
+	INT32 scrollx = scroll[layer * 4 + 2] | (scroll[layer * 4 + 3] << 8);
 
 	scrolly = (scrolly + 128) & 0x1ff;
 	scrollx = (scrollx + 64 + video_offsets[layer]) & 0x1ff;
 
-	unsigned short *xscroll = (unsigned short*)DrvRowScroll;
+	UINT16 *xscroll = (UINT16*)DrvRowScroll;
 
-	for (int sy = start; sy < finish; sy++)
+	for (INT32 sy = start; sy < finish; sy++)
 	{
-		unsigned short *dest = pTransDraw + (sy * nScreenWidth);
-		unsigned char  *pri  = RamPrioBitmap + (sy * nScreenWidth);
+		UINT16 *dest = pTransDraw + (sy * nScreenWidth);
+		UINT8  *pri  = RamPrioBitmap + (sy * nScreenWidth);
 
-		int scrolly1 = (scrolly + sy) & 0x1ff;
-		int romoff1 = (scrolly1 & 0x07) << 3;
+		INT32 scrolly1 = (scrolly + sy) & 0x1ff;
+		INT32 romoff1 = (scrolly1 & 0x07) << 3;
 
-		for (int sx = 0; sx < nScreenWidth + 8; sx+=8)
+		for (INT32 sx = 0; sx < nScreenWidth + 8; sx+=8)
 		{
-			int flipy, flipx, prio, scrollx1, offs;
+			INT32 flipy, flipx, prio, scrollx1, offs;
 
 			if (majtitle_rowscroll_enable && type == 3 && layer == 1) {
 				scrollx1 = 256 + xscroll[scrolly1] + sx + 64 + video_offsets[1];
@@ -1842,8 +1842,8 @@ static void draw_layer(int layer, int forcelayer, int type, int start, int finis
 				offs = ((scrolly1 >> 3) << 6) | (scrollx1 >> 3);
 			}
 
-			int code  = vram[offs * 2 + 0];
-			int color = vram[offs * 2 + 1];
+			INT32 code  = vram[offs * 2 + 0];
+			INT32 color = vram[offs * 2 + 1];
 
 			if (type == 1||type==3) {
 				flipy = color & 0x0040;
@@ -1855,27 +1855,27 @@ static void draw_layer(int layer, int forcelayer, int type, int start, int finis
 				prio  = (color & 0x80) ? 2 : ((color & 0x40) ? 1 : 0);
 			}
 
-			int mask = transmask[layer][prio][forcelayer];
+			INT32 mask = transmask[layer][prio][forcelayer];
 
 			code &= codeand;
 			color = ((color & 0x000f) << 4) | 0x100;
 			prio = 1 << prio;
 
 			{
-				int scrollx0 = scrollx1 & 0x07;
-				int x_xor = 0;
-				int romoff = romoff1;
+				INT32 scrollx0 = scrollx1 & 0x07;
+				INT32 x_xor = 0;
+				INT32 romoff = romoff1;
 				if (flipy) romoff ^= 0x38;
 				if (flipx) x_xor = 7;
 
-				unsigned char *rom = gfx + (code * 0x40) + romoff;
+				UINT8 *rom = gfx + (code * 0x40) + romoff;
 
-				int xx = sx - scrollx0;
+				INT32 xx = sx - scrollx0;
 
-				for (int x = 0; x < 8; x++, xx++) {
+				for (INT32 x = 0; x < 8; x++, xx++) {
 					if (xx < 0 || xx >= nScreenWidth) continue;
 
-					int pxl = rom[x ^ x_xor];
+					INT32 pxl = rom[x ^ x_xor];
 					if (mask & (1 << pxl)) continue;
 
 					dest[xx] = pxl | color;
@@ -1886,25 +1886,25 @@ static void draw_layer(int layer, int forcelayer, int type, int start, int finis
 	}
 }
 
-int start_screen = 0;
+INT32 start_screen = 0;
 
 static void draw_sprites()
 {
-	unsigned short *sprram = (unsigned short*)DrvSprBuf;
+	UINT16 *sprram = (UINT16*)DrvSprBuf;
 
-	for (int offs = 0; offs < 0x400/2;)
+	for (INT32 offs = 0; offs < 0x400/2;)
 	{
-		int sx    = -256+(sprram[offs+3] & 0x3ff);
-		int attr  = sprram[offs+2];
-		int code  = sprram[offs+1];
-		int sy    =  384-(sprram[offs+0] & 0x1ff);
+		INT32 sx    = -256+(sprram[offs+3] & 0x3ff);
+		INT32 attr  = sprram[offs+2];
+		INT32 code  = sprram[offs+1];
+		INT32 sy    =  384-(sprram[offs+0] & 0x1ff);
 
-		int color = attr & 0x0f;
-		int flipx = attr & 0x0800;
-		int flipy = attr & 0x0400;
+		INT32 color = attr & 0x0f;
+		INT32 flipx = attr & 0x0800;
+		INT32 flipy = attr & 0x0400;
 
-		int w = 1 << ((attr & 0xc000) >> 14);
-		int h = 1 << ((attr & 0x3000) >> 12);
+		INT32 w = 1 << ((attr & 0xc000) >> 14);
+		INT32 h = 1 << ((attr & 0x3000) >> 12);
 		sy -= 16 * h;
 
 		sy -= start_screen;
@@ -1919,11 +1919,11 @@ static void draw_sprites()
 		}
 #endif
 
-		for (int x = 0;x < w;x++)
+		for (INT32 x = 0;x < w;x++)
 		{
-			for (int y = 0;y < h;y++)
+			for (INT32 y = 0;y < h;y++)
 			{
-				int c = code;
+				INT32 c = code;
 
 				if (flipx) c += 8*(w-1-x);
 				else c += 8*x;
@@ -1932,8 +1932,8 @@ static void draw_sprites()
 
 				c &= code_mask[0];
 
-				int xx = sx + 16 * x;
-				int yy = sy + 16 * y;
+				INT32 xx = sx + 16 * x;
+				INT32 yy = sy + 16 * y;
 
 				if (xx < -15 || yy < -15 || xx >= nScreenWidth || yy >= nScreenHeight) continue;
 
@@ -1959,11 +1959,11 @@ static void draw_sprites()
 
 static void majtitle_draw_sprites()
 {
-	unsigned short *spriteram16_2 = (unsigned short*)DrvSprRAM2;
+	UINT16 *spriteram16_2 = (UINT16*)DrvSprRAM2;
 
-	for (int offs = 0; offs < 0x400; offs += 4)
+	for (INT32 offs = 0; offs < 0x400; offs += 4)
 	{
-		int code,color,sx,sy,flipx,flipy,w,h,x,y;
+		INT32 code,color,sx,sy,flipx,flipy,w,h,x,y;
 
 		code = spriteram16_2[offs+1];
 		color = spriteram16_2[offs+2] & 0x0f;
@@ -1992,7 +1992,7 @@ static void majtitle_draw_sprites()
 		{
 			for (y = 0;y < h;y++)
 			{
-				int c = code;
+				INT32 c = code;
 
 				if (flipx) c += 8*(w-1-x);
 				else c += 8*x;
@@ -2001,8 +2001,8 @@ static void majtitle_draw_sprites()
 
 				c &= code_mask[3];
 
-				int xx = sx + 16 * x;
-				int yy = sy + 16 * y;
+				INT32 xx = sx + 16 * x;
+				INT32 yy = sy + 16 * y;
 
 				if (xx < -15 || yy < -15 || xx >= nScreenWidth || yy >= nScreenHeight) continue;
 
@@ -2024,7 +2024,7 @@ static void majtitle_draw_sprites()
 	}
 }
 
-static void dodrawline(int start, int finish)
+static void dodrawline(INT32 start, INT32 finish)
 {
 	if (*video_enable) return;
 
@@ -2033,8 +2033,8 @@ static void dodrawline(int start, int finish)
 
 	// hacky hack for drawing sprites in scanline... slow.
 	start_screen = start;
-	unsigned short *ptr = pTransDraw;
-	int scrn = nScreenHeight;
+	UINT16 *ptr = pTransDraw;
+	INT32 scrn = nScreenHeight;
 	pTransDraw += start * nScreenWidth;
 	nScreenHeight = finish - start;
 	if (m72_video_type == 3) majtitle_draw_sprites();
@@ -2046,10 +2046,10 @@ static void dodrawline(int start, int finish)
 	draw_layer(0, 0, m72_video_type, start, finish);
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
-		for (int i = 0; i < 0x200; i++) {
+		for (INT32 i = 0; i < 0x200; i++) {
 			palette_write((i & 0xff) * 2, i >> 8);
 		}
 		DrvRecalc = 0;
@@ -2078,7 +2078,7 @@ static void compile_inputs()
 {
 	memset (DrvInputs, 0xff, 5);
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 		DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -2087,9 +2087,9 @@ static void compile_inputs()
 	}
 }
 
-static int nPreviousLine = 0;
+static INT32 nPreviousLine = 0;
 
-static void scanline_interrupts(int scanline)
+static void scanline_interrupts(INT32 scanline)
 {
 	if (scanline == (irq_raster_position - 128) && scanline < 256) {
 		if (nPreviousLine <= scanline && scanline < nScreenHeight) {
@@ -2117,7 +2117,7 @@ static void scanline_interrupts(int scanline)
 	if (nPreviousLine >= nScreenHeight) nPreviousLine = 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -2129,20 +2129,20 @@ static int DrvFrame()
 	compile_inputs();
 	
 	// overclocking...
-	nCyclesTotal[0] = (int)((long long)(8000000 / 55) * nBurnCPUSpeedAdjust / 0x0100);
-	nCyclesTotal[1] = (int)((long long)(3579545 / 55) * nBurnCPUSpeedAdjust / 0x0100);
+	nCyclesTotal[0] = (INT32)((INT64)(8000000 / 55) * nBurnCPUSpeedAdjust / 0x0100);
+	nCyclesTotal[1] = (INT32)((INT64)(3579545 / 55) * nBurnCPUSpeedAdjust / 0x0100);
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
 	VezOpen(0);
 	ZetOpen(0);
 
-memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(int));
+memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(INT16));
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		nCurrentCycles = ((nCyclesTotal[0] / nInterleave) * 1) / 8; // scanline is 87.5% of scanline time
 
-		for (int j = 0; j < 7; j++) { // increase cpu sync
+		for (INT32 j = 0; j < 7; j++) { // increase cpu sync
 			nCyclesDone[0] += VezRun(nCurrentCycles);
 			sync_cpus();
 			sync_ym2151();
@@ -2179,21 +2179,21 @@ memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(int));
 		}
 
 	//	if (i == 35 || i == 71 || i == 106 || i == 142 || i == 177 || i == 213 || i == 148 || i == 283) {
-	//		int len = nBurnSoundLen / 8;
+	//		INT32 len = nBurnSoundLen / 8;
 	//		BurnYM2151Render(pBurnSoundOut + (len * 2) * (i/35), len);
 	//	}
 	}
 
 	if (pBurnSoundOut) {
 		sync_ym2151();
-	//	memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(int));
+	//	memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(INT16));
 	//	BurnYM2151Render(pBurnSoundOut, nBurnSoundLen);
 
 		float step = (142.000000) / nBurnSoundLen;
 
-		short *pbuf = pBurnSoundOut;
-		for (int i = 0; i < nBurnSoundLen; i++, pbuf+=2) {
-			int o = (int)((float)(i * step));
+		INT16 *pbuf = pBurnSoundOut;
+		for (INT32 i = 0; i < nBurnSoundLen; i++, pbuf+=2) {
+			INT32 o = (INT32)((float)(i * step));
 			pbuf[0] += dacbuffer[o * 2 + 0];
 			pbuf[1] += dacbuffer[o * 2 + 1];
 		}
@@ -2243,7 +2243,7 @@ static struct BurnRomInfo rtypeRomDesc[] = {
 STD_ROM_PICK(rtype)
 STD_ROM_FN(rtype)
 
-static int rtypeInit()
+static INT32 rtypeInit()
 {
 	return DrvInit(common_040000_040000, sound_ram_map, NULL, 0x80, Z80_NO_NMI, 0);
 }
@@ -2472,7 +2472,7 @@ static struct BurnRomInfo xmultiplRomDesc[] = {
 STD_ROM_PICK(xmultipl)
 STD_ROM_FN(xmultipl)
 
-static int xmultiplInit()
+static INT32 xmultiplInit()
 {
 	return DrvInit(common_080000_09c000, sound_rom_map, NULL, 0x20, Z80_REAL_NMI, 0);
 }
@@ -2523,7 +2523,7 @@ static struct BurnRomInfo xmultiplm72RomDesc[] = {
 STD_ROM_PICK(xmultiplm72)
 STD_ROM_FN(xmultiplm72)
 
-static int xmultiplm72Init()
+static INT32 xmultiplm72Init()
 {
 	install_protection(xmultiplm72);
 
@@ -2565,14 +2565,14 @@ static struct BurnRomInfo dbreedRomDesc[] = {
 STD_ROM_PICK(dbreed)
 STD_ROM_FN(dbreed)
 
-static int dbreedRomLoadCallback()
+static INT32 dbreedRomLoadCallback()
 {
 	memcpy (DrvV30ROM + 0x60000, DrvV30ROM + 0x20000, 0x20000);
 
 	return 0;
 }
 
-static int dbreedInit()
+static INT32 dbreedInit()
 {
 	return DrvInit(common_080000_088000, sound_rom_map, dbreedRomLoadCallback, 0x20, Z80_REAL_NMI, 2);
 }
@@ -2619,14 +2619,14 @@ static struct BurnRomInfo dbreedm72RomDesc[] = {
 STD_ROM_PICK(dbreedm72)
 STD_ROM_FN(dbreedm72)
 
-static int dbreedm72RomLoadCallback()
+static INT32 dbreedm72RomLoadCallback()
 {
 	memcpy (DrvV30ROM + 0x60000, DrvV30ROM + 0x40000, 0x20000);
 
 	return 0;
 }
 
-static int dbreedm72Init()
+static INT32 dbreedm72Init()
 {
 	install_protection(dbreedm72);
 
@@ -2681,7 +2681,7 @@ static struct BurnRomInfo bchopperRomDesc[] = {
 STD_ROM_PICK(bchopper)
 STD_ROM_FN(bchopper)
 
-static int bchopperInit()
+static INT32 bchopperInit()
 {
 	install_protection(bchopper);
 
@@ -2732,7 +2732,7 @@ static struct BurnRomInfo mrheliRomDesc[] = {
 STD_ROM_PICK(mrheli)
 STD_ROM_FN(mrheli)
 
-static int mrheliInit()
+static INT32 mrheliInit()
 {
 	m72_install_protection(bchopper_code, mrheli_crc, bchopper_sample_offsets);
 
@@ -2785,7 +2785,7 @@ static struct BurnRomInfo nspiritRomDesc[] = {
 STD_ROM_PICK(nspirit)
 STD_ROM_FN(nspirit)
 
-static int nspiritInit()
+static INT32 nspiritInit()
 {
 	install_protection(nspirit);
 
@@ -2838,7 +2838,7 @@ static struct BurnRomInfo nspiritjRomDesc[] = {
 STD_ROM_PICK(nspiritj)
 STD_ROM_FN(nspiritj)
 
-static int nspiritjInit()
+static INT32 nspiritjInit()
 {
 	m72_install_protection(nspirit_code, nspiritj_crc, nspirit_sample_offsets);
 
@@ -2888,14 +2888,14 @@ static struct BurnRomInfo imgfightRomDesc[] = {
 STD_ROM_PICK(imgfight)
 STD_ROM_FN(imgfight)
 
-static int imgfightRomLoadCallback()
+static INT32 imgfightRomLoadCallback()
 {
 	memcpy (DrvV30ROM + 0x40000, DrvV30ROM + 0x20000, 0x40000);
 
 	return 0;
 }
 
-static int imgfightInit()
+static INT32 imgfightInit()
 {
 	install_protection(imgfight);
 
@@ -2987,7 +2987,7 @@ static struct BurnRomInfo airduelRomDesc[] = {
 STD_ROM_PICK(airduel)
 STD_ROM_FN(airduel)
 
-static int airduelInit()
+static INT32 airduelInit()
 {
 	install_protection(airduel);
 
@@ -3035,7 +3035,7 @@ static struct BurnRomInfo rtype2RomDesc[] = {
 STD_ROM_PICK(rtype2)
 STD_ROM_FN(rtype2)
 
-static int rtype2Init()
+static INT32 rtype2Init()
 {
 	return DrvInit(rtype2_main_cpu_map, sound_rom_map, NULL, 0x80, Z80_REAL_NMI, 1);
 }
@@ -3159,7 +3159,7 @@ static struct BurnRomInfo hharryRomDesc[] = {
 STD_ROM_PICK(hharry)
 STD_ROM_FN(hharry)
 
-static int hharryInit()
+static INT32 hharryInit()
 {
 	return DrvInit(common_080000_0a0000, sound_rom_map, dbreedm72RomLoadCallback, 0x20, Z80_REAL_NMI, 2);
 }
@@ -3201,7 +3201,7 @@ static struct BurnRomInfo hharryuRomDesc[] = {
 STD_ROM_PICK(hharryu)
 STD_ROM_FN(hharryu)
 
-static int hharryuInit()
+static INT32 hharryuInit()
 {
 	return DrvInit(hharryu_main_cpu_map, sound_rom_map, dbreedm72RomLoadCallback, 0x20, Z80_REAL_NMI, 1);
 }
@@ -3285,7 +3285,7 @@ static struct BurnRomInfo dkgensanm72RomDesc[] = {
 STD_ROM_PICK(dkgensanm72)
 STD_ROM_FN(dkgensanm72)
 
-static int dkgensanm72Init()
+static INT32 dkgensanm72Init()
 {
 	install_protection(dkgenm72);
 
@@ -3327,13 +3327,13 @@ static struct BurnRomInfo kengoRomDesc[] = {
 STD_ROM_PICK(kengo)
 STD_ROM_FN(kengo)
 
-static int kengoInit()
+static INT32 kengoInit()
 {
-	int nRet = DrvInit(hharryu_main_cpu_map, sound_rom_map, NULL, 0x60, Z80_REAL_NMI, 1);
+	INT32 nRet = DrvInit(hharryu_main_cpu_map, sound_rom_map, NULL, 0x60, Z80_REAL_NMI, 1);
 
 	if (nRet == 0) {
 		VezOpen(0);
-		VezSetDecode((unsigned char*)gunforce_decryption_table);
+		VezSetDecode((UINT8*)gunforce_decryption_table);
 		VezClose();
 	}
 
@@ -3375,7 +3375,7 @@ static struct BurnRomInfo cosmccopRomDesc[] = {
 STD_ROM_PICK(cosmccop)
 STD_ROM_FN(cosmccop)
 
-static int cosmccopInit()
+static INT32 cosmccopInit()
 {
 	return DrvInit(hharryu_main_cpu_map, sound_rom_map, NULL, 0x60, Z80_REAL_NMI, 1);
 }
@@ -3420,7 +3420,7 @@ static struct BurnRomInfo gallopRomDesc[] = {
 STD_ROM_PICK(gallop)
 STD_ROM_FN(gallop)
 
-static int gallopInit()
+static INT32 gallopInit()
 {
 	protection_sample_offsets = gallop_sample_offsets;
 
@@ -3470,7 +3470,7 @@ static struct BurnRomInfo lohtRomDesc[] = {
 STD_ROM_PICK(loht)
 STD_ROM_FN(loht)
 
-static int lohtInit()
+static INT32 lohtInit()
 {
 	install_protection(loht);
 
@@ -3529,10 +3529,10 @@ struct BurnDriver BurnDrvLohtj = {
 	384, 256, 4, 3
 };
 
-static int lohtbRomLoadCallback()
+static INT32 lohtbRomLoadCallback()
 {
 	// Hack the program rom to work for now
-	unsigned char _0x400[216] = {
+	UINT8 _0x400[216] = {
 		0xFA, 0xB9, 0xFF, 0xFF, 0xE2, 0xFE, 0xB8, 0x17, 0x00, 0xE7, 0x40, 0xB8, 0x20, 0x00, 0xE7, 0x42, 
 		0xB8, 0x0F, 0x00, 0xE7, 0x42, 0xB8, 0x00, 0xA0, 0x8E, 0xD0, 0x8E, 0xD8, 0xBE, 0x00, 0x3F, 0xB0, 
 		0x00, 0x88, 0x04, 0x3A, 0x04, 0x75, 0x08, 0x46, 0xFE, 0xC0, 0x75, 0xF5, 0xE9, 0x18, 0x00, 0x33, 
@@ -3614,7 +3614,7 @@ static int lohtbRomLoadCallback()
 	DrvV30ROM[0x1EA2A] = 0x02;
 
 	// invert graphics roms
-	for (int i = 0; i < 0x80000; i++) {
+	for (INT32 i = 0; i < 0x80000; i++) {
 		DrvGfxROM1[i] ^= 0x0f;
 		DrvGfxROM2[i] ^= 0x0f;
 	}
@@ -3655,7 +3655,7 @@ static struct BurnRomInfo lohtbRomDesc[] = {
 STD_ROM_PICK(lohtb)
 STD_ROM_FN(lohtb)
 
-static int lohtbInit()
+static INT32 lohtbInit()
 {
 	install_protection(loht);
 
@@ -3749,7 +3749,7 @@ static struct BurnRomInfo poundforRomDesc[] = {
 STD_ROM_PICK(poundfor)
 STD_ROM_FN(poundfor)
 
-static int poundforInit()
+static INT32 poundforInit()
 {
 	return DrvInit(rtype2_main_cpu_map, sound_rom_map, NULL, 0x80, Z80_FAKE_NMI, 4);
 }
@@ -3870,7 +3870,7 @@ static struct BurnRomInfo majtitleRomDesc[] = {
 STD_ROM_PICK(majtitle)
 STD_ROM_FN(majtitle)
 
-static int majtitleInit()
+static INT32 majtitleInit()
 {
 	return DrvInit(majtitle_main_cpu_map, sound_rom_map, NULL, 0x80, Z80_REAL_NMI, 3);
 }
@@ -3926,5 +3926,3 @@ struct BurnDriver BurnDrvMajtitlej = {
 	majtitleInit, DrvExit, DrvFrame, DrvDraw, NULL, &DrvRecalc, 0x200,
 	384, 256, 4, 3
 };
-
-

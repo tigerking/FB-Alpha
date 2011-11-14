@@ -5,47 +5,47 @@
 #include "msm6295.h"
 #include "burn_ym2203.h"
 
-static unsigned char *AllMem;
-static unsigned char *RamEnd;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *DrvZ80ROM0;
-static unsigned char *DrvZ80ROM1;
-static unsigned char *DrvZ80ROM2;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvSndROM;
-static unsigned char *DrvVidRAM0;
-static unsigned char *DrvVidRAM1;
-static unsigned char *DrvZ80RAM0;
-static unsigned char *DrvZ80RAM1;
-static unsigned char *DrvZ80RAM2;
-static unsigned char *DrvShareRAM;
-static unsigned char *DrvDevRAM;
-static unsigned char *DrvPandoraRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvPalRAM;
+static UINT8 *AllMem;
+static UINT8 *RamEnd;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *DrvZ80ROM0;
+static UINT8 *DrvZ80ROM1;
+static UINT8 *DrvZ80ROM2;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvSndROM;
+static UINT8 *DrvVidRAM0;
+static UINT8 *DrvVidRAM1;
+static UINT8 *DrvZ80RAM0;
+static UINT8 *DrvZ80RAM1;
+static UINT8 *DrvZ80RAM2;
+static UINT8 *DrvShareRAM;
+static UINT8 *DrvDevRAM;
+static UINT8 *DrvPandoraRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvPalRAM;
 
-static unsigned int  *DrvPalette;
+static UINT32  *DrvPalette;
 
-static unsigned char *DrvScrollRegs;
-static unsigned char *soundlatch;
-static unsigned char *soundlatch2;
-static unsigned char *sound_status;
-static unsigned char *sound_status2;
-static unsigned char *coin_lockout;
-static unsigned char *flipscreen;
+static UINT8 *DrvScrollRegs;
+static UINT8 *soundlatch;
+static UINT8 *soundlatch2;
+static UINT8 *sound_status;
+static UINT8 *sound_status2;
+static UINT8 *coin_lockout;
+static UINT8 *flipscreen;
 
-static int interrupt_vectors[2];
-static int watchdog;
-static int is_bootleg;
+static INT32 interrupt_vectors[2];
+static INT32 watchdog;
+static INT32 is_bootleg;
 
-static unsigned char DrvJoy1[8];
-static unsigned char DrvJoy2[8];
-static unsigned char DrvJoy3[8];
-static unsigned char DrvDips[2];
-static unsigned char DrvInputs[3];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[8];
+static UINT8 DrvJoy2[8];
+static UINT8 DrvJoy3[8];
+static UINT8 DrvDips[2];
+static UINT8 DrvInputs[3];
+static UINT8 DrvReset;
 
 static struct BurnInputInfo AirbustrInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy3 + 2,	"p1 coin"	},
@@ -185,23 +185,23 @@ STDDIPINFO(Airbustj)
 //----------------------------------------------------------------------------------------------------
 // Kaneko Pandora module -- should be in its own file
 
-static unsigned short *pandora_temp	= NULL;
-static unsigned char *pandora_ram	= NULL;
-static unsigned char *pandora_gfx	= NULL;
-static int pandora_clear;
-static int pandora_xoffset;
-static int pandora_yoffset;
-static int pandora_color_offset;
-int pandora_flipscreen;
+static UINT16 *pandora_temp	= NULL;
+static UINT8 *pandora_ram	= NULL;
+static UINT8 *pandora_gfx	= NULL;
+static INT32 pandora_clear;
+static INT32 pandora_xoffset;
+static INT32 pandora_yoffset;
+static INT32 pandora_color_offset;
+INT32 pandora_flipscreen;
 
-void pandora_set_clear(int clear)
+void pandora_set_clear(INT32 clear)
 {
 	pandora_clear = clear;
 }
 
-void pandora_update(unsigned short *dest)
+void pandora_update(UINT16 *dest)
 {
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		if (pandora_temp[i]) {
 			dest[i] = pandora_temp[i] & 0x3ff;
 		}
@@ -210,19 +210,19 @@ void pandora_update(unsigned short *dest)
 
 void pandora_buffer_sprites()
 {
-	int sx=0, sy=0, x=0, y=0;
+	INT32 sx=0, sy=0, x=0, y=0;
 
-	if (pandora_clear) memset (pandora_temp, 0, nScreenWidth * nScreenHeight * sizeof(short));
+	if (pandora_clear) memset (pandora_temp, 0, nScreenWidth * nScreenHeight * sizeof(INT16));
 
-	for (int offs = 0; offs < 0x1000; offs += 8)
+	for (INT32 offs = 0; offs < 0x1000; offs += 8)
 	{
-		int attr	= pandora_ram[offs+7];
-		int code	= pandora_ram[offs+6] + ((attr & 0x3f) << 8);
-		int dy		= pandora_ram[offs+5];
-		int dx		= pandora_ram[offs+4];
-		int color	= pandora_ram[offs+3];
-		int flipy	= attr & 0x40;
-		int flipx	= attr & 0x80;
+		INT32 attr	= pandora_ram[offs+7];
+		INT32 code	= pandora_ram[offs+6] + ((attr & 0x3f) << 8);
+		INT32 dy		= pandora_ram[offs+5];
+		INT32 dx		= pandora_ram[offs+4];
+		INT32 color	= pandora_ram[offs+3];
+		INT32 flipy	= attr & 0x40;
+		INT32 flipx	= attr & 0x80;
 
 		if (color & 1) dx |= 0x100;
 		if (color & 2) dy |= 0x100;
@@ -276,7 +276,7 @@ void pandora_buffer_sprites()
 }
 
 // must be called after GenericTilesInit()
-void pandora_init(unsigned char *ram, unsigned char *gfx, int color_offset, int x, int y)
+void pandora_init(UINT8 *ram, UINT8 *gfx, INT32 color_offset, INT32 x, INT32 y)
 {
 	pandora_ram	= ram;
 	pandora_xoffset	= x;
@@ -290,7 +290,7 @@ void pandora_init(unsigned char *ram, unsigned char *gfx, int color_offset, int 
 		BurnDrvGetVisibleSize(&nScreenWidth, &nScreenHeight);
 	}
 
-	pandora_temp = (unsigned short*)malloc(nScreenWidth * nScreenHeight * sizeof(short));
+	pandora_temp = (UINT16*)malloc(nScreenWidth * nScreenHeight * sizeof(INT16));
 	pandora_clear = 1;
 }
 
@@ -308,10 +308,10 @@ void pandora_exit()
 
 static inline void DrvRecalcPalette()
 {
-	unsigned char r,g,b;
+	UINT8 r,g,b;
 
-	for (int i = 0; i < 0x600; i+=2) {
-		int d = DrvPalRAM[i + 1] * 256 + DrvPalRAM[i + 0];
+	for (INT32 i = 0; i < 0x600; i+=2) {
+		INT32 d = DrvPalRAM[i + 1] * 256 + DrvPalRAM[i + 0];
 
 		r = (d >>  5) & 0x1f;
 		g = (d >> 10) & 0x1f;
@@ -325,13 +325,13 @@ static inline void DrvRecalcPalette()
 	}
 }
 
-static void airbustr_bankswitch(unsigned char *rom, int data)
+static void airbustr_bankswitch(UINT8 *rom, INT32 data)
 {
 	ZetMapArea(0x8000, 0xbfff, 0, rom + 0x4000 * (data & 0x07));
 	ZetMapArea(0x8000, 0xbfff, 2, rom + 0x4000 * (data & 0x07));
 }
 
-void __fastcall airbustr_main_write(unsigned short address, unsigned char data)
+void __fastcall airbustr_main_write(UINT16 address, UINT8 data)
 {
 	if ((address & 0xf000) == 0xc000) { // pandora
 
@@ -345,11 +345,11 @@ void __fastcall airbustr_main_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall airbustr_main_read(unsigned short address)
+UINT8 __fastcall airbustr_main_read(UINT16 address)
 {
 	if ((address & 0xf000) == 0xe000) {
 
-		int offset = address & 0xfff;
+		INT32 offset = address & 0xfff;
 		switch (offset)
 		{
 			case 0xfe0:
@@ -359,7 +359,7 @@ unsigned char __fastcall airbustr_main_read(unsigned short address)
 			case 0xff2:
 			case 0xff3:
 			{
-				int r = (DrvDevRAM[0xff0] + DrvDevRAM[0xff1] * 256) * (DrvDevRAM[0xff2] + DrvDevRAM[0xff3] * 256);
+				INT32 r = (DrvDevRAM[0xff0] + DrvDevRAM[0xff1] * 256) * (DrvDevRAM[0xff2] + DrvDevRAM[0xff3] * 256);
 	
 				if (offset & 1) return r >> 8;
 				return r;
@@ -375,7 +375,7 @@ unsigned char __fastcall airbustr_main_read(unsigned short address)
 	return 0;
 }
 
-void __fastcall airbustr_main_out(unsigned short port, unsigned char data)
+void __fastcall airbustr_main_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
@@ -398,7 +398,7 @@ void __fastcall airbustr_main_out(unsigned short port, unsigned char data)
 	}
 }
 
-void __fastcall airbustr_sub_out(unsigned short port, unsigned char data)
+void __fastcall airbustr_sub_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
@@ -434,7 +434,7 @@ void __fastcall airbustr_sub_out(unsigned short port, unsigned char data)
 
 		case 0x28:
 			*coin_lockout = ~data & 0x0c;
-			// coint counter also (0x03)
+			// coINT32 counter also (0x03)
 		return;
 
 		case 0x38:
@@ -442,7 +442,7 @@ void __fastcall airbustr_sub_out(unsigned short port, unsigned char data)
 	}
 }
 
-unsigned char __fastcall airbustr_sub_in(unsigned short port)
+UINT8 __fastcall airbustr_sub_in(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -466,7 +466,7 @@ unsigned char __fastcall airbustr_sub_in(unsigned short port)
 	return 0;
 }
 
-void __fastcall airbustr_sound_out(unsigned short port, unsigned char data)
+void __fastcall airbustr_sound_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
@@ -493,7 +493,7 @@ void __fastcall airbustr_sound_out(unsigned short port, unsigned char data)
 	}
 }
 
-unsigned char __fastcall airbustr_sound_in(unsigned short port)
+UINT8 __fastcall airbustr_sound_in(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -514,19 +514,19 @@ unsigned char __fastcall airbustr_sound_in(unsigned short port)
 	return 0;
 }
 
-unsigned char DrvYM2203PortA(unsigned int)
+UINT8 DrvYM2203PortA(UINT32)
 {
 	return DrvDips[0];
 }
 
-unsigned char DrvYM2203PortB(unsigned int)
+UINT8 DrvYM2203PortB(UINT32)
 {
 	return DrvDips[1];
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 6000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 6000000;
 }
 
 static double DrvGetTime()
@@ -534,15 +534,15 @@ static double DrvGetTime()
 	return (double)ZetTotalCycles() / 6000000;
 }
 
-static int DrvDoReset(int full_reset)
+static INT32 DrvDoReset(INT32 full_reset)
 {
 	if (full_reset) {
 		memset (AllRam, 0, RamEnd - AllRam);
 	}
 
-//	unsigned char *rom[3] = { DrvZ80ROM0, DrvZ80ROM1, DrvZ80ROM2 };
+//	UINT8 *rom[3] = { DrvZ80ROM0, DrvZ80ROM1, DrvZ80ROM2 };
 
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		ZetOpen(i);
 		ZetReset();
 //		if (full_reset) airbustr_bankswitch(rom[i], 2);
@@ -562,9 +562,9 @@ static int DrvDoReset(int full_reset)
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM0		= Next; Next += 0x020000;
 	DrvZ80ROM1		= Next; Next += 0x020000;
@@ -576,7 +576,7 @@ static int MemIndex()
 	MSM6295ROM		= Next;
 	DrvSndROM		= Next; Next += 0x040000;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x0400 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x0400 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -611,20 +611,20 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvGfxDecode()
+static INT32 DrvGfxDecode()
 {
-	static int Plane[4]  = { 0, 1, 2, 3 };
-	static int XOffs[16] = { 0*4, 1*4, 2*4, 3*4, 4*4, 5*4, 6*4, 7*4,
+	static INT32 Plane[4]  = { 0, 1, 2, 3 };
+	static INT32 XOffs[16] = { 0*4, 1*4, 2*4, 3*4, 4*4, 5*4, 6*4, 7*4,
 	  0*4+32*8, 1*4+32*8, 2*4+32*8, 3*4+32*8, 4*4+32*8, 5*4+32*8, 6*4+32*8, 7*4+32*8 };
-	static int YOffs[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,
+	static INT32 YOffs[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,
 	  0*32+64*8, 1*32+64*8, 2*32+64*8, 3*32+64*8, 4*32+64*8, 5*32+64*8, 6*32+64*8, 7*32+64*8 };
 
-	unsigned char *tmp = (unsigned char*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)malloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
 
-	for (int i = 0; i < 0x080000; i++) {
+	for (INT32 i = 0; i < 0x080000; i++) {
 		tmp[i] = (DrvGfxROM0[i] << 4) | (DrvGfxROM0[i] >> 4);
 	}
 
@@ -642,14 +642,14 @@ static int DrvGfxDecode()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	is_bootleg = BurnDrvGetFlags() & BDF_BOOTLEG;
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -762,7 +762,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	pandora_exit();
 
@@ -781,10 +781,10 @@ static int DrvExit()
 	return 0;
 }
 
-static void draw_layer(unsigned char *ram, int r0, int r1, int r2, int r3, int t)
+static void draw_layer(UINT8 *ram, INT32 r0, INT32 r1, INT32 r2, INT32 r3, INT32 t)
 {
-	int scrollx = DrvScrollRegs[r0] + ((~DrvScrollRegs[4] << r1) & 0x100);
-	int scrolly = DrvScrollRegs[r2] + ((~DrvScrollRegs[4] << r3) & 0x100) + 16;
+	INT32 scrollx = DrvScrollRegs[r0] + ((~DrvScrollRegs[4] << r1) & 0x100);
+	INT32 scrolly = DrvScrollRegs[r2] + ((~DrvScrollRegs[4] << r3) & 0x100) + 16;
 
 	if (*flipscreen) {
 		scrollx = (scrollx + 0x06a) & 0x1ff;
@@ -794,10 +794,10 @@ static void draw_layer(unsigned char *ram, int r0, int r1, int r2, int r3, int t
 		scrolly = (scrolly - 0x100) & 0x1ff;
 	}
 	
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 4;
-		int sy = (offs >> 5) << 4;
+		INT32 sx = (offs & 0x1f) << 4;
+		INT32 sy = (offs >> 5) << 4;
 
 		sx -= scrollx;
 		if (sx < -15) sx += 512;
@@ -807,8 +807,8 @@ static void draw_layer(unsigned char *ram, int r0, int r1, int r2, int r3, int t
 		if (sx >= nScreenWidth) continue;
 		if (sy >= nScreenHeight) continue;
 
-		int attr  = ram[offs + 0x400];
-		int code  = ram[offs + 0x000] | ((attr & 0x0f) << 8);
+		INT32 attr  = ram[offs + 0x400];
+		INT32 code  = ram[offs + 0x000] | ((attr & 0x0f) << 8);
 
 		if (t) {
 			if (*flipscreen) {
@@ -826,7 +826,7 @@ static void draw_layer(unsigned char *ram, int r0, int r1, int r2, int r3, int t
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	DrvRecalcPalette();
 
@@ -842,7 +842,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset(1);
@@ -857,21 +857,21 @@ static int DrvFrame()
 
 	{
 		memset (DrvInputs, 0xff, 3);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
 		}
 	}
 
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
-	int nCyclesTotal[3] =  { 6000000 / 60, 6000000 / 60, 6000000 / 60 };
-	int nCyclesDone[3] = { 0, 0, 0 };
+	INT32 nInterleave = 100;
+	INT32 nSoundBufferPos = 0;
+	INT32 nCyclesTotal[3] =  { 6000000 / 60, 6000000 / 60, 6000000 / 60 };
+	INT32 nCyclesDone[3] = { 0, 0, 0 };
 
-	for (int i = 0; i < nInterleave; i++) {
+	for (INT32 i = 0; i < nInterleave; i++) {
 
-		int nSegment = (nCyclesTotal[0] / nInterleave) * (i + 1);
+		INT32 nSegment = (nCyclesTotal[0] / nInterleave) * (i + 1);
 
 		ZetOpen(0);
 		nCyclesDone[0] += ZetRun(nSegment - nCyclesDone[0]);
@@ -898,8 +898,8 @@ static int DrvFrame()
 		}
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -912,8 +912,8 @@ static int DrvFrame()
 	BurnTimerEndFrame(nCyclesTotal[2]);
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
@@ -931,7 +931,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

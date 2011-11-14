@@ -7,65 +7,65 @@ extern "C" {
  #include "ay8910.h"
 }
 
-static unsigned char M62InputPort0[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char M62InputPort1[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char M62InputPort2[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char M62Dip[2]              = {0, 0};
-static unsigned char M62Input[3]            = {0x00, 0x00, 0x00};
-static unsigned char M62Reset               = 0;
+static UINT8 M62InputPort0[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 M62InputPort1[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 M62InputPort2[8]       = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 M62Dip[2]              = {0, 0};
+static UINT8 M62Input[3]            = {0x00, 0x00, 0x00};
+static UINT8 M62Reset               = 0;
 
-static unsigned int  M62Z80RomSize          = 0;
-static unsigned int  M62PromSize            = 0;
-static unsigned int  M62NumTiles            = 0;
-static unsigned int  M62NumSprites          = 0;
-static unsigned int  M62NumChars            = 0;
-static unsigned int  M62SpriteRamSize       = 0;
-static unsigned int  M62CharRamSize         = 0;
-static unsigned int  M62ScrollRamSize       = 0;
+static UINT32  M62Z80RomSize          = 0;
+static UINT32  M62PromSize            = 0;
+static UINT32  M62NumTiles            = 0;
+static UINT32  M62NumSprites          = 0;
+static UINT32  M62NumChars            = 0;
+static UINT32  M62SpriteRamSize       = 0;
+static UINT32  M62CharRamSize         = 0;
+static UINT32  M62ScrollRamSize       = 0;
 
-static unsigned char *Mem                   = NULL;
-static unsigned char *MemEnd                = NULL;
-static unsigned char *RamStart              = NULL;
-static unsigned char *RamEnd                = NULL;
-static unsigned char *M62Z80Rom             = NULL;
-static unsigned char *M62M6803Rom           = NULL;
-static unsigned char *M62TileRam            = NULL;
-static unsigned char *M62SpriteRam          = NULL;
-static unsigned char *M62CharRam            = NULL;
-static unsigned char *M62ScrollRam          = NULL;
-static unsigned char *M62Z80Ram             = NULL;
-static unsigned char *M62M6803Ram           = NULL;
-static unsigned char *M62Tiles              = NULL;
-static unsigned char *M62Sprites            = NULL;
-static unsigned char *M62Chars              = NULL;
-static unsigned char *M62PromData           = NULL;
-static unsigned char *M62TempRom            = NULL;
-static unsigned int  *M62Palette            = NULL;
-static short* pFMBuffer;
-static short* pAY8910Buffer[6];
+static UINT8 *Mem                   = NULL;
+static UINT8 *MemEnd                = NULL;
+static UINT8 *RamStart              = NULL;
+static UINT8 *RamEnd                = NULL;
+static UINT8 *M62Z80Rom             = NULL;
+static UINT8 *M62M6803Rom           = NULL;
+static UINT8 *M62TileRam            = NULL;
+static UINT8 *M62SpriteRam          = NULL;
+static UINT8 *M62CharRam            = NULL;
+static UINT8 *M62ScrollRam          = NULL;
+static UINT8 *M62Z80Ram             = NULL;
+static UINT8 *M62M6803Ram           = NULL;
+static UINT8 *M62Tiles              = NULL;
+static UINT8 *M62Sprites            = NULL;
+static UINT8 *M62Chars              = NULL;
+static UINT8 *M62PromData           = NULL;
+static UINT8 *M62TempRom            = NULL;
+static UINT32  *M62Palette            = NULL;
+static INT16* pFMBuffer;
+static INT16* pAY8910Buffer[6];
 
-static int M62BackgroundHScroll;
-static int M62BackgroundVScroll;
-static int M62CharHScroll;
-static int M62CharVScroll;
-static int M62FlipScreen;
-static int M62SpriteHeightPromOffset;
-static unsigned char M62SoundLatch;
-static unsigned char M62Port1;
-static unsigned char M62Port2;
-static unsigned char M62SlaveMSM5205VClckReset;
-static unsigned int M62PaletteEntries;
-static unsigned int M62Z80Clock;
-static unsigned int M62M6803Clock;
-static unsigned char M62BankControl[2];
-static unsigned char Ldrun2BankSwap;
-static unsigned char Ldrun3TopBottomMask;
-static unsigned char KidnikiBackgroundBank;
-static unsigned char SpelunkrPaletteBank;
-static int M62BgxTileDim = 0;
-static int M62BgyTileDim = 0;
-static int M62CharxTileDim = 0;
-static int M62CharyTileDim = 0;
+static INT32 M62BackgroundHScroll;
+static INT32 M62BackgroundVScroll;
+static INT32 M62CharHScroll;
+static INT32 M62CharVScroll;
+static INT32 M62FlipScreen;
+static INT32 M62SpriteHeightPromOffset;
+static UINT8 M62SoundLatch;
+static UINT8 M62Port1;
+static UINT8 M62Port2;
+static UINT8 M62SlaveMSM5205VClckReset;
+static UINT32 M62PaletteEntries;
+static UINT32 M62Z80Clock;
+static UINT32 M62M6803Clock;
+static UINT8 M62BankControl[2];
+static UINT8 Ldrun2BankSwap;
+static UINT8 Ldrun3TopBottomMask;
+static UINT8 KidnikiBackgroundBank;
+static UINT8 SpelunkrPaletteBank;
+static INT32 M62BgxTileDim = 0;
+static INT32 M62BgyTileDim = 0;
+static INT32 M62CharxTileDim = 0;
+static INT32 M62CharyTileDim = 0;
 
 typedef void (*M62Render)();
 static M62Render M62RenderFunction;
@@ -81,28 +81,28 @@ static void Spelunk2Draw();
 static void YoujyudnDraw();
 static void HorizonDraw();
 
-typedef void (*M62ExtendTileInfo)(int*, int*, int*, int*);
+typedef void (*M62ExtendTileInfo)(INT32*, INT32*, INT32*, INT32*);
 static M62ExtendTileInfo M62ExtendTileInfoFunction;
-static void BattroadExtendTile(int* Code, int* Colour, int* Priority, int* xFlip);
-static void LdrunExtendTile(int* Code, int* Colour, int* Priority, int* xFlip);
-static void Ldrun2ExtendTile(int* Code, int* Colour, int* Priority, int* xFlip);
-static void Ldrun4ExtendTile(int* Code, int* Colour, int*, int*);
-static void LotlotExtendTile(int* Code, int* Colour, int*, int* xFlip);
-static void KidnikiExtendTile(int* Code, int* Colour, int* Priority, int*);
-static void SpelunkrExtendTile(int* Code, int* Colour, int*, int*);
-static void Spelunk2ExtendTile(int* Code, int* Colour, int*, int*);
-static void YoujyudnExtendTile(int* Code, int* Colour, int* Priority, int*);
-static void HorizonExtendTile(int* Code, int* Colour, int* Priority, int*);
+static void BattroadExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32* xFlip);
+static void LdrunExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32* xFlip);
+static void Ldrun2ExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32* xFlip);
+static void Ldrun4ExtendTile(INT32* Code, INT32* Colour, INT32*, INT32*);
+static void LotlotExtendTile(INT32* Code, INT32* Colour, INT32*, INT32* xFlip);
+static void KidnikiExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32*);
+static void SpelunkrExtendTile(INT32* Code, INT32* Colour, INT32*, INT32*);
+static void Spelunk2ExtendTile(INT32* Code, INT32* Colour, INT32*, INT32*);
+static void YoujyudnExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32*);
+static void HorizonExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32*);
 
-typedef void (*M62ExtendCharInfo)(int*, int*, int*, int*);
+typedef void (*M62ExtendCharInfo)(INT32*, INT32*, INT32*, INT32*);
 static M62ExtendCharInfo M62ExtendCharInfoFunction;
-static void BattroadExtendChar(int* Code, int* Colour, int*, int*);
-static void LotlotExtendChar(int* Code, int* Colour, int*, int*);
-static void SpelunkrExtendChar(int* Code, int* Colour, int*, int*);
-static void YoujyudnExtendChar(int* Code, int* Colour, int*, int*);
+static void BattroadExtendChar(INT32* Code, INT32* Colour, INT32*, INT32*);
+static void LotlotExtendChar(INT32* Code, INT32* Colour, INT32*, INT32*);
+static void SpelunkrExtendChar(INT32* Code, INT32* Colour, INT32*, INT32*);
+static void YoujyudnExtendChar(INT32* Code, INT32* Colour, INT32*, INT32*);
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 static struct BurnInputInfo M62InputList[] =
 {
@@ -133,7 +133,7 @@ static struct BurnInputInfo M62InputList[] =
 
 STDINPUTINFO(M62)
 
-static inline void M62ClearOpposites(unsigned char* nJoystickInputs)
+static inline void M62ClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -147,7 +147,7 @@ static inline void M62MakeInputs()
 {
 	M62Input[0] = M62Input[1] = M62Input[2] = 0x00;
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		M62Input[0] |= (M62InputPort0[i] & 1) << i;
 		M62Input[1] |= (M62InputPort1[i] & 1) << i;
 		M62Input[2] |= (M62InputPort2[i] & 1) << i;
@@ -1754,9 +1754,9 @@ static struct BurnRomInfo HorizonRomDesc[] = {
 STD_ROM_PICK(Horizon)
 STD_ROM_FN(Horizon)
 
-static int M62MemIndex()
+static INT32 M62MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	
 	if (!M62BgxTileDim) M62BgxTileDim = 8;
 	if (!M62BgyTileDim) M62BgyTileDim = 8;
@@ -1781,16 +1781,16 @@ static int M62MemIndex()
 	M62Tiles               = Next; Next += M62NumTiles * M62BgxTileDim * M62BgyTileDim;
 	M62Sprites             = Next; Next += M62NumSprites * 16 * 16;
 	if (M62NumChars) M62Chars = Next; Next += M62NumChars * M62CharxTileDim * M62CharyTileDim;
-	M62Palette             = (unsigned int*)Next; Next += M62PaletteEntries * sizeof(unsigned int);
+	M62Palette             = (UINT32*)Next; Next += M62PaletteEntries * sizeof(UINT32);
 	M62PromData            = Next; Next += M62PromSize;
-	pFMBuffer              = (short*)Next; Next += nBurnSoundLen * 6 * sizeof(short);
+	pFMBuffer              = (INT16*)Next; Next += nBurnSoundLen * 6 * sizeof(INT16);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int M62DoReset()
+static INT32 M62DoReset()
 {
 	ZetOpen(0);
 	ZetReset();
@@ -1821,7 +1821,7 @@ static int M62DoReset()
 	return 0;
 }
 
-unsigned char __fastcall M62Z80Read(unsigned short a)
+UINT8 __fastcall M62Z80Read(UINT16 a)
 {
 	switch (a) {
 		default: {
@@ -1832,7 +1832,7 @@ unsigned char __fastcall M62Z80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall M62Z80Write(unsigned short a, unsigned char d)
+void __fastcall M62Z80Write(UINT16 a, UINT8 d)
 {
 	if (a <= 0xbfff) return;
 	
@@ -1843,7 +1843,7 @@ void __fastcall M62Z80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall KungfumZ80Read(unsigned short a)
+UINT8 __fastcall KungfumZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xf000:
@@ -1862,7 +1862,7 @@ unsigned char __fastcall KungfumZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall KungfumZ80Write(unsigned short a, unsigned char d)
+void __fastcall KungfumZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xa000: {
@@ -1881,7 +1881,7 @@ void __fastcall KungfumZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall Ldrun3Z80Read(unsigned short a)
+UINT8 __fastcall Ldrun3Z80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xc800: {
@@ -1904,11 +1904,11 @@ unsigned char __fastcall Ldrun3Z80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall Ldrun4Z80Write(unsigned short a, unsigned char d)
+void __fastcall Ldrun4Z80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc800: {
-			int BankAddress = 0x8000 + ((d & 0x01) * 0x4000);
+			INT32 BankAddress = 0x8000 + ((d & 0x01) * 0x4000);
 			ZetMapArea(0x8000, 0xbfff, 0, M62Z80Rom + BankAddress);
 			ZetMapArea(0x8000, 0xbfff, 2, M62Z80Rom + BankAddress);
 			return;
@@ -1920,7 +1920,7 @@ void __fastcall Ldrun4Z80Write(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall SpelunkrZ80Write(unsigned short a, unsigned char d)
+void __fastcall SpelunkrZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xd000: {
@@ -1944,7 +1944,7 @@ void __fastcall SpelunkrZ80Write(unsigned short a, unsigned char d)
 		}
 		
 		case 0xd004: {
-			int BankAddress = 0x8000 + ((d & 0x03) * 0x2000);
+			INT32 BankAddress = 0x8000 + ((d & 0x03) * 0x2000);
 			ZetMapArea(0x8000, 0x9fff, 0, M62Z80Rom + BankAddress);
 			ZetMapArea(0x8000, 0x9fff, 2, M62Z80Rom + BankAddress);
 			return;
@@ -1961,7 +1961,7 @@ void __fastcall SpelunkrZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall Spelunk2Z80Write(unsigned short a, unsigned char d)
+void __fastcall Spelunk2Z80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xd000: {
@@ -1982,8 +1982,8 @@ void __fastcall Spelunk2Z80Write(unsigned short a, unsigned char d)
 		}
 		
 		case 0xd003: {
-			int BankAddress1 = 0x18000 + (((d & 0xc0) >> 6) * 0x1000);
-			int BankAddress2 = 0x08000 + (((d & 0x3c) >> 2) * 0x1000);
+			INT32 BankAddress1 = 0x18000 + (((d & 0xc0) >> 6) * 0x1000);
+			INT32 BankAddress2 = 0x08000 + (((d & 0x3c) >> 2) * 0x1000);
 			ZetMapArea(0x8000, 0x8fff, 0, M62Z80Rom + BankAddress1);
 			ZetMapArea(0x8000, 0x8fff, 2, M62Z80Rom + BankAddress1);
 			ZetMapArea(0x9000, 0x9fff, 0, M62Z80Rom + BankAddress2);
@@ -1997,7 +1997,7 @@ void __fastcall Spelunk2Z80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall M62Z80PortRead(unsigned short a)
+UINT8 __fastcall M62Z80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -2030,7 +2030,7 @@ unsigned char __fastcall M62Z80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall M62Z80PortWrite(unsigned short a, unsigned char d)
+void __fastcall M62Z80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -2056,7 +2056,7 @@ void __fastcall M62Z80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall BattroadZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall BattroadZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -2082,7 +2082,7 @@ void __fastcall BattroadZ80PortWrite(unsigned short a, unsigned char d)
 		}
 		
 		case 0x83: {
-			int BankAddress = 0x8000 + ((d & 0x0f) * 0x2000);
+			INT32 BankAddress = 0x8000 + ((d & 0x0f) * 0x2000);
 			ZetMapArea(0xa000, 0xbfff, 0, M62Z80Rom + BankAddress);
 			ZetMapArea(0xa000, 0xbfff, 2, M62Z80Rom + BankAddress);
 			return;
@@ -2094,7 +2094,7 @@ void __fastcall BattroadZ80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall Ldrun2Z80PortRead(unsigned short a)
+UINT8 __fastcall Ldrun2Z80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -2120,7 +2120,7 @@ unsigned char __fastcall Ldrun2Z80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall Ldrun2Z80PortWrite(unsigned short a, unsigned char d)
+void __fastcall Ldrun2Z80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -2132,14 +2132,14 @@ void __fastcall Ldrun2Z80PortWrite(unsigned short a, unsigned char d)
 	switch (a) {
 		case 0x80:
 		case 0x81: {
-			static const int Banks[30] = { 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1 };
-			int Offset = a - 0x80;
+			static const INT32 Banks[30] = { 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1 };
+			INT32 Offset = a - 0x80;
 			
 			M62BankControl[Offset] = d;
 			
 			if (Offset == 0x00) {
 				if (d >= 1 && d <= 30) {
-					int BankAddress = 0x8000 + (Banks[d - 1] * 0x2000);
+					INT32 BankAddress = 0x8000 + (Banks[d - 1] * 0x2000);
 					ZetMapArea(0x8000, 0x9fff, 0, M62Z80Rom + BankAddress);
 					ZetMapArea(0x8000, 0x9fff, 2, M62Z80Rom + BankAddress);
 				}
@@ -2159,7 +2159,7 @@ void __fastcall Ldrun2Z80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall Ldrun3Z80PortWrite(unsigned short a, unsigned char d)
+void __fastcall Ldrun3Z80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -2185,7 +2185,7 @@ void __fastcall Ldrun3Z80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall Ldrun4Z80PortWrite(unsigned short a, unsigned char d)
+void __fastcall Ldrun4Z80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -2221,7 +2221,7 @@ void __fastcall Ldrun4Z80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall KidnikiZ80PortRead(unsigned short a)
+UINT8 __fastcall KidnikiZ80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -2236,7 +2236,7 @@ unsigned char __fastcall KidnikiZ80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall KidnikiZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall KidnikiZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -2272,7 +2272,7 @@ void __fastcall KidnikiZ80PortWrite(unsigned short a, unsigned char d)
 		}
 		
 		case 0x85: {
-			int BankAddress = 0x8000 + ((d & 0x0f) * 0x2000);
+			INT32 BankAddress = 0x8000 + ((d & 0x0f) * 0x2000);
 			ZetMapArea(0x8000, 0x9fff, 0, M62Z80Rom + BankAddress);
 			ZetMapArea(0x8000, 0x9fff, 2, M62Z80Rom + BankAddress);
 			return;
@@ -2284,7 +2284,7 @@ void __fastcall KidnikiZ80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-void __fastcall YoujyudnZ80PortWrite(unsigned short a, unsigned char d)
+void __fastcall YoujyudnZ80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -2305,7 +2305,7 @@ void __fastcall YoujyudnZ80PortWrite(unsigned short a, unsigned char d)
 		}
 		
 		case 0x83: {
-			int BankAddress = 0x8000 + ((d & 0x01) * 0x4000);
+			INT32 BankAddress = 0x8000 + ((d & 0x01) * 0x4000);
 			ZetMapArea(0x8000, 0xbfff, 0, M62Z80Rom + BankAddress);
 			ZetMapArea(0x8000, 0xbfff, 2, M62Z80Rom + BankAddress);
 			return;
@@ -2317,7 +2317,7 @@ void __fastcall YoujyudnZ80PortWrite(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char M62M6803ReadByte(unsigned short a)
+UINT8 M62M6803ReadByte(UINT16 a)
 {
 	if (a <= 0x001f) {
 		return m6803_internal_registers_r(a);
@@ -2332,7 +2332,7 @@ unsigned char M62M6803ReadByte(unsigned short a)
 	return 0;
 }
 
-void M62M6803WriteByte(unsigned short a, unsigned char d)
+void M62M6803WriteByte(UINT16 a, UINT8 d)
 {
 	if (a <= 0x001f) {
 		m6803_internal_registers_w(a, d);
@@ -2364,7 +2364,7 @@ void M62M6803WriteByte(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("M6803 Write Byte -> %04X, %02X\n"), a, d);
 }
 
-unsigned char M62M6803ReadPort(unsigned short a)
+UINT8 M62M6803ReadPort(UINT16 a)
 {
 	switch (a) {
 		case M6803_PORT1: {
@@ -2383,7 +2383,7 @@ unsigned char M62M6803ReadPort(unsigned short a)
 	return 0;
 }
 
-void M62M6803WritePort(unsigned short a, unsigned char d)
+void M62M6803WritePort(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case M6803_PORT1: {
@@ -2418,37 +2418,37 @@ void M62M6803WritePort(unsigned short a, unsigned char d)
 	bprintf(PRINT_NORMAL, _T("M6803 Write Port -> %04X, %02X\n"), a, d);
 }
 
-static int Tile1024PlaneOffsets[3]       = { 0x20000, 0x10000, 0 };
-static int Tile2048PlaneOffsets[3]       = { 0x40000, 0x20000, 0 };
-static int Tile4096PlaneOffsets[3]       = { 0x80000, 0x40000, 0 };
-static int TileXOffsets[8]               = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int TileYOffsets[8]               = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int KungfumSpritePlaneOffsets[3]  = { 0x80000, 0x40000, 0 };
-static int BattroadSpritePlaneOffsets[3] = { 0x40000, 0x20000, 0 };
-static int LdrunSpritePlaneOffsets[3]    = { 0x20000, 0x10000, 0 };
-static int KidnikiSpritePlaneOffsets[3]  = { 0x100000, 0x80000, 0 };
-static int SpriteXOffsets[16]            = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
-static int SpriteYOffsets[16]            = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
-static int BattroadCharPlaneOffsets[2]   = { 0, 0x10000 };
-static int LotlotPlaneOffsets[3]         = { 0, 0x10000, 0x20000 };
-static int LotlotXOffsets[12]            = { 0, 1, 2, 3, 128, 129, 130, 131, 132, 133, 134, 135 };
-static int LotlotYOffsets[10]            = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72 };
-static int KidnikiPlaneOffsets[3]        = { 0, 0x20000, 0x40000 };
-static int KidnikiXOffsets[12]           = { 0, 1, 2, 3, 64, 65, 66, 67, 68, 69, 70, 71 };
-static int KidnikiYOffsets[8]            = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int Spelunk2PlaneOffsets[3]       = { 0, 0x20000, 0x40000 };
-static int Spelunk2XOffsets[12]          = { 0, 1, 2, 3, 0x10000, 0x10001, 0x10002, 0x10003, 0x10004, 0x10005, 0x10006, 0x10007 };
-static int Spelunk2YOffsets[8]           = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int YoujyudnTilePlaneOffsets[3]   = { 0x40000, 0x20000, 0 };
-static int YoujyudnTileXOffsets[8]       = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int YoujyudnTileYOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+static INT32 Tile1024PlaneOffsets[3]       = { 0x20000, 0x10000, 0 };
+static INT32 Tile2048PlaneOffsets[3]       = { 0x40000, 0x20000, 0 };
+static INT32 Tile4096PlaneOffsets[3]       = { 0x80000, 0x40000, 0 };
+static INT32 TileXOffsets[8]               = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 TileYOffsets[8]               = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 KungfumSpritePlaneOffsets[3]  = { 0x80000, 0x40000, 0 };
+static INT32 BattroadSpritePlaneOffsets[3] = { 0x40000, 0x20000, 0 };
+static INT32 LdrunSpritePlaneOffsets[3]    = { 0x20000, 0x10000, 0 };
+static INT32 KidnikiSpritePlaneOffsets[3]  = { 0x100000, 0x80000, 0 };
+static INT32 SpriteXOffsets[16]            = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
+static INT32 SpriteYOffsets[16]            = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+static INT32 BattroadCharPlaneOffsets[2]   = { 0, 0x10000 };
+static INT32 LotlotPlaneOffsets[3]         = { 0, 0x10000, 0x20000 };
+static INT32 LotlotXOffsets[12]            = { 0, 1, 2, 3, 128, 129, 130, 131, 132, 133, 134, 135 };
+static INT32 LotlotYOffsets[10]            = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72 };
+static INT32 KidnikiPlaneOffsets[3]        = { 0, 0x20000, 0x40000 };
+static INT32 KidnikiXOffsets[12]           = { 0, 1, 2, 3, 64, 65, 66, 67, 68, 69, 70, 71 };
+static INT32 KidnikiYOffsets[8]            = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 Spelunk2PlaneOffsets[3]       = { 0, 0x20000, 0x40000 };
+static INT32 Spelunk2XOffsets[12]          = { 0, 1, 2, 3, 0x10000, 0x10001, 0x10002, 0x10003, 0x10004, 0x10005, 0x10006, 0x10007 };
+static INT32 Spelunk2YOffsets[8]           = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 YoujyudnTilePlaneOffsets[3]   = { 0x40000, 0x20000, 0 };
+static INT32 YoujyudnTileXOffsets[8]       = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 YoujyudnTileYOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-unsigned char M62SoundLatchRead(unsigned int)
+UINT8 M62SoundLatchRead(UINT32)
 {
 	return M62SoundLatch;
 }
 
-static void AY8910_0PortBWrite(unsigned int, unsigned int d)
+static void AY8910_0PortBWrite(UINT32, UINT32 d)
 {
 	MSM5205PlaymodeWrite(0, (d >> 2) & 0x07);
 	MSM5205PlaymodeWrite(1, ((d >> 2) & 0x04) | 0x03);
@@ -2457,9 +2457,9 @@ static void AY8910_0PortBWrite(unsigned int, unsigned int d)
 	MSM5205ResetWrite(1, d & 0x02);
 }
 
-inline static int M62SynchroniseStream(int nSoundRate)
+inline static INT32 M62SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)(ZetTotalCycles() * nSoundRate / M62Z80Clock);
+	return (INT64)(ZetTotalCycles() * nSoundRate / M62Z80Clock);
 }
 
 static void M62MSM5205Vck0()
@@ -2468,27 +2468,27 @@ static void M62MSM5205Vck0()
 	M62SlaveMSM5205VClckReset = 1;
 }
 
-static int M62MemInit()
+static INT32 M62MemInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	M62PaletteEntries = BurnDrvGetPaletteEntries();
 	
 	Mem = NULL;
 	M62MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	M62MemIndex();
 	
 	return 0;
 }
 
-static int KungfumLoadRoms()
+static INT32 KungfumLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x18000);
+	M62TempRom = (UINT8 *)malloc(0x18000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -2540,11 +2540,11 @@ static int KungfumLoadRoms()
 	return 0;
 }
 
-static int KungfumdLoadRoms()
+static INT32 KungfumdLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x18000);
+	M62TempRom = (UINT8 *)malloc(0x18000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -2589,11 +2589,11 @@ static int KungfumdLoadRoms()
 	return 0;
 }
 
-static int BattroadLoadRoms()
+static INT32 BattroadLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x0c000);
+	M62TempRom = (UINT8 *)malloc(0x0c000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -2654,11 +2654,11 @@ static int BattroadLoadRoms()
 	return 0;
 }
 
-static int LdrunLoadRoms()
+static INT32 LdrunLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x06000);
+	M62TempRom = (UINT8 *)malloc(0x06000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -2702,11 +2702,11 @@ static int LdrunLoadRoms()
 	return 0;
 }
 
-static int Ldrun2LoadRoms()
+static INT32 Ldrun2LoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x0c000);
+	M62TempRom = (UINT8 *)malloc(0x0c000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -2756,11 +2756,11 @@ static int Ldrun2LoadRoms()
 	return 0;
 }
 
-static int Ldrun3LoadRoms()
+static INT32 Ldrun3LoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x18000);
+	M62TempRom = (UINT8 *)malloc(0x18000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -2806,11 +2806,11 @@ static int Ldrun3LoadRoms()
 	return 0;
 }
 
-static int Ldrun3jLoadRoms()
+static INT32 Ldrun3jLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x0c000);
+	M62TempRom = (UINT8 *)malloc(0x0c000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -2853,11 +2853,11 @@ static int Ldrun3jLoadRoms()
 	return 0;
 }
 
-static int LotlotLoadRoms()
+static INT32 LotlotLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x06000);
+	M62TempRom = (UINT8 *)malloc(0x06000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -2908,11 +2908,11 @@ static int LotlotLoadRoms()
 	return 0;
 }
 
-static int KidnikiLoadRoms()
+static INT32 KidnikiLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x30000);
+	M62TempRom = (UINT8 *)malloc(0x30000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -2974,11 +2974,11 @@ static int KidnikiLoadRoms()
 	return 0;
 }
 
-static int LitheroLoadRoms()
+static INT32 LitheroLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x30000);
+	M62TempRom = (UINT8 *)malloc(0x30000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -3032,11 +3032,11 @@ static int LitheroLoadRoms()
 	return 0;
 }
 
-static int SpelunkrLoadRoms()
+static INT32 SpelunkrLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x18000);
+	M62TempRom = (UINT8 *)malloc(0x18000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -3070,7 +3070,7 @@ static int SpelunkrLoadRoms()
 	
 	// Load and decode the chars
 	memset(M62TempRom, 0, 0x18000);
-	unsigned char *pTemp = (unsigned char*)malloc(0x18000);
+	UINT8 *pTemp = (UINT8*)malloc(0x18000);
 	nRet = BurnLoadRom(pTemp  + 0x00000, 18, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(pTemp  + 0x04000, 19, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(pTemp  + 0x08000, 20, 1); if (nRet != 0) return 1;
@@ -3122,11 +3122,11 @@ static int SpelunkrLoadRoms()
 	return 0;
 }
 
-static int Spelunk2LoadRoms()
+static INT32 Spelunk2LoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x18000);
+	M62TempRom = (UINT8 *)malloc(0x18000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -3158,7 +3158,7 @@ static int Spelunk2LoadRoms()
 	
 	// Load and decode the chars
 	memset(M62TempRom, 0, 0x18000);
-	unsigned char *pTemp = (unsigned char*)malloc(0x18000);
+	UINT8 *pTemp = (UINT8*)malloc(0x18000);
 	nRet = BurnLoadRom(pTemp  + 0x00000, 16, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(pTemp  + 0x04000, 17, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(pTemp  + 0x08000, 18, 1); if (nRet != 0) return 1;
@@ -3210,11 +3210,11 @@ static int Spelunk2LoadRoms()
 	return 0;
 }
 
-static int YoujyudnLoadRoms()
+static INT32 YoujyudnLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x18000);
+	M62TempRom = (UINT8 *)malloc(0x18000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -3227,7 +3227,7 @@ static int YoujyudnLoadRoms()
 		
 	// Load and decode the tiles
 	memset(M62TempRom, 0, 0x18000);
-	unsigned char *pTemp = (unsigned char*)malloc(0x18000);
+	UINT8 *pTemp = (UINT8*)malloc(0x18000);
 	nRet = BurnLoadRom(pTemp  + 0x00000,  5, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(pTemp  + 0x08000,  6, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(pTemp  + 0x10000,  7, 1); if (nRet != 0) return 1;
@@ -3275,11 +3275,11 @@ static int YoujyudnLoadRoms()
 	return 0;
 }
 
-static int HorizonLoadRoms()
+static INT32 HorizonLoadRoms()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	M62TempRom = (unsigned char *)malloc(0x18000);
+	M62TempRom = (UINT8 *)malloc(0x18000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(M62Z80Rom   + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -3376,7 +3376,7 @@ static void M62MachineInit()
 //	BurnSetRefreshRate(55.0);
 }
 
-static int KungfumMachineInit()
+static INT32 KungfumMachineInit()
 {
 	M62MachineInit();
 	
@@ -3394,7 +3394,7 @@ static int KungfumMachineInit()
 	return 0;
 }
 
-static int BattroadMachineInit()
+static INT32 BattroadMachineInit()
 {
 	M62MachineInit();
 	
@@ -3419,7 +3419,7 @@ static int BattroadMachineInit()
 	return 0;
 }
 
-static int LdrunMachineInit()
+static INT32 LdrunMachineInit()
 {
 	M62MachineInit();
 
@@ -3431,7 +3431,7 @@ static int LdrunMachineInit()
 	return 0;
 }
 
-static int Ldrun2MachineInit()
+static INT32 Ldrun2MachineInit()
 {
 	M62MachineInit();
 	
@@ -3451,7 +3451,7 @@ static int Ldrun2MachineInit()
 	return 0;
 }
 
-static int Ldrun3MachineInit()
+static INT32 Ldrun3MachineInit()
 {
 	M62MachineInit();
 	
@@ -3471,7 +3471,7 @@ static int Ldrun3MachineInit()
 	return 0;
 }
 
-static int Ldrun4MachineInit()
+static INT32 Ldrun4MachineInit()
 {
 	M62MachineInit();
 	
@@ -3491,7 +3491,7 @@ static int Ldrun4MachineInit()
 	return 0;
 }
 
-static int LotlotMachineInit()
+static INT32 LotlotMachineInit()
 {
 	M62MachineInit();
 	
@@ -3511,7 +3511,7 @@ static int LotlotMachineInit()
 	return 0;
 }
 
-static int KidnikiMachineInit()
+static INT32 KidnikiMachineInit()
 {
 	M62MachineInit();
 	
@@ -3538,7 +3538,7 @@ static int KidnikiMachineInit()
 	return 0;
 }
 
-static int SpelunkrMachineInit()
+static INT32 SpelunkrMachineInit()
 {
 	M62MachineInit();
 	
@@ -3567,7 +3567,7 @@ static int SpelunkrMachineInit()
 	return 0;
 }
 
-static int Spelunk2MachineInit()
+static INT32 Spelunk2MachineInit()
 {
 	M62MachineInit();
 	
@@ -3600,7 +3600,7 @@ static int Spelunk2MachineInit()
 	return 0;
 }
 
-static int YoujyudnMachineInit()
+static INT32 YoujyudnMachineInit()
 {
 	M62MachineInit();
 	
@@ -3628,7 +3628,7 @@ static int YoujyudnMachineInit()
 	return 0;
 }
 
-static int HorizonMachineInit()
+static INT32 HorizonMachineInit()
 {
 	M62MachineInit();
 	
@@ -3652,7 +3652,7 @@ static int HorizonMachineInit()
 	return 0;
 }
 
-static int KungfumInit()
+static INT32 KungfumInit()
 {
 	M62Z80RomSize = 0x8000;
 	M62PromSize = 0x720;
@@ -3666,7 +3666,7 @@ static int KungfumInit()
 	return 0;
 }
 
-static int KungfumdInit()
+static INT32 KungfumdInit()
 {
 	M62Z80RomSize = 0x8000;
 	M62PromSize = 0x720;
@@ -3680,7 +3680,7 @@ static int KungfumdInit()
 	return 0;
 }
 
-static int BattroadInit()
+static INT32 BattroadInit()
 {
 	M62Z80RomSize = 0x16000;
 	M62PromSize = 0x740;
@@ -3696,7 +3696,7 @@ static int BattroadInit()
 	return 0;
 }
 
-static int LdrunInit()
+static INT32 LdrunInit()
 {
 	M62Z80RomSize = 0x8000;
 	M62PromSize = 0x720;
@@ -3710,7 +3710,7 @@ static int LdrunInit()
 	return 0;
 }
 
-static int Ldrun2Init()
+static INT32 Ldrun2Init()
 {
 	M62Z80RomSize = 0xc000;
 	M62PromSize = 0x720;
@@ -3724,7 +3724,7 @@ static int Ldrun2Init()
 	return 0;
 }
 
-static int Ldrun3Init()
+static INT32 Ldrun3Init()
 {
 	M62Z80RomSize = 0xc000;
 	M62PromSize = 0x720;
@@ -3738,7 +3738,7 @@ static int Ldrun3Init()
 	return 0;
 }
 
-static int Ldrun3jInit()
+static INT32 Ldrun3jInit()
 {
 	M62Z80RomSize = 0xc000;
 	M62PromSize = 0x720;
@@ -3752,7 +3752,7 @@ static int Ldrun3jInit()
 	return 0;
 }
 
-static int Ldrun4Init()
+static INT32 Ldrun4Init()
 {
 	M62Z80RomSize = 0x10000;
 	M62PromSize = 0x720;
@@ -3766,7 +3766,7 @@ static int Ldrun4Init()
 	return 0;
 }
 
-static int LotlotInit()
+static INT32 LotlotInit()
 {
 	M62Z80RomSize = 0x8000;
 	M62PromSize = 0xa20;
@@ -3786,7 +3786,7 @@ static int LotlotInit()
 	return 0;
 }
 
-static int KidnikiInit()
+static INT32 KidnikiInit()
 {
 	M62Z80RomSize = 0x28000;
 	M62PromSize = 0x720;
@@ -3806,7 +3806,7 @@ static int KidnikiInit()
 	return 0;
 }
 
-static int LitheroInit()
+static INT32 LitheroInit()
 {
 	M62Z80RomSize = 0x28000;
 	M62PromSize = 0x720;
@@ -3826,7 +3826,7 @@ static int LitheroInit()
 	return 0;
 }
 
-static int SpelunkrInit()
+static INT32 SpelunkrInit()
 {
 	M62Z80RomSize = 0x10000;
 	M62PromSize = 0x720;
@@ -3846,7 +3846,7 @@ static int SpelunkrInit()
 	return 0;
 }
 
-static int Spelunk2Init()
+static INT32 Spelunk2Init()
 {
 	M62Z80RomSize = 0x1c000;
 	M62PromSize = 0x820;
@@ -3866,7 +3866,7 @@ static int Spelunk2Init()
 	return 0;
 }
 
-static int YoujyudnInit()
+static INT32 YoujyudnInit()
 {
 	M62Z80RomSize = 0x10000;
 	M62PromSize = 0x720;
@@ -3886,7 +3886,7 @@ static int YoujyudnInit()
 	return 0;
 }
 
-static int HorizonInit()
+static INT32 HorizonInit()
 {
 	M62Z80RomSize = 0xc000;
 	M62PromSize = 0x720;
@@ -3902,7 +3902,7 @@ static int HorizonInit()
 	return 0;
 }
 
-static int M62Exit()
+static INT32 M62Exit()
 {
 	ZetExit();
 	M6800Exit();
@@ -3959,8 +3959,8 @@ static void M62CalcPalette()
 {
 	UINT8 *ColourProm = (UINT8*)M62PromData;
 	
-	for (unsigned int i = 0; i < M62PaletteEntries; i++) {
-		int Bit0, Bit1, Bit2, Bit3, r, g, b;
+	for (UINT32 i = 0; i < M62PaletteEntries; i++) {
+		INT32 Bit0, Bit1, Bit2, Bit3, r, g, b;
 
 		Bit0 = (ColourProm[M62PaletteEntries * 0] >> 0) & 0x01;
 		Bit1 = (ColourProm[M62PaletteEntries * 0] >> 1) & 0x01;
@@ -3990,8 +3990,8 @@ static void BattroadCalcPalette()
 {
 	UINT8 *ColourProm = (UINT8*)M62PromData;
 	
-	for (unsigned int i = 0; i < 0x200; i++) {
-		int Bit0, Bit1, Bit2, Bit3, r, g, b;
+	for (UINT32 i = 0; i < 0x200; i++) {
+		INT32 Bit0, Bit1, Bit2, Bit3, r, g, b;
 
 		Bit0 = (ColourProm[0x000] >> 0) & 0x01;
 		Bit1 = (ColourProm[0x000] >> 1) & 0x01;
@@ -4018,8 +4018,8 @@ static void BattroadCalcPalette()
 	
 	ColourProm = (UINT8*)M62PromData + 0x720;
 	
-	for (unsigned int i = 0; i < 0x20; i++) {
-		int Bit0, Bit1, Bit2, r, g, b;
+	for (UINT32 i = 0; i < 0x20; i++) {
+		INT32 Bit0, Bit1, Bit2, r, g, b;
 
 		Bit0 = (ColourProm[i] >> 0) & 0x01;
 		Bit1 = (ColourProm[i] >> 1) & 0x01;
@@ -4044,8 +4044,8 @@ static void Spelunk2CalcPalette()
 {
 	UINT8 *ColourProm = (UINT8*)M62PromData;
 	
-	for (unsigned int i = 0; i < 0x200; i++) {
-		int Bit0, Bit1, Bit2, Bit3, r, g, b;
+	for (UINT32 i = 0; i < 0x200; i++) {
+		INT32 Bit0, Bit1, Bit2, Bit3, r, g, b;
 
 		Bit0 = (ColourProm[0x000] >> 0) & 0x01;
 		Bit1 = (ColourProm[0x000] >> 1) & 0x01;
@@ -4072,8 +4072,8 @@ static void Spelunk2CalcPalette()
 	
 	ColourProm += 0x200;
 
-	for (unsigned int i = 0; i < 0x100; i++) {
-		int Bit0, Bit1, Bit2, Bit3, r, g, b;
+	for (UINT32 i = 0; i < 0x100; i++) {
+		INT32 Bit0, Bit1, Bit2, Bit3, r, g, b;
 
 		Bit0 = (ColourProm[0x000] >> 0) & 0x01;
 		Bit1 = (ColourProm[0x000] >> 1) & 0x01;
@@ -4099,7 +4099,7 @@ static void Spelunk2CalcPalette()
 	}
 }
 
-static void BattroadExtendTile(int* Code, int* Colour, int* Priority, int* xFlip)
+static void BattroadExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32* xFlip)
 {
 	*Code |= ((*Colour & 0x40) << 3) | ((*Colour & 0x10) << 4);
 	
@@ -4114,7 +4114,7 @@ static void BattroadExtendTile(int* Code, int* Colour, int* Priority, int* xFlip
 	*Colour &= 0x0f;
 }
 
-static void LdrunExtendTile(int* Code, int* Colour, int* Priority, int* xFlip)
+static void LdrunExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32* xFlip)
 {
 	*Code |= (*Colour & 0xc0) << 2;
 	
@@ -4129,7 +4129,7 @@ static void LdrunExtendTile(int* Code, int* Colour, int* Priority, int* xFlip)
 	*Colour &= 0x1f;
 }
 
-static void Ldrun2ExtendTile(int* Code, int* Colour, int* Priority, int* xFlip)
+static void Ldrun2ExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32* xFlip)
 {
 	*Code |= (*Colour & 0xc0) << 2;
 	
@@ -4144,39 +4144,39 @@ static void Ldrun2ExtendTile(int* Code, int* Colour, int* Priority, int* xFlip)
 	*Colour &= 0x1f;
 }
 
-static void Ldrun4ExtendTile(int* Code, int* Colour, int*, int*)
+static void Ldrun4ExtendTile(INT32* Code, INT32* Colour, INT32*, INT32*)
 {
 	*Code |= ((*Colour & 0xc0) << 2) | ((*Colour & 0x20) << 5);
 	*Colour &= 0x1f;
 }
 
-static void LotlotExtendTile(int* Code, int* Colour, int*, int* xFlip)
+static void LotlotExtendTile(INT32* Code, INT32* Colour, INT32*, INT32* xFlip)
 {
 	*Code |= (*Colour & 0xc0) << 2;
 	*xFlip = *Colour & 0x20;
 	*Colour &= 0x1f;
 }
 
-static void KidnikiExtendTile(int* Code, int* Colour, int* Priority, int*)
+static void KidnikiExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32*)
 {
 	*Code |= ((*Colour & 0xe0) << 3) | (KidnikiBackgroundBank << 11);
 	*Priority = ((*Colour & 0xe0) == 0xe0) ? 1 : 0;	
 	*Colour &= 0x1f;
 }
 
-static void SpelunkrExtendTile(int* Code, int* Colour, int*, int*)
+static void SpelunkrExtendTile(INT32* Code, INT32* Colour, INT32*, INT32*)
 {
 	*Code |= ((*Colour & 0x10) << 4) | ((*Colour & 0x20) << 6) | ((*Colour & 0xc0) << 3);
 	*Colour &= 0x0f | (SpelunkrPaletteBank << 4);
 }
 
-static void Spelunk2ExtendTile(int* Code, int* Colour, int*, int*)
+static void Spelunk2ExtendTile(INT32* Code, INT32* Colour, INT32*, INT32*)
 {
 	*Code |= ((*Colour & 0xf0) << 4);
 	*Colour &= 0x0f | (SpelunkrPaletteBank << 4);
 }
 
-static void YoujyudnExtendTile(int* Code, int* Colour, int* Priority, int*)
+static void YoujyudnExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32*)
 {
 	*Code |= (*Colour & 0x60) << 3;
 	if (((*Colour & 0x1f) >> 1) >= 0x08) {
@@ -4187,7 +4187,7 @@ static void YoujyudnExtendTile(int* Code, int* Colour, int* Priority, int*)
 	*Colour &= 0x1f;
 }
 
-static void HorizonExtendTile(int* Code, int* Colour, int* Priority, int*)
+static void HorizonExtendTile(INT32* Code, INT32* Colour, INT32* Priority, INT32*)
 {
 	*Code |= ((*Colour & 0xc0) << 2) | ((*Colour & 0x20) << 5);
 	if (((*Colour & 0x1f) >> 1) >= 0x08) {
@@ -4198,9 +4198,9 @@ static void HorizonExtendTile(int* Code, int* Colour, int* Priority, int*)
 	*Colour &= 0x1f;
 }
 		
-static void M62RenderBgLayer(int PriorityToRender, int xOffset, int yOffset, int Cols, int Rows, int Transparent)
+static void M62RenderBgLayer(INT32 PriorityToRender, INT32 xOffset, INT32 yOffset, INT32 Cols, INT32 Rows, INT32 Transparent)
 {
-	int Code, mx, my, Colour, x, y, TileIndex = 0, Priority, xFlip, yFlip;
+	INT32 Code, mx, my, Colour, x, y, TileIndex = 0, Priority, xFlip, yFlip;
 	
 	for (my = 0; my < Rows; my++) {
 		for (mx = 0; mx < Cols; mx++) {
@@ -4235,22 +4235,22 @@ static void M62RenderBgLayer(int PriorityToRender, int xOffset, int yOffset, int
 			
 			y -= M62BackgroundVScroll & (Rows * M62BgyTileDim - 1);
 	
-			int px, py;
+			INT32 px, py;
 		
 			UINT32 nPalette = Colour << 3;
 			
 			if (Priority == PriorityToRender) {
 				for (py = 0; py < M62BgyTileDim; py++) {
 					for (px = 0; px < M62BgxTileDim; px++) {
-						unsigned char c = M62Tiles[(Code * M62BgxTileDim * M62BgyTileDim) + (py * M62BgxTileDim) + px];
+						UINT8 c = M62Tiles[(Code * M62BgxTileDim * M62BgyTileDim) + (py * M62BgxTileDim) + px];
 						if (xFlip) c = M62Tiles[(Code *M62BgxTileDim * M62BgyTileDim) + (py * M62BgxTileDim) + (M62BgxTileDim - 1 - px)];
 						if (yFlip) c = M62Tiles[(Code * M62BgxTileDim * M62BgyTileDim) + ((M62BgyTileDim - 1 - py) * M62BgxTileDim) + px];
 						if (xFlip && yFlip) c = M62Tiles[(Code * M62BgxTileDim * M62BgyTileDim) + ((M62BgyTileDim - 1 - py) * M62BgxTileDim) + (M62BgxTileDim - 1 - px)];
 						
 						if (Transparent && c == 0x00) continue;
 						
-						int xPos = x + px;
-						int yPos = y + py;
+						INT32 xPos = x + px;
+						INT32 yPos = y + py;
 						
 						if (M62ScrollRamSize) {
 //							tilemap_set_scrollx(state->bg_tilemap, i, state->scrollram[i << 1] | (state->scrollram[(i << 1) | 1] << 8));
@@ -4265,7 +4265,7 @@ static void M62RenderBgLayer(int PriorityToRender, int xOffset, int yOffset, int
 						if (yPos > (Rows * M62BgyTileDim - 1)) yPos -= Rows * M62BgyTileDim;
 					
 						if (yPos >= 0 && yPos < nScreenHeight) {					
-							unsigned short* pPixel = pTransDraw + (yPos * nScreenWidth);
+							UINT16* pPixel = pTransDraw + (yPos * nScreenWidth);
 					
 							if (xPos >= 0 && xPos < nScreenWidth) {
 								pPixel[xPos] = c | nPalette;
@@ -4280,9 +4280,9 @@ static void M62RenderBgLayer(int PriorityToRender, int xOffset, int yOffset, int
 	}
 }
 
-static void KungfumRenderBgLayer(int PriorityToRender, int Cols, int Rows, int Transparent)
+static void KungfumRenderBgLayer(INT32 PriorityToRender, INT32 Cols, INT32 Rows, INT32 Transparent)
 {
-	int Code, mx, my, Colour, x, y, TileIndex = 0, Priority, xFlip, yFlip;
+	INT32 Code, mx, my, Colour, x, y, TileIndex = 0, Priority, xFlip, yFlip;
 	
 	for (my = 0; my < Rows; my++) {
 		for (mx = 0; mx < Cols; mx++) {
@@ -4313,22 +4313,22 @@ static void KungfumRenderBgLayer(int PriorityToRender, int Cols, int Rows, int T
 
 			x -= 128;
 	
-			int px, py;
+			INT32 px, py;
 		
 			UINT32 nPalette = (Colour & 0x1f) << 3;
 			
 			if (Priority == PriorityToRender) {
 				for (py = 0; py < M62BgyTileDim; py++) {
 					for (px = 0; px < M62BgxTileDim; px++) {
-						unsigned char c = M62Tiles[(Code * M62BgxTileDim * M62BgyTileDim) + (py * M62BgxTileDim) + px];
+						UINT8 c = M62Tiles[(Code * M62BgxTileDim * M62BgyTileDim) + (py * M62BgxTileDim) + px];
 						if (xFlip) c = M62Tiles[(Code *M62BgxTileDim * M62BgyTileDim) + (py * M62BgxTileDim) + (M62BgxTileDim - 1 - px)];
 						if (yFlip) c = M62Tiles[(Code * M62BgxTileDim * M62BgyTileDim) + ((M62BgyTileDim - 1 - py) * M62BgxTileDim) + px];
 						if (xFlip && yFlip) c = M62Tiles[(Code * M62BgxTileDim * M62BgyTileDim) + ((M62BgyTileDim - 1 - py) * M62BgxTileDim) + (M62BgxTileDim - 1 - px)];
 				
 						if (Transparent && c == 0x00) continue;
 						
-						int xPos = x + px;
-						int yPos = y + py;
+						INT32 xPos = x + px;
+						INT32 yPos = y + py;
 						
 						if (my >= 6) {
 							if (M62FlipScreen) {
@@ -4345,7 +4345,7 @@ static void KungfumRenderBgLayer(int PriorityToRender, int Cols, int Rows, int T
 						if (yPos > (Rows * M62BgyTileDim - 1)) yPos -= Rows * M62BgyTileDim;
 					
 						if (yPos >= 0 && yPos < nScreenHeight) {					
-							unsigned short* pPixel = pTransDraw + (yPos * nScreenWidth);
+							UINT16* pPixel = pTransDraw + (yPos * nScreenWidth);
 					
 							if (xPos >= 0 && xPos < nScreenWidth) {
 								pPixel[xPos] = c | nPalette;
@@ -4360,10 +4360,10 @@ static void KungfumRenderBgLayer(int PriorityToRender, int Cols, int Rows, int T
 	}
 }
 
-static void M62RenderSprites(int ColourMask, int PriorityMask, int Priority, int VisibleOffset, int PaletteOffset)
+static void M62RenderSprites(INT32 ColourMask, INT32 PriorityMask, INT32 Priority, INT32 VisibleOffset, INT32 PaletteOffset)
 {
-	for (unsigned int Offset = 0; Offset < M62SpriteRamSize; Offset += 8) {
-		int i, Incr, Code, Colour, xFlip, yFlip, sx, sy;
+	for (UINT32 Offset = 0; Offset < M62SpriteRamSize; Offset += 8) {
+		INT32 i, Incr, Code, Colour, xFlip, yFlip, sx, sy;
 
 		if ((M62SpriteRam[Offset] & PriorityMask) == Priority) {
 			Code = M62SpriteRam[Offset + 4] + ((M62SpriteRam[Offset + 5] & 0x07) << 8);
@@ -4402,8 +4402,8 @@ static void M62RenderSprites(int ColourMask, int PriorityMask, int Priority, int
 			sx -= VisibleOffset;
 
 			do {
-				int DrawCode = Code + (i * Incr);
-				int DrawY = sy + (i * 16);
+				INT32 DrawCode = Code + (i * Incr);
+				INT32 DrawY = sy + (i * 16);
 				DrawCode &= (M62NumSprites - 1);
 				
 				if (sx > 15 && sx < (nScreenWidth - 16) && DrawY > 15 && DrawY < (nScreenHeight - 16)) {
@@ -4442,33 +4442,33 @@ static void M62RenderSprites(int ColourMask, int PriorityMask, int Priority, int
 	}
 }
 
-static void BattroadExtendChar(int* Code, int* Colour, int*, int*)
+static void BattroadExtendChar(INT32* Code, INT32* Colour, INT32*, INT32*)
 {
 	*Code |= ((*Colour & 0x40) << 3) | ((*Colour & 0x10) << 4);
 	*Colour &= 0x0f;
 }
 
-static void LotlotExtendChar(int* Code, int* Colour, int*, int*)
+static void LotlotExtendChar(INT32* Code, INT32* Colour, INT32*, INT32*)
 {
 	*Code |= (*Colour & 0xc0) << 2;
 	*Colour &= 0x1f;
 }
 
-static void SpelunkrExtendChar(int* Code, int* Colour, int*, int*)
+static void SpelunkrExtendChar(INT32* Code, INT32* Colour, INT32*, INT32*)
 {
 	*Code |= (*Colour & 0x10) << 4;
 	*Colour &= 0x0f | (SpelunkrPaletteBank << 4);
 }
 
-static void YoujyudnExtendChar(int* Code, int* Colour, int*, int*)
+static void YoujyudnExtendChar(INT32* Code, INT32* Colour, INT32*, INT32*)
 {
 	*Code |= (*Colour & 0xc0) << 2;
 	*Colour &= 0x0f;
 }
 
-static void M62RenderCharLayer(int Cols, int Rows, int ColourDepth, int xOffset, int yOffset, int PaletteOffset)
+static void M62RenderCharLayer(INT32 Cols, INT32 Rows, INT32 ColourDepth, INT32 xOffset, INT32 yOffset, INT32 PaletteOffset)
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0, xFlip, yFlip;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0, xFlip, yFlip;
 
 	for (my = 0; my < Rows; my++) {
 		for (mx = 0; mx < Cols; mx++) {
@@ -4494,20 +4494,20 @@ static void M62RenderCharLayer(int Cols, int Rows, int ColourDepth, int xOffset,
 			
 			y -= M62CharVScroll & (Rows * M62CharyTileDim - 1);
 			
-			int px, py;
+			INT32 px, py;
 		
 			UINT32 nPalette = Colour << ColourDepth;
 			
 			for (py = 0; py < M62CharyTileDim; py++) {
 				for (px = 0; px < M62CharxTileDim; px++) {
-					unsigned char c = M62Chars[(Code * M62CharxTileDim * M62CharyTileDim) + (py * M62CharxTileDim) + px];
+					UINT8 c = M62Chars[(Code * M62CharxTileDim * M62CharyTileDim) + (py * M62CharxTileDim) + px];
 					if (xFlip) c = M62Chars[(Code *M62CharxTileDim * M62CharyTileDim) + (py * M62CharxTileDim) + (M62CharxTileDim - 1 - px)];
 					if (yFlip) c = M62Chars[(Code * M62CharxTileDim * M62CharyTileDim) + ((M62CharyTileDim - 1 - py) * M62CharxTileDim) + px];
 					if (xFlip && yFlip) c = M62Chars[(Code * M62CharxTileDim * M62CharyTileDim) + ((M62CharyTileDim - 1 - py) * M62CharxTileDim) + (M62CharxTileDim - 1 - px)];
 		
 					if (c != 0) {
-						int xPos = x + px;
-						int yPos = y + py;
+						INT32 xPos = x + px;
+						INT32 yPos = y + py;
 					
 						if (xPos < 0) xPos += Cols * M62CharxTileDim;
 						if (xPos > (Cols * M62CharxTileDim - 1)) xPos -= Cols * M62CharxTileDim;
@@ -4516,7 +4516,7 @@ static void M62RenderCharLayer(int Cols, int Rows, int ColourDepth, int xOffset,
 						if (yPos > (Rows * M62CharyTileDim - 1)) yPos -= Rows * M62CharyTileDim;
 				
 						if (yPos >= 0 && yPos < nScreenHeight) {					
-							unsigned short* pPixel = pTransDraw + (yPos * nScreenWidth);
+							UINT16* pPixel = pTransDraw + (yPos * nScreenWidth);
 					
 							if (xPos >= 0 && xPos < nScreenWidth) {
 								pPixel[xPos] = c | nPalette | PaletteOffset;
@@ -4578,7 +4578,7 @@ static void Ldrun3Draw()
 	M62RenderSprites(0x0f, 0x10, 0x10, 64, 256);	
 	
 	if (Ldrun3TopBottomMask) {
-		int x, y;
+		INT32 x, y;
 		
 		for (x = 0; x < nScreenWidth; x++) {
 			for (y = 0; y < 8; y++) {
@@ -4668,10 +4668,10 @@ static void HorizonDraw()
 	BurnTransferCopy(M62Palette);
 }
 
-static int M62Frame()
+static INT32 M62Frame()
 {
-	int nInterleave = MSM5205CalcInterleave(0, M62Z80Clock);
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = MSM5205CalcInterleave(0, M62Z80Clock);
+	INT32 nSoundBufferPos = 0;
 
 	if (M62Reset) M62DoReset();
 
@@ -4686,8 +4686,8 @@ static int M62Frame()
 	ZetNewFrame();
 	M6803NewFrame();
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		nCurrentCPU = 0;
 		ZetOpen(0);
@@ -4704,12 +4704,12 @@ static int M62Frame()
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
 						
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -4740,13 +4740,13 @@ static int M62Frame()
 	}
 	
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -4778,7 +4778,7 @@ static int M62Frame()
 	return 0;
 }
 
-static int M62Scan(int nAction, int *pnMin)
+static INT32 M62Scan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
