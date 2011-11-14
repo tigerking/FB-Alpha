@@ -5,17 +5,17 @@
 #include "burn_ym2203.h"
 #include "msm6295.h"
 
-static int Footchmp;
-static int YesnoDip;
-static int MjnquestInput;
-static int DriveoutSoundNibble;
-static int DriveoutOkiBank;
+static INT32 Footchmp;
+static INT32 YesnoDip;
+static INT32 MjnquestInput;
+static INT32 DriveoutSoundNibble;
+static INT32 DriveoutOkiBank;
 
-int TaitoF2SpriteType;
-int TaitoF2SpritesFlipScreen;
-int TaitoF2PrepareSprites;
+INT32 TaitoF2SpriteType;
+INT32 TaitoF2SpritesFlipScreen;
+INT32 TaitoF2PrepareSprites;
 INT32 TaitoF2SpritesDisabled, TaitoF2SpritesActiveArea, TaitoF2SpritesMasterScrollX, TaitoF2SpritesMasterScrollY;
-int TaitoF2SpriteBlendMode;
+INT32 TaitoF2SpriteBlendMode;
 UINT16 TaitoF2SpriteBank[8];
 UINT16 TaitoF2SpriteBankBuffered[8];
 UINT8 TaitoF2TilePriority[5];
@@ -39,7 +39,7 @@ static void YuyugogoDraw();
 
 static bool bUseAsm68KCoreOldValue = false;
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo CameltryInputList[] =
 {
@@ -933,7 +933,7 @@ static void TC0220IOCMakeInputs()
 	TC0220IOCInput[1] = 0xff;
 	TC0220IOCInput[2] = 0xff;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TC0220IOCInput[0] -= (TC0220IOCInputPort0[i] & 1) << i;
 		TC0220IOCInput[1] -= (TC0220IOCInputPort1[i] & 1) << i;
 		TC0220IOCInput[2] -= (TC0220IOCInputPort2[i] & 1) << i;
@@ -947,7 +947,7 @@ static void TC0510NIOMakeInputs()
 	TC0510NIOInput[1] = 0xff;
 	TC0510NIOInput[2] = 0xff;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TC0510NIOInput[0] -= (TC0510NIOInputPort0[i] & 1) << i;
 		TC0510NIOInput[1] -= (TC0510NIOInputPort1[i] & 1) << i;
 		TC0510NIOInput[2] -= (TC0510NIOInputPort2[i] & 1) << i;
@@ -964,7 +964,7 @@ static void TaitoF2MakeInputs()
 	TaitoInput[4] = 0xff;
 	TaitoInput[5] = 0xff;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TaitoInput[0] -= (TaitoInputPort0[i] & 1) << i;
 		TaitoInput[1] -= (TaitoInputPort1[i] & 1) << i;
 		TaitoInput[2] -= (TaitoInputPort2[i] & 1) << i;
@@ -4699,9 +4699,9 @@ static struct BurnRomInfo YuyugogoRomDesc[] = {
 STD_ROM_PICK(Yuyugogo)
 STD_ROM_FN(Yuyugogo)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1                    = Next; Next += Taito68KRom1Size;
 	TaitoZ80Rom1                    = Next; Next += TaitoZ80Rom1Size;
@@ -4726,7 +4726,7 @@ static int MemIndex()
 	if (TaitoNumCharB) TaitoCharsB  = Next; Next += TaitoNumCharB * TaitoCharBWidth * TaitoCharBHeight;
 	TaitoCharsPivot                 = Next; Next += TaitoNumCharPivot * TaitoCharPivotWidth * TaitoCharPivotHeight;
 	TaitoSpritesA                   = Next; Next += TaitoNumSpriteA * TaitoSpriteAWidth * TaitoSpriteAHeight;
-	TaitoPalette                    = (unsigned int*)Next; Next += 0x02000 * sizeof(unsigned int);
+	TaitoPalette                    = (UINT32*)Next; Next += 0x02000 * sizeof(UINT32);
 	TaitoPriorityMap                = Next; Next += nScreenWidth * nScreenHeight;
 	TaitoF2SpriteList               = (TaitoF2SpriteEntry*)Next; Next += 0x400 * sizeof(TaitoF2SpriteEntry);
 
@@ -4735,7 +4735,7 @@ static int MemIndex()
 	return 0;
 }
 
-static int TaitoF2DoReset()
+static INT32 TaitoF2DoReset()
 {
 	TaitoDoReset();
 	
@@ -4752,9 +4752,9 @@ static int TaitoF2DoReset()
 	return 0;
 }
 
-static void TaitoF2SpriteBankWrite(unsigned int Offset, UINT16 Data)
+static void TaitoF2SpriteBankWrite(INT32 Offset, UINT16 Data)
 {
-	int i, j;
+	INT32 i, j;
 	
 	if (Offset < 2) return;
 	if (Offset < 4) {
@@ -4768,7 +4768,7 @@ static void TaitoF2SpriteBankWrite(unsigned int Offset, UINT16 Data)
 	}
 }
 
-unsigned char __fastcall Cameltry68KReadByte(unsigned int a)
+UINT8 __fastcall Cameltry68KReadByte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x300000)
 	
@@ -4781,7 +4781,7 @@ unsigned char __fastcall Cameltry68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Cameltry68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Cameltry68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x300000)
 	TC0100SCN0ByteWrite_Map(0x800000, 0x813fff)
@@ -4803,20 +4803,20 @@ void __fastcall Cameltry68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Cameltry68KReadWord(unsigned int a)
+UINT16 __fastcall Cameltry68KReadWord(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x300000)
 	
 	switch (a) {
 		case 0x300018: {
-			int Temp = TaitoAnalogPort0 >> 6;
+			INT32 Temp = TaitoAnalogPort0 >> 6;
 			if (Temp >= 0x14 && Temp < 0x80) Temp = 0x14;
 			if (Temp <= 0x3ec && Temp > 0x80) Temp = 0x3ec;
 			return Temp;
 		}
 		
 		case 0x30001c: {
-			int Temp = TaitoAnalogPort1 >> 6;
+			INT32 Temp = TaitoAnalogPort1 >> 6;
 			if (Temp >= 0x14 && Temp < 0x80) Temp = 0x14;
 			if (Temp <= 0x3ec && Temp > 0x80) Temp = 0x3ec;
 			return Temp;
@@ -4830,7 +4830,7 @@ unsigned short __fastcall Cameltry68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Cameltry68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Cameltry68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x300000)
 	TC0100SCN0WordWrite_Map(0x800000, 0x813fff)
@@ -4847,7 +4847,7 @@ void __fastcall Cameltry68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Deadconx68KReadByte(unsigned int a)
+UINT8 __fastcall Deadconx68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x700001: {
@@ -4894,7 +4894,7 @@ unsigned char __fastcall Deadconx68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Deadconx68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Deadconx68KWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x700007: {
@@ -4918,7 +4918,7 @@ void __fastcall Deadconx68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Deadconx68KReadWord(unsigned int a)
+UINT16 __fastcall Deadconx68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -4929,7 +4929,7 @@ unsigned short __fastcall Deadconx68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Deadconx68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Deadconx68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0480SCPCtrlWordWrite_Map(0x430000)	
 	TC0360PRIHalfWordWrite_Map(0x500000)
@@ -4977,7 +4977,7 @@ void __fastcall Deadconx68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Dinorex68KReadByte(unsigned int a)
+UINT8 __fastcall Dinorex68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0x300000)
 
@@ -4994,7 +4994,7 @@ unsigned char __fastcall Dinorex68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Dinorex68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Dinorex68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x300000)
 	TC0100SCN0ByteWrite_Map(0x900000, 0x90ffff)
@@ -5021,7 +5021,7 @@ void __fastcall Dinorex68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Dinorex68KReadWord(unsigned int a)
+UINT16 __fastcall Dinorex68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -5032,7 +5032,7 @@ unsigned short __fastcall Dinorex68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Dinorex68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Dinorex68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x300000)
 	TC0360PRIHalfWordWrite_Map(0x700000)
@@ -5051,7 +5051,7 @@ void __fastcall Dinorex68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Dondokod68KReadByte(unsigned int a)
+UINT8 __fastcall Dondokod68KReadByte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x300000)
 	
@@ -5068,7 +5068,7 @@ unsigned char __fastcall Dondokod68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Dondokod68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Dondokod68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x300000)
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
@@ -5092,7 +5092,7 @@ void __fastcall Dondokod68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Dondokod68KReadWord(unsigned int a)
+UINT16 __fastcall Dondokod68KReadWord(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x300000)
 	
@@ -5105,7 +5105,7 @@ unsigned short __fastcall Dondokod68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Dondokod68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Dondokod68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x300000)
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
@@ -5125,7 +5125,7 @@ void __fastcall Dondokod68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Driftout68KReadByte(unsigned int a)
+UINT8 __fastcall Driftout68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0xb00000)
 	
@@ -5138,7 +5138,7 @@ unsigned char __fastcall Driftout68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Driftout68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Driftout68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
 	TC0510NIOHalfWordWrite_Map(0xb00000)
@@ -5160,7 +5160,7 @@ void __fastcall Driftout68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Driftout68KReadWord(unsigned int a)
+UINT16 __fastcall Driftout68KReadWord(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0xb00000)
 	
@@ -5183,7 +5183,7 @@ unsigned short __fastcall Driftout68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Driftout68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Driftout68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0430GRWCtrlWordWrite_Map(0x402000)
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
@@ -5203,7 +5203,7 @@ void __fastcall Driftout68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-void __fastcall Driveout68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Driveout68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0510NIOHalfWordWrite_Map(0xb00000)
 	
@@ -5231,7 +5231,7 @@ void __fastcall Driveout68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall Finalb68KReadByte(unsigned int a)
+UINT8 __fastcall Finalb68KReadByte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x300000)
 	
@@ -5244,7 +5244,7 @@ unsigned char __fastcall Finalb68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Finalb68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Finalb68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x300000)
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
@@ -5266,7 +5266,7 @@ void __fastcall Finalb68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Finalb68KReadWord(unsigned int a)
+UINT16 __fastcall Finalb68KReadWord(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x300000)
 	
@@ -5283,7 +5283,7 @@ unsigned short __fastcall Finalb68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Finalb68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Finalb68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x300000)
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
@@ -5304,7 +5304,7 @@ void __fastcall Finalb68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Footchmp68KReadByte(unsigned int a)
+UINT8 __fastcall Footchmp68KReadByte(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -5315,7 +5315,7 @@ unsigned char __fastcall Footchmp68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Footchmp68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Footchmp68KWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xa00001: {
@@ -5334,7 +5334,7 @@ void __fastcall Footchmp68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Footchmp68KReadWord(unsigned int a)
+UINT16 __fastcall Footchmp68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x700000: {
@@ -5373,7 +5373,7 @@ unsigned short __fastcall Footchmp68KReadWord(unsigned int a)
 	return 0xffff;
 }
 
-void __fastcall Footchmp68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Footchmp68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0480SCPCtrlWordWrite_Map(0x430000)
 	TC0360PRIHalfWordWrite_Map(0x500000)
@@ -5416,7 +5416,7 @@ void __fastcall Footchmp68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Growl68KReadByte(unsigned int a)
+UINT8 __fastcall Growl68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x320001: {
@@ -5447,7 +5447,7 @@ unsigned char __fastcall Growl68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Growl68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Growl68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
 	
@@ -5468,7 +5468,7 @@ void __fastcall Growl68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Growl68KReadWord(unsigned int a)
+UINT16 __fastcall Growl68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x300000: {
@@ -5499,7 +5499,7 @@ unsigned short __fastcall Growl68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Growl68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Growl68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0360PRIHalfWordWrite_Map(0xb00000)
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
@@ -5539,7 +5539,7 @@ void __fastcall Growl68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Gunfront68KReadByte(unsigned int a)
+UINT8 __fastcall Gunfront68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordSwapRead_Map(0x300000)
 	
@@ -5556,7 +5556,7 @@ unsigned char __fastcall Gunfront68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Gunfront68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Gunfront68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0510NIOHalfWordSwapWrite_Map(0x300000)
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
@@ -5583,7 +5583,7 @@ void __fastcall Gunfront68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Gunfront68KReadWord(unsigned int a)
+UINT16 __fastcall Gunfront68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -5594,7 +5594,7 @@ unsigned short __fastcall Gunfront68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Gunfront68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Gunfront68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0510NIOHalfWordSwapWrite_Map(0x300000)
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
@@ -5608,7 +5608,7 @@ void __fastcall Gunfront68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Koshien68KReadByte(unsigned int a)
+UINT8 __fastcall Koshien68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0x300000)
 	
@@ -5621,7 +5621,7 @@ unsigned char __fastcall Koshien68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Koshien68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Koshien68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x300000)
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
@@ -5649,7 +5649,7 @@ void __fastcall Koshien68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Koshien68KReadWord(unsigned int a)
+UINT16 __fastcall Koshien68KReadWord(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0x300000)
 	
@@ -5662,7 +5662,7 @@ unsigned short __fastcall Koshien68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Koshien68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Koshien68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x300000)
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
@@ -5688,7 +5688,7 @@ void __fastcall Koshien68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Liquidk68KReadByte(unsigned int a)
+UINT8 __fastcall Liquidk68KReadByte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x300000)
 	
@@ -5701,7 +5701,7 @@ unsigned char __fastcall Liquidk68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Liquidk68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Liquidk68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x300000)
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
@@ -5723,7 +5723,7 @@ void __fastcall Liquidk68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Liquidk68KReadWord(unsigned int a)
+UINT16 __fastcall Liquidk68KReadWord(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x300000)
 	
@@ -5736,7 +5736,7 @@ unsigned short __fastcall Liquidk68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Liquidk68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Liquidk68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x300000)
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
@@ -5750,7 +5750,7 @@ void __fastcall Liquidk68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Megablst68KReadByte(unsigned int a)
+UINT8 __fastcall Megablst68KReadByte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x120000)
 	
@@ -5771,7 +5771,7 @@ unsigned char __fastcall Megablst68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Megablst68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Megablst68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x120000)
 	TC0360PRIHalfWordWrite_Map(0x400000)
@@ -5799,7 +5799,7 @@ void __fastcall Megablst68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Megablst68KReadWord(unsigned int a)
+UINT16 __fastcall Megablst68KReadWord(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x120000)
 	
@@ -5812,7 +5812,7 @@ unsigned short __fastcall Megablst68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Megablst68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Megablst68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x120000)
 	TC0360PRIHalfWordWrite_Map(0x400000)
@@ -5826,7 +5826,7 @@ void __fastcall Megablst68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Metalb68KReadByte(unsigned int a)
+UINT8 __fastcall Metalb68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordSwapRead_Map(0x800000)
 	
@@ -5843,7 +5843,7 @@ unsigned char __fastcall Metalb68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Metalb68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Metalb68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0510NIOHalfWordSwapWrite_Map(0x800000)
 	
@@ -5869,7 +5869,7 @@ void __fastcall Metalb68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Metalb68KReadWord(unsigned int a)
+UINT16 __fastcall Metalb68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -5880,7 +5880,7 @@ unsigned short __fastcall Metalb68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Metalb68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Metalb68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0480SCPCtrlWordWrite_Map(0x530000)
 	TC0360PRIHalfWordWrite_Map(0x600000)
@@ -5904,7 +5904,7 @@ void __fastcall Metalb68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Mjnquest68KReadByte(unsigned int a)
+UINT8 __fastcall Mjnquest68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x300000: {
@@ -5935,7 +5935,7 @@ unsigned char __fastcall Mjnquest68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Mjnquest68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Mjnquest68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x400000, 0x40ffff)
 	
@@ -5967,7 +5967,7 @@ void __fastcall Mjnquest68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Mjnquest68KReadWord(unsigned int a)
+UINT16 __fastcall Mjnquest68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x310000: {
@@ -5989,7 +5989,7 @@ unsigned short __fastcall Mjnquest68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Mjnquest68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Mjnquest68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x400000, 0x40ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x420000)
@@ -6032,7 +6032,7 @@ void __fastcall Mjnquest68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Ninjak68KReadByte(unsigned int a)
+UINT8 __fastcall Ninjak68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x300000: {
@@ -6075,7 +6075,7 @@ unsigned char __fastcall Ninjak68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Ninjak68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Ninjak68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
 	
@@ -6106,7 +6106,7 @@ void __fastcall Ninjak68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Ninjak68KReadWord(unsigned int a)
+UINT16 __fastcall Ninjak68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -6117,7 +6117,7 @@ unsigned short __fastcall Ninjak68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Ninjak68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Ninjak68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x820000)
@@ -6156,7 +6156,7 @@ void __fastcall Ninjak68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Pulirula68KReadByte(unsigned int a)
+UINT8 __fastcall Pulirula68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0xb00000)
 	
@@ -6173,7 +6173,7 @@ unsigned char __fastcall Pulirula68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Pulirula68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Pulirula68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
 	TC0510NIOHalfWordWrite_Map(0xb00000)
@@ -6195,7 +6195,7 @@ void __fastcall Pulirula68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Pulirula68KReadWord(unsigned int a)
+UINT16 __fastcall Pulirula68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -6206,7 +6206,7 @@ unsigned short __fastcall Pulirula68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Pulirula68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Pulirula68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0430GRWCtrlWordWrite_Map(0x402000)
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
@@ -6226,7 +6226,7 @@ void __fastcall Pulirula68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Qcrayon68KReadByte(unsigned int a)
+UINT8 __fastcall Qcrayon68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0xa00000)
 	
@@ -6243,7 +6243,7 @@ unsigned char __fastcall Qcrayon68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qcrayon68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Qcrayon68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x900000, 0x90ffff)
 	TC0510NIOHalfWordWrite_Map(0xa00000)
@@ -6270,7 +6270,7 @@ void __fastcall Qcrayon68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Qcrayon68KReadWord(unsigned int a)
+UINT16 __fastcall Qcrayon68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -6281,7 +6281,7 @@ unsigned short __fastcall Qcrayon68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qcrayon68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Qcrayon68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x900000, 0x90ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x920000)
@@ -6295,7 +6295,7 @@ void __fastcall Qcrayon68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Qcrayon268KReadByte(unsigned int a)
+UINT8 __fastcall Qcrayon268KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0x700000)
 	
@@ -6312,7 +6312,7 @@ unsigned char __fastcall Qcrayon268KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qcrayon268KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Qcrayon268KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x500000, 0x50ffff)
 	TC0510NIOHalfWordWrite_Map(0x700000)
@@ -6339,7 +6339,7 @@ void __fastcall Qcrayon268KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Qcrayon268KReadWord(unsigned int a)
+UINT16 __fastcall Qcrayon268KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -6350,7 +6350,7 @@ unsigned short __fastcall Qcrayon268KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qcrayon268KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Qcrayon268KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x500000, 0x50ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x520000)
@@ -6364,7 +6364,7 @@ void __fastcall Qcrayon268KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Qjinsei68KReadByte(unsigned int a)
+UINT8 __fastcall Qjinsei68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0xb00000)
 	
@@ -6381,7 +6381,7 @@ unsigned char __fastcall Qjinsei68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qjinsei68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Qjinsei68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
 	TC0510NIOHalfWordWrite_Map(0xb00000)
@@ -6403,7 +6403,7 @@ void __fastcall Qjinsei68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Qjinsei68KReadWord(unsigned int a)
+UINT16 __fastcall Qjinsei68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -6414,7 +6414,7 @@ unsigned short __fastcall Qjinsei68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qjinsei68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Qjinsei68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x820000)
@@ -6433,7 +6433,7 @@ void __fastcall Qjinsei68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Qtorimon68KReadByte(unsigned int a)
+UINT8 __fastcall Qtorimon68KReadByte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x500000)
 	
@@ -6450,7 +6450,7 @@ unsigned char __fastcall Qtorimon68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qtorimon68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Qtorimon68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x500000)
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
@@ -6472,7 +6472,7 @@ void __fastcall Qtorimon68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Qtorimon68KReadWord(unsigned int a)
+UINT16 __fastcall Qtorimon68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x200002: {
@@ -6487,7 +6487,7 @@ unsigned short __fastcall Qtorimon68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qtorimon68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Qtorimon68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x500000)
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
@@ -6508,7 +6508,7 @@ void __fastcall Qtorimon68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Quizhq68KReadByte(unsigned int a)
+UINT8 __fastcall Quizhq68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x500001: {
@@ -6539,7 +6539,7 @@ unsigned char __fastcall Quizhq68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Quizhq68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Quizhq68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
 	
@@ -6575,7 +6575,7 @@ void __fastcall Quizhq68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Quizhq68KReadWord(unsigned int a)
+UINT16 __fastcall Quizhq68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x500000: {
@@ -6606,7 +6606,7 @@ unsigned short __fastcall Quizhq68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Quizhq68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Quizhq68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x820000)
@@ -6631,7 +6631,7 @@ void __fastcall Quizhq68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Qzchikyu68KReadByte(unsigned int a)
+UINT8 __fastcall Qzchikyu68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0x200000)
 	
@@ -6644,7 +6644,7 @@ unsigned char __fastcall Qzchikyu68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qzchikyu68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Qzchikyu68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x200000)
 	TC0100SCN0ByteWrite_Map(0x700000, 0x70ffff)
@@ -6666,7 +6666,7 @@ void __fastcall Qzchikyu68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Qzchikyu68KReadWord(unsigned int a)
+UINT16 __fastcall Qzchikyu68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -6677,7 +6677,7 @@ unsigned short __fastcall Qzchikyu68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qzchikyu68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Qzchikyu68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x200000)
 	TC0100SCN0WordWrite_Map(0x700000, 0x70ffff)
@@ -6690,7 +6690,7 @@ void __fastcall Qzchikyu68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Qzquest68KReadByte(unsigned int a)
+UINT8 __fastcall Qzquest68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0x200000)
 	
@@ -6703,7 +6703,7 @@ unsigned char __fastcall Qzquest68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qzquest68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Qzquest68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x200000)
 	TC0100SCN0ByteWrite_Map(0x700000, 0x70ffff)
@@ -6725,7 +6725,7 @@ void __fastcall Qzquest68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Qzquest68KReadWord(unsigned int a)
+UINT16 __fastcall Qzquest68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -6736,7 +6736,7 @@ unsigned short __fastcall Qzquest68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Qzquest68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Qzquest68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x200000)
 	TC0100SCN0WordWrite_Map(0x700000, 0x70ffff)
@@ -6749,7 +6749,7 @@ void __fastcall Qzquest68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Solfigtr68KReadByte(unsigned int a)
+UINT8 __fastcall Solfigtr68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x300001: {
@@ -6784,7 +6784,7 @@ unsigned char __fastcall Solfigtr68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Solfigtr68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Solfigtr68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
 	
@@ -6815,7 +6815,7 @@ void __fastcall Solfigtr68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Solfigtr68KReadWord(unsigned int a)
+UINT16 __fastcall Solfigtr68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -6826,7 +6826,7 @@ unsigned short __fastcall Solfigtr68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Solfigtr68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Solfigtr68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x820000)
@@ -6866,7 +6866,7 @@ void __fastcall Solfigtr68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Ssi68KReadByte(unsigned int a)
+UINT8 __fastcall Ssi68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0x100000)
 
@@ -6883,7 +6883,7 @@ unsigned char __fastcall Ssi68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Ssi68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Ssi68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x100000)
 	TC0100SCN0ByteWrite_Map(0x600000, 0x60ffff)
@@ -6910,7 +6910,7 @@ void __fastcall Ssi68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Ssi68KReadWord(unsigned int a)
+UINT16 __fastcall Ssi68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -6921,7 +6921,7 @@ unsigned short __fastcall Ssi68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Ssi68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Ssi68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x100000)
 	TC0100SCN0ByteWrite_Map(0x600000, 0x60ffff)
@@ -6934,7 +6934,7 @@ void __fastcall Ssi68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Thundfox68KReadByte(unsigned int a)
+UINT8 __fastcall Thundfox68KReadByte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x200000)
 	
@@ -6947,7 +6947,7 @@ unsigned char __fastcall Thundfox68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Thundfox68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Thundfox68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x200000)
 	TC0100SCN0ByteWrite_Map(0x400000, 0x40ffff)
@@ -6970,7 +6970,7 @@ void __fastcall Thundfox68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Thundfox68KReadWord(unsigned int a)
+UINT16 __fastcall Thundfox68KReadWord(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x200000)
 	
@@ -6983,7 +6983,7 @@ unsigned short __fastcall Thundfox68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Thundfox68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Thundfox68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x200000)
 	TC0100SCN0WordWrite_Map(0x400000, 0x40ffff)
@@ -6998,7 +6998,7 @@ void __fastcall Thundfox68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Yesnoj68KReadByte(unsigned int a)
+UINT8 __fastcall Yesnoj68KReadByte(UINT32 a)
 {
 	if (a >= 0x700000 && a <= 0x70001f) return 0;
 	
@@ -7019,7 +7019,7 @@ unsigned char __fastcall Yesnoj68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Yesnoj68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Yesnoj68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCN0ByteWrite_Map(0x500000, 0x50ffff)
 	
@@ -7053,7 +7053,7 @@ void __fastcall Yesnoj68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Yesnoj68KReadWord(unsigned int a)
+UINT16 __fastcall Yesnoj68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0xa00004: {
@@ -7078,7 +7078,7 @@ unsigned short __fastcall Yesnoj68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Yesnoj68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Yesnoj68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0WordWrite_Map(0x500000, 0x50ffff)
 	TC0100SCN0CtrlWordWrite_Map(0x520000)
@@ -7098,7 +7098,7 @@ void __fastcall Yesnoj68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Yuyugogo68KReadByte(unsigned int a)
+UINT8 __fastcall Yuyugogo68KReadByte(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0x200000)
 
@@ -7115,7 +7115,7 @@ unsigned char __fastcall Yuyugogo68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Yuyugogo68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Yuyugogo68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x200000)
 	TC0100SCN0ByteWrite_Map(0x800000, 0x80ffff)
@@ -7137,7 +7137,7 @@ void __fastcall Yuyugogo68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Yuyugogo68KReadWord(unsigned int a)
+UINT16 __fastcall Yuyugogo68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -7148,7 +7148,7 @@ unsigned short __fastcall Yuyugogo68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Yuyugogo68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Yuyugogo68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0510NIOHalfWordWrite_Map(0x200000)
 	TC0100SCN0WordWrite_Map(0x800000, 0x80ffff)
@@ -7161,7 +7161,7 @@ void __fastcall Yuyugogo68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall TaitoF2Z80Read(unsigned short a)
+UINT8 __fastcall TaitoF2Z80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xe000: {
@@ -7194,7 +7194,7 @@ unsigned char __fastcall TaitoF2Z80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall TaitoF2Z80Write(unsigned short a, unsigned char d)
+void __fastcall TaitoF2Z80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe000: {
@@ -7259,7 +7259,7 @@ void __fastcall TaitoF2Z80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall CamltryaZ80Read(unsigned short a)
+UINT8 __fastcall CamltryaZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x9000: {
@@ -7282,7 +7282,7 @@ unsigned char __fastcall CamltryaZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall CamltryaZ80Write(unsigned short a, unsigned char d)
+void __fastcall CamltryaZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0x9000: {
@@ -7317,7 +7317,7 @@ void __fastcall CamltryaZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall DriveoutZ80Read(unsigned short a)
+UINT8 __fastcall DriveoutZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x9800: {
@@ -7336,7 +7336,7 @@ unsigned char __fastcall DriveoutZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall DriveoutZ80Write(unsigned short a, unsigned char d)
+void __fastcall DriveoutZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0x9000: {
@@ -7358,26 +7358,26 @@ void __fastcall DriveoutZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-static int CharPlaneOffsets[4]          = { 0, 1, 2, 3 };
-static int CharXOffsets[8]              = { 8, 12, 0, 4, 24, 28, 16, 20 };
-static int CharYOffsets[8]              = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int PivotPlaneOffsets[4]         = { 0, 1, 2, 3 };
-static int PivotXOffsets[8]             = { 0, 4, 8, 12, 16, 20, 24, 28 };
-static int PivotYOffsets[8]             = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int YuyugogoCharPlaneOffsets[1]  = { 0 };
-static int YuyugogoCharXOffsets[8]      = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int YuyugogoCharYOffsets[8]      = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int TC0480SCPCharPlaneOffsets[4] = { 0, 1, 2, 3 };
-static int TC0480SCPCharXOffsets[16]    = { 4, 0, 20, 16, 12, 8, 28, 24, 36, 32, 52, 48, 44, 40, 60, 56 };
-static int TC0480SCPCharYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-static int SpritePlaneOffsets[4]        = { 0, 1, 2, 3 };
-static int SpriteXOffsets[16]           = { 4, 0, 12, 8, 20, 16, 28, 24, 36, 32, 44, 40, 52, 48, 60, 56 };
-static int SpriteYOffsets[16]           = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-static int FinalbSpritePlaneOffsets[6]  = { 0x800000, 0x800001, 0, 1, 2, 3 };
-static int FinalbSpriteXOffsets[16]     = { 12, 8, 4, 0, 28, 24, 20, 16, 44, 40, 36, 32, 60, 56, 52, 48 };
-static int FinalbSpriteYOffsets[16]     = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 CharPlaneOffsets[4]          = { 0, 1, 2, 3 };
+static INT32 CharXOffsets[8]              = { 8, 12, 0, 4, 24, 28, 16, 20 };
+static INT32 CharYOffsets[8]              = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 PivotPlaneOffsets[4]         = { 0, 1, 2, 3 };
+static INT32 PivotXOffsets[8]             = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static INT32 PivotYOffsets[8]             = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 YuyugogoCharPlaneOffsets[1]  = { 0 };
+static INT32 YuyugogoCharXOffsets[8]      = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 YuyugogoCharYOffsets[8]      = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 TC0480SCPCharPlaneOffsets[4] = { 0, 1, 2, 3 };
+static INT32 TC0480SCPCharXOffsets[16]    = { 4, 0, 20, 16, 12, 8, 28, 24, 36, 32, 52, 48, 44, 40, 60, 56 };
+static INT32 TC0480SCPCharYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 SpritePlaneOffsets[4]        = { 0, 1, 2, 3 };
+static INT32 SpriteXOffsets[16]           = { 4, 0, 12, 8, 20, 16, 28, 24, 36, 32, 44, 40, 52, 48, 60, 56 };
+static INT32 SpriteYOffsets[16]           = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 FinalbSpritePlaneOffsets[6]  = { 0x800000, 0x800001, 0, 1, 2, 3 };
+static INT32 FinalbSpriteXOffsets[16]     = { 12, 8, 4, 0, 28, 24, 20, 16, 44, 40, 36, 32, 60, 56, 52, 48 };
+static INT32 FinalbSpriteYOffsets[16]     = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
 
-static void TaitoF2FMIRQHandler(int, int nStatus)
+static void TaitoF2FMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -7386,9 +7386,9 @@ static void TaitoF2FMIRQHandler(int, int nStatus)
 	}
 }
 
-static int TaitoF2SynchroniseStream(int nSoundRate)
+static INT32 TaitoF2SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / (24000000 / 6);
+	return (INT64)ZetTotalCycles() * nSoundRate / (24000000 / 6);
 }
 
 static double TaitoF2GetTime()
@@ -7396,9 +7396,9 @@ static double TaitoF2GetTime()
 	return (double)ZetTotalCycles() / (24000000 / 6);
 }
 
-static int CamltryaSynchroniseStream(int nSoundRate)
+static INT32 CamltryaSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / (24000000 / 4);
+	return (INT64)ZetTotalCycles() * nSoundRate / (24000000 / 4);
 }
 
 static double CamltryaGetTime()
@@ -7423,7 +7423,7 @@ static void TaitoF2SoundInit()
 	ZetMemEnd();
 	ZetClose();
 	
-	BurnYM2610Init(24000000 / 3, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &TaitoF2FMIRQHandler, TaitoF2SynchroniseStream, TaitoF2GetTime, 0);
+	BurnYM2610Init(24000000 / 3, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &TaitoF2FMIRQHandler, TaitoF2SynchroniseStream, TaitoF2GetTime, 0);
 	BurnTimerAttachZet(24000000 / 6);
 }
 
@@ -7472,7 +7472,7 @@ static void TaitoF2Init()
 	TaitoF2SpriteBufferFunction = TaitoF2NoBuffer;
 	TaitoDrawFunction = TaitoF2Draw;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TaitoF2SpriteBankBuffered[i] = 0x400 * i;
 		TaitoF2SpriteBank[i] = TaitoF2SpriteBankBuffered[i];
 	}
@@ -7481,9 +7481,9 @@ static void TaitoF2Init()
 	nTaitoCyclesTotal[1] = (24000000 / 6) / 60;
 }
 
-static int CameltryInit()
+static INT32 CameltryInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -7503,8 +7503,8 @@ static int CameltryInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -7544,9 +7544,9 @@ static int CameltryInit()
 	return 0;
 }
 
-static int CamltryaInit()
+static INT32 CamltryaInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -7570,8 +7570,8 @@ static int CamltryaInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -7629,9 +7629,9 @@ static int CamltryaInit()
 	return 0;
 }
 
-static int DeadconxInit()
+static INT32 DeadconxInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -7658,8 +7658,8 @@ static int DeadconxInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -7701,9 +7701,9 @@ static int DeadconxInit()
 	return 0;
 }
 
-static int DinorexInit()
+static INT32 DinorexInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -7715,8 +7715,8 @@ static int DinorexInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -7755,9 +7755,9 @@ static int DinorexInit()
 	return 0;
 }
 
-static int DondokodInit()
+static INT32 DondokodInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -7778,8 +7778,8 @@ static int DondokodInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -7820,9 +7820,9 @@ static int DondokodInit()
 	return 0;
 }
 
-static int DriftoutInit()
+static INT32 DriftoutInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -7841,8 +7841,8 @@ static int DriftoutInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -7882,9 +7882,9 @@ static int DriftoutInit()
 	return 0;
 }
 
-static int DriveoutInit()
+static INT32 DriveoutInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -7908,14 +7908,14 @@ static int DriveoutInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
 	if (TaitoLoadRoms(1)) return 1;
 	
-	unsigned char *TempRom = (unsigned char*)malloc(0x100000);
+	UINT8 *TempRom = (UINT8*)malloc(0x100000);
 	memcpy(TempRom, TaitoMSM6295Rom, 0x100000);
 	memset(TaitoMSM6295Rom, 0, 0x100000);
 	memcpy(TaitoMSM6295Rom + 0x00000, TempRom + 0x00000, 0x20000);
@@ -7977,9 +7977,9 @@ static int DriveoutInit()
 	return 0;
 }
 
-static int FinalbInit()
+static INT32 FinalbInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -7999,8 +7999,8 @@ static int FinalbInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8014,17 +8014,17 @@ static int FinalbInit()
 	TC0220IOCInit();
 	
 	// Load and decode Sprites
-	int nRet;
+	INT32 nRet;
 	TaitoNumSpriteA = 0x2000;
-	unsigned char *TempRom = (unsigned char*)malloc(0x200000);
+	UINT8 *TempRom = (UINT8*)malloc(0x200000);
 	memset(TempRom, 0, 0x200000);
 	nRet = BurnLoadRom(TempRom + 0x000000 ,  5, 2); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(TempRom + 0x000001 ,  6, 2); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(TempRom + 0x180000 ,  7, 1); if (nRet != 0) return 1;
 	
-	int Offset = 0x100000;
-	unsigned char Data, d1, d2, d3, d4;
-	for (int i = 0x180000; i < 0x200000; i++) {
+	INT32 Offset = 0x100000;
+	UINT8 Data, d1, d2, d3, d4;
+	for (INT32 i = 0x180000; i < 0x200000; i++) {
 		Data = TempRom[i];
 		d1 = (Data >> 0) & 3;
 		d2 = (Data >> 2) & 3;
@@ -8070,9 +8070,9 @@ static int FinalbInit()
 	return 0;
 }
 
-static int FootchmpInit()
+static INT32 FootchmpInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8101,8 +8101,8 @@ static int FootchmpInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8144,9 +8144,9 @@ static int FootchmpInit()
 	return 0;
 }
 
-static int GrowlInit()
+static INT32 GrowlInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8158,8 +8158,8 @@ static int GrowlInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8195,9 +8195,9 @@ static int GrowlInit()
 	return 0;
 }
 
-static int GunfrontInit()
+static INT32 GunfrontInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8209,8 +8209,8 @@ static int GunfrontInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8247,9 +8247,9 @@ static int GunfrontInit()
 	return 0;
 }
 
-static int KoshienInit()
+static INT32 KoshienInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8261,8 +8261,8 @@ static int KoshienInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8300,9 +8300,9 @@ static int KoshienInit()
 	return 0;
 }
 
-static int LiquidkInit()
+static INT32 LiquidkInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8314,8 +8314,8 @@ static int LiquidkInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8352,9 +8352,9 @@ static int LiquidkInit()
 	return 0;
 }
 
-static int MegablstInit()
+static INT32 MegablstInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8366,8 +8366,8 @@ static int MegablstInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8406,9 +8406,9 @@ static int MegablstInit()
 	return 0;
 }
 
-static int MetalbInit()
+static INT32 MetalbInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8428,8 +8428,8 @@ static int MetalbInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8468,9 +8468,9 @@ static int MetalbInit()
 	return 0;
 }
 
-static int MjnquestInit()
+static INT32 MjnquestInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8482,20 +8482,20 @@ static int MjnquestInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
 	if (TaitoLoadRoms(1)) return 1;
 	
 	// Load and decode Sprites
-	int nRet;
-	unsigned char *TempRom = (unsigned char*)malloc(TaitoSpriteARomSize);
+	INT32 nRet;
+	UINT8 *TempRom = (UINT8*)malloc(TaitoSpriteARomSize);
 	memset(TempRom, 0, TaitoSpriteARomSize);
 	nRet = BurnLoadRom(TempRom + 0x000000 ,  6, 1); if (nRet != 0) return 1;
-	for (unsigned int i = 0; i < TaitoSpriteARomSize; i += 2) {
-		int Temp = TempRom[i];
+	for (UINT32 i = 0; i < TaitoSpriteARomSize; i += 2) {
+		INT32 Temp = TempRom[i];
 		TempRom[i + 0] = (TempRom[i + 1] >> 4) | (TempRom[i + 1] << 4);
 		TempRom[i + 1] = (Temp >> 4) | (Temp << 4);
 	}
@@ -8536,9 +8536,9 @@ static int MjnquestInit()
 	return 0;
 }
 
-static int NinjakInit()
+static INT32 NinjakInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8550,8 +8550,8 @@ static int NinjakInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8584,9 +8584,9 @@ static int NinjakInit()
 	return 0;
 }
 
-static int PulirulaInit()
+static INT32 PulirulaInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8607,8 +8607,8 @@ static int PulirulaInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8650,9 +8650,9 @@ static int PulirulaInit()
 	return 0;
 }
 
-static int QcrayonInit()
+static INT32 QcrayonInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8664,8 +8664,8 @@ static int QcrayonInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8705,9 +8705,9 @@ static int QcrayonInit()
 	return 0;
 }
 
-static int Qcrayon2Init()
+static INT32 Qcrayon2Init()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8719,8 +8719,8 @@ static int Qcrayon2Init()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8760,9 +8760,9 @@ static int Qcrayon2Init()
 	return 0;
 }
 
-static int QjinseiInit()
+static INT32 QjinseiInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8774,8 +8774,8 @@ static int QjinseiInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8815,9 +8815,9 @@ static int QjinseiInit()
 	return 0;
 }
 
-static int QtorimonInit()
+static INT32 QtorimonInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8828,8 +8828,8 @@ static int QtorimonInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8866,9 +8866,9 @@ static int QtorimonInit()
 	return 0;
 }
 
-static int QuizhqInit()
+static INT32 QuizhqInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8881,8 +8881,8 @@ static int QuizhqInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8921,9 +8921,9 @@ static int QuizhqInit()
 	return 0;
 }
 
-static int QzchikyuInit()
+static INT32 QzchikyuInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8935,8 +8935,8 @@ static int QzchikyuInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -8974,9 +8974,9 @@ static int QzchikyuInit()
 	return 0;
 }
 
-static int QzquestInit()
+static INT32 QzquestInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -8988,8 +8988,8 @@ static int QzquestInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -9027,9 +9027,9 @@ static int QzquestInit()
 	return 0;
 }
 
-static int SolfigtrInit()
+static INT32 SolfigtrInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -9041,8 +9041,8 @@ static int SolfigtrInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -9078,9 +9078,9 @@ static int SolfigtrInit()
 	return 0;
 }
 
-static int SsiInit()
+static INT32 SsiInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -9091,8 +9091,8 @@ static int SsiInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -9130,9 +9130,9 @@ static int SsiInit()
 	return 0;
 }
 
-static int ThundfoxInit()
+static INT32 ThundfoxInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -9154,8 +9154,8 @@ static int ThundfoxInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -9198,9 +9198,9 @@ static int ThundfoxInit()
 	return 0;
 }
 
-static int YesnojInit()
+static INT32 YesnojInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -9220,8 +9220,8 @@ static int YesnojInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -9257,9 +9257,9 @@ static int YesnojInit()
 	return 0;
 }
 
-static int YuyugogoInit()
+static INT32 YuyugogoInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoF2Init();
 	
@@ -9279,8 +9279,8 @@ static int YuyugogoInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -9320,7 +9320,7 @@ static int YuyugogoInit()
 	return 0;
 }
 
-static int TaitoF2Exit()
+static INT32 TaitoF2Exit()
 {
 	TaitoExit();
 		
@@ -9351,22 +9351,22 @@ static int TaitoF2Exit()
 	return 0;
 }
 
-static inline unsigned char pal4bit(unsigned char bits)
+static inline UINT8 pal4bit(UINT8 bits)
 {
 	bits &= 0x0f;
 	return (bits << 4) | bits;
 }
 
-static inline unsigned char pal5bit(unsigned char bits)
+static inline UINT8 pal5bit(UINT8 bits)
 {
 	bits &= 0x1f;
 	return (bits << 3) | (bits >> 2);
 }
 
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static INT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = pal4bit(nColour >> 12);
 	g = pal4bit(nColour >>  8);
@@ -9375,9 +9375,9 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-inline static unsigned int QzquestCalcCol(unsigned short nColour)
+inline static INT32 QzquestCalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = pal5bit(nColour >> 10);
 	g = pal5bit(nColour >>  5);
@@ -9388,40 +9388,40 @@ inline static unsigned int QzquestCalcCol(unsigned short nColour)
 
 static void TaitoF2CalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)TaitoPaletteRam, pd = TaitoPalette; i < 0x1000; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)TaitoPaletteRam, pd = TaitoPalette; i < 0x1000; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 }
 
 static void MetalbCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)TaitoPaletteRam, pd = TaitoPalette; i < 0x2000; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)TaitoPaletteRam, pd = TaitoPalette; i < 0x2000; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 }
 
 static void QzquestCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)TaitoPaletteRam, pd = TaitoPalette; i < 0x1000; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)TaitoPaletteRam, pd = TaitoPalette; i < 0x1000; i++, ps++, pd++) {
 		*pd = QzquestCalcCol(*ps);
 	}
 }
 
 static void UpdateTaitoF2SpriteBanks()
 {
-	int i;
+	INT32 i;
 
 	for (i = 0; i < 8; i++) {
 		TaitoF2SpriteBank[i] = TaitoF2SpriteBankBuffered[i];
@@ -9438,7 +9438,7 @@ void TaitoF2HandleSpriteBuffering()
 
 static void TaitoF2UpdateSpritesActiveArea()
 {
-	int Off;
+	INT32 Off;
 	UINT16 *SpriteRamBuffered = (UINT16*)TaitoSpriteRamBuffered;
 
 	UpdateTaitoF2SpriteBanks();
@@ -9448,7 +9448,7 @@ static void TaitoF2UpdateSpritesActiveArea()
 	if (TaitoF2SpritesActiveArea == 0x8000 && SpriteRamBuffered[(0x8000 + 6) / 2] == 0 && SpriteRamBuffered[(0x8000 + 10) / 2] == 0) TaitoF2SpritesActiveArea = 0;
 
 	for (Off = 0; Off < 0x4000; Off += 16) {
-		int Offs = Off + TaitoF2SpritesActiveArea;
+		INT32 Offs = Off + TaitoF2SpritesActiveArea;
 
 		if (SpriteRamBuffered[(Offs + 6) / 2] & 0x8000) {
 			TaitoF2SpritesDisabled = SpriteRamBuffered[(Offs + 10) / 2] & 0x1000;
@@ -9469,12 +9469,12 @@ static void TaitoF2UpdateSpritesActiveArea()
 	}
 }
 
-static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, int yFlip, int xScale, int yScale, int Priority, unsigned char* pSource)
+static void RenderSpriteZoom(INT32 Code, INT32 sx, INT32 sy, INT32 Colour, INT32 xFlip, INT32 yFlip, INT32 xScale, INT32 yScale, INT32 Priority, UINT8* pSource)
 {
 	UINT8 *SourceBase = pSource + ((Code % TaitoNumSpriteA) * TaitoSpriteAWidth * TaitoSpriteAHeight);
 	
-	int SpriteScreenHeight = (yScale * TaitoSpriteAHeight + 0x8000) >> 16;
-	int SpriteScreenWidth = (xScale * TaitoSpriteAWidth + 0x8000) >> 16;
+	INT32 SpriteScreenHeight = (yScale * TaitoSpriteAHeight + 0x8000) >> 16;
+	INT32 SpriteScreenWidth = (xScale * TaitoSpriteAWidth + 0x8000) >> 16;
 	
 	Colour = 0x10 * (Colour % 0x100);
 
@@ -9486,14 +9486,14 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 	}
 		
 	if (SpriteScreenWidth && SpriteScreenHeight) {
-		int dx = (TaitoSpriteAWidth << 16) / SpriteScreenWidth;
-		int dy = (TaitoSpriteAHeight << 16) / SpriteScreenHeight;
+		INT32 dx = (TaitoSpriteAWidth << 16) / SpriteScreenWidth;
+		INT32 dy = (TaitoSpriteAHeight << 16) / SpriteScreenHeight;
 		
-		int ex = sx + SpriteScreenWidth;
-		int ey = sy + SpriteScreenHeight;
+		INT32 ex = sx + SpriteScreenWidth;
+		INT32 ey = sy + SpriteScreenHeight;
 		
-		int xIndexBase;
-		int yIndex;
+		INT32 xIndexBase;
+		INT32 yIndex;
 		
 		if (xFlip) {
 			xIndexBase = (SpriteScreenWidth - 1) * dx;
@@ -9510,41 +9510,41 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 		}
 		
 		if (sx < 0) {
-			int Pixels = 0 - sx;
+			INT32 Pixels = 0 - sx;
 			sx += Pixels;
 			xIndexBase += Pixels * dx;
 		}
 		
 		if (sy < 0) {
-			int Pixels = 0 - sy;
+			INT32 Pixels = 0 - sy;
 			sy += Pixels;
 			yIndex += Pixels * dy;
 		}
 		
 		if (ex > nScreenWidth) {
-			int Pixels = ex - nScreenWidth;
+			INT32 Pixels = ex - nScreenWidth;
 			ex -= Pixels;
 		}
 		
 		if (ey > nScreenHeight) {
-			int Pixels = ey - nScreenHeight;
+			INT32 Pixels = ey - nScreenHeight;
 			ey -= Pixels;	
 		}
 		
 		if (ex > sx) {
-			int y;
+			INT32 y;
 			
 			for (y = sy; y < ey; y++) {
 				UINT8 *Source = SourceBase + ((yIndex >> 16) * TaitoSpriteAWidth);
-				unsigned short* pPixel = pTransDraw + (y * nScreenWidth);
+				UINT16* pPixel = pTransDraw + (y * nScreenWidth);
 				
-				int x, xIndex = xIndexBase;
+				INT32 x, xIndex = xIndexBase;
 				for (x = sx; x < ex; x++) {
-					int c = Source[xIndex >> 16];
+					INT32 c = Source[xIndex >> 16];
 					if (c != 0) {
 						if (TaitoF2SpriteBlendMode) {
-							int Pri = TaitoPriorityMap[(y * nScreenWidth) + x];
-							int TilePri = 0;
+							INT32 Pri = TaitoPriorityMap[(y * nScreenWidth) + x];
+							INT32 TilePri = 0;
 						
 							if (TaitoIC_TC0100SCNInUse) {
 								if (Pri == 1) TilePri = TaitoF2TilePriority[0];
@@ -9588,20 +9588,20 @@ static void RenderSpriteZoom(int Code, int sx, int sy, int Colour, int xFlip, in
 
 void TaitoF2MakeSpriteList()
 {
-	int i, x, y, Off, ExtOffs;
-	int Code, Colour, SpriteData, SpriteCont, xFlip, yFlip;
-	int xCurrent, yCurrent, BigSprite = 0;
-	int yNum = 0, xNum = 0, xLatch = 0, yLatch = 0, LastContinuationTile = 0;
+	INT32 i, x, y, Off, ExtOffs;
+	INT32 Code, Colour, SpriteData, SpriteCont, xFlip, yFlip;
+	INT32 xCurrent, yCurrent, BigSprite = 0;
+	INT32 yNum = 0, xNum = 0, xLatch = 0, yLatch = 0, LastContinuationTile = 0;
 	UINT32 ZoomWord, xZoom, yZoom, zx = 0, zy = 0, xZoomLatch = 0, yZoomLatch = 0;
-	int xScroll1, yScroll1;
-	int xScroll = 0, yScroll = 0;
-	int xCur, yCur;
-	int xOffset = 0;
+	INT32 xScroll1, yScroll1;
+	INT32 xScroll = 0, yScroll = 0;
+	INT32 xCur, yCur;
+	INT32 xOffset = 0;
 
-	int Disabled = TaitoF2SpritesDisabled;
-	int MasterScrollX = TaitoF2SpritesMasterScrollX;
-	int MasterScrollY = TaitoF2SpritesMasterScrollY;
-	int Area = TaitoF2SpritesActiveArea;
+	INT32 Disabled = TaitoF2SpritesDisabled;
+	INT32 MasterScrollX = TaitoF2SpritesMasterScrollX;
+	INT32 MasterScrollY = TaitoF2SpritesMasterScrollY;
+	INT32 Area = TaitoF2SpritesActiveArea;
 	
 	UINT16 *SpriteRamBuffered = (UINT16*)TaitoSpriteRamBuffered;
 	UINT16 *SpriteExtension = (UINT16*)TaitoSpriteExtension;
@@ -9621,7 +9621,7 @@ void TaitoF2MakeSpriteList()
 	if (Area == 0x8000 && SpriteRamBuffered[(0x8000 + 6) / 2] == 0 && SpriteRamBuffered[(0x8000 + 10) / 2] == 0) Area = 0;
 
 	for (Off = 0; Off < 0x4000; Off += 16) {
-		int Offs = Off + Area;
+		INT32 Offs = Off + Area;
 
 		if (SpriteRamBuffered[(Offs + 6) / 2] & 0x8000) {
 			Disabled = SpriteRamBuffered[(Offs + 10) / 2] & 0x1000;
@@ -9783,7 +9783,7 @@ void TaitoF2MakeSpriteList()
 			yCur -= 16;
 		}
 
-		int Priority = (Colour & 0xc0) >> 6;
+		INT32 Priority = (Colour & 0xc0) >> 6;
 		
 		SpritePtr->Code = Code;
 		SpritePtr->x = xCur;
@@ -9798,9 +9798,9 @@ void TaitoF2MakeSpriteList()
 	}
 }
 
-void TaitoF2RenderSpriteList(int TaitoF2SpritePriorityLevel)
+void TaitoF2RenderSpriteList(INT32 TaitoF2SpritePriorityLevel)
 {
-	for (int i = 0; i < 0x400; i++) {
+	for (INT32 i = 0; i < 0x400; i++) {
 		if (TaitoF2SpriteList[i].Priority == TaitoF2SpritePriorityLevel) RenderSpriteZoom(TaitoF2SpriteList[i].Code, TaitoF2SpriteList[i].x, TaitoF2SpriteList[i].y, TaitoF2SpriteList[i].Colour, TaitoF2SpriteList[i].xFlip, TaitoF2SpriteList[i].yFlip, TaitoF2SpriteList[i].xZoom, TaitoF2SpriteList[i].yZoom, TaitoF2SpritePriorityLevel, TaitoSpritesA);
 	}
 }
@@ -9819,7 +9819,7 @@ void TaitoF2PartialBufferDelayed()
 	TaitoF2UpdateSpritesActiveArea();
 	TaitoF2PrepareSprites = 0;
 	memcpy(TaitoSpriteRamBuffered, TaitoSpriteRamDelayed, 0x10000);
-	for (int i = 0; i < 0x10000 / 2; i += 4) SpriteRamBuffered[i] = SpriteRam[i];
+	for (INT32 i = 0; i < 0x10000 / 2; i += 4) SpriteRamBuffered[i] = SpriteRam[i];
 	memcpy(TaitoSpriteRamDelayed, TaitoSpriteRam, 0x10000);
 }
 
@@ -9831,7 +9831,7 @@ void TaitoF2PartialBufferDelayedQzchikyu()
 	TaitoF2UpdateSpritesActiveArea();
 	TaitoF2PrepareSprites = 0;
 	memcpy(TaitoSpriteRamBuffered, TaitoSpriteRamDelayed, 0x10000);
-	for (int i = 0; i < 0x10000 / 2; i += 8) {
+	for (INT32 i = 0; i < 0x10000 / 2; i += 8) {
 		SpriteRamBuffered[i + 0] = SpriteRam[i + 0];
 		SpriteRamBuffered[i + 1] = SpriteRam[i + 1];
 		SpriteRamBuffered[i + 4] = SpriteRam[i + 4];
@@ -9850,7 +9850,7 @@ void TaitoF2PartialBufferDelayedThundfox()
 	TaitoF2UpdateSpritesActiveArea();
 	TaitoF2PrepareSprites = 0;
 	memcpy(TaitoSpriteRamBuffered, TaitoSpriteRamDelayed, 0x10000);
-	for (int i = 0; i < 0x10000 / 2; i += 8) {
+	for (INT32 i = 0; i < 0x10000 / 2; i += 8) {
 		SpriteRamBuffered[i + 0] = SpriteRam[i + 0];
 		SpriteRamBuffered[i + 1] = SpriteRam[i + 1];
 		SpriteRamBuffered[i + 4] = SpriteRam[i + 4];
@@ -9866,17 +9866,17 @@ void TaitoF2FullBufferDelayed()
 	TaitoF2UpdateSpritesActiveArea();
 	TaitoF2PrepareSprites = 0;
 	memcpy(TaitoSpriteRamBuffered, TaitoSpriteRamDelayed, 0x10000);
-	for (int i = 0;i < 0x10000 / 2; i++) SpriteRamBuffered[i] = SpriteRam[i];
+	for (INT32 i = 0;i < 0x10000 / 2; i++) SpriteRamBuffered[i] = SpriteRam[i];
 	memcpy(TaitoSpriteRamDelayed, TaitoSpriteRam, 0x10000);
 }
 
 static void TaitoF2Draw()
 {
-	int i;
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
-	int DrawLayer0 = 1;
-	int DrawLayer1 = 1;
-	int DrawLayer2 = 1;
+	INT32 i;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 DrawLayer0 = 1;
+	INT32 DrawLayer1 = 1;
+	INT32 DrawLayer2 = 1;
 	
 	if (TC0100SCNBottomLayer(0)) {
 		TaitoF2TilePriority[1] = TC0360PRIRegs[5] & 0x0f;
@@ -9955,12 +9955,12 @@ static void TaitoF2Draw()
 
 static void TaitoF2PivotDraw()
 {
-	int i;
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
-	int DrawLayer0 = 1;
-	int DrawLayer1 = 1;
-	int DrawLayer2 = 1;
-	int RozPriority;
+	INT32 i;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 DrawLayer0 = 1;
+	INT32 DrawLayer1 = 1;
+	INT32 DrawLayer2 = 1;
+	INT32 RozPriority;
 		
 	if (TC0100SCNBottomLayer(0)) {
 		TaitoF2TilePriority[1] = TC0360PRIRegs[5] & 0x0f;
@@ -10047,10 +10047,10 @@ static void TaitoF2PivotDraw()
 
 static void CameltryDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
-	int i;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 i;
 	
-	int RozPriority;
+	INT32 RozPriority;
 	
 	TaitoF2TilePriority[2] = TC0360PRIRegs[4] >> 4;
 	
@@ -10082,10 +10082,10 @@ static void CameltryDraw()
 
 static void DriftoutDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
-	int i;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 i;
 	
-	int RozPriority;
+	INT32 RozPriority;
 	
 	TaitoF2TilePriority[2] = TC0360PRIRegs[4] >> 4;
 	
@@ -10117,7 +10117,7 @@ static void DriftoutDraw()
 
 static void FinalbDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
@@ -10168,7 +10168,7 @@ static void FootchmpDraw()
 	
 	TaitoF2MakeSpriteList();
 	
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		if (TaitoF2SpritePriority[3] == i) TaitoF2RenderSpriteList(TaitoF2SpritePriority[3]);
 		if (TaitoF2SpritePriority[2] == i) TaitoF2RenderSpriteList(TaitoF2SpritePriority[2]);
 		if (TaitoF2SpritePriority[1] == i) TaitoF2RenderSpriteList(TaitoF2SpritePriority[1]);		
@@ -10219,7 +10219,7 @@ static void MetalbDraw()
 	
 	TaitoF2MakeSpriteList();
 	
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		if (TaitoF2SpritePriority[3] == i) TaitoF2RenderSpriteList(TaitoF2SpritePriority[3]);
 		if (TaitoF2SpritePriority[2] == i) TaitoF2RenderSpriteList(TaitoF2SpritePriority[2]);
 		if (TaitoF2SpritePriority[1] == i) TaitoF2RenderSpriteList(TaitoF2SpritePriority[1]);		
@@ -10237,12 +10237,12 @@ static void MetalbDraw()
 
 static void PulirulaDraw()
 {
-	int i;
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
-	int DrawLayer0 = 1;
-	int DrawLayer1 = 1;
-	int DrawLayer2 = 1;
-	int RozPriority;
+	INT32 i;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 DrawLayer0 = 1;
+	INT32 DrawLayer1 = 1;
+	INT32 DrawLayer2 = 1;
+	INT32 RozPriority;
 		
 	if (TC0100SCNBottomLayer(0)) {
 		TaitoF2TilePriority[1] = TC0360PRIRegs[5] & 0x0f;
@@ -10329,7 +10329,7 @@ static void PulirulaDraw()
 
 static void QtorimonDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	
@@ -10348,7 +10348,7 @@ static void QtorimonDraw()
 
 static void QzquestDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	QzquestCalcPalette();
@@ -10393,14 +10393,14 @@ static void SsiDraw()
 
 static void ThundfoxDraw()
 {
-	int Disable1 = TC0100SCNCtrl[0][6] & 0xf7;
-	int Disable2 = TC0100SCNCtrl[1][6] & 0xf7;
+	INT32 Disable1 = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable2 = TC0100SCNCtrl[1][6] & 0xf7;
 	
 	BurnTransferClear();
 	TaitoF2CalcPalette();
 	
-	int TilePri[2][3];
-	int Layer[2][3];
+	INT32 TilePri[2][3];
+	INT32 Layer[2][3];
 
 	TaitoF2MakeSpriteList();
 	
@@ -10425,7 +10425,7 @@ static void ThundfoxDraw()
 	
 //	bprintf(PRINT_NORMAL, _T("Layer0-0 %x, Layer 0-1 %x, Layer 0-2 %x, Layer1-0 %x, Layer 1-1 %x, Layer 1-2 %x, Sprite 0 %x, Sprite 1 %x, Sprite 2 %x, Sprite 3 %x\n"), TilePri[0][0], TilePri[0][1], TilePri[0][2], TilePri[1][0], TilePri[1][1], TilePri[1][2], TaitoF2SpritePriority[0], TaitoF2SpritePriority[1], TaitoF2SpritePriority[2], TaitoF2SpritePriority[3]);
 	
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		if (TilePri[1][0] == i) { 
 			if (TC0100SCNBottomLayer(1)) {
 				if (!(Disable2 & 0x02)) TC0100SCNRenderFgLayer(1, 0, TaitoCharsB);
@@ -10467,7 +10467,7 @@ static void ThundfoxDraw()
 
 static void YuyugogoDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
 	
 	BurnTransferClear();
 	TaitoF2CalcPalette();
@@ -10493,10 +10493,10 @@ static void YuyugogoDraw()
 	BurnTransferCopy(TaitoPalette);
 }
 
-static int TaitoF2Frame()
+static INT32 TaitoF2Frame()
 {
-	int nInterleave = 10;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
 
 	if (TaitoReset) TaitoF2DoReset();
 
@@ -10515,8 +10515,8 @@ static int TaitoF2Frame()
 	SekNewFrame();
 	ZetNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 #1
 		nCurrentCPU = 0;
@@ -10536,8 +10536,8 @@ static int TaitoF2Frame()
 		ZetOpen(0);
 		BurnTimerUpdate(i * (nTaitoCyclesTotal[1] / nInterleave));
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (TaitoNumYM2610) BurnYM2610Update(pSoundBuf, nSegmentLength);
 			if (TaitoNumYM2203) BurnYM2203Update(pSoundBuf, nSegmentLength);
 			if (TaitoNumMSM6295) MSM6295Render(0, pSoundBuf, nSegmentLength);
@@ -10549,8 +10549,8 @@ static int TaitoF2Frame()
 	ZetOpen(0);
 	BurnTimerEndFrame(nTaitoCyclesTotal[1]);
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			if (TaitoNumYM2610) BurnYM2610Update(pSoundBuf, nSegmentLength);
 			if (TaitoNumYM2203) BurnYM2203Update(pSoundBuf, nSegmentLength);
@@ -10568,10 +10568,10 @@ static int TaitoF2Frame()
 	return 0;
 }
 
-static int DriveoutFrame()
+static INT32 DriveoutFrame()
 {
-	int nInterleave = 10;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
 
 	if (TaitoReset) TaitoF2DoReset();
 
@@ -10590,8 +10590,8 @@ static int DriveoutFrame()
 	SekNewFrame();
 	ZetNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 #1
 		nCurrentCPU = 0;
@@ -10617,8 +10617,8 @@ static int DriveoutFrame()
 		ZetClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -10626,8 +10626,8 @@ static int DriveoutFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
@@ -10643,7 +10643,7 @@ static int DriveoutFrame()
 	return 0;
 }
 
-static int TaitoF2Scan(int nAction, int *pnMin)
+static INT32 TaitoF2Scan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

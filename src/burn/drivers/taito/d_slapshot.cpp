@@ -12,7 +12,7 @@ static TaitoF2SpriteBufferUpdate TaitoF2SpriteBufferFunction;
 
 static bool bUseAsm68KCoreOldValue = false;
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo SlapshotInputList[] =
 {
@@ -81,7 +81,7 @@ static void TC0640FIOMakeInputs()
 	TC0640FIOInput[3] = 0xff;
 	TC0640FIOInput[4] = 0xff;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TC0640FIOInput[0] -= (TC0640FIOInputPort0[i] & 1) << i;
 		TC0640FIOInput[1] -= (TC0640FIOInputPort1[i] & 1) << i;
 		TC0640FIOInput[2] -= (TC0640FIOInputPort2[i] & 1) << i;
@@ -94,8 +94,8 @@ static void Opwolf3MakeInputs()
 {
 	TC0640FIOMakeInputs();
 	
-	BurnGunMakeInputs(0, (short)TaitoAnalogPort0, (short)TaitoAnalogPort1);
-	BurnGunMakeInputs(1, (short)TaitoAnalogPort2, (short)TaitoAnalogPort3);
+	BurnGunMakeInputs(0, (INT16)TaitoAnalogPort0, (INT16)TaitoAnalogPort1);
+	BurnGunMakeInputs(1, (INT16)TaitoAnalogPort2, (INT16)TaitoAnalogPort3);
 }
 
 static struct BurnDIPInfo SlapshotDIPList[]=
@@ -184,9 +184,9 @@ static struct BurnRomInfo Opwolf3uRomDesc[] = {
 STD_ROM_PICK(Opwolf3u)
 STD_ROM_FN(Opwolf3u)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1                   = Next; Next += Taito68KRom1Size;
 	TaitoZ80Rom1                   = Next; Next += TaitoZ80Rom1Size;
@@ -206,7 +206,7 @@ static int MemIndex()
 
 	TaitoChars                     = Next; Next += TaitoNumChar * TaitoCharWidth * TaitoCharHeight;
 	TaitoSpritesA                  = Next; Next += TaitoNumSpriteA * TaitoSpriteAWidth * TaitoSpriteAHeight;
-	TaitoPalette                   = (unsigned int*)Next; Next += 0x02000 * sizeof(unsigned int);
+	TaitoPalette                   = (UINT32*)Next; Next += 0x02000 * sizeof(UINT32);
 	TaitoF2SpriteList              = (TaitoF2SpriteEntry*)Next; Next += 0x400 * sizeof(TaitoF2SpriteEntry);
 
 	TaitoMemEnd                    = Next;
@@ -214,14 +214,14 @@ static int MemIndex()
 	return 0;
 }
 
-static int SlapshotDoReset()
+static INT32 SlapshotDoReset()
 {
 	TaitoDoReset();
 	
 	return 0;
 }
 
-unsigned char __fastcall Slapshot68KReadByte(unsigned int a)
+UINT8 __fastcall Slapshot68KReadByte(UINT32 a)
 {
 	if (a >= 0xa00000 && a <= 0xa03fff) {
 		return TimeKeeperRead((a - 0xa00000) >> 1);
@@ -248,7 +248,7 @@ unsigned char __fastcall Slapshot68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Slapshot68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Slapshot68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (a <= 0x0fffff) return;
 	
@@ -285,7 +285,7 @@ void __fastcall Slapshot68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Slapshot68KReadWord(unsigned int a)
+UINT16 __fastcall Slapshot68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -296,7 +296,7 @@ unsigned short __fastcall Slapshot68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Slapshot68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Slapshot68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0480SCPCtrlWordWrite_Map(0x830000)
 	
@@ -312,31 +312,31 @@ void __fastcall Slapshot68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Opwolf3Gun68KReadByte(unsigned int a)
+UINT8 __fastcall Opwolf3Gun68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xe00000: {
 			float Temp = (float)~BurnGunReturnX(0) / 256.0;
 			Temp *= 160.0;
-			return ((unsigned char)Temp - 0x5b) & 0xff;
+			return ((UINT8)Temp - 0x5b) & 0xff;
 		}
 		
 		case 0xe00002: {
 			float Temp = (float)BurnGunReturnY(0) / 256.0;
 			Temp *= 112;
-			return ((unsigned char)Temp + 0x08) & 0xff;
+			return ((UINT8)Temp + 0x08) & 0xff;
 		}
 		
 		case 0xe00004: {
 			float Temp = (float)~BurnGunReturnX(1) / 256.0;
 			Temp *= 160.0;
-			return ((unsigned char)Temp - 0x5b) & 0xff;
+			return ((UINT8)Temp - 0x5b) & 0xff;
 		}
 		
 		case 0xe00006: {
 			float Temp = (float)BurnGunReturnY(1) / 256.0;
 			Temp *= 112;
-			return ((unsigned char)Temp + 0x08) & 0xff;
+			return ((UINT8)Temp + 0x08) & 0xff;
 		}
 		
 		default: {
@@ -347,7 +347,7 @@ unsigned char __fastcall Opwolf3Gun68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Opwolf3Gun68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Opwolf3Gun68KWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe00000:
@@ -364,7 +364,7 @@ void __fastcall Opwolf3Gun68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Opwolf3Gun68KReadWord(unsigned int a)
+UINT16 __fastcall Opwolf3Gun68KReadWord(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -375,7 +375,7 @@ unsigned short __fastcall Opwolf3Gun68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Opwolf3Gun68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Opwolf3Gun68KWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		default: {
@@ -384,7 +384,7 @@ void __fastcall Opwolf3Gun68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall SlapshotZ80Read(unsigned short a)
+UINT8 __fastcall SlapshotZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xe000: {
@@ -403,7 +403,7 @@ unsigned char __fastcall SlapshotZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall SlapshotZ80Write(unsigned short a, unsigned char d)
+void __fastcall SlapshotZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe000: {
@@ -449,7 +449,7 @@ void __fastcall SlapshotZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-static void SlapshotFMIRQHandler(int, int nStatus)
+static void SlapshotFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -458,9 +458,9 @@ static void SlapshotFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int SlapshotSynchroniseStream(int nSoundRate)
+static INT32 SlapshotSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
 static double SlapshotGetTime()
@@ -468,13 +468,13 @@ static double SlapshotGetTime()
 	return (double)ZetTotalCycles() / 4000000;
 }
 
-static int CharPlaneOffsets[4]          = { 0, 1, 2, 3 };
-static int CharXOffsets[16]             = { 4, 0, 20, 16, 12, 8, 28, 24, 36, 32, 52, 48, 44, 40, 60, 56 };
-static int CharYOffsets[16]             = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-static int SpritePlaneOffsets[6]        = { 0x1000000, 0x1000001, 0, 1, 2, 3 };
-static int SpriteXOffsets[16]           = { 4, 0, 12, 8, 20, 16, 28, 24, 36, 32, 44, 40, 52, 48, 60, 56 };
-static int SpriteYOffsets[16]           = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
-static int Opwolf3SpritePlaneOffsets[6] = { 0x2000000, 0x2000001, 0, 1, 2, 3 };
+static INT32 CharPlaneOffsets[4]          = { 0, 1, 2, 3 };
+static INT32 CharXOffsets[16]             = { 4, 0, 20, 16, 12, 8, 28, 24, 36, 32, 52, 48, 44, 40, 60, 56 };
+static INT32 CharYOffsets[16]             = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 SpritePlaneOffsets[6]        = { 0x1000000, 0x1000001, 0, 1, 2, 3 };
+static INT32 SpriteXOffsets[16]           = { 4, 0, 12, 8, 20, 16, 28, 24, 36, 32, 44, 40, 52, 48, 60, 56 };
+static INT32 SpriteYOffsets[16]           = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 Opwolf3SpritePlaneOffsets[6] = { 0x2000000, 0x2000001, 0, 1, 2, 3 };
 
 static void SwitchToMusashi()
 {
@@ -487,9 +487,9 @@ static void SwitchToMusashi()
 	}
 }
 
-static int MachineInit()
+static INT32 MachineInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoNum68Ks = 1;
 	TaitoNumZ80s = 1;
@@ -500,8 +500,8 @@ static int MachineInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -545,7 +545,7 @@ static int MachineInit()
 	ZetMemEnd();
 	ZetClose();	
 	
-	BurnYM2610Init(8000000, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &SlapshotFMIRQHandler, SlapshotSynchroniseStream, SlapshotGetTime, 0);
+	BurnYM2610Init(8000000, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &SlapshotFMIRQHandler, SlapshotSynchroniseStream, SlapshotGetTime, 0);
 	BurnTimerAttachZet(4000000);
 	
 	TaitoMakeInputsFunction = TC0640FIOMakeInputs;
@@ -563,7 +563,7 @@ static int MachineInit()
 	
 	TaitoF2SpriteBufferFunction = TaitoF2NoBuffer;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TaitoF2SpriteBankBuffered[i] = 0x400 * i;
 		TaitoF2SpriteBank[i] = TaitoF2SpriteBankBuffered[i];
 	}
@@ -571,7 +571,7 @@ static int MachineInit()
 	return 0;
 }
 
-static int SlapshotInit()
+static INT32 SlapshotInit()
 {
 	TaitoCharModulo = 0x400;
 	TaitoCharNumPlanes = 4;
@@ -593,16 +593,16 @@ static int SlapshotInit()
 	
 	if (MachineInit()) return 1;
 	
-	int nRet;
-	unsigned char *TempRom = (unsigned char*)malloc(0x400000);
+	INT32 nRet;
+	UINT8 *TempRom = (UINT8*)malloc(0x400000);
 	memset(TempRom, 0, 0x400000);
 	nRet = BurnLoadRom(TempRom + 0x000000, 6, 2); if (nRet) return 1;
 	nRet = BurnLoadRom(TempRom + 0x000001, 7, 2); if (nRet) return 1;
 	nRet = BurnLoadRom(TempRom + 0x300000, 8, 1); if (nRet) return 1;
-	int Data;
-	int Offset = 0x400000 / 2;
-	for (int i = 0x400000 / 2 + 0x400000 / 4; i < 0x400000; i++) {
-		int d1, d2, d3, d4;
+	INT32 Data;
+	INT32 Offset = 0x400000 / 2;
+	for (INT32 i = 0x400000 / 2 + 0x400000 / 4; i < 0x400000; i++) {
+		INT32 d1, d2, d3, d4;
 
 		Data = TempRom[i];
 		d1 = (Data >> 0) & 3;
@@ -627,7 +627,7 @@ static int SlapshotInit()
 	return 0;
 }
 
-static int Opwolf3Init()
+static INT32 Opwolf3Init()
 {
 	TaitoCharModulo = 0x400;
 	TaitoCharNumPlanes = 4;
@@ -649,16 +649,16 @@ static int Opwolf3Init()
 	
 	if (MachineInit()) return 1;
 	
-	int nRet;
-	unsigned char *TempRom = (unsigned char*)malloc(0x800000);
+	INT32 nRet;
+	UINT8 *TempRom = (UINT8*)malloc(0x800000);
 	memset(TempRom, 0, 0x400000);
 	nRet = BurnLoadRom(TempRom + 0x000000,  8, 2); if (nRet) return 1;
 	nRet = BurnLoadRom(TempRom + 0x000001,  9, 2); if (nRet) return 1;
 	nRet = BurnLoadRom(TempRom + 0x600000, 10, 1); if (nRet) return 1;
-	int Data;
-	int Offset = 0x800000 / 2;
-	for (int i = 0x800000 / 2 + 0x800000 / 4; i < 0x800000; i++) {
-		int d1, d2, d3, d4;
+	INT32 Data;
+	INT32 Offset = 0x800000 / 2;
+	for (INT32 i = 0x800000 / 2 + 0x800000 / 4; i < 0x800000; i++) {
+		INT32 d1, d2, d3, d4;
 
 		Data = TempRom[i];
 		d1 = (Data >> 0) & 3;
@@ -696,7 +696,7 @@ static int Opwolf3Init()
 	return 0;
 }
 
-static int SlapshotExit()
+static INT32 SlapshotExit()
 {
 	TaitoExit();
 	
@@ -714,18 +714,18 @@ static int SlapshotExit()
 	return 0;
 }
 
-static int Opwolf3Exit()
+static INT32 Opwolf3Exit()
 {
-	int nRet = SlapshotExit();
+	INT32 nRet = SlapshotExit();
 	
 	BurnGunExit();
 	
 	return nRet;
 }
 
-inline static unsigned int CalcCol(unsigned int nColour)
+inline static INT32 CalcCol(INT32 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour & 0x000000ff) >> 0;
 	g = (nColour & 0xff000000) >> 24;
@@ -736,11 +736,11 @@ inline static unsigned int CalcCol(unsigned int nColour)
 
 static void SlapshotCalcPalette()
 {
-	int i;
-	unsigned int* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT32* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned int*)TaitoPaletteRam, pd = TaitoPalette; i < 0x2000; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT32*)TaitoPaletteRam, pd = TaitoPalette; i < 0x2000; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 }
@@ -770,7 +770,7 @@ static void SlapshotDraw()
 	
 	TaitoF2MakeSpriteList();
 	
-	for (int i = 0; i < 16; i++) {
+	for (INT32 i = 0; i < 16; i++) {
 		if (TaitoF2TilePriority[0] == i) TC0480SCPTilemapRender(Layer[0], 0, TaitoChars);
 		if (TaitoF2TilePriority[1] == i) TC0480SCPTilemapRender(Layer[1], 0, TaitoChars);
 		if (TaitoF2TilePriority[2] == i) TC0480SCPTilemapRender(Layer[2], 0, TaitoChars);
@@ -790,14 +790,14 @@ static void Opwolf3Draw()
 {
 	SlapshotDraw();
 	
-	for (int i = 0; i < nBurnGunNumPlayers; i++) {
+	for (INT32 i = 0; i < nBurnGunNumPlayers; i++) {
 		BurnGunDrawTarget(i, BurnGunX[i] >> 8, BurnGunY[i] >> 8);
 	}
 }
 
-static int SlapshotFrame()
+static INT32 SlapshotFrame()
 {
-	int nInterleave = 100;
+	INT32 nInterleave = 100;
 
 	if (TaitoReset) SlapshotDoReset();
 
@@ -810,8 +810,8 @@ static int SlapshotFrame()
 	
 	if ((GetCurrentFrame() % 60) == 0) TimeKeeperTick();
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 #1
 		nCurrentCPU = 0;
@@ -842,7 +842,7 @@ static int SlapshotFrame()
 	return 0;
 }
 
-static int SlapshotScan(int nAction, int *pnMin)
+static INT32 SlapshotScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -888,9 +888,9 @@ static int SlapshotScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static int Opwolf3Scan(int nAction, int *pnMin)
+static INT32 Opwolf3Scan(INT32 nAction, INT32 *pnMin)
 {
-	int nRet = SlapshotScan(nAction, pnMin);
+	INT32 nRet = SlapshotScan(nAction, pnMin);
 	
 	if (nAction & ACB_DRIVER_DATA) {
 		BurnGunScan();

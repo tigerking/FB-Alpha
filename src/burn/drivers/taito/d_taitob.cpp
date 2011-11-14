@@ -14,18 +14,18 @@
 #include "burn_gun.h"
 #include "eeprom.h"
 
-static unsigned char  *DrvPxlRAM	= NULL;
-static unsigned short *DrvPxlScroll	= NULL;
-static unsigned char  *DrvFramebuffer	= NULL;
+static UINT8  *DrvPxlRAM	= NULL;
+static UINT16 *DrvPxlScroll	= NULL;
+static UINT8  *DrvFramebuffer	= NULL;
 
-static int eeprom_latch = 0;
-static int coin_control = 0;
+static INT32 eeprom_latch = 0;
+static INT32 coin_control = 0;
 
-static unsigned char color_config[4];
-static int irq_config[2];
-static int sound_config = 0;
-static int cpu_speed[2];
-static unsigned char nTaitoInputConfig[5] = { 0, 0, 0, 0, 0 };
+static UINT8 color_config[4];
+static INT32 irq_config[2];
+static INT32 sound_config = 0;
+static INT32 cpu_speed[2];
+static UINT8 nTaitoInputConfig[5] = { 0, 0, 0, 0, 0 };
 
 static struct BurnInputInfo CommonInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	TC0220IOCInputPort2 + 2,	"p1 coin"	},
@@ -382,7 +382,7 @@ static struct BurnInputInfo HiticeInputList[] = {
 
 STDINPUTINFO(Hitice)
 
-#define A(a, b, c, d) {a, b, (unsigned char*)(c), d}
+#define A(a, b, c, d) {a, b, (UINT8*)(c), d}
 
 static struct BurnInputInfo Rambo3uInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	TC0220IOCInputPort1 + 4,	"p1 coin"	},
@@ -1519,7 +1519,7 @@ static const eeprom_interface taitob_eeprom_intf =
 	0
 };
 
-static void bankswitch(unsigned int, unsigned int data)
+static void bankswitch(UINT32, UINT32 data)
 {
 	TaitoZ80Bank = data & 0x03;
 
@@ -1527,7 +1527,7 @@ static void bankswitch(unsigned int, unsigned int data)
 	ZetMapArea(0x4000, 0x7fff, 2, TaitoZ80Rom1 + TaitoZ80Bank * 0x4000);
 }
 
-void __fastcall taitob_sound_write_ym2610(unsigned short a, unsigned char d)
+void __fastcall taitob_sound_write_ym2610(UINT16 a, UINT8 d)
 {
 	switch (a)
 	{
@@ -1552,7 +1552,7 @@ void __fastcall taitob_sound_write_ym2610(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall taitob_sound_read_ym2610(unsigned short a)
+UINT8 __fastcall taitob_sound_read_ym2610(UINT16 a)
 {
 	switch (a)
 	{
@@ -1569,7 +1569,7 @@ unsigned char __fastcall taitob_sound_read_ym2610(unsigned short a)
 	return 0;
 }
 
-void __fastcall taitob_sound_write_ym2203(unsigned short a, unsigned char d)
+void __fastcall taitob_sound_write_ym2203(UINT16 a, UINT8 d)
 {
 	switch (a)
 	{
@@ -1593,7 +1593,7 @@ void __fastcall taitob_sound_write_ym2203(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall taitob_sound_read_ym2203(unsigned short a)
+UINT8 __fastcall taitob_sound_read_ym2203(UINT16 a)
 {
 	switch (a)
 	{
@@ -1617,7 +1617,7 @@ static void DrvMakeInputs()
 	memset (TC0220IOCInput, 0xff, 3);
 	memset (TaitoInput + 3, 0xff, 3);
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TC0220IOCInput[0] ^= (TC0220IOCInputPort0[i] & 1) << i;
 		TC0220IOCInput[1] ^= (TC0220IOCInputPort1[i] & 1) << i;
 		TC0220IOCInput[2] ^= (TC0220IOCInputPort2[i] & 1) << i;
@@ -1661,11 +1661,11 @@ static void DrvMakeInputs()
 	}
 
 	// for rambo3a's trackball
-	BurnGunMakeInputs(0, (short)TaitoAnalogPort0, (short)TaitoAnalogPort1);
-	BurnGunMakeInputs(1, (short)TaitoAnalogPort2, (short)TaitoAnalogPort3);
+	BurnGunMakeInputs(0, (INT16)TaitoAnalogPort0, (INT16)TaitoAnalogPort1);
+	BurnGunMakeInputs(1, (INT16)TaitoAnalogPort2, (INT16)TaitoAnalogPort3);
 }
 
-static void DrvFMIRQHandler(int, int nStatus)
+static void DrvFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -1674,9 +1674,9 @@ static void DrvFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / cpu_speed[1];
+	return (INT64)ZetTotalCycles() * nSoundRate / cpu_speed[1];
 }
 
 static double DrvGetTime()
@@ -1684,7 +1684,7 @@ static double DrvGetTime()
 	return (double)ZetTotalCycles() / (cpu_speed[1] * 1.0);
 }
 
-static int DrvDoReset(int reset_ram)
+static INT32 DrvDoReset(INT32 reset_ram)
 {
 	if (reset_ram) {
 		memset (TaitoRamStart, 0, TaitoRamEnd - TaitoRamStart);
@@ -1720,9 +1720,9 @@ static int DrvDoReset(int reset_ram)
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1			= Next; Next += ((Taito68KRom1Size - 1) | 0x7ffff) + 1;
 	TaitoZ80Rom1			= Next; Next += TaitoZ80Rom1Size;
@@ -1746,28 +1746,28 @@ static int MemIndex()
 
 	// hit the ice
 	DrvPxlRAM			= Next; Next += 0x080000;
-	DrvPxlScroll			= (unsigned short*)Next; Next += 2 * sizeof(short);
+	DrvPxlScroll			= (UINT16*)Next; Next += 2 * sizeof(UINT16);
 
 	TaitoZ80Ram1			= Next; Next += 0x002000;
 
 	TaitoRamEnd			= Next;
 
-	TaitoPalette			= (unsigned int*)Next; Next += 0x1000 * sizeof(int);
+	TaitoPalette			= (UINT32*)Next; Next += 0x1000 * sizeof(UINT32);
 
 	TaitoMemEnd			= Next;
 
 	return 0;
 }
 
-static void DrvGfxDecode(int len, int *tilemask0, int *tilemask1)
+static void DrvGfxDecode(INT32 len, INT32 *tilemask0, INT32 *tilemask1)
 {
 	if (len == 0) return; // tetrist
 
-	int Planes[4] = { 0, 8, (len * 8) / 2 + 0, (len * 8) / 2 + 8 };
-	int XOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007, 0x080, 0x081, 0x082, 0x083, 0x084, 0x085, 0x086, 0x087 };
-	int YOffs[16] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070, 0x100, 0x110, 0x120, 0x130, 0x140, 0x150, 0x160, 0x170 };
+	INT32 Planes[4] = { 0, 8, (len * 8) / 2 + 0, (len * 8) / 2 + 8 };
+	INT32 XOffs[16] = { 0x000, 0x001, 0x002, 0x003, 0x004, 0x005, 0x006, 0x007, 0x080, 0x081, 0x082, 0x083, 0x084, 0x085, 0x086, 0x087 };
+	INT32 YOffs[16] = { 0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070, 0x100, 0x110, 0x120, 0x130, 0x140, 0x150, 0x160, 0x170 };
 
-	unsigned char *tmp = (unsigned char*)malloc(len);
+	UINT8 *tmp = (UINT8*)malloc(len);
 	if (tmp == NULL) {
 		return;
 	}
@@ -1804,8 +1804,8 @@ static void common_ym2610_init()
 
 	TC0140SYTInit();
 
-	int len0 = TaitoYM2610ARomSize;
-	int len1 = TaitoYM2610BRomSize;
+	INT32 len0 = TaitoYM2610ARomSize;
+	INT32 len1 = TaitoYM2610BRomSize;
 
 	BurnYM2610Init(8000000, TaitoYM2610ARom, &len0, TaitoYM2610BRom, &len1, &DrvFMIRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
 	BurnTimerAttachZet(cpu_speed[1]);
@@ -1839,9 +1839,9 @@ static void common_ym2203_init()
 	MSM6295Init(0, 1056000 / 132, 80, 1);
 }
 
-static int CommonInit(void (*pInitCallback)(), int sound_type, int color_select, int input_type, int irq0, int irq1)
+static INT32 CommonInit(void (*pInitCallback)(), INT32 sound_type, INT32 color_select, INT32 input_type, INT32 irq0, INT32 irq1)
 {
-	static const unsigned char color_types[3][4] = {
+	static const UINT8 color_types[3][4] = {
 		{ 0xc0, 0x80, 0x00, 0x40 },
 		{ 0x00, 0x40, 0xc0, 0x80 },
 		{ 0x30, 0x20, 0x00, 0x10 }
@@ -1851,14 +1851,14 @@ static int CommonInit(void (*pInitCallback)(), int sound_type, int color_select,
 
 	TaitoMem = NULL;
 	MemIndex();
-	int nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 
 	if (TaitoLoadRoms(true)) return 1;
 
-	int tilemaskChars = 0, tilemaskSprites = 0;
+	INT32 tilemaskChars = 0, tilemaskSprites = 0;
 	DrvGfxDecode(TaitoCharRomSize, &tilemaskChars, &tilemaskSprites);
 
 	memcpy (color_config, color_types[color_select], 4);
@@ -1895,7 +1895,7 @@ static int CommonInit(void (*pInitCallback)(), int sound_type, int color_select,
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	EEPROMExit();
 
@@ -1934,13 +1934,13 @@ static int DrvExit()
 
 static void DrvPaletteUpdate()
 {
-	unsigned short *p = (unsigned short*)TaitoPaletteRam;
+	UINT16 *p = (UINT16*)TaitoPaletteRam;
 
-	for (int i = 0; i < 0x2000 / 2; i++)
+	for (INT32 i = 0; i < 0x2000 / 2; i++)
 	{
-		int r = (p[i] >> 12) & 0x0f;
-		int g = (p[i] >>  8) & 0x0f;
-		int b = (p[i] >>  4) & 0x0f;
+		INT32 r = (p[i] >> 12) & 0x0f;
+		INT32 g = (p[i] >>  8) & 0x0f;
+		INT32 b = (p[i] >>  4) & 0x0f;
 
 		r |= r << 4;
 		g |= g << 4;
@@ -1954,16 +1954,16 @@ static void draw_hitice_framebuffer()
 {
 	if (DrvFramebuffer == NULL) return;
 
-	int scrollx = -((2 * DrvPxlScroll[0] +  0) & 0x3ff);
-	int scrolly = -((1 * DrvPxlScroll[1] + 16) & 0x1ff);
+	INT32 scrollx = -((2 * DrvPxlScroll[0] +  0) & 0x3ff);
+	INT32 scrolly = -((1 * DrvPxlScroll[1] + 16) & 0x1ff);
 
-	for (int sy = 0; sy < nScreenHeight; sy++)
+	for (INT32 sy = 0; sy < nScreenHeight; sy++)
 	{
-		unsigned short *dst = pTransDraw + sy * nScreenWidth;
-		unsigned char  *src = DrvFramebuffer + ((sy + scrolly) & 0x1ff) * 1024;
+		UINT16 *dst = pTransDraw + sy * nScreenWidth;
+		UINT8  *src = DrvFramebuffer + ((sy + scrolly) & 0x1ff) * 1024;
 
-		for (int sx = 0; sx < nScreenWidth; sx++) {
-			int pxl = src[(sx + scrollx) & 0x3ff];
+		for (INT32 sx = 0; sx < nScreenWidth; sx++) {
+			INT32 pxl = src[(sx + scrollx) & 0x3ff];
 
 			if (pxl) {
 				dst[sx] = pxl | 0x800;
@@ -1972,11 +1972,11 @@ static void draw_hitice_framebuffer()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	DrvPaletteUpdate();
 
-	int ctrl = TC0180VCUReadControl();
+	INT32 ctrl = TC0180VCUReadControl();
 
 	if (~ctrl & 0x20) {
 		BurnTransferClear();
@@ -2005,7 +2005,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (TaitoReset) {
 		DrvDoReset(1);
@@ -2025,15 +2025,15 @@ static int DrvFrame()
 	SekOpen(0);
 	ZetOpen(0);
 
-	int SekSpeed = (int)((long long)cpu_speed[0] * nBurnCPUSpeedAdjust / 0x100);
-	int ZetSpeed = (int)((long long)cpu_speed[1] * nBurnCPUSpeedAdjust / 0x100);
+	INT32 SekSpeed = (INT32)((INT64)cpu_speed[0] * nBurnCPUSpeedAdjust / 0x100);
+	INT32 ZetSpeed = (INT32)((INT64)cpu_speed[1] * nBurnCPUSpeedAdjust / 0x100);
 
-	int nInterleave = 200;	// high so that ym2203 sounds are good, 200 is perfect for irq #0
-	int nCyclesTotal[2] = { SekSpeed / 60, ZetSpeed / 60 };
-	int nCyclesDone[2] = { 0, 0 };
-	int nNext[2] = { 0, 0 };
+	INT32 nInterleave = 200;	// high so that ym2203 sounds are good, 200 is perfect for irq #0
+	INT32 nCyclesTotal[2] = { SekSpeed / 60, ZetSpeed / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
+	INT32 nNext[2] = { 0, 0 };
 
-	for (int i = 0; i < nInterleave; i++) {
+	for (INT32 i = 0; i < nInterleave; i++) {
 		nNext[0] += nCyclesTotal[0] / nInterleave;
 		nCyclesDone[0] += SekRun(nNext[0] - nCyclesDone[0]);
 		if (i == 4)                     SekSetIRQLine(irq_config[0], SEK_IRQSTATUS_AUTO); // Start of frame + 5000 cycles
@@ -2064,7 +2064,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -2109,7 +2109,7 @@ static int DrvScan(int nAction,int *pnMin)
 //----------------------------------------------------------------------------------------------------------
 // Rastan Saga 2 / Ashura Blaster
 
-unsigned char __fastcall rastsag2_read_byte(unsigned int a)
+UINT8 __fastcall rastsag2_read_byte(UINT32 a)
 {
 	TC0180VCUHalfWordRead_Map(0x400000)
 	TC0220IOCHalfWordRead_Map(0xa00000)
@@ -2123,7 +2123,7 @@ unsigned char __fastcall rastsag2_read_byte(unsigned int a)
 	return 0;
 }
 
-void __fastcall rastsag2_write_byte(unsigned int a, unsigned char d)
+void __fastcall rastsag2_write_byte(UINT32 a, UINT8 d)
 {
 	TC0180VCUHalfWordWrite_Map(0x400000)
 	TC0220IOCHalfWordWrite_Map(0xa00000)
@@ -2142,7 +2142,7 @@ void __fastcall rastsag2_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall rastsag2_write_word(unsigned int a, unsigned short d)
+void __fastcall rastsag2_write_word(UINT32 a, UINT16 d)
 {
 	TC0180VCUWordWrite_Map(0x400000)
 }
@@ -2167,7 +2167,7 @@ static void NastarInitCallback()
 //----------------------------------------------------------------------------------------------------------
 // Crime City
 
-unsigned char __fastcall crimec_read_byte(unsigned int a)
+UINT8 __fastcall crimec_read_byte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x200000)
 	TC0180VCUHalfWordRead_Map(0x400000)
@@ -2181,7 +2181,7 @@ unsigned char __fastcall crimec_read_byte(unsigned int a)
 	return 0;
 }
 
-void __fastcall crimec_write_byte(unsigned int a, unsigned char d)
+void __fastcall crimec_write_byte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x200000)
 	TC0180VCUHalfWordWrite_Map(0x400000)
@@ -2200,7 +2200,7 @@ void __fastcall crimec_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall crimec_write_word(unsigned int a, unsigned short d)
+void __fastcall crimec_write_word(UINT32 a, UINT16 d)
 {
 	TC0180VCUWordWrite_Map(0x400000)
 }
@@ -2225,7 +2225,7 @@ static void CrimecInitCallback()
 //----------------------------------------------------------------------------------------------------------
 // Tetris (ym2610)
 
-unsigned char __fastcall tetrist_read_byte(unsigned int a)
+UINT8 __fastcall tetrist_read_byte(UINT32 a)
 {
 	TC0180VCUHalfWordRead_Map(0x400000)
 	TC0220IOCHalfWordRead_Map(0x600000)
@@ -2236,25 +2236,25 @@ unsigned char __fastcall tetrist_read_byte(unsigned int a)
 			return TC0140SYTCommRead();
 
 		case 0x600010: { // tracky1_lo_r 
-			int ret = (( TaitoAnalogPort1 >> 4) & 0xffff);
+			INT32 ret = (( TaitoAnalogPort1 >> 4) & 0xffff);
 			if (ret == 0xffff) return 0;
 			return (ret+1);
 		}
 
 		case 0x600014: {// trackx1_lo_r
-			int ret = ((~TaitoAnalogPort0 >> 4) & 0xffff);
+			INT32 ret = ((~TaitoAnalogPort0 >> 4) & 0xffff);
 			if (ret == 0xffff) return 0;
 			return (ret+1);
 		}
 
 		case 0x600018: {// tracky2_lo_r
-			int ret = (( TaitoAnalogPort3 >> 4) & 0xffff);
+			INT32 ret = (( TaitoAnalogPort3 >> 4) & 0xffff);
 			if (ret == 0xffff) return 0;
 			return (ret+1);
 		}
 
 		case 0x60001c: {// trackx2_lo_r
-			int ret = ((~TaitoAnalogPort2 >> 4) & 0xffff);
+			INT32 ret = ((~TaitoAnalogPort2 >> 4) & 0xffff);
 			if (ret == 0xffff) return 0;
 			return (ret+1);
 		}
@@ -2263,32 +2263,32 @@ unsigned char __fastcall tetrist_read_byte(unsigned int a)
 	return 0;
 }
 
-unsigned short __fastcall tetrist_read_word(unsigned int a)
+UINT16 __fastcall tetrist_read_word(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x600000)
 
 	switch (a)
 	{
 		case 0x600012: {// tracky1_hi_r
-			int ret = (( TaitoAnalogPort1 >> 4) & 0xffff);
+			INT32 ret = (( TaitoAnalogPort1 >> 4) & 0xffff);
 			if (ret == 0xffff) return 0;
 			return (ret+1);
 		}
 
 		case 0x600016: {// trackx1_hi_r
-			int ret = ((~TaitoAnalogPort0 >> 4) & 0xffff);
+			INT32 ret = ((~TaitoAnalogPort0 >> 4) & 0xffff);
 			if (ret == 0xffff) return 0;
 			return (ret+1);
 		}
 
 		case 0x60001a: {// tracky2_hi_r
-			int ret = (( TaitoAnalogPort3 >> 4) & 0xffff);
+			INT32 ret = (( TaitoAnalogPort3 >> 4) & 0xffff);
 			if (ret == 0xffff) return 0;
 			return (ret+1);
 		}
 
 		case 0x60001e: {// trackx2_hi_r
-			int ret = ((~TaitoAnalogPort2 >> 4) & 0xffff);
+			INT32 ret = ((~TaitoAnalogPort2 >> 4) & 0xffff);
 			if (ret == 0xffff) return 0;
 			return (ret+1);
 		}
@@ -2297,7 +2297,7 @@ unsigned short __fastcall tetrist_read_word(unsigned int a)
 	return 0;
 }
 
-void __fastcall tetrist_write_byte(unsigned int a, unsigned char d)
+void __fastcall tetrist_write_byte(UINT32 a, UINT8 d)
 {
 	TC0180VCUHalfWordWrite_Map(0x400000)
 	TC0220IOCHalfWordWrite_Map(0x600000)
@@ -2316,7 +2316,7 @@ void __fastcall tetrist_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall tetrist_write_word(unsigned int a, unsigned short d)
+void __fastcall tetrist_write_word(UINT32 a, UINT16 d)
 {
 	TC0180VCUWordWrite_Map(0x400000)
 	TC0220IOCHalfWordWrite_Map(0x600000)
@@ -2342,7 +2342,7 @@ static void TetristInitCallback()
 //----------------------------------------------------------------------------------------------------------
 // Puzzle Bobble / Space Invaders Dx (v2.1)
 
-unsigned char __fastcall pbobble_read_byte(unsigned int a)
+UINT8 __fastcall pbobble_read_byte(UINT32 a)
 {
 	TC0180VCUHalfWordRead_Map(0x400000)
 
@@ -2382,7 +2382,7 @@ unsigned char __fastcall pbobble_read_byte(unsigned int a)
 	return 0;
 }
 
-void __fastcall pbobble_write_byte(unsigned int a, unsigned char d)
+void __fastcall pbobble_write_byte(UINT32 a, UINT8 d)
 {
 	TC0180VCUHalfWordWrite_Map(0x400000)
 	TC0220IOCHalfWordWrite_Map(0x500000)
@@ -2417,7 +2417,7 @@ void __fastcall pbobble_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall pbobble_write_word(unsigned int a, unsigned short d)
+void __fastcall pbobble_write_word(UINT32 a, UINT16 d)
 {
 	TC0180VCUWordWrite_Map(0x400000)
 	TC0220IOCHalfWordWrite_Map(0x500000)
@@ -2443,7 +2443,7 @@ static void PbobbleInitCallback()
 //----------------------------------------------------------------------------------------------------------
 // Sel Feena / Ryu Jin
 
-unsigned char __fastcall selfeena_read_byte(unsigned int a)
+UINT8 __fastcall selfeena_read_byte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x400000)
 	TC0220IOCHalfWordRead_Map(0x410000)
@@ -2461,7 +2461,7 @@ unsigned char __fastcall selfeena_read_byte(unsigned int a)
 	return 0;
 }
 
-void __fastcall selfeena_write_byte(unsigned int a, unsigned char d)
+void __fastcall selfeena_write_byte(UINT32 a, UINT8 d)
 {
 	TC0180VCUHalfWordWrite_Map(0x200000)
 	TC0220IOCHalfWordWrite_Map(0x400000)
@@ -2481,7 +2481,7 @@ void __fastcall selfeena_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall selfeena_write_word(unsigned int a, unsigned short d)
+void __fastcall selfeena_write_word(UINT32 a, UINT16 d)
 {
 	TC0180VCUWordWrite_Map(0x200000)
 }
@@ -2506,7 +2506,7 @@ static void SelfeenaInitCallback()
 //----------------------------------------------------------------------------------------------------------
 // Sonic Blast Man
 
-unsigned char __fastcall sbm_read_byte(unsigned int a)
+UINT8 __fastcall sbm_read_byte(UINT32 a)
 {
 	if ((a & 0xffffff0) == 0x300000) a ^= 2;
 	TC0220IOCHalfWordRead_Map(0x300000)
@@ -2521,7 +2521,7 @@ unsigned char __fastcall sbm_read_byte(unsigned int a)
 	return 0;
 }
 
-void __fastcall sbm_write_byte(unsigned int a, unsigned char d)
+void __fastcall sbm_write_byte(UINT32 a, UINT8 d)
 {
 	if ((a & 0xffffff0) == 0x300000) a ^= 2;
 	TC0220IOCHalfWordWrite_Map(0x300000)
@@ -2541,7 +2541,7 @@ void __fastcall sbm_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall sbm_write_word(unsigned int a, unsigned short d)
+void __fastcall sbm_write_word(UINT32 a, UINT16 d)
 {
 	if ((a & 0xffffff0) == 0x0300000) a ^= 2;
 	TC0220IOCHalfWordWrite_Map(0x300000)
@@ -2568,7 +2568,7 @@ static void SbmInitCallback()
 //----------------------------------------------------------------------------------------------------------
 // Silent Dragon
 
-unsigned char __fastcall silentd_read_byte(unsigned int a)
+UINT8 __fastcall silentd_read_byte(UINT32 a)
 {
 	TC0220IOCHalfWordRead_Map(0x200000)
 	TC0180VCUHalfWordRead_Map(0x500000)
@@ -2591,7 +2591,7 @@ unsigned char __fastcall silentd_read_byte(unsigned int a)
 	return 0;
 }
 
-void __fastcall silentd_write_byte(unsigned int a, unsigned char d)
+void __fastcall silentd_write_byte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x200000)
 	TC0180VCUHalfWordWrite_Map(0x500000)
@@ -2610,7 +2610,7 @@ void __fastcall silentd_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall silentd_write_word(unsigned int a, unsigned short d)
+void __fastcall silentd_write_word(UINT32 a, UINT16 d)
 {
 	TC0180VCUWordWrite_Map(0x500000)
 }
@@ -2635,7 +2635,7 @@ static void SilentdInitCallback()
 //----------------------------------------------------------------------------------------------------------
 // Violence Fight
 
-unsigned char __fastcall viofight_read_byte(unsigned int a)
+UINT8 __fastcall viofight_read_byte(UINT32 a)
 {
 	TC0180VCUHalfWordRead_Map(0x400000)
 	TC0220IOCHalfWordRead_Map(0x800000)
@@ -2649,7 +2649,7 @@ unsigned char __fastcall viofight_read_byte(unsigned int a)
 	return 0;
 }
 
-void __fastcall viofight_write_byte(unsigned int a, unsigned char d)
+void __fastcall viofight_write_byte(UINT32 a, UINT8 d)
 {
 	TC0180VCUHalfWordWrite_Map(0x400000)
 	TC0220IOCHalfWordWrite_Map(0x800000)
@@ -2668,7 +2668,7 @@ void __fastcall viofight_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall viofight_write_word(unsigned int a, unsigned short d)
+void __fastcall viofight_write_word(UINT32 a, UINT16 d)
 {
 	TC0180VCUWordWrite_Map(0x400000)
 	TC0220IOCHalfWordWrite_Map(0x800000)
@@ -2698,7 +2698,7 @@ static void ViofightInitCallback()
 //----------------------------------------------------------------------------------------------------------
 // Hit the Ice
 
-unsigned char __fastcall hitice_read_byte(unsigned int a)
+UINT8 __fastcall hitice_read_byte(UINT32 a)
 {
 	TC0180VCUHalfWordRead_Map(0x400000)
 	TC0220IOCHalfWordRead_Map(0x600000)
@@ -2718,14 +2718,14 @@ unsigned char __fastcall hitice_read_byte(unsigned int a)
 	return 0;
 }
 
-static void hiticeFramebufferUpdate(int offset)
+static void hiticeFramebufferUpdate(UINT32 offset)
 {
 	offset &= 0x7fffe;
 	DrvFramebuffer[offset + 0] = DrvPxlRAM[offset];
 	DrvFramebuffer[offset + 1] = DrvPxlRAM[offset];
 }
 
-void __fastcall hitice_write_byte(unsigned int a, unsigned char d)
+void __fastcall hitice_write_byte(UINT32 a, UINT8 d)
 {
 	TC0180VCUHalfWordWrite_Map(0x400000)
 	TC0220IOCHalfWordWrite_Map(0x600000)
@@ -2750,13 +2750,13 @@ void __fastcall hitice_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall hitice_write_word(unsigned int a, unsigned short d)
+void __fastcall hitice_write_word(UINT32 a, UINT16 d)
 {
 	TC0180VCUWordWrite_Map(0x400000)
 	TC0220IOCHalfWordWrite_Map(0x600000)
 
 	if (a >= 0xb00000 && a <= 0xb7ffff) {
-		*((unsigned short*)(DrvPxlRAM + (a & 0x7fffe))) = d;
+		*((UINT16*)(DrvPxlRAM + (a & 0x7fffe))) = d;
 		hiticeFramebufferUpdate(a);
 		return;
 	}
@@ -2790,13 +2790,13 @@ static void HiticeInitCallback()
 //	SekSetReadWordHandler(0,		hitice_read_word);
 	SekClose();
 
-	DrvFramebuffer	= (unsigned char*)malloc(1024 * 512);
+	DrvFramebuffer	= (UINT8*)malloc(1024 * 512);
 }
 
 //----------------------------------------------------------------------------------------------------------
 // Tetris (ym2203)
 
-unsigned char __fastcall tetrista_read_byte(unsigned int a)
+UINT8 __fastcall tetrista_read_byte(UINT32 a)
 {
 	TC0180VCUHalfWordRead_Map(0x400000)
 
@@ -2817,7 +2817,7 @@ unsigned char __fastcall tetrista_read_byte(unsigned int a)
 	return 0;
 }
 
-void __fastcall tetrista_write_byte(unsigned int a, unsigned char d)
+void __fastcall tetrista_write_byte(UINT32 a, UINT8 d)
 {
 	TC0180VCUHalfWordWrite_Map(0x400000)
 
@@ -2846,7 +2846,7 @@ void __fastcall tetrista_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall tetrista_write_word(unsigned int a, unsigned short d)
+void __fastcall tetrista_write_word(UINT32 a, UINT16 d)
 {
 	TC0180VCUWordWrite_Map(0x400000)
 }
@@ -2889,7 +2889,7 @@ static void MasterwInitCallback()
 // Quiz Sekai Wa Show by shobai
 
 
-unsigned char __fastcall qzshowby_read_byte(unsigned int a)
+UINT8 __fastcall qzshowby_read_byte(UINT32 a)
 {
 	if (a != 0x200002) {
 		TC0220IOCHalfWordRead_Map(0x200000)
@@ -2918,7 +2918,7 @@ unsigned char __fastcall qzshowby_read_byte(unsigned int a)
 	return 0;
 }
 
-void __fastcall qzshowby_write_byte(unsigned int a, unsigned char d)
+void __fastcall qzshowby_write_byte(UINT32 a, UINT8 d)
 {
 	TC0220IOCHalfWordWrite_Map(0x200000)
 	TC0180VCUHalfWordWrite_Map(0x400000)
@@ -2953,7 +2953,7 @@ void __fastcall qzshowby_write_byte(unsigned int a, unsigned char d)
 	}
 }
 
-void __fastcall qzshowby_write_word(unsigned int a, unsigned short d)
+void __fastcall qzshowby_write_word(UINT32 a, UINT16 d)
 {
 	TC0180VCUWordWrite_Map(0x400000)
 	TC0220IOCHalfWordWrite_Map(0x200000)
@@ -2996,7 +2996,7 @@ static struct BurnRomInfo masterwRomDesc[] = {
 STD_ROM_PICK(masterw)
 STD_ROM_FN(masterw)
 
-static int MasterwInit()
+static INT32 MasterwInit()
 {
 	return CommonInit(MasterwInitCallback, 1, 2, 0, 4, 5);
 }
@@ -3092,7 +3092,7 @@ static struct BurnRomInfo nastarRomDesc[] = {
 STD_ROM_PICK(nastar)
 STD_ROM_FN(nastar)
 
-static int NastarInit()
+static INT32 NastarInit()
 {
 	return CommonInit(NastarInitCallback, 0, 0, 0, 2, 4);
 }
@@ -3193,9 +3193,9 @@ static struct BurnRomInfo rambo3RomDesc[] = {
 STD_ROM_PICK(rambo3)
 STD_ROM_FN(rambo3)
 
-static int Rambo3Init()
+static INT32 Rambo3Init()
 {
-	int nRet = CommonInit(TetristInitCallback, 0, 0, 0, 1, 6);
+	INT32 nRet = CommonInit(TetristInitCallback, 0, 0, 0, 1, 6);
 
 	if (nRet == 0) {
 		memmove (Taito68KRom1 + 0x40000, Taito68KRom1 + 0x20000, 0x40000);
@@ -3236,7 +3236,7 @@ static struct BurnRomInfo rambo3uRomDesc[] = {
 STD_ROM_PICK(rambo3u)
 STD_ROM_FN(rambo3u)
 
-static int Rambo3uInit()
+static INT32 Rambo3uInit()
 {
 	nTaitoInputConfig[1] = 0x30;
 
@@ -3321,7 +3321,7 @@ static struct BurnRomInfo crimecRomDesc[] = {
 STD_ROM_PICK(crimec)
 STD_ROM_FN(crimec)
 
-static int CrimecInit()
+static INT32 CrimecInit()
 {
 	return CommonInit(CrimecInitCallback, 0, 1, 0, 3, 5);
 }
@@ -3411,7 +3411,7 @@ static struct BurnRomInfo tetristRomDesc[] = {
 STD_ROM_PICK(tetrist)
 STD_ROM_FN(tetrist)
 
-static int TetristInit()
+static INT32 TetristInit()
 {
 	return CommonInit(TetristInitCallback, 0, 0, 0, 2, 4);
 }
@@ -3444,7 +3444,7 @@ static struct BurnRomInfo tetristaRomDesc[] = {
 STD_ROM_PICK(tetrista)
 STD_ROM_FN(tetrista)
 
-static int TetristaInit()
+static INT32 TetristaInit()
 {
 	return CommonInit(TetristaInitCallback, 1, 2, 0, 4, 5);
 }
@@ -3484,7 +3484,7 @@ static struct BurnRomInfo viofightRomDesc[] = {
 STD_ROM_PICK(viofight)
 STD_ROM_FN(viofight)
 
-static int ViofightInit()
+static INT32 ViofightInit()
 {
 	return CommonInit(ViofightInitCallback, 1, 2, 0, 1, 4);
 }
@@ -3684,7 +3684,7 @@ static struct BurnRomInfo hiticeRomDesc[] = {
 STD_ROM_PICK(hitice)
 STD_ROM_FN(hitice)
 
-static int HiticeInit()
+static INT32 HiticeInit()
 {
 	return CommonInit(HiticeInitCallback, 1, 0, 1, 6, 4);
 }
@@ -3752,7 +3752,7 @@ static struct BurnRomInfo selfeenaRomDesc[] = {
 STD_ROM_PICK(selfeena)
 STD_ROM_FN(selfeena)
 
-static int SelfeenaInit()
+static INT32 SelfeenaInit()
 {
 	return CommonInit(SelfeenaInitCallback, 0, 2, 1, 4, 6);
 }
@@ -3791,9 +3791,9 @@ static struct BurnRomInfo silentdRomDesc[] = {
 STD_ROM_PICK(silentd)
 STD_ROM_FN(silentd)
 
-static int SilentdInit()
+static INT32 SilentdInit()
 {
-	int nRet = CommonInit(SilentdInitCallback, 0, 2, 2, 4, 6);
+	INT32 nRet = CommonInit(SilentdInitCallback, 0, 2, 2, 4, 6);
 
 	if (nRet == 0) {
 		cpu_speed[0] = 16000000; // 16mhz
@@ -3935,7 +3935,7 @@ static struct BurnRomInfo qzshowbyRomDesc[] = {
 STD_ROM_PICK(qzshowby)
 STD_ROM_FN(qzshowby)
 
-static int QzshowbyInit()
+static INT32 QzshowbyInit()
 {
 	return CommonInit(QzshowbyInitCallback, 0, 1, 3, 5, 3);
 }
@@ -3968,7 +3968,7 @@ static struct BurnRomInfo pbobbleRomDesc[] = {
 STD_ROM_PICK(pbobble)
 STD_ROM_FN(pbobble)
 
-static int PbobbleInit()
+static INT32 PbobbleInit()
 {
 	return CommonInit(PbobbleInitCallback, 0, 1, 3, 5, 3);
 }
@@ -4071,7 +4071,7 @@ static struct BurnRomInfo spacedxoRomDesc[] = {
 STD_ROM_PICK(spacedxo)
 STD_ROM_FN(spacedxo)
 
-static int SpacedxoInit()
+static INT32 SpacedxoInit()
 {
 	return CommonInit(SilentdInitCallback, 0, 2, 3, 4, 6);
 }
@@ -4123,7 +4123,7 @@ static struct BurnRomInfo sbmRomDesc[] = {
 STD_ROM_PICK(sbm)
 STD_ROM_FN(sbm)
 
-static int SbmInit()
+static INT32 SbmInit()
 {
 	nTaitoInputConfig[2] = 0x60;
 

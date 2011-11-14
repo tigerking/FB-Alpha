@@ -3,7 +3,7 @@
 #include "taito_ic.h"
 #include "burn_ym2610.h"
 
-static int Ninjaw;
+static INT32 Ninjaw;
 
 static void Darius2Draw();
 static void Darius2dDraw();
@@ -119,7 +119,7 @@ static void Darius2MakeInputs()
 	if (TC0220IOCInputPort0[6]) TC0220IOCInput[0] -= 0x40;
 	if (TC0220IOCInputPort0[7]) TC0220IOCInput[0] -= 0x80;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TC0220IOCInput[1] -= (TC0220IOCInputPort1[i] & 1) << i;
 		TC0220IOCInput[2] -= (TC0220IOCInputPort2[i] & 1) << i;
 	}
@@ -140,7 +140,7 @@ static void Darius2dMakeInputs()
 	if (TC0220IOCInputPort2[6]) TC0220IOCInput[2] -= 0x40;
 	if (TC0220IOCInputPort2[7]) TC0220IOCInput[2] -= 0x80;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TC0220IOCInput[0] -= (TC0220IOCInputPort0[i] & 1) << i;
 		TC0220IOCInput[1] -= (TC0220IOCInputPort1[i] & 1) << i;
 	}
@@ -161,7 +161,7 @@ static void WarriorbMakeInputs()
 	if (TC0510NIOInputPort2[6]) TC0510NIOInput[2] -= 0x40;
 	if (TC0510NIOInputPort2[7]) TC0510NIOInput[2] -= 0x80;
 	
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TC0510NIOInput[0] -= (TC0510NIOInputPort0[i] & 1) << i;
 		TC0510NIOInput[1] -= (TC0510NIOInputPort1[i] & 1) << i;
 	}
@@ -645,9 +645,9 @@ static struct BurnRomInfo WarriorbRomDesc[] = {
 STD_ROM_PICK(Warriorb)
 STD_ROM_FN(Warriorb)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1                        = Next; Next += Taito68KRom1Size;
 	Taito68KRom2                        = Next; Next += Taito68KRom2Size;
@@ -673,9 +673,9 @@ static int MemIndex()
 	return 0;
 }
 
-static int Darius2dMemIndex()
+static INT32 Darius2dMemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1                        = Next; Next += Taito68KRom1Size;
 	TaitoZ80Rom1                        = Next; Next += TaitoZ80Rom1Size;
@@ -698,9 +698,9 @@ static int Darius2dMemIndex()
 	return 0;
 }
 
-static int WarriorbMemIndex()
+static INT32 WarriorbMemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1                        = Next; Next += Taito68KRom1Size;
 	TaitoZ80Rom1                        = Next; Next += TaitoZ80Rom1Size;
@@ -736,7 +736,7 @@ static void Darius2CpuAReset(UINT16 d)
 	}
 }
 
-unsigned char __fastcall Darius268K1ReadByte(unsigned int a)
+UINT8 __fastcall Darius268K1ReadByte(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -747,7 +747,7 @@ unsigned char __fastcall Darius268K1ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Darius268K1WriteByte(unsigned int a, unsigned char d)
+void __fastcall Darius268K1WriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCNTripleScreenByteWrite_Map(0x280000, 0x293fff)
 	TC0100SCN1ByteWrite_Map(0x2c0000, 0x2d3fff)
@@ -760,7 +760,7 @@ void __fastcall Darius268K1WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Darius268K1ReadWord(unsigned int a)
+UINT16 __fastcall Darius268K1ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x200000: {
@@ -795,7 +795,7 @@ unsigned short __fastcall Darius268K1ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Darius268K1WriteWord(unsigned int a, unsigned short d)
+void __fastcall Darius268K1WriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCN0CtrlWordWrite_Map(0x2a0000)
 	TC0100SCN1CtrlWordWrite_Map(0x2e0000)
@@ -861,7 +861,7 @@ void __fastcall Darius268K1WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Darius268K2ReadByte(unsigned int a)
+UINT8 __fastcall Darius268K2ReadByte(UINT32 a)
 {
 	switch (a) {		
 		default: {
@@ -872,7 +872,7 @@ unsigned char __fastcall Darius268K2ReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Darius268K2WriteByte(unsigned int a, unsigned char d)
+void __fastcall Darius268K2WriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		default: {
@@ -881,7 +881,7 @@ void __fastcall Darius268K2WriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Darius268K2ReadWord(unsigned int a)
+UINT16 __fastcall Darius268K2ReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x200000: {
@@ -896,7 +896,7 @@ unsigned short __fastcall Darius268K2ReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Darius268K2WriteWord(unsigned int a, unsigned short d)
+void __fastcall Darius268K2WriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCNTripleScreenWordWrite_Map(0x280000, 0x293fff)
 	
@@ -937,7 +937,7 @@ void __fastcall Darius268K2WriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Darius2d68KReadByte(unsigned int a)
+UINT8 __fastcall Darius2d68KReadByte(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -948,7 +948,7 @@ unsigned char __fastcall Darius2d68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Darius2d68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Darius2d68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCNDualScreenByteWrite_Map(0x200000, 0x213fff)
 	TC0100SCN1ByteWrite_Map(0x240000, 0x25ffff)
@@ -960,7 +960,7 @@ void __fastcall Darius2d68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Darius2d68KReadWord(unsigned int a)
+UINT16 __fastcall Darius2d68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x400002: {
@@ -994,7 +994,7 @@ unsigned short __fastcall Darius2d68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Darius2d68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Darius2d68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCNDualScreenWordWrite_Map(0x200000, 0x213fff)
 	
@@ -1052,7 +1052,7 @@ void __fastcall Darius2d68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Warriorb68KReadByte(unsigned int a)
+UINT8 __fastcall Warriorb68KReadByte(UINT32 a)
 {
 	switch (a) {
 		default: {
@@ -1063,7 +1063,7 @@ unsigned char __fastcall Warriorb68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Warriorb68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Warriorb68KWriteByte(UINT32 a, UINT8 d)
 {
 	TC0100SCNDualScreenByteWrite_Map(0x300000, 0x313fff)
 	TC0100SCN1ByteWrite_Map(0x340000, 0x35ffff)
@@ -1075,7 +1075,7 @@ void __fastcall Warriorb68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Warriorb68KReadWord(unsigned int a)
+UINT16 __fastcall Warriorb68KReadWord(UINT32 a)
 {
 	TC0510NIOHalfWordRead_Map(0x800000)
 	
@@ -1100,7 +1100,7 @@ unsigned short __fastcall Warriorb68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Warriorb68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Warriorb68KWriteWord(UINT32 a, UINT16 d)
 {
 	TC0100SCNDualScreenWordWrite_Map(0x300000, 0x313fff)
 	TC0100SCN1WordWrite_Map(0x340000, 0x35ffff)
@@ -1146,7 +1146,7 @@ void __fastcall Warriorb68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Darius2Z80Read(unsigned short a)
+UINT8 __fastcall Darius2Z80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xe000: {
@@ -1174,7 +1174,7 @@ unsigned char __fastcall Darius2Z80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall Darius2Z80Write(unsigned short a, unsigned char d)
+void __fastcall Darius2Z80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe000: {
@@ -1243,17 +1243,17 @@ void __fastcall Darius2Z80Write(unsigned short a, unsigned char d)
 	}
 }
 
-static int CharPlaneOffsets[4]           = { 0, 1, 2, 3 };
-static int CharXOffsets[8]               = { 8, 12, 0, 4, 24, 28, 16, 20 };
-static int CharYOffsets[8]               = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int SpritePlaneOffsets[4]         = { 8, 12, 0, 4 };
-static int SpriteXOffsets[16]            = { 3, 2, 1, 0, 19, 18, 17, 16, 259, 258, 257, 256, 275, 274, 273, 272 };
-static int SpriteYOffsets[16]            = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
-static int Darius2dSpritePlaneOffsets[4] = { 0, 1, 2, 3 };
-static int Darius2dSpriteXOffsets[16]    = { 12, 8, 44, 40, 4, 0, 36, 32, 28, 24, 60, 56, 20, 16, 52, 48 };
-static int Darius2dSpriteYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 CharPlaneOffsets[4]           = { 0, 1, 2, 3 };
+static INT32 CharXOffsets[8]               = { 8, 12, 0, 4, 24, 28, 16, 20 };
+static INT32 CharYOffsets[8]               = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 SpritePlaneOffsets[4]         = { 8, 12, 0, 4 };
+static INT32 SpriteXOffsets[16]            = { 3, 2, 1, 0, 19, 18, 17, 16, 259, 258, 257, 256, 275, 274, 273, 272 };
+static INT32 SpriteYOffsets[16]            = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+static INT32 Darius2dSpritePlaneOffsets[4] = { 0, 1, 2, 3 };
+static INT32 Darius2dSpriteXOffsets[16]    = { 12, 8, 44, 40, 4, 0, 36, 32, 28, 24, 60, 56, 20, 16, 52, 48 };
+static INT32 Darius2dSpriteYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
 
-static void Darius2FMIRQHandler(int, int nStatus)
+static void Darius2FMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xFF, ZET_IRQSTATUS_ACK);
@@ -1262,9 +1262,9 @@ static void Darius2FMIRQHandler(int, int nStatus)
 	}
 }
 
-static int Darius2SynchroniseStream(int nSoundRate)
+static INT32 Darius2SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / (16000000 / 4);
+	return (INT64)ZetTotalCycles() * nSoundRate / (16000000 / 4);
 }
 
 static double Darius2GetTime()
@@ -1272,9 +1272,9 @@ static double Darius2GetTime()
 	return (double)ZetTotalCycles() / (16000000 / 4);
 }
 
-static int Darius2Init()
+static INT32 Darius2Init()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -1305,8 +1305,8 @@ static int Darius2Init()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -1368,7 +1368,7 @@ static int Darius2Init()
 	ZetMemEnd();
 	ZetClose();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &Darius2FMIRQHandler, Darius2SynchroniseStream, Darius2GetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &Darius2FMIRQHandler, Darius2SynchroniseStream, Darius2GetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -1386,9 +1386,9 @@ static int Darius2Init()
 	return 0;
 }
 
-static int Darius2dInit()
+static INT32 Darius2dInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -1417,8 +1417,8 @@ static int Darius2dInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	Darius2dMemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	Darius2dMemIndex();
 	
@@ -1462,7 +1462,7 @@ static int Darius2dInit()
 	ZetMemEnd();
 	ZetClose();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &Darius2FMIRQHandler, Darius2SynchroniseStream, Darius2GetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &Darius2FMIRQHandler, Darius2SynchroniseStream, Darius2GetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -1479,15 +1479,15 @@ static int Darius2dInit()
 	return 0;
 }
 
-static int NinjawInit()
+static INT32 NinjawInit()
 {
 	Ninjaw = 1;
 	return Darius2Init();
 }
 
-static int WarriorbInit()
+static INT32 WarriorbInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoCharModulo = 0x100;
 	TaitoCharNumPlanes = 4;
@@ -1525,8 +1525,8 @@ static int WarriorbInit()
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	WarriorbMemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	WarriorbMemIndex();
 	
@@ -1570,7 +1570,7 @@ static int WarriorbInit()
 	ZetMemEnd();
 	ZetClose();
 	
-	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, &Darius2FMIRQHandler, Darius2SynchroniseStream, Darius2GetTime, 0);
+	BurnYM2610Init(16000000 / 2, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, &Darius2FMIRQHandler, Darius2SynchroniseStream, Darius2GetTime, 0);
 	BurnTimerAttachZet(16000000 / 4);
 	BurnYM2610SetSoundMixMode(1);
 	
@@ -1587,7 +1587,7 @@ static int WarriorbInit()
 	return 0;
 }
 
-static int Darius2Exit()
+static INT32 Darius2Exit()
 {
 	Ninjaw = 0;
 	
@@ -1596,10 +1596,10 @@ static int Darius2Exit()
 	return TaitoExit();
 }
 
-static void Darius2RenderSprites(int PriorityDraw)
+static void Darius2RenderSprites(INT32 PriorityDraw)
 {
-	int Offset, Data, Code, Colour, xFlip, yFlip;
-	int x, y, Priority;
+	INT32 Offset, Data, Code, Colour, xFlip, yFlip;
+	INT32 x, y, Priority;
 	
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
 
@@ -1661,10 +1661,10 @@ static void Darius2RenderSprites(int PriorityDraw)
 	}
 }
 
-static void Darius2dRenderSprites(int PriorityDraw)
+static void Darius2dRenderSprites(INT32 PriorityDraw)
 {
-	int Offset, Data, Code, Colour, xFlip, yFlip;
-	int x, y, Priority;
+	INT32 Offset, Data, Code, Colour, xFlip, yFlip;
+	INT32 x, y, Priority;
 	
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
 
@@ -1726,9 +1726,9 @@ static void Darius2dRenderSprites(int PriorityDraw)
 
 static void Darius2Draw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
-	int Disable2 = TC0100SCNCtrl[1][6] & 0xf7;
-	int Disable3 = TC0100SCNCtrl[2][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable2 = TC0100SCNCtrl[1][6] & 0xf7;
+	INT32 Disable3 = TC0100SCNCtrl[2][6] & 0xf7;
 	
 	BurnTransferClear();
 	
@@ -1760,8 +1760,8 @@ static void Darius2Draw()
 
 static void Darius2dDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
-	int Disable2 = TC0100SCNCtrl[1][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable2 = TC0100SCNCtrl[1][6] & 0xf7;
 	
 	BurnTransferClear();
 	
@@ -1788,8 +1788,8 @@ static void Darius2dDraw()
 
 static void WarriorbDraw()
 {
-	int Disable = TC0100SCNCtrl[0][6] & 0xf7;
-	int Disable2 = TC0100SCNCtrl[1][6] & 0xf7;
+	INT32 Disable = TC0100SCNCtrl[0][6] & 0xf7;
+	INT32 Disable2 = TC0100SCNCtrl[1][6] & 0xf7;
 	
 	BurnTransferClear();
 	
@@ -1814,9 +1814,9 @@ static void WarriorbDraw()
 	BurnTransferCopy(TC0110PCRPalette);
 }
 
-static int Darius2Frame()
+static INT32 Darius2Frame()
 {
-	int nInterleave = 100;
+	INT32 nInterleave = 100;
 
 	if (TaitoReset) TaitoResetFunction();
 
@@ -1827,8 +1827,8 @@ static int Darius2Frame()
 	SekNewFrame();
 	ZetNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 # 1
 		nCurrentCPU = 0;
@@ -1861,9 +1861,9 @@ static int Darius2Frame()
 	return 0;
 }
 
-static int Darius2dFrame()
+static INT32 Darius2dFrame()
 {
-	int nInterleave = 100;
+	INT32 nInterleave = 100;
 
 	if (TaitoReset) TaitoResetFunction();
 
@@ -1874,8 +1874,8 @@ static int Darius2dFrame()
 	SekNewFrame();
 	ZetNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000 # 1
 		nCurrentCPU = 0;
@@ -1897,7 +1897,7 @@ static int Darius2dFrame()
 	return 0;
 }
 
-static int Darius2Scan(int nAction, int *pnMin)
+static INT32 Darius2Scan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

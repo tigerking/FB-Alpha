@@ -68,7 +68,7 @@ static void TaitoXMakeInputs()
 {
 	TaitoInput[0] = TaitoInput[1] = TaitoInput[2] = 0xff;
 
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		TaitoInput[0] -= (TaitoInputPort0[i] & 1) << i;
 		TaitoInput[1] -= (TaitoInputPort1[i] & 1) << i;
 		TaitoInput[2] -= (TaitoInputPort2[i] & 1) << i;
@@ -687,9 +687,9 @@ static struct BurnRomInfo DaisenpuRomDesc[] = {
 STD_ROM_PICK(Daisenpu)
 STD_ROM_FN(Daisenpu)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = TaitoMem;
+	UINT8 *Next; Next = TaitoMem;
 
 	Taito68KRom1                    = Next; Next += Taito68KRom1Size;
 	TaitoZ80Rom1                    = Next; Next += TaitoZ80Rom1Size;
@@ -707,14 +707,14 @@ static int MemIndex()
 	TaitoRamEnd                     = Next;
 
 	TaitoSpritesA                   = Next; Next += TaitoNumSpriteA * TaitoSpriteAWidth * TaitoSpriteAHeight;
-	TaitoPalette                    = (unsigned int*)Next; Next += 0x00800 * sizeof(unsigned int);
+	TaitoPalette                    = (UINT32*)Next; Next += 0x00800 * sizeof(UINT32);
 
 	TaitoMemEnd                     = Next;
 
 	return 0;
 }
 
-unsigned char __fastcall TaitoX68KReadByte(unsigned int a)
+UINT8 __fastcall TaitoX68KReadByte(UINT32 a)
 {
 	if (TaitoIC_SupermanCChipInUse) {
 		if (a >= 0x900000 && a <= 0x9007ff) {
@@ -767,7 +767,7 @@ unsigned char __fastcall TaitoX68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall TaitoX68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall TaitoX68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (TaitoIC_SupermanCChipInUse) {
 		if (a >= 0x900000 && a <= 0x9007ff) {
@@ -842,7 +842,7 @@ void __fastcall TaitoX68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall TaitoX68KReadWord(unsigned int a)
+UINT16 __fastcall TaitoX68KReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x500000: {
@@ -869,7 +869,7 @@ unsigned short __fastcall TaitoX68KReadWord(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall TaitoXZ80Read(unsigned short a)
+UINT8 __fastcall TaitoXZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xe000: {
@@ -896,7 +896,7 @@ unsigned char __fastcall TaitoXZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall TaitoXZ80Write(unsigned short a, unsigned char d)
+void __fastcall TaitoXZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe000: {
@@ -965,7 +965,7 @@ void __fastcall TaitoXZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall TwinhawkZ80Read(unsigned short a)
+UINT8 __fastcall TwinhawkZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xe001: {
@@ -984,7 +984,7 @@ unsigned char __fastcall TwinhawkZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall TwinhawkZ80Write(unsigned short a, unsigned char d)
+void __fastcall TwinhawkZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xe000: {
@@ -1020,7 +1020,7 @@ void __fastcall TwinhawkZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-static void TaitoXFMIRQHandler(int, int nStatus)
+static void TaitoXFMIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -1029,9 +1029,9 @@ static void TaitoXFMIRQHandler(int, int nStatus)
 	}
 }
 
-static int TaitoXSynchroniseStream(int nSoundRate)
+static INT32 TaitoXSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
 static double TaitoXGetTime()
@@ -1039,7 +1039,7 @@ static double TaitoXGetTime()
 	return (double)ZetTotalCycles() / 4000000;
 }
 
-static void TaitoXYM2151IRQHandler(int Irq)
+static void TaitoXYM2151IRQHandler(INT32 Irq)
 {
 	if (Irq) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -1048,16 +1048,16 @@ static void TaitoXYM2151IRQHandler(int Irq)
 	}
 }
 
-static int SpritePlaneOffsets[4]    = { 0x800008, 0x800000, 8, 0 };
-static int SpriteXOffsets[16]       = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
-static int SpriteYOffsets[16]       = { 0, 16, 32, 48, 64, 80, 96, 112, 256, 272, 288, 304, 320, 336, 352, 368 };
-static int BallbrosPlaneOffsets[4]  = { 0x300000, 0x200000, 0x100000, 0 };
-static int BallbrosXOffsets[16]     = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
-static int BallbrosYOffsets[16]     = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
+static INT32 SpritePlaneOffsets[4]    = { 0x800008, 0x800000, 8, 0 };
+static INT32 SpriteXOffsets[16]       = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
+static INT32 SpriteYOffsets[16]       = { 0, 16, 32, 48, 64, 80, 96, 112, 256, 272, 288, 304, 320, 336, 352, 368 };
+static INT32 BallbrosPlaneOffsets[4]  = { 0x300000, 0x200000, 0x100000, 0 };
+static INT32 BallbrosXOffsets[16]     = { 0, 1, 2, 3, 4, 5, 6, 7, 64, 65, 66, 67, 68, 69, 70, 71 };
+static INT32 BallbrosYOffsets[16]     = { 0, 8, 16, 24, 32, 40, 48, 56, 128, 136, 144, 152, 160, 168, 176, 184 };
 
-static int TaitoXInit(int nSoundType)
+static INT32 TaitoXInit(INT32 nSoundType)
 {
-	int nLen;
+	INT32 nLen;
 	
 	TaitoNum68Ks = 1;
 	TaitoNumZ80s = 1;
@@ -1072,8 +1072,8 @@ static int TaitoXInit(int nSoundType)
 	// Allocate and Blank all required memory
 	TaitoMem = NULL;
 	MemIndex();
-	nLen = TaitoMemEnd - (unsigned char *)0;
-	if ((TaitoMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = TaitoMemEnd - (UINT8 *)0;
+	if ((TaitoMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(TaitoMem, 0, nLen);
 	MemIndex();
 	
@@ -1119,9 +1119,9 @@ static int TaitoXInit(int nSoundType)
 		BurnYM2151SetIrqHandler(&TaitoXYM2151IRQHandler);
 	} else {
 		if (nSoundType == 2) {
-			BurnYM2610Init(8000000, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, NULL, TaitoXSynchroniseStream, TaitoXGetTime, 0);
+			BurnYM2610Init(8000000, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, NULL, TaitoXSynchroniseStream, TaitoXGetTime, 0);
 		} else {
-			BurnYM2610Init(8000000, TaitoYM2610BRom, (int*)&TaitoYM2610BRomSize, TaitoYM2610ARom, (int*)&TaitoYM2610ARomSize, &TaitoXFMIRQHandler, TaitoXSynchroniseStream, TaitoXGetTime, 0);
+			BurnYM2610Init(8000000, TaitoYM2610BRom, (INT32*)&TaitoYM2610BRomSize, TaitoYM2610ARom, (INT32*)&TaitoYM2610ARomSize, &TaitoXFMIRQHandler, TaitoXSynchroniseStream, TaitoXGetTime, 0);
 		}
 		BurnTimerAttachZet(4000000);
 	}
@@ -1140,7 +1140,7 @@ static int TaitoXInit(int nSoundType)
 	return 0;
 }
 
-static int BallbrosInit()
+static INT32 BallbrosInit()
 {
 	TaitoSpriteAModulo = 0x100;
 	TaitoSpriteANumPlanes = 4;
@@ -1154,7 +1154,7 @@ static int BallbrosInit()
 	return TaitoXInit(2);
 }
 
-static int GigandesInit()
+static INT32 GigandesInit()
 {
 	TaitoSpriteAModulo = 0x200;
 	TaitoSpriteANumPlanes = 4;
@@ -1168,9 +1168,9 @@ static int GigandesInit()
 	return TaitoXInit(2);
 }
 
-static int SupermanInit()
+static INT32 SupermanInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	SupermanCChipInit();
 	
@@ -1190,7 +1190,7 @@ static int SupermanInit()
 	return nRet;
 }
 
-static int TwinhawkInit()
+static INT32 TwinhawkInit()
 {
 	TaitoSpriteAModulo = 0x200;
 	TaitoSpriteANumPlanes = 4;
@@ -1204,20 +1204,20 @@ static int TwinhawkInit()
 	return TaitoXInit(1);
 }
 
-static int TaitoXExit()
+static INT32 TaitoXExit()
 {
 	return TaitoExit();	
 }
 
-static inline unsigned char pal5bit(unsigned char bits)
+static inline UINT8 pal5bit(UINT8 bits)
 {
 	bits &= 0x1f;
 	return (bits << 3) | (bits >> 2);
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = pal5bit(nColour >> 10);
 	g = pal5bit(nColour >>  5);
@@ -1228,11 +1228,11 @@ inline static unsigned int CalcCol(unsigned short nColour)
 
 static void TaitoXCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)TaitoPaletteRam, pd = TaitoPalette; i < 0x0800; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)TaitoPaletteRam, pd = TaitoPalette; i < 0x0800; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 }
@@ -1242,18 +1242,18 @@ static void TaitoXDrawBgSprites()
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
 	UINT16 *SpriteRam2 = (UINT16*)TaitoSpriteRam2;
 	
-	int Offs, Col, x, y, Code, Colour, xFlip, yFlip, sx, sy, yOffs;
+	INT32 Offs, Col, x, y, Code, Colour, xFlip, yFlip, sx, sy, yOffs;
 
-	int Ctrl = SpriteRam[0x300];
-	int Ctrl2 = SpriteRam[0x301];
+	INT32 Ctrl = SpriteRam[0x300];
+	INT32 Ctrl2 = SpriteRam[0x301];
 
-	int Flip = Ctrl & 0x40;
-	int NumCol = Ctrl2 & 0x000f;
+	INT32 Flip = Ctrl & 0x40;
+	INT32 NumCol = Ctrl2 & 0x000f;
 
 	UINT16 *src = SpriteRam2 + (((Ctrl2 ^ (~Ctrl2 << 1)) & 0x40) ? 0x1000 : 0 );
 
-	int Upper = (SpriteRam[0x302] & 0xff) +	(SpriteRam[0x303] & 0xff) * 256;
-	int Col0;
+	INT32 Upper = (SpriteRam[0x302] & 0xff) +	(SpriteRam[0x303] & 0xff) * 256;
+	INT32 Col0;
 	switch (Ctrl & 0x0f) {
 		case 0x01: Col0	= 0x4; break;
 		case 0x06: Col0	= 0x8; break;
@@ -1333,10 +1333,10 @@ static void TaitoXDrawSprites()
 	UINT16 *SpriteRam = (UINT16*)TaitoSpriteRam;
 	UINT16 *SpriteRam2 = (UINT16*)TaitoSpriteRam2;
 
-	int Offset, Code, x, y, xFlip, yFlip, Colour;
-	int Ctrl = SpriteRam[0x300];
-	int Ctrl2 = SpriteRam[0x301];
-	int Flip = Ctrl & 0x40;
+	INT32 Offset, Code, x, y, xFlip, yFlip, Colour;
+	INT32 Ctrl = SpriteRam[0x300];
+	INT32 Ctrl2 = SpriteRam[0x301];
+	INT32 Flip = Ctrl & 0x40;
 	UINT16 *src = SpriteRam2 + (((Ctrl2 ^ (~Ctrl2 << 1)) & 0x40) ? 0x1000 : 0);
 	
 	for (Offset = (0x400 - 2) / 2; Offset >= 0; Offset-- ) {
@@ -1399,7 +1399,7 @@ static void TaitoXDraw()
 {
 	TaitoXCalcPalette();
 	
-	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+	for (INT32 i = 0; i < nScreenHeight * nScreenWidth; i++) {
 		pTransDraw[i] = 0x1f0;
 	}
 	
@@ -1408,10 +1408,10 @@ static void TaitoXDraw()
 	BurnTransferCopy(TaitoPalette);
 }
 
-static int TaitoXFrame()
+static INT32 TaitoXFrame()
 {
-	int nInterleave = 10;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
 	
 	if (TaitoReset) TaitoDoReset();
 
@@ -1422,8 +1422,8 @@ static int TaitoXFrame()
 	SekNewFrame();
 	ZetNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		nCurrentCPU = 0;
 		SekOpen(nCurrentCPU);
@@ -1437,8 +1437,8 @@ static int TaitoXFrame()
 		ZetOpen(0);
 		BurnTimerUpdate(i * (nTaitoCyclesTotal[1] / nInterleave));
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2610Update(pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -1448,8 +1448,8 @@ static int TaitoXFrame()
 	ZetOpen(0);
 	BurnTimerEndFrame(nTaitoCyclesTotal[1]);
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			BurnYM2610Update(pSoundBuf, nSegmentLength);
 		}
@@ -1461,10 +1461,10 @@ static int TaitoXFrame()
 	return 0;
 }
 
-static int TwinhawkFrame()
+static INT32 TwinhawkFrame()
 {
-	int nInterleave = 10;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
 
 	if (TaitoReset) TaitoDoReset();
 
@@ -1475,8 +1475,8 @@ static int TwinhawkFrame()
 	SekNewFrame();
 	ZetNewFrame();
 		
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -1498,8 +1498,8 @@ static int TwinhawkFrame()
 		
 		// Render sound segment
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			ZetClose();
@@ -1509,8 +1509,8 @@ static int TwinhawkFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -1523,7 +1523,7 @@ static int TwinhawkFrame()
 	return 0;
 }
 
-static int TaitoXScan(int nAction, int *pnMin)
+static INT32 TaitoXScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

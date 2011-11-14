@@ -5,58 +5,58 @@
 #include "burn_ym3526.h"
 #include "bitswap.h"
 
-static unsigned char DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[2]        = {0, 0};
-static unsigned char DrvInput[3]      = {0x00, 0x00, 0x00};
-static unsigned char DrvReset         = 0;
+static UINT8 DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDip[2]        = {0, 0};
+static UINT8 DrvInput[3]      = {0x00, 0x00, 0x00};
+static UINT8 DrvReset         = 0;
 
-static unsigned char *Mem                 = NULL;
-static unsigned char *MemEnd              = NULL;
-static unsigned char *RamStart            = NULL;
-static unsigned char *RamEnd              = NULL;
-static unsigned char *DrvZ80Rom1          = NULL;
-static unsigned char *DrvZ80Rom2          = NULL;
-static unsigned char *DrvZ80Rom3          = NULL;
-static unsigned char *DrvMcuRom           = NULL;
-static unsigned char *DrvProm             = NULL;
-static unsigned char *DrvZ80Ram1          = NULL;
-static unsigned char *DrvZ80Ram3          = NULL;
-static unsigned char *DrvSharedRam        = NULL;
-static unsigned char *DrvMcuRam           = NULL;
-static unsigned char *DrvVideoRam         = NULL;
-static unsigned char *DrvSpriteRam        = NULL;
-static unsigned char *DrvPaletteRam       = NULL;
-static unsigned char *DrvTiles            = NULL;
-static unsigned char *DrvTempRom          = NULL;
-static unsigned int  *DrvPalette          = NULL;
+static UINT8 *Mem                 = NULL;
+static UINT8 *MemEnd              = NULL;
+static UINT8 *RamStart            = NULL;
+static UINT8 *RamEnd              = NULL;
+static UINT8 *DrvZ80Rom1          = NULL;
+static UINT8 *DrvZ80Rom2          = NULL;
+static UINT8 *DrvZ80Rom3          = NULL;
+static UINT8 *DrvMcuRom           = NULL;
+static UINT8 *DrvProm             = NULL;
+static UINT8 *DrvZ80Ram1          = NULL;
+static UINT8 *DrvZ80Ram3          = NULL;
+static UINT8 *DrvSharedRam        = NULL;
+static UINT8 *DrvMcuRam           = NULL;
+static UINT8 *DrvVideoRam         = NULL;
+static UINT8 *DrvSpriteRam        = NULL;
+static UINT8 *DrvPaletteRam       = NULL;
+static UINT8 *DrvTiles            = NULL;
+static UINT8 *DrvTempRom          = NULL;
+static UINT32 *DrvPalette          = NULL;
 
-static unsigned char DrvRomBank;
-static unsigned char DrvSlaveCPUActive;
-static unsigned char DrvSoundCPUActive;
-static unsigned char DrvMCUActive;
-static unsigned char DrvVideoEnable;
-static unsigned char DrvFlipScreen;
-static int IC43A;
-static int IC43B;
-static int DrvSoundStatus;
-static int DrvSoundNmiEnable;
-static int DrvSoundNmiPending;
-static int DrvSoundLatch;
+static UINT8 DrvRomBank;
+static UINT8 DrvSlaveCPUActive;
+static UINT8 DrvSoundCPUActive;
+static UINT8 DrvMCUActive;
+static UINT8 DrvVideoEnable;
+static UINT8 DrvFlipScreen;
+static INT32 IC43A;
+static INT32 IC43B;
+static INT32 DrvSoundStatus;
+static INT32 DrvSoundNmiEnable;
+static INT32 DrvSoundNmiPending;
+static INT32 DrvSoundLatch;
 
-static int nCyclesDone[4], nCyclesTotal[4];
-static int nCyclesSegment;
+static INT32 nCyclesDone[4], nCyclesTotal[4];
+static INT32 nCyclesSegment;
 
-typedef int (*BublboblCallbackFunc)();
+typedef INT32 (*BublboblCallbackFunc)();
 static BublboblCallbackFunc BublboblCallbackFunction;
 
-static unsigned char DrvMCUInUse;
+static UINT8 DrvMCUInUse;
 
-static int mcu_address, mcu_latch;
-static unsigned char ddr1, ddr2, ddr3, ddr4;
-static unsigned char port1_in, port2_in, port3_in, port4_in;
-static unsigned char port1_out, port2_out, port3_out, port4_out;
+static INT32 mcu_address, mcu_latch;
+static UINT8 ddr1, ddr2, ddr3, ddr4;
+static UINT8 port1_in, port2_in, port3_in, port4_in;
+static UINT8 port1_out, port2_out, port3_out, port4_out;
 
 static struct BurnInputInfo BublboblInputList[] =
 {
@@ -124,7 +124,7 @@ static inline void BublboblMakeInputs()
 	
 	DrvInput[1] = 0xff;
 	DrvInput[2] = 0xff;
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[1] -= (DrvInputPort1[i] & 1) << i;
 		DrvInput[2] -= (DrvInputPort2[i] & 1) << i;
 	}
@@ -894,9 +894,9 @@ STD_ROM_PICK(tokiob)
 STD_ROM_FN(tokiob)
 
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	DrvZ80Rom1             = Next; Next += 0x30000;
 	DrvZ80Rom2             = Next; Next += 0x08000;
@@ -919,16 +919,16 @@ static int MemIndex()
 	RamEnd                 = Next;
 
 	DrvTiles               = Next; Next += 0x4000 * 8 * 8;
-	DrvPalette             = (unsigned int*)Next; Next += 0x00100 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 0x00100 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		ZetOpen(i);
 		ZetReset();
 		ZetClose();
@@ -961,9 +961,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int TokioDoReset()
+static INT32 TokioDoReset()
 {
-	for (int i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 3; i++) {
 		ZetOpen(i);
 		ZetReset();
 		ZetClose();
@@ -982,7 +982,7 @@ static int TokioDoReset()
 	return 0;
 }
 
-unsigned char __fastcall BublboblRead1(unsigned short a)
+UINT8 __fastcall BublboblRead1(UINT16 a)
 {
 	switch (a) {
 		case 0xfa00: {
@@ -997,7 +997,7 @@ unsigned char __fastcall BublboblRead1(unsigned short a)
 	return 0;
 }
 
-void __fastcall BublboblWrite1(unsigned short a, unsigned char d)
+void __fastcall BublboblWrite1(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xfa00: {
@@ -1062,7 +1062,7 @@ void __fastcall BublboblWrite1(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall BoblboblRead1(unsigned short a)
+UINT8 __fastcall BoblboblRead1(UINT16 a)
 {
 	switch (a) {
 		case 0xfe00: {
@@ -1109,7 +1109,7 @@ unsigned char __fastcall BoblboblRead1(unsigned short a)
 	return 0;
 }
 
-void __fastcall BoblboblWrite1(unsigned short a, unsigned char d)
+void __fastcall BoblboblWrite1(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xfa00: {
@@ -1162,8 +1162,8 @@ void __fastcall BoblboblWrite1(unsigned short a, unsigned char d)
 		case 0xfe01:
 		case 0xfe02:
 		case 0xfe03: {
-			int Res = 0;
-			unsigned int Offset = a - 0xfe00;
+			INT32 Res = 0;
+			INT32 Offset = a - 0xfe00;
 			
 			switch (Offset) {
 				case 0x00: {
@@ -1211,8 +1211,8 @@ void __fastcall BoblboblWrite1(unsigned short a, unsigned char d)
 		case 0xfe81:
 		case 0xfe82:
 		case 0xfe83: {
-			unsigned int Offset = a - 0xfe80;
-			static const int XorVal[4] = { 4, 1, 8, 2 };
+			INT32 Offset = a - 0xfe80;
+			static const INT32 XorVal[4] = { 4, 1, 8, 2 };
 			
 			IC43B = (d >> 4) ^ XorVal[Offset];
 			return;
@@ -1230,7 +1230,7 @@ void __fastcall BoblboblWrite1(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall DrvSoundRead3(unsigned short a)
+UINT8 __fastcall DrvSoundRead3(UINT16 a)
 {
 	switch (a) {
 		case 0x9000: {
@@ -1266,7 +1266,7 @@ unsigned char __fastcall DrvSoundRead3(unsigned short a)
 	return 0;
 }
 
-void __fastcall DrvSoundWrite3(unsigned short a, unsigned char d)
+void __fastcall DrvSoundWrite3(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0x9000: {
@@ -1314,7 +1314,7 @@ void __fastcall DrvSoundWrite3(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char BublboblMcuReadByte(unsigned short Address)
+UINT8 BublboblMcuReadByte(UINT16 Address)
 {
 	if (Address >= 0x0040 && Address <= 0x00ff) {
 		return DrvMcuRam[Address - 0x0040];
@@ -1360,7 +1360,7 @@ unsigned char BublboblMcuReadByte(unsigned short Address)
 	return 0;
 }
 
-void BublboblMcuWriteByte(unsigned short Address, unsigned char Data)
+void BublboblMcuWriteByte(UINT16 Address, UINT8 Data)
 {
 	if (Address >= 0x0040 && Address <= 0x00ff) {
 		DrvMcuRam[Address - 0x0040] = Data;
@@ -1397,7 +1397,7 @@ void BublboblMcuWriteByte(unsigned short Address, unsigned char Data)
 		
 		case 0x03: {
 			if ((~port2_out & 0x10) && (Data & 0x10)) {
-				int nAddress = port4_out | ((Data & 0x0f) << 8);
+				INT32 nAddress = port4_out | ((Data & 0x0f) << 8);
 				
 				if (port1_out & 0x80) {
 					if (nAddress == 0x0000) port3_in = DrvDip[0];
@@ -1439,9 +1439,9 @@ void BublboblMcuWriteByte(unsigned short Address, unsigned char Data)
 	bprintf(PRINT_NORMAL, _T("M6801 Write Byte -> %04X, %02X\n"), Address, Data);
 }
 
-void bublbobl_68705_portB_out(unsigned char *bytevalue)
+void bublbobl_68705_portB_out(UINT8 *bytevalue)
 {
-	int data = *bytevalue;//lazy
+	INT32 data = *bytevalue;//lazy
 
 	if ((ddrB & 0x01) && (~data & 0x01) && (portB_out & 0x01))
 	{
@@ -1507,7 +1507,7 @@ static m68705_interface bub68705_m68705_interface = {
 };
 
 
-void __fastcall TokioWrite1(unsigned short a, unsigned char d)
+void __fastcall TokioWrite1(UINT16 a, UINT8 d)
 {
 	switch (a)
 	{
@@ -1540,7 +1540,7 @@ void __fastcall TokioWrite1(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall TokioRead1(unsigned short a)
+UINT8 __fastcall TokioRead1(UINT16 a)
 {
 	switch (a)
 	{
@@ -1576,7 +1576,7 @@ unsigned char __fastcall TokioRead1(unsigned short a)
 	return 0;
 }
 
-void __fastcall TokioSoundWrite3(unsigned short a, unsigned char d)
+void __fastcall TokioSoundWrite3(UINT16 a, UINT8 d)
 {
 	switch (a)
 	{
@@ -1611,7 +1611,7 @@ void __fastcall TokioSoundWrite3(unsigned short a, unsigned char d)
 	}
 }
 
-unsigned char __fastcall TokioSoundRead3(unsigned short a)
+UINT8 __fastcall TokioSoundRead3(UINT16 a)
 {
 	switch (a)
 	{
@@ -1631,7 +1631,7 @@ unsigned char __fastcall TokioSoundRead3(unsigned short a)
 	return 0;
 }
 
-inline static void DrvYM2203IRQHandler(int, int nStatus)
+inline static void DrvYM2203IRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
@@ -1640,14 +1640,14 @@ inline static void DrvYM2203IRQHandler(int, int nStatus)
 	}
 }
 
-inline static int DrvSynchroniseStream(int nSoundRate)
+inline static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 3000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 3000000;
 }
 
-inline static int DrvYM3526SynchroniseStream(int nSoundRate)
+inline static INT32 DrvYM3526SynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 6000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 6000000;
 }
 
 inline static double DrvGetTime()
@@ -1655,19 +1655,19 @@ inline static double DrvGetTime()
 	return (double)ZetTotalCycles() / 3000000;
 }
 
-static int TilePlaneOffsets[4] = { 0, 4, 0x200000, 0x200004 };
-static int TileXOffsets[8]     = { 3, 2, 1, 0, 11, 10, 9, 8 };
-static int TileYOffsets[8]     = { 0, 16, 32, 48, 64, 80, 96, 112 };
+static INT32 TilePlaneOffsets[4] = { 0, 4, 0x200000, 0x200004 };
+static INT32 TileXOffsets[8]     = { 3, 2, 1, 0, 11, 10, 9, 8 };
+static INT32 TileYOffsets[8]     = { 0, 16, 32, 48, 64, 80, 96, 112 };
 
-static int MachineInit()
+static INT32 MachineInit()
 {
-	int nLen;
+	INT32 nLen;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -1744,11 +1744,11 @@ static int MachineInit()
 	return 0;
 }
 
-static int BublboblCallback()
+static INT32 BublboblCallback()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)malloc(0x80000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1776,7 +1776,7 @@ static int BublboblCallback()
 	nRet = BurnLoadRom(DrvTempRom + 0x58000, 14, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x60000, 15, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x68000, 16, 1); if (nRet != 0) return 1;
-	for (int i = 0; i < 0x80000; i++) DrvTempRom[i] ^= 0xff;
+	for (INT32 i = 0; i < 0x80000; i++) DrvTempRom[i] ^= 0xff;
 	GfxDecode(0x4000, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x80, DrvTempRom, DrvTiles);
 	
 	// Load the PROM
@@ -1790,7 +1790,7 @@ static int BublboblCallback()
 	return 0;
 }
 
-static int BublboblInit()
+static INT32 BublboblInit()
 {
 	BublboblCallbackFunction = BublboblCallback;
 	
@@ -1799,11 +1799,11 @@ static int BublboblInit()
 	return MachineInit();
 }
 
-static int BoblboblCallback()
+static INT32 BoblboblCallback()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)malloc(0x80000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1829,7 +1829,7 @@ static int BoblboblCallback()
 	nRet = BurnLoadRom(DrvTempRom + 0x58000, 14, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x60000, 15, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x68000, 16, 1); if (nRet != 0) return 1;
-	for (int i = 0; i < 0x80000; i++) DrvTempRom[i] ^= 0xff;
+	for (INT32 i = 0; i < 0x80000; i++) DrvTempRom[i] ^= 0xff;
 	GfxDecode(0x4000, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x80, DrvTempRom, DrvTiles);
 	
 	// Load the PROM
@@ -1852,18 +1852,18 @@ static int BoblboblCallback()
 	return 0;
 }
 
-static int BoblboblInit()
+static INT32 BoblboblInit()
 {
 	BublboblCallbackFunction = BoblboblCallback;
 	
 	return MachineInit();
 }
 
-static int Bub68705Callback()
+static INT32 Bub68705Callback()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)malloc(0x80000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1890,7 +1890,7 @@ static int Bub68705Callback()
 	nRet = BurnLoadRom(DrvTempRom + 0x60000, 15, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x68000, 16, 1); if (nRet != 0) return 1;
 
-	for (int i = 0x00000; i < 0x80000; i++)
+	for (INT32 i = 0x00000; i < 0x80000; i++)
 		DrvTempRom[i] ^= 0xff;
 
 	GfxDecode(0x4000, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x80, DrvTempRom, DrvTiles);
@@ -1909,7 +1909,7 @@ static int Bub68705Callback()
 	return 0;
 }
 
-static int Bub68705Init()
+static INT32 Bub68705Init()
 {
 	BublboblCallbackFunction = Bub68705Callback;
 	
@@ -1918,11 +1918,11 @@ static int Bub68705Init()
 	return MachineInit();
 }
 
-static int DlandCallback()
+static INT32 DlandCallback()
 {
-	int nRet = 0;
+	INT32 nRet = 0;
 	
-	DrvTempRom = (unsigned char *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)malloc(0x80000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1943,10 +1943,10 @@ static int DlandCallback()
 	nRet = BurnLoadRom(DrvTempRom + 0x50000,  9, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvTempRom + 0x60000, 10, 1); if (nRet != 0) return 1;
 
-	for (int i = 0x00000; i < 0x40000; i++)
+	for (INT32 i = 0x00000; i < 0x40000; i++)
 		DrvTempRom[i] = BITSWAP08(DrvTempRom[i],7,6,5,4,0,1,2,3) ^ 0xff;
 
-	for (int i = 0x40000; i < 0x80000; i++)
+	for (INT32 i = 0x40000; i < 0x80000; i++)
 		DrvTempRom[i] = BITSWAP08(DrvTempRom[i],7,4,5,6,3,0,1,2) ^ 0xff;
 
 	GfxDecode(0x4000, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x80, DrvTempRom, DrvTiles);
@@ -1971,27 +1971,27 @@ static int DlandCallback()
 	return 0;
 }
 
-static int DlandInit()
+static INT32 DlandInit()
 {
 	BublboblCallbackFunction = DlandCallback;
 	
 	return MachineInit();
 }
 
-static int TokioInit()
+static INT32 TokioInit()
 {
-	int nLen, nRet;
+	INT32 nLen, nRet;
 	
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
 	{
-		DrvTempRom = (unsigned char *)malloc(0x80000);
+		DrvTempRom = (UINT8 *)malloc(0x80000);
 
 		// Load Z80 #1 Program Roms
 		nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -2023,7 +2023,7 @@ static int TokioInit()
 		nRet = BurnLoadRom(DrvTempRom + 0x68000, 20, 1); if (nRet != 0) return 1;
 		nRet = BurnLoadRom(DrvTempRom + 0x70000, 21, 1); if (nRet != 0) return 1;
 		nRet = BurnLoadRom(DrvTempRom + 0x78000, 22, 1); if (nRet != 0) return 1;
-		for (int i = 0; i < 0x80000; i++) DrvTempRom[i] ^= 0xff;
+		for (INT32 i = 0; i < 0x80000; i++) DrvTempRom[i] ^= 0xff;
 		GfxDecode(0x4000, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x80, DrvTempRom, DrvTiles);
 	
 		// Load the PROM
@@ -2096,7 +2096,7 @@ static int TokioInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ZetExit();
 	BurnYM2203Exit();
@@ -2131,15 +2131,15 @@ static int DrvExit()
 	return 0;
 }
 
-static inline unsigned char pal4bit(unsigned char bits)
+static inline UINT8 pal4bit(UINT8 bits)
 {
 	bits &= 0x0f;
 	return (bits << 4) | bits;
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static INT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = pal4bit(nColour >> 12);
 	g = pal4bit(nColour >>  8);
@@ -2150,17 +2150,17 @@ inline static unsigned int CalcCol(unsigned short nColour)
 
 static void DrvCalcPalette()
 {
-	for (unsigned int i = 0; i < 0x200; i += 2) {
+	for (INT32 i = 0; i < 0x200; i += 2) {
 		DrvPalette[i / 2] = CalcCol(DrvPaletteRam[i | 1] | (DrvPaletteRam[i & ~1] << 8));
 	}
 }
 
 static void DrvVideoUpdate()
 {
-	int sx, sy, xc, yc;
-	int GfxNum, GfxAttr, GfxOffset;
-	const unsigned char *Prom;
-	const unsigned char *PromLine;
+	INT32 sx, sy, xc, yc;
+	INT32 GfxNum, GfxAttr, GfxOffset;
+	const UINT8 *Prom;
+	const UINT8 *PromLine;
 	
 	if (!DrvVideoEnable) return;
 	
@@ -2168,7 +2168,7 @@ static void DrvVideoUpdate()
 
 	Prom = DrvProm;
 	
-	for (unsigned int Offset = 0; Offset < 0x300; Offset += 4) {
+	for (INT32 Offset = 0; Offset < 0x300; Offset += 4) {
 		if (*(UINT32 *)(&DrvSpriteRam[Offset]) == 0) continue;
 
 		GfxNum = DrvSpriteRam[Offset + 1];
@@ -2189,7 +2189,7 @@ static void DrvVideoUpdate()
 			}
 
 			for (xc = 0; xc < 2; xc++) {
-				int gOffs, Code, Colour, xFlip, yFlip, x, y, yPos;
+				INT32 gOffs, Code, Colour, xFlip, yFlip, x, y, yPos;
 
 				gOffs = GfxOffset + xc * 0x40 + (yc & 7) * 0x02 + (PromLine[yc / 2] & 0x03) * 0x10;
 				Code = DrvVideoRam[gOffs] + 256 * (DrvVideoRam[gOffs + 1] & 0x03) + 1024 * (GfxAttr & 0x0f);
@@ -2246,7 +2246,7 @@ static void DrvVideoUpdate()
 
 static void DrvDraw()
 {
-	for (int i = 0; i < nScreenHeight * nScreenWidth; i++) {
+	for (INT32 i = 0; i < nScreenHeight * nScreenWidth; i++) {
 		pTransDraw[i] = 0x00ff;
 	}
 
@@ -2255,10 +2255,10 @@ static void DrvDraw()
 	BurnTransferCopy(DrvPalette);
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) DrvDoReset();
 
@@ -2272,8 +2272,8 @@ static int DrvFrame()
 	
 	ZetNewFrame();
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run Z80 #1
 		nCurrentCPU = 0;
@@ -2330,8 +2330,8 @@ static int DrvFrame()
 		}
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			ZetOpen(2);
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
 			ZetClose();
@@ -2353,8 +2353,8 @@ static int DrvFrame()
 	}
 	
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			ZetOpen(2);
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
@@ -2370,10 +2370,10 @@ static int DrvFrame()
 	return 0;
 }
 
-static int TokioFrame()
+static INT32 TokioFrame()
 {
-	int nInterleave = 100;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 100;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) TokioDoReset();
 
@@ -2386,8 +2386,8 @@ static int TokioFrame()
 	
 	ZetNewFrame();
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run Z80 #1
 		nCurrentCPU = 0;
@@ -2424,8 +2424,8 @@ static int TokioFrame()
 		ZetClose();
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			ZetOpen(2);
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
 			ZetClose();
@@ -2438,8 +2438,8 @@ static int TokioFrame()
 	ZetClose();
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			ZetOpen(2);
 			BurnYM2203Update(pSoundBuf, nSegmentLength);
@@ -2452,7 +2452,7 @@ static int TokioFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
