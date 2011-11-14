@@ -6,7 +6,7 @@
 #define DECO16_VERBOSE 0
 
 #undef	OP
-#define OP(nn) INLINE void deco16_##nn()
+#define OP(nn) M6502_INLINE void deco16_##nn()
 
 #define DECO16_BRK									\
 	RDOPARG();										\

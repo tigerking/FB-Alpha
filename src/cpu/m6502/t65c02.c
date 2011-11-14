@@ -24,7 +24,7 @@
  *****************************************************************************/
 
 #undef	OP
-#define OP(nn) INLINE void m65c02_##nn(void)
+#define OP(nn) M6502_INLINE void m65c02_##nn(void)
 #define RD_IMM_DISCARD		RDOPARG()
 #define RD_ZPG_DISCARD		EA_ZPG; RDMEM(EAD)
 #define RD_ZPX_DISCARD		EA_ZPX; RDMEM(EAD)
