@@ -2,52 +2,52 @@
 #include "pgm.h" 
 #include "arm7_intf.h"
 
-unsigned char PgmJoy1[8] = {0,0,0,0,0,0,0,0};
-unsigned char PgmJoy2[8] = {0,0,0,0,0,0,0,0};
-unsigned char PgmJoy3[8] = {0,0,0,0,0,0,0,0};
-unsigned char PgmJoy4[8] = {0,0,0,0,0,0,0,0};
-unsigned char PgmBtn1[8] = {0,0,0,0,0,0,0,0};
-unsigned char PgmBtn2[8] = {0,0,0,0,0,0,0,0};
-unsigned char PgmInput[9] = {0,0,0,0,0,0,0,0, 0};
-unsigned char PgmReset = 0;
+UINT8 PgmJoy1[8] = {0,0,0,0,0,0,0,0};
+UINT8 PgmJoy2[8] = {0,0,0,0,0,0,0,0};
+UINT8 PgmJoy3[8] = {0,0,0,0,0,0,0,0};
+UINT8 PgmJoy4[8] = {0,0,0,0,0,0,0,0};
+UINT8 PgmBtn1[8] = {0,0,0,0,0,0,0,0};
+UINT8 PgmBtn2[8] = {0,0,0,0,0,0,0,0};
+UINT8 PgmInput[9] = {0,0,0,0,0,0,0,0, 0};
+UINT8 PgmReset = 0;
 
-int nPGM68KROMLen = 0;
-int nPGMTileROMLen = 0;
-int nPGMSPRColROMLen = 0;
-int nPGMSPRMaskROMLen = 0;
-int nPGMSNDROMLen = 0;
-int nPGMSPRColMaskLen = 0;
-int nPGMSPRMaskMaskLen = 0;
-int nPGMExternalARMLen = 0;
+INT32 nPGM68KROMLen = 0;
+INT32 nPGMTileROMLen = 0;
+INT32 nPGMSPRColROMLen = 0;
+INT32 nPGMSPRMaskROMLen = 0;
+INT32 nPGMSNDROMLen = 0;
+INT32 nPGMSPRColMaskLen = 0;
+INT32 nPGMSPRMaskMaskLen = 0;
+INT32 nPGMExternalARMLen = 0;
 
-unsigned int *PGMBgRAM;
-unsigned int *PGMTxtRAM;
-unsigned int *RamCurPal;
-unsigned short *PGMRowRAM;
-unsigned short *PGMPalRAM;
-unsigned short *PGMVidReg;
-unsigned short *PGMSprBuf;
-static unsigned char *RamZ80;
-unsigned char *PGM68KRAM;
+UINT32 *PGMBgRAM;
+UINT32 *PGMTxtRAM;
+UINT32 *RamCurPal;
+UINT16 *PGMRowRAM;
+UINT16 *PGMPalRAM;
+UINT16 *PGMVidReg;
+UINT16 *PGMSprBuf;
+static UINT8 *RamZ80;
+UINT8 *PGM68KRAM;
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
 
-unsigned char *PGM68KBIOS, *PGM68KROM, *PGMTileROM, *PGMTileROMExp, *PGMSPRColROM, *PGMSPRMaskROM, *PGMARMROM;
-unsigned char *PGMARMRAM0, *PGMUSER0, *PGMARMRAM1, *PGMARMRAM2, *PGMARMShareRAM, *PGMARMShareRAM2;
+UINT8 *PGM68KBIOS, *PGM68KROM, *PGMTileROM, *PGMTileROMExp, *PGMSPRColROM, *PGMSPRMaskROM, *PGMARMROM;
+UINT8 *PGMARMRAM0, *PGMUSER0, *PGMARMRAM1, *PGMARMRAM2, *PGMARMShareRAM, *PGMARMShareRAM2;
 
-unsigned char nPgmPalRecalc = 0;
-static unsigned char nPgmZ80Work = 0;
-static int nPgmCurrentBios = -1;
+UINT8 nPgmPalRecalc = 0;
+static UINT8 nPgmZ80Work = 0;
+static INT32 nPgmCurrentBios = -1;
 
 void (*pPgmResetCallback)() = NULL;
 void (*pPgmInitCallback)() = NULL;
 void (*pPgmProtCallback)() = NULL;
-int (*pPgmScanCallback)(int, int*) = NULL;
+INT32 (*pPgmScanCallback)(INT32, INT32*) = NULL;
 
-static int nEnableArm7 = 0;
-int nPGMEnableIRQ4 = 0;
-int nPGMArm7Type = 0;
+static INT32 nEnableArm7 = 0;
+INT32 nPGMEnableIRQ4 = 0;
+INT32 nPGMArm7Type = 0;
 
 #define M68K_CYCS_PER_FRAME	((20000000 * 100) / nBurnFPS)
 #define Z80_CYCS_PER_FRAME	(( 8468000 * 100) / nBurnFPS)
@@ -59,11 +59,11 @@ int nPGMArm7Type = 0;
 #define Z80_CYCS_PER_INTER	(Z80_CYCS_PER_FRAME  / PGM_INTER_LEAVE)
 #define ARM7_CYCS_PER_INTER	(ARM7_CYCS_PER_FRAME / PGM_INTER_LEAVE)
 
-static int nCyclesDone[3];
+static INT32 nCyclesDone[3];
 
-static int pgmMemIndex()
+static INT32 pgmMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	PGM68KBIOS	= Next; Next += 0x0080000;
 	PGM68KROM	= Next; Next += nPGM68KROMLen;
 
@@ -86,42 +86,42 @@ static int pgmMemIndex()
 		PGMARMRAM2	= Next; Next += 0x0001000; // minimum map is 0x1000 - should be 0x400
 	}
 
-	PGMBgRAM	= (unsigned int *) Next; Next += 0x0001000;
-	PGMTxtRAM	= (unsigned int *) Next; Next += 0x0002000;
+	PGMBgRAM	= (UINT32 *) Next; Next += 0x0001000;
+	PGMTxtRAM	= (UINT32 *) Next; Next += 0x0002000;
 
-	PGMRowRAM	= (unsigned short *) Next; Next += 0x0001000;	// Row Scroll
-	PGMPalRAM	= (unsigned short *) Next; Next += 0x0001400;	// Palette R5G5B5
-	PGMVidReg	= (unsigned short *) Next; Next += 0x0010000;	// Video Regs inc. Zoom Table
-	PGMSprBuf	= (unsigned short *) Next; Next += 0x0000a00;
+	PGMRowRAM	= (UINT16 *) Next; Next += 0x0001000;	// Row Scroll
+	PGMPalRAM	= (UINT16 *) Next; Next += 0x0001400;	// Palette R5G5B5
+	PGMVidReg	= (UINT16 *) Next; Next += 0x0010000;	// Video Regs inc. Zoom Table
+	PGMSprBuf	= (UINT16 *) Next; Next += 0x0000a00;
 
 	RamEnd		= Next;
 
-	RamCurPal	= (unsigned int *) Next; Next += (0x0001202 / 2) * sizeof(unsigned int);
+	RamCurPal	= (UINT32 *) Next; Next += (0x0001202 / 2) * sizeof(UINT32);
 
 	MemEnd		= Next;
 
 	return 0;
 }
 
-static int pgmGetRoms(bool bLoad)
+static INT32 pgmGetRoms(bool bLoad)
 {
-	int kov2 = (strncmp(BurnDrvGetTextA(DRV_NAME), "kov2", 4) == 0) ? 1 : 0;
+	INT32 kov2 = (strncmp(BurnDrvGetTextA(DRV_NAME), "kov2", 4) == 0) ? 1 : 0;
 
 	char* pRomName;
 	struct BurnRomInfo ri;
 	struct BurnRomInfo pi;
 
-	unsigned char *PGMUSER0Load = PGMUSER0;
-	unsigned char *PGM68KROMLoad = PGM68KROM;
-	unsigned char *PGMTileROMLoad = PGMTileROM + 0x180000;
-	unsigned char *PGMSPRMaskROMLoad = PGMSPRMaskROM;
-	unsigned char *PGMSNDROMLoad = ICSSNDROM + 0x400000;
+	UINT8 *PGMUSER0Load = PGMUSER0;
+	UINT8 *PGM68KROMLoad = PGM68KROM;
+	UINT8 *PGMTileROMLoad = PGMTileROM + 0x180000;
+	UINT8 *PGMSPRMaskROMLoad = PGMSPRMaskROM;
+	UINT8 *PGMSNDROMLoad = ICSSNDROM + 0x400000;
 
 	if (kov2 && bLoad) {
 		PGMSNDROMLoad += 0x400000;
 	}
 
-	for (int i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
+	for (INT32 i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
 
 		BurnDrvGetRomInfo(&ri, i);
 
@@ -234,22 +234,22 @@ static int pgmGetRoms(bool bLoad)
 
 /* Calendar Emulation */
 
-static unsigned char CalVal, CalMask, CalCom=0, CalCnt=0;
+static UINT8 CalVal, CalMask, CalCom=0, CalCnt=0;
 
-static unsigned char bcd(unsigned char data)
+static UINT8 bcd(UINT8 data)
 {
 	return ((data / 10) << 4) | (data % 10);
 }
 
-static unsigned char pgm_calendar_r()
+static UINT8 pgm_calendar_r()
 {
-	unsigned char calr;
+	UINT8 calr;
 	calr = (CalVal & CalMask) ? 1 : 0;
 	CalMask <<= 1;
 	return calr;
 }
 
-static void pgm_calendar_w(unsigned short data)
+static void pgm_calendar_w(UINT16 data)
 {
 	time_t nLocalTime = time(NULL);
 	tm* tmLocalTime = localtime(&nLocalTime);
@@ -308,7 +308,7 @@ static void pgm_calendar_w(unsigned short data)
 	}
 }
 
-unsigned char __fastcall PgmReadByte(unsigned int sekAddress)
+UINT8 __fastcall PgmReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress)
 	{
@@ -325,7 +325,7 @@ unsigned char __fastcall PgmReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall PgmReadWord(unsigned int sekAddress)
+UINT16 __fastcall PgmReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress)
 	{
@@ -354,7 +354,7 @@ unsigned short __fastcall PgmReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall PgmWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall PgmWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	byteValue=byteValue; // fix warning
 
@@ -365,9 +365,9 @@ void __fastcall PgmWriteByte(unsigned int sekAddress, unsigned char byteValue)
 	}
 }
 
-void __fastcall PgmWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall PgmWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
-	static int coin_counter_previous;
+	static INT32 coin_counter_previous;
 
 	switch (sekAddress)
 	{
@@ -417,7 +417,7 @@ void __fastcall PgmWriteWord(unsigned int sekAddress, unsigned short wordValue)
 	}
 }
 
-unsigned char __fastcall PgmZ80ReadByte(unsigned int sekAddress)
+UINT8 __fastcall PgmZ80ReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress)
 	{
@@ -428,22 +428,22 @@ unsigned char __fastcall PgmZ80ReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall PgmZ80ReadWord(unsigned int sekAddress)
+UINT16 __fastcall PgmZ80ReadWord(UINT32 sekAddress)
 {
 	sekAddress &= 0xffff;
 	return (RamZ80[sekAddress] << 8) | RamZ80[sekAddress+1];
 }
 
-void __fastcall PgmZ80WriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall PgmZ80WriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	sekAddress &= 0xffff;
 	RamZ80[sekAddress] = wordValue >> 8;
 	RamZ80[sekAddress+1] = wordValue & 0xFF;
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour & 0x7C00) >> 7;	// Red 
 	r |= r >> 5;
@@ -455,23 +455,23 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-void __fastcall PgmPaletteWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall PgmPaletteWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	sekAddress = (sekAddress - 0xa00000) >> 1;
 	PGMPalRAM[sekAddress] = wordValue;
 	RamCurPal[sekAddress] = CalcCol(wordValue);
 }
 
-void __fastcall PgmPaletteWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall PgmPaletteWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	sekAddress -= 0xa00000;
-	unsigned char *pal = (unsigned char*)PGMPalRAM;
+	UINT8 *pal = (UINT8*)PGMPalRAM;
 	pal[sekAddress ^ 1] = byteValue;
 
 	RamCurPal[sekAddress >> 1] = CalcCol(PGMPalRAM[sekAddress >> 1]);
 }
 
-unsigned char __fastcall PgmZ80PortRead(unsigned short port)
+UINT8 __fastcall PgmZ80PortRead(UINT16 port)
 {
 	switch (port >> 8)
 	{
@@ -493,7 +493,7 @@ unsigned char __fastcall PgmZ80PortRead(unsigned short port)
 	return 0;
 }
 
-void __fastcall PgmZ80PortWrite(unsigned short port, unsigned char data)
+void __fastcall PgmZ80PortWrite(UINT16 port, UINT8 data)
 {
 	switch (port >> 8)
 	{
@@ -518,7 +518,7 @@ void __fastcall PgmZ80PortWrite(unsigned short port, unsigned char data)
 	}
 }
 
-int PgmDoReset()
+INT32 PgmDoReset()
 {
 	if (nPgmCurrentBios != PgmInput[8]) {	// Load the 68k bios
 		if (!(BurnDrvGetHardwareCode() & HARDWARE_IGS_JAMMAPCB)) {
@@ -553,8 +553,8 @@ int PgmDoReset()
 
 static void expand_tile_gfx()
 {
-	unsigned char *src = PGMTileROM;
-	unsigned char *dst = PGMTileROMExp;
+	UINT8 *src = PGMTileROM;
+	UINT8 *dst = PGMTileROMExp;
 
 	if (strcmp(BurnDrvGetTextA(DRV_NAME), "kovqhsgs") == 0 ||
 		strcmp(BurnDrvGetTextA(DRV_NAME), "kovlsqh2") == 0 || 
@@ -564,7 +564,7 @@ static void expand_tile_gfx()
 			pgm_decode_kovqhsgs_tile_data(PGMTileROM + 0x180000);
 	}
 
-	for (int i = nPGMTileROMLen/5-1; i >= 0 ; i --) {
+	for (INT32 i = nPGMTileROMLen/5-1; i >= 0 ; i --) {
 		dst[0+8*i] = ((src[0+5*i] >> 0) & 0x1f);
 		dst[1+8*i] = ((src[0+5*i] >> 5) & 0x07) | ((src[1+5*i] << 3) & 0x18);
 		dst[2+8*i] = ((src[1+5*i] >> 2) & 0x1f );
@@ -575,20 +575,20 @@ static void expand_tile_gfx()
 		dst[7+8*i] = ((src[4+5*i] >> 3) & 0x1f );
 	}
 
-	for (int i = 0x200000-1; i >= 0; i--) {
-		int d = PGMTileROM[i];
+	for (INT32 i = 0x200000-1; i >= 0; i--) {
+		INT32 d = PGMTileROM[i];
 		PGMTileROM[i * 2 + 0] = d & 0x0f;
 		PGMTileROM[i * 2 + 1] = d >> 4;
 	}
 
-	PGMTileROM = (unsigned char*)realloc(PGMTileROM, 0x400000);
+	PGMTileROM = (UINT8*)realloc(PGMTileROM, 0x400000);
 }
 
 static void expand_colourdata()
 {
 	// allocate 
 	{
-		int needed = (nPGMSPRColROMLen / 2) * 3;
+		INT32 needed = (nPGMSPRColROMLen / 2) * 3;
 		nPGMSPRColMaskLen = 1;
 		while (nPGMSPRColMaskLen < needed)
 			nPGMSPRColMaskLen <<= 1;
@@ -599,11 +599,11 @@ static void expand_colourdata()
 			nPGMSPRMaskMaskLen <<= 1;
 		nPGMSPRMaskMaskLen-=1;
 
-		PGMSPRColROM = (unsigned char*)malloc(nPGMSPRColMaskLen);
+		PGMSPRColROM = (UINT8*)malloc(nPGMSPRColMaskLen);
 		nPGMSPRColMaskLen -= 1;
 	}
 
-	unsigned char *tmp = (unsigned char*)malloc(nPGMSPRColROMLen);
+	UINT8 *tmp = (UINT8*)malloc(nPGMSPRColROMLen);
 	if (tmp == NULL) return;
 
 	// load sprite color roms
@@ -611,9 +611,9 @@ static void expand_colourdata()
 		char* pRomName;
 		struct BurnRomInfo ri;
 	
-		unsigned char *PGMSPRColROMLoad = tmp;
+		UINT8 *PGMSPRColROMLoad = tmp;
 	
-		for (int i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
+		for (INT32 i = 0; !BurnDrvGetRomName(&pRomName, i, 0); i++) {
 	
 			BurnDrvGetRomInfo(&ri, i);
 	
@@ -649,9 +649,9 @@ static void expand_colourdata()
 	}
 
 	// convert from 3bpp packed
-	for (int cnt = 0; cnt < nPGMSPRColROMLen / 2; cnt++)
+	for (INT32 cnt = 0; cnt < nPGMSPRColROMLen / 2; cnt++)
 	{
-		unsigned short colpack = ((tmp[cnt*2]) | (tmp[cnt*2+1] << 8));
+		UINT16 colpack = ((tmp[cnt*2]) | (tmp[cnt*2+1] << 8));
 		PGMSPRColROM[cnt*3+0] = (colpack >> 0 ) & 0x1f;
 		PGMSPRColROM[cnt*3+1] = (colpack >> 5 ) & 0x1f;
 		PGMSPRColROM[cnt*3+2] = (colpack >> 10) & 0x1f;
@@ -663,7 +663,7 @@ static void expand_colourdata()
 	}
 }
 
-int pgmInit()
+INT32 pgmInit()
 {
 	BurnSetRefreshRate((BurnDrvGetHardwareCode() & HARDWARE_IGS_JAMMAPCB) ? 59.17 : 60.00); // different?
 
@@ -673,14 +673,14 @@ int pgmInit()
 
 	expand_colourdata();
 
-	PGMTileROM      = (unsigned char*)malloc(nPGMTileROMLen);		// 8x8 Text Tiles + 32x32 BG Tiles
-	PGMTileROMExp   = (unsigned char*)malloc((nPGMTileROMLen / 5) * 8);	// Expanded 8x8 Text Tiles and 32x32 BG Tiles
-	PGMSPRMaskROM	= (unsigned char*)malloc(nPGMSPRMaskROMLen);
-	ICSSNDROM	= (unsigned char*)malloc(nPGMSNDROMLen);
+	PGMTileROM      = (UINT8*)malloc(nPGMTileROMLen);		// 8x8 Text Tiles + 32x32 BG Tiles
+	PGMTileROMExp   = (UINT8*)malloc((nPGMTileROMLen / 5) * 8);	// Expanded 8x8 Text Tiles and 32x32 BG Tiles
+	PGMSPRMaskROM	= (UINT8*)malloc(nPGMSPRMaskROMLen);
+	ICSSNDROM	= (UINT8*)malloc(nPGMSNDROMLen);
 
 	pgmMemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	pgmMemIndex();
 
@@ -707,25 +707,25 @@ int pgmInit()
 			SekMapMemory(PGM68KROM,				0x100000, (nPGM68KROMLen-1)+0x100000, SM_ROM);		// 68000 ROM
 		}
 
-                for (int i = 0; i < 0x100000; i+=0x20000) {		// Main Ram + Mirrors...
+                for (INT32 i = 0; i < 0x100000; i+=0x20000) {		// Main Ram + Mirrors...
                         SekMapMemory(PGM68KRAM,            		0x800000 | i, 0x81ffff | i, SM_RAM);
                 }
 
 		// Ripped from FBA Shuffle.
-                for (int i = 0; i < 0x100000; i+=0x08000) {		// Video Ram + Mirrors...
-                        SekMapMemory((unsigned char *)PGMBgRAM,		0x900000 | i, 0x900fff | i, SM_RAM);
-                        SekMapMemory((unsigned char *)PGMBgRAM,		0x901000 | i, 0x901fff | i, SM_RAM); // mirror
-                        SekMapMemory((unsigned char *)PGMBgRAM,		0x902000 | i, 0x902fff | i, SM_RAM); // mirror
-                        SekMapMemory((unsigned char *)PGMBgRAM,		0x903000 | i, 0x904fff | i, SM_RAM); // mirror
+                for (INT32 i = 0; i < 0x100000; i+=0x08000) {		// Video Ram + Mirrors...
+                        SekMapMemory((UINT8 *)PGMBgRAM,		0x900000 | i, 0x900fff | i, SM_RAM);
+                        SekMapMemory((UINT8 *)PGMBgRAM,		0x901000 | i, 0x901fff | i, SM_RAM); // mirror
+                        SekMapMemory((UINT8 *)PGMBgRAM,		0x902000 | i, 0x902fff | i, SM_RAM); // mirror
+                        SekMapMemory((UINT8 *)PGMBgRAM,		0x903000 | i, 0x904fff | i, SM_RAM); // mirror
 
-                        SekMapMemory((unsigned char *)PGMTxtRAM,	0x904000 | i, 0x905fff | i, SM_RAM);
-                        SekMapMemory((unsigned char *)PGMTxtRAM,	0x906000 | i, 0x906fff | i, SM_RAM); // mirror
+                        SekMapMemory((UINT8 *)PGMTxtRAM,	0x904000 | i, 0x905fff | i, SM_RAM);
+                        SekMapMemory((UINT8 *)PGMTxtRAM,	0x906000 | i, 0x906fff | i, SM_RAM); // mirror
 
-                        SekMapMemory((unsigned char *)PGMRowRAM,	0x907000 | i, 0x907fff | i, SM_RAM);
+                        SekMapMemory((UINT8 *)PGMRowRAM,	0x907000 | i, 0x907fff | i, SM_RAM);
                 }
 
-		SekMapMemory((unsigned char *)PGMPalRAM,		0xa00000, 0xa013ff, SM_ROM); // palette
-		SekMapMemory((unsigned char *)PGMVidReg,		0xb00000, 0xb0ffff, SM_RAM); // should be mirrored?
+		SekMapMemory((UINT8 *)PGMPalRAM,		0xa00000, 0xa013ff, SM_ROM); // palette
+		SekMapMemory((UINT8 *)PGMVidReg,		0xb00000, 0xb0ffff, SM_RAM); // should be mirrored?
 
 		SekMapHandler(1,					0xa00000, 0xa013ff, SM_WRITE);
 		SekMapHandler(2,					0xc10000, 0xc1ffff, SM_READ | SM_WRITE);
@@ -764,7 +764,7 @@ int pgmInit()
 
 	ics2115_init();
 	
-	pBurnDrvPalette = (unsigned int*)PGMPalRAM;
+	pBurnDrvPalette = (UINT32*)PGMPalRAM;
 
 	if (pPgmInitCallback) {
 		pPgmInitCallback();
@@ -779,7 +779,7 @@ int pgmInit()
 	return 0;
 }
 
-int pgmExit()
+INT32 pgmExit()
 {
 	pgmExitDraw();
 
@@ -838,7 +838,7 @@ int pgmExit()
 	return 0;
 }
 
-int pgmFrame()
+INT32 pgmFrame()
 {
 	if (PgmReset) {
 		PgmDoReset();
@@ -847,7 +847,7 @@ int pgmFrame()
 	// compile inputs
 	{
 		memset (PgmInput, 0, 6);
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			PgmInput[0] |= (PgmJoy1[i] & 1) << i;
 			PgmInput[1] |= (PgmJoy2[i] & 1) << i;
 			PgmInput[2] |= (PgmJoy3[i] & 1) << i;
@@ -867,7 +867,7 @@ int pgmFrame()
 		if ((PgmInput[3] & 0x18) == 0x18) PgmInput[3] &= 0xe7;
 	}
 
-	int nCyclesNext[3] = {0, 0, 0};
+	INT32 nCyclesNext[3] = {0, 0, 0};
 	nCyclesDone[0] = 0;
 	nCyclesDone[1] = 0;
 	nCyclesDone[2] = 0;
@@ -898,13 +898,13 @@ int pgmFrame()
 	ZetOpen(0);
 	Arm7Open(0);
 
-	for (int i = 0; i < PGM_INTER_LEAVE; i++)
+	for (INT32 i = 0; i < PGM_INTER_LEAVE; i++)
 	{
 		nCyclesNext[0] += M68K_CYCS_PER_INTER;
 		nCyclesNext[1] += Z80_CYCS_PER_INTER;
 		nCyclesNext[2] += ARM7_CYCS_PER_INTER;
 
-		int cycles = nCyclesNext[0] - nCyclesDone[0];
+		INT32 cycles = nCyclesNext[0] - nCyclesDone[0];
 
 		if (cycles > 0) {
 			nCyclesDone[0] += SekRun(cycles);
@@ -945,7 +945,7 @@ int pgmFrame()
 	return 0;
 }
 
-int pgmScan(int nAction,int *pnMin)
+INT32 pgmScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

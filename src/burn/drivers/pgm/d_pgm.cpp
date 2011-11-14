@@ -475,7 +475,7 @@ static struct BurnRomInfo orlegendRomDesc[] = {
 STDROMPICKEXT(orlegend, orlegend, pgm)
 STD_ROM_FN(orlegend)
 
-static int orlegendInit()
+static INT32 orlegendInit()
 {
 	pPgmProtCallback = install_protection_asic3_orlegend;
 
@@ -693,12 +693,12 @@ static void drgw2_patch()
 {
 	pgm_decrypt_dw2();
 
-	*((unsigned short*)(PGM68KROM + 0x031098)) = SWAP_WORD_LSB(0x4e93);
-	*((unsigned short*)(PGM68KROM + 0x03113e)) = SWAP_WORD_LSB(0x4e93);
-	*((unsigned short*)(PGM68KROM + 0x0311ce)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x031098)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x03113e)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x0311ce)) = SWAP_WORD_LSB(0x4e93);
 }
 
-static int drgw2Init()
+static INT32 drgw2Init()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = drgw2_patch;
@@ -737,12 +737,12 @@ static void drgw2100c_patch()
 {
 	pgm_decrypt_dw2();
 
-	*((unsigned short*)(PGM68KROM + 0x0303bc)) = SWAP_WORD_LSB(0x4e93);
-	*((unsigned short*)(PGM68KROM + 0x030462)) = SWAP_WORD_LSB(0x4e93);
-	*((unsigned short*)(PGM68KROM + 0x0304F2)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x0303bc)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x030462)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x0304F2)) = SWAP_WORD_LSB(0x4e93);
 }
 
-static int drgw2100cInit()
+static INT32 drgw2100cInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = drgw2100c_patch;
@@ -781,12 +781,12 @@ static void drgw2100j_patch()
 {
 	pgm_decrypt_dw2();
 
-	*((unsigned short*)(PGM68KROM + 0x0302C0)) = SWAP_WORD_LSB(0x4e93);
-	*((unsigned short*)(PGM68KROM + 0x030366)) = SWAP_WORD_LSB(0x4e93);
-	*((unsigned short*)(PGM68KROM + 0x0303F6)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x0302C0)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x030366)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x0303F6)) = SWAP_WORD_LSB(0x4e93);
 }
 
-static int drgw2100jInit()
+static INT32 drgw2100jInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = drgw2100j_patch;
@@ -825,12 +825,12 @@ static void drgw2100x_patch()
 {
 	pgm_decrypt_dw2();
 
-	*((unsigned short*)(PGM68KROM + 0x031084)) = SWAP_WORD_LSB(0x4e93);
-	*((unsigned short*)(PGM68KROM + 0x03112A)) = SWAP_WORD_LSB(0x4e93);
-	*((unsigned short*)(PGM68KROM + 0x0311BA)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x031084)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x03112A)) = SWAP_WORD_LSB(0x4e93);
+	*((UINT16*)(PGM68KROM + 0x0311BA)) = SWAP_WORD_LSB(0x4e93);
 }
 
-static int drgw2100xInit()
+static INT32 drgw2100xInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = drgw2100x_patch;
@@ -875,7 +875,7 @@ static struct BurnRomInfo killbldRomDesc[] = {
 STDROMPICKEXT(killbld, killbld, pgm)
 STD_ROM_FN(killbld)
 
-static int killbldInit()
+static INT32 killbldInit()
 {
 	pPgmInitCallback = pgm_decrypt_killbld;
 	pPgmProtCallback = install_protection_asic25_asic22_killbld;
@@ -954,7 +954,7 @@ static struct BurnRomInfo drgw3RomDesc[] = {
 STDROMPICKEXT(drgw3, drgw3, pgm)
 STD_ROM_FN(drgw3)
 
-static int drgw3Init()
+static INT32 drgw3Init()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_dw3;
@@ -1104,7 +1104,7 @@ static struct BurnRomInfo oldsRomDesc[] = {
 STDROMPICKEXT(olds, olds, pgm)
 STD_ROM_FN(olds)
 
-static int oldsInit()
+static INT32 oldsInit()
 {
 	pPgmProtCallback = install_protection_asic25_asic28_olds;
 
@@ -1237,7 +1237,7 @@ static struct BurnRomInfo kovRomDesc[] = {
 STDROMPICKEXT(kov, kov, pgm)
 STD_ROM_FN(kov)
 
-static int kovInit()
+static INT32 kovInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_kov;
@@ -1426,7 +1426,7 @@ static struct BurnRomInfo kovshRomDesc[] = {
 STDROMPICKEXT(kovsh, kovsh, pgm)
 STD_ROM_FN(kovsh)
 
-static int kovshInit()
+static INT32 kovshInit()
 {
 	pPgmInitCallback = pgm_decrypt_kovsh;
 	pPgmProtCallback = install_protection_asic27a_kovsh;
@@ -1508,7 +1508,7 @@ static struct BurnRomInfo photoy2kRomDesc[] = {
 STDROMPICKEXT(photoy2k, photoy2k, pgm)
 STD_ROM_FN(photoy2k)
 
-static int photoy2kInit()
+static INT32 photoy2kInit()
 {
 	pPgmInitCallback = pgm_decrypt_photoy2k;
 	pPgmProtCallback = install_protection_asic27a_kovsh;
@@ -1624,7 +1624,7 @@ static struct BurnRomInfo puzlstarRomDesc[] = {
 STDROMPICKEXT(puzlstar, puzlstar, pgm)
 STD_ROM_FN(puzlstar)
 
-static int puzlstarInit()
+static INT32 puzlstarInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_puzlstar;
@@ -1669,20 +1669,20 @@ static void puzzli2_decrypt()
 {
  	pgm_decrypt_puzzli2();
 
-	*((unsigned short*)(PGM68KROM + 0x0268c0)) = SWAP_WORD_LSB(0x4e71);
-	*((unsigned short*)(PGM68KROM + 0x0268c2)) = SWAP_WORD_LSB(0x4e71);
-	*((unsigned short*)(PGM68KROM + 0x0268c4)) = SWAP_WORD_LSB(0x4e71);
-	*((unsigned short*)(PGM68KROM + 0x03877a)) = SWAP_WORD_LSB(0x4e71);
-	*((unsigned short*)(PGM68KROM + 0x04cee0)) = SWAP_WORD_LSB(0x4e71);
-	*((unsigned short*)(PGM68KROM + 0x0548ec)) = SWAP_WORD_LSB(0x4e71);
-	*((unsigned short*)(PGM68KROM + 0x0548fc)) = SWAP_WORD_LSB(0x4e71);
-	*((unsigned short*)(PGM68KROM + 0x054948)) = SWAP_WORD_LSB(0x4e71);
-	*((unsigned short*)(PGM68KROM + 0x05496A)) = SWAP_WORD_LSB(0x4e71);
-	*((unsigned short*)(PGM68KROM + 0x0549FA)) = SWAP_WORD_LSB(0x4e71);
-	*((unsigned short*)(PGM68KROM + 0x054A0A)) = SWAP_WORD_LSB(0x4e71);
+	*((UINT16*)(PGM68KROM + 0x0268c0)) = SWAP_WORD_LSB(0x4e71);
+	*((UINT16*)(PGM68KROM + 0x0268c2)) = SWAP_WORD_LSB(0x4e71);
+	*((UINT16*)(PGM68KROM + 0x0268c4)) = SWAP_WORD_LSB(0x4e71);
+	*((UINT16*)(PGM68KROM + 0x03877a)) = SWAP_WORD_LSB(0x4e71);
+	*((UINT16*)(PGM68KROM + 0x04cee0)) = SWAP_WORD_LSB(0x4e71);
+	*((UINT16*)(PGM68KROM + 0x0548ec)) = SWAP_WORD_LSB(0x4e71);
+	*((UINT16*)(PGM68KROM + 0x0548fc)) = SWAP_WORD_LSB(0x4e71);
+	*((UINT16*)(PGM68KROM + 0x054948)) = SWAP_WORD_LSB(0x4e71);
+	*((UINT16*)(PGM68KROM + 0x05496A)) = SWAP_WORD_LSB(0x4e71);
+	*((UINT16*)(PGM68KROM + 0x0549FA)) = SWAP_WORD_LSB(0x4e71);
+	*((UINT16*)(PGM68KROM + 0x054A0A)) = SWAP_WORD_LSB(0x4e71);
 }
 
-static int puzzli2Init()
+static INT32 puzzli2Init()
 {
 	pPgmInitCallback = puzzli2_decrypt;
 	pPgmProtCallback = install_protection_asic27_kov; // simulation
@@ -1729,7 +1729,7 @@ static struct BurnRomInfo martmastRomDesc[] = {
 STDROMPICKEXT(martmast, martmast, pgm)
 STD_ROM_FN(martmast)
 
-static int martmastInit()
+static INT32 martmastInit()
 {
 	Arm7SetIdleLoopAddress(0x800039e);
 
@@ -1847,7 +1847,7 @@ static struct BurnRomInfo py2k2RomDesc[] = {
 STDROMPICKEXT(py2k2, py2k2, pgm)
 STD_ROM_FN(py2k2)
 
-static int py2k2Init()
+static INT32 py2k2Init()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_py2k2;
@@ -1893,7 +1893,7 @@ static struct BurnRomInfo kov2RomDesc[] = {
 STDROMPICKEXT(kov2, kov2, pgm)
 STD_ROM_FN(kov2)
 
-static int kov2Init()
+static INT32 kov2Init()
 {
 	Arm7SetIdleLoopAddress(0x80000ae);
 
@@ -2096,15 +2096,15 @@ static void kov2pCallback()
 {
 	pgm_decrypt_kov2p();
 
-	*((unsigned short*)(PGMUSER0 + 0x0000de)) = SWAP_WORD_LSB(0x46c0);
-	*((unsigned short*)(PGMUSER0 + 0x1ffffc)) = SWAP_WORD_LSB(0x9933);
+	*((UINT16*)(PGMUSER0 + 0x0000de)) = SWAP_WORD_LSB(0x46c0);
+	*((UINT16*)(PGMUSER0 + 0x1ffffc)) = SWAP_WORD_LSB(0x9933);
 
-	for (int i = 0x4ed8; i <= 0x4f0c; i+=4) {
+	for (INT32 i = 0x4ed8; i <= 0x4f0c; i+=4) {
 		PGMUSER0[i] -= 0x08;
 	}
 }
 
-static int kov2pInit()
+static INT32 kov2pInit()
 {
 	Arm7SetIdleLoopAddress(0x80000a6);
 
@@ -2188,7 +2188,7 @@ static struct BurnRomInfo ddp2RomDesc[] = {
 STDROMPICKEXT(ddp2, ddp2, pgm)
 STD_ROM_FN(ddp2)
 
-static int ddp2Init()
+static INT32 ddp2Init()
 {
 	pPgmInitCallback = pgm_decrypt_ddp2;
 	pPgmProtCallback = install_protection_asic27a_ddp2; // simulation
@@ -2294,7 +2294,7 @@ static struct BurnRomInfo dw2001RomDesc[] = {
 STDROMPICKEXT(dw2001, dw2001, pgm)
 STD_ROM_FN(dw2001)
 
-static int dw2001Init()
+static INT32 dw2001Init()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_martmast; // the same
@@ -2338,7 +2338,7 @@ static struct BurnRomInfo dmnfrntRomDesc[] = {
 STDROMPICKEXT(dmnfrnt, dmnfrnt, pgm)
 STD_ROM_FN(dmnfrnt)
 
-static int dmnfrntInit()
+static INT32 dmnfrntInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_dfront;
@@ -2417,7 +2417,7 @@ static struct BurnRomInfo thegladRomDesc[] = {
 STDROMPICKEXT(theglad, theglad, pgm)
 STD_ROM_FN(theglad)
 
-static int thegladInit()
+static INT32 thegladInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_theglad;
@@ -2494,7 +2494,7 @@ static struct BurnRomInfo happy6RomDesc[] = {
 STDROMPICKEXT(happy6, happy6, pgm)
 STD_ROM_FN(happy6)
 
-static int happy6in1Init()
+static INT32 happy6in1Init()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_happy6in1;
@@ -2537,7 +2537,7 @@ static struct BurnRomInfo kovshpRomDesc[] = {
 STDROMPICKEXT(kovshp, kovshp, pgm)
 STD_ROM_FN(kovshp)
 
-static int kovshpInit()
+static INT32 kovshpInit()
 {
 	pPgmInitCallback = pgm_decrypt_kovshp;
 	pPgmProtCallback = install_protection_asic27_kov; // simulation
@@ -2580,7 +2580,7 @@ static struct BurnRomInfo oldsplusRomDesc[] = {
 STDROMPICKEXT(oldsplus, oldsplus, pgm)
 STD_ROM_FN(oldsplus)
 
-static int oldsplusInit()
+static INT32 oldsplusInit()
 {
 	pPgmInitCallback = pgm_decrypt_oldsplus;
 	pPgmProtCallback = install_protection_asic27a_oldsplus;
@@ -2624,7 +2624,7 @@ static struct BurnRomInfo killbldpRomDesc[] = {
 STDROMPICKEXT(killbldp, killbldp, pgm)
 STD_ROM_FN(killbldp)
 
-int killbldpInit()
+INT32 killbldpInit()
 {
 	Arm7SetIdleLoopAddress(0x00007c4);
 
@@ -2673,7 +2673,7 @@ static struct BurnRomInfo svgRomDesc[] = {
 STDROMPICKEXT(svg, svg, pgm)
 STD_ROM_FN(svg)
 
-static int svgInit()
+static INT32 svgInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_svg;
@@ -2719,7 +2719,7 @@ static struct BurnRomInfo ddp3RomDesc[] = {
 STDROMPICKEXT(ddp3, ddp3, ddp3Bios) /* custom bios */
 STD_ROM_FN(ddp3)
 
-static int ddp3Init()
+static INT32 ddp3Init()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_py2k2; // the same.
@@ -2840,16 +2840,16 @@ static void ddp3blkPatchRAM()
 	SekClose();
 
 	// enable asic test
-//	*((unsigned short*)(PGM68KROM + 0x03c0f4)) = SWAP_WORD_LSB(0x0012);
+//	*((UINT16*)(PGM68KROM + 0x03c0f4)) = SWAP_WORD_LSB(0x0012);
 }
 
-static int ddp3blkInit()
+static INT32 ddp3blkInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_py2k2; // the same
 	pPgmProtCallback = install_protection_asic27a_ddp3; // simulation
 
-	int nRet = pgmInit();
+	INT32 nRet = pgmInit();
 
 	if (nRet == 0) {
 		ddp3blkPatchRAM();
@@ -2891,7 +2891,7 @@ static struct BurnRomInfo ketRomDesc[] = {
 STDROMPICKEXT(ket, ket, ketsuiBios) /* custom bios */
 STD_ROM_FN(ket)
 
-static int ketsuiInit()
+static INT32 ketsuiInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_ketsui;
@@ -2997,7 +2997,7 @@ static struct BurnRomInfo espgalRomDesc[] = {
 STDROMPICKEXT(espgal, espgal, espgalBios) /* custom bios */
 STD_ROM_FN(espgal)
 
-static int espgalInit()
+static INT32 espgalInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmInitCallback = pgm_decrypt_espgaluda;
@@ -3045,9 +3045,9 @@ static struct BurnRomInfo thegladpcbRomDesc[] = {
 STDROMPICKEXT(thegladpcb, thegladpcb, thegladBIOS) /* custom bios */
 STD_ROM_FN(thegladpcb)
 
-static int thegladpcbInit()
+static INT32 thegladpcbInit()
 {
-	int nRet = thegladInit();
+	INT32 nRet = thegladInit();
 
 	if (nRet == 0) {
 		if (BurnLoadRom(ICSSNDROM + 0x200000, 0x83, 1)) return 1; // load extra 'wave' bios sample rom
@@ -3180,7 +3180,7 @@ static struct BurnRomInfo kovqhsgsRomDesc[] = {
 STDROMPICKEXT(kovqhsgs, kovqhsgs, pgm)
 STD_ROM_FN(kovqhsgs)
 
-static int kovqhsgsInit()
+static INT32 kovqhsgsInit()
 {
 	Arm7SetIdleLoopAddress(0x00000260);
 
@@ -3222,7 +3222,7 @@ static struct BurnRomInfo kovlsqh2RomDesc[] = {
 STDROMPICKEXT(kovlsqh2, kovlsqh2, pgm)
 STD_ROM_FN(kovlsqh2)
 
-static int kovlsqh2Init()
+static INT32 kovlsqh2Init()
 {
 	pPgmInitCallback = pgm_decrypt_kovlsqh2;
 //	pPgmProtCallback = install_protection_asic27a_kovsh;
@@ -3261,7 +3261,7 @@ static struct BurnRomInfo kovlsqhRomDesc[] = {
 STDROMPICKEXT(kovlsqh, kovlsqh, pgm)
 STD_ROM_FN(kovlsqh)
 
-static int kovlsqhInit()
+static INT32 kovlsqhInit()
 {
 	pPgmInitCallback = pgm_decrypt_kovlsqh2;
 //	pPgmProtCallback = install_protection_asic27a_kovsh;
@@ -3366,7 +3366,7 @@ static struct BurnRomInfo kovassgRomDesc[] = {
 STDROMPICKEXT(kovassg, kovassg, pgm)
 STD_ROM_FN(kovassg)
 
-static int kovassgInit()
+static INT32 kovassgInit()
 {
 	pPgmInitCallback = pgm_decrypt_kovassg;
 //	pPgmProtCallback = install_protection_asic27a_kovsh;
@@ -3408,7 +3408,7 @@ static struct BurnRomInfo kovshxasRomDesc[] = {
 STDROMPICKEXT(kovshxas, kovshxas, pgm)
 STD_ROM_FN(kovshxas)
 
-static int kovshxasInit()
+static INT32 kovshxasInit()
 {
 	pPgmProtCallback = install_protection_asic27a_kovsh;
 
@@ -3451,7 +3451,7 @@ static struct BurnRomInfo kovsgqyzRomDesc[] = {
 STDROMPICKEXT(kovsgqyz, kovsgqyz, pgm)
 STD_ROM_FN(kovsgqyz)
 
-static int kovsgqyzInit()
+static INT32 kovsgqyzInit()
 {
 	nPGMEnableIRQ4 = 1;
 	pPgmProtCallback = install_protection_asic27_kov; // simulation
