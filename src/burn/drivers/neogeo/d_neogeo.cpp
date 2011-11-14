@@ -302,7 +302,7 @@ static struct BurnInputInfo neoCDInputList[] = {
 
 STDINPUTINFO(neoCD)
 
-#define A(a, b, c, d) { a, b, (unsigned char*)(c), d }
+#define A(a, b, c, d) { a, b, (UINT8*)(c), d }
 
 static struct BurnInputInfo neopaddleInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	NeoButton2 + 0,	"p1 coin"},			//  0
@@ -1162,9 +1162,9 @@ struct BurnDriver BurnDrvneocdz = {
 // ----------------------------------------------------------------------------
 // Extra code for SMA protection
 
-int nSMARandomNumber[MAX_SLOT];
+INT32 nSMARandomNumber[MAX_SLOT];
 
-static unsigned int nNeoSMARNGAddress[MAX_SLOT][2] = { 0, 0 };
+static UINT32 nNeoSMARNGAddress[MAX_SLOT][2] = { 0, 0 };
 
 static pSekWriteWordHandler pSMABankswitchHandler[MAX_SLOT] = { NULL, };
 
@@ -1180,7 +1180,7 @@ void NeoSMABankswitch()
 }
 
 // Extra protection
-unsigned short __fastcall neogeoReadWordSMA9A37(unsigned int sekAddress)
+UINT16 __fastcall neogeoReadWordSMA9A37(UINT32 sekAddress)
 {
 //	bprintf(PRINT_NORMAL, " -- SMA9A37 0x%08X (word)\n", sekAddress);
 
@@ -1188,10 +1188,10 @@ unsigned short __fastcall neogeoReadWordSMA9A37(unsigned int sekAddress)
 		return 0x9A37;
 	}
 
-	return *((unsigned short*)(Neo68KROMActive + nNeo68KROMBank + sekAddress - 0x200000));
+	return *((UINT16*)(Neo68KROMActive + nNeo68KROMBank + sekAddress - 0x200000));
 }
 
-unsigned char __fastcall neogeoReadByteSMA9A37(unsigned int sekAddress)
+UINT8 __fastcall neogeoReadByteSMA9A37(UINT32 sekAddress)
 {
 //	bprintf(PRINT_NORMAL, " -- SMA9A37 0x%08X (byte)\n", sekAddress);
 
@@ -1206,12 +1206,12 @@ unsigned char __fastcall neogeoReadByteSMA9A37(unsigned int sekAddress)
 }
 
 // Random number generator
-unsigned short __fastcall neogeoReadWordSMARNG(unsigned int sekAddress)
+UINT16 __fastcall neogeoReadWordSMARNG(UINT32 sekAddress)
 {
 	if (sekAddress == nNeoSMARNGAddress[nNeoActiveSlot][0] || sekAddress == nNeoSMARNGAddress[nNeoActiveSlot][1]) {
-		int nRandomNumber = nSMARandomNumber[nNeoActiveSlot];
+		INT32 nRandomNumber = nSMARandomNumber[nNeoActiveSlot];
 
-		int nNewbit = (
+		INT32 nNewbit = (
 				(nSMARandomNumber[nNeoActiveSlot] >>  2) ^
 				(nSMARandomNumber[nNeoActiveSlot] >>  3) ^
 				(nSMARandomNumber[nNeoActiveSlot] >>  5) ^
@@ -1226,15 +1226,15 @@ unsigned short __fastcall neogeoReadWordSMARNG(unsigned int sekAddress)
 		return nRandomNumber;
 	}
 
-	return *((unsigned short*)(Neo68KROMActive + nNeo68KROMBank + sekAddress - 0x200000));
+	return *((UINT16*)(Neo68KROMActive + nNeo68KROMBank + sekAddress - 0x200000));
 }
 
-unsigned char __fastcall neogeoReadByteSMARNG(unsigned int sekAddress)
+UINT8 __fastcall neogeoReadByteSMARNG(UINT32 sekAddress)
 {
 	if ((sekAddress & ~1) == nNeoSMARNGAddress[nNeoActiveSlot][0] || (sekAddress & ~1) == nNeoSMARNGAddress[nNeoActiveSlot][1]) {
-		int nRandomNumber = nSMARandomNumber[nNeoActiveSlot];
+		INT32 nRandomNumber = nSMARandomNumber[nNeoActiveSlot];
 
-		int nNewbit = (
+		INT32 nNewbit = (
 				(nSMARandomNumber[nNeoActiveSlot] >>  2) ^
 				(nSMARandomNumber[nNeoActiveSlot] >>  3) ^
 				(nSMARandomNumber[nNeoActiveSlot] >>  5) ^
@@ -1256,7 +1256,7 @@ unsigned char __fastcall neogeoReadByteSMARNG(unsigned int sekAddress)
 	return Neo68KROMActive[(nNeo68KROMBank + sekAddress - 0x200000) ^ 1];
 }
 
-int NeoSMAScan(int nAction, int* /*pnMin*/)
+INT32 NeoSMAScan(INT32 nAction, INT32* /*pnMin*/)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(nSMARandomNumber);
@@ -1287,7 +1287,7 @@ static void NeoSMAInstallHanders()
 }
 
 // Install handlers
-static int NeoSMAInit(void (*pInitCallback)(), pSekWriteWordHandler pBankswitchHandler, unsigned int nRNGAddress0, unsigned int nRNGAddress1)
+static INT32 NeoSMAInit(void (*pInitCallback)(), pSekWriteWordHandler pBankswitchHandler, UINT32 nRNGAddress0, UINT32 nRNGAddress1)
 {
 	nNeoSMARNGAddress[nNeoActiveSlot][0] = nRNGAddress0; nNeoSMARNGAddress[nNeoActiveSlot][1] = nRNGAddress1;
 	pSMABankswitchHandler[nNeoActiveSlot] = pBankswitchHandler;
@@ -1302,7 +1302,7 @@ static int NeoSMAInit(void (*pInitCallback)(), pSekWriteWordHandler pBankswitchH
 	return NeoInit();
 }
 
-int NeoSMAExit()
+INT32 NeoSMAExit()
 {
 	NeoExit();
 
@@ -1314,20 +1314,20 @@ int NeoSMAExit()
 // ----------------------------------------------------------------------------
 // Extra code for PCM2 protection
 
-struct PCM2DecryptP2Info { unsigned int nAddressOffset[16]; };
+struct PCM2DecryptP2Info { UINT32 nAddressOffset[16]; };
 
-struct PCM2DecryptV2Info { int nAddressOffset; int nAddressXor; unsigned char nDataXor[8]; };
+struct PCM2DecryptV2Info { INT32 nAddressOffset; INT32 nAddressXor; UINT8 nDataXor[8]; };
 
 static void PCM2DecryptP()
 {
 	// Descamble P-ROMs
 
-	unsigned char* pTemp = (unsigned char*)malloc(0x400000);
+	UINT8* pTemp = (UINT8*)malloc(0x400000);
 
 	if (pTemp) {
 		memcpy(pTemp, Neo68KROMActive + 0x100000, 0x400000);
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			memcpy(Neo68KROMActive + 0x100000 + i * 0x100000, pTemp + 0x000000 + (((((i + 2) & 1) << 2) | ((i + 2) & 2)) << 19), 0x80000);
 			memcpy(Neo68KROMActive + 0x180000 + i * 0x100000, pTemp + 0x080000 + (((((i + 1) & 1) << 2) | ((i + 1) & 2)) << 19), 0x80000);
 		}
@@ -1337,13 +1337,13 @@ static void PCM2DecryptP()
 	}
 }
 
-static void PCM2DecryptV(int size, int bit)
+static void PCM2DecryptV(INT32 size, INT32 bit)
 {
-	for (int i = 0; i < size / 2; i += (2 << bit)) {
-		unsigned short buffer[8];
-		memcpy(buffer, ((unsigned short*)(YM2610ADPCMAROM[nNeoActiveSlot])) + i, 16);
-		for (int j = (2 << bit) - 1; j >= 0; j--) {
-			((unsigned short*)(YM2610ADPCMAROM[nNeoActiveSlot]))[i + j] = buffer[j ^ (1 << bit)];
+	for (INT32 i = 0; i < size / 2; i += (2 << bit)) {
+		UINT16 buffer[8];
+		memcpy(buffer, ((UINT16*)(YM2610ADPCMAROM[nNeoActiveSlot])) + i, 16);
+		for (INT32 j = (2 << bit) - 1; j >= 0; j--) {
+			((UINT16*)(YM2610ADPCMAROM[nNeoActiveSlot]))[i + j] = buffer[j ^ (1 << bit)];
 		}
 	}
 }
@@ -1352,13 +1352,13 @@ static void PCM2DecryptV2(const PCM2DecryptV2Info* const pInfo)
 {
 	// Decrypt V-ROMs
 
-	unsigned char* pTemp = (unsigned char*)malloc(0x01000000);
+	UINT8* pTemp = (UINT8*)malloc(0x01000000);
 
 	if (pTemp) {
 		memcpy(pTemp, YM2610ADPCMAROM[nNeoActiveSlot], 0x01000000);
 
-		for (int i = 0; i < 0x01000000; i++) {
-			int nAddress = ((i & 0x00FEFFFE) | ((i & 0x00010000) >> 16) | ((i & 0x00000001) << 16)) ^ pInfo->nAddressOffset;
+		for (INT32 i = 0; i < 0x01000000; i++) {
+			INT32 nAddress = ((i & 0x00FEFFFE) | ((i & 0x00010000) >> 16) | ((i & 0x00000001) << 16)) ^ pInfo->nAddressOffset;
 
 			YM2610ADPCMAROM[nNeoActiveSlot][nAddress] = pTemp[(i + pInfo->nAddressXor) & 0xffffff] ^ pInfo->nDataXor[nAddress & 0x07];
 		}
@@ -1372,12 +1372,12 @@ static void PCM2DecryptP2(const PCM2DecryptP2Info* const pInfo)
 {
 	// Descamble P-ROMs
 
-	unsigned char* pTemp = (unsigned char*)malloc(0x800000);
+	UINT8* pTemp = (UINT8*)malloc(0x800000);
 
 	if (pTemp) {
 		memcpy(pTemp, Neo68KROMActive, 0x800000);
 
-		for (int i = 0; i < 16; i++) {
+		for (INT32 i = 0; i < 16; i++) {
 			memcpy(Neo68KROMActive + i * 0x80000, pTemp + pInfo->nAddressOffset[i], 0x80000);
 		}
 
@@ -1389,11 +1389,11 @@ static void PCM2DecryptP2(const PCM2DecryptP2Info* const pInfo)
 // ----------------------------------------------------------------------------
 // PVC protection
 
-static unsigned char *PVCRAM = NULL;
+static UINT8 *PVCRAM = NULL;
 
 void NeoPVCPallette01() // unpack palette word to RGB dword
 {
-	unsigned char b1, b2;
+	UINT8 b1, b2;
 	b1 = PVCRAM[0x1fe1];
 	b2 = PVCRAM[0x1fe0];
 
@@ -1405,7 +1405,7 @@ void NeoPVCPallette01() // unpack palette word to RGB dword
 
 void NeoPVCPallette02() // pack RGB dword to palette word
 {
-	unsigned char b1, b2, b3, b4;
+	UINT8 b1, b2, b3, b4;
 	b1 = PVCRAM[0x1fe9];
 	b2 = PVCRAM[0x1fe8];
 	b3 = PVCRAM[0x1feb];
@@ -1417,7 +1417,7 @@ void NeoPVCPallette02() // pack RGB dword to palette word
 
 void NeoPVCBankswitch()
 {
-	unsigned int nBank  = (PVCRAM[0x1ff3] << 16) | (PVCRAM[0x1ff2] << 8) | PVCRAM[0x1ff1];
+	UINT32 nBank  = (PVCRAM[0x1ff3] << 16) | (PVCRAM[0x1ff2] << 8) | PVCRAM[0x1ff1];
 		     nBank += (Neo68KROMActive[0x108] & 0x10) << 16;	// for kof2003 (bank 0 is $100000)
 
 	if (nNeo68KROMBank != nBank)
@@ -1431,7 +1431,7 @@ void NeoPVCBankswitch()
 	PVCRAM[0x1ff3] &= 0x7f;
 }
 
-void __fastcall PVCWriteByteBankSwitch(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall PVCWriteByteBankSwitch(UINT32 sekAddress, UINT8 byteValue)
 {
 	PVCRAM[(sekAddress & 0x1fff) ^ 1] = byteValue;
 	if (sekAddress >= 0x2fffe0 && sekAddress <= 0x2fffe1) NeoPVCPallette01();
@@ -1439,9 +1439,9 @@ void __fastcall PVCWriteByteBankSwitch(unsigned int sekAddress, unsigned char by
 	else if  (sekAddress >= 0x2ffff0 && sekAddress <= 0x2ffff3) NeoPVCBankswitch();
 }
 
-void __fastcall PVCWriteWordBankSwitch(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall PVCWriteWordBankSwitch(UINT32 sekAddress, UINT16 wordValue)
 {
-	*((unsigned short *)(PVCRAM + (sekAddress & 0x1ffe))) = wordValue;
+	*((UINT16 *)(PVCRAM + (sekAddress & 0x1ffe))) = wordValue;
 	if (sekAddress >= 0x2fffe0 && sekAddress <= 0x2fffe1) NeoPVCPallette01();
 	else if (sekAddress >= 0x2fffe8 && sekAddress <= 0x2fffeb) NeoPVCPallette02();
 	else if (sekAddress >= 0x2ffff0 && sekAddress <= 0x2ffff3) NeoPVCBankswitch();
@@ -1452,7 +1452,7 @@ static void NeoPVCMapBank()
 	SekMapMemory(Neo68KROMActive + nNeo68KROMBank, 0x200000, 0x2fdfff, SM_ROM);
 }
 
-static int NeoPVCScan(int nAction, int*)
+static INT32 NeoPVCScan(INT32 nAction, INT32*)
 {
 	struct BurnArea ba;
 
@@ -1477,9 +1477,9 @@ static void NeoPVCInstallHandlers()
 	SekSetWriteByteHandler(6,    PVCWriteByteBankSwitch);
 }
 
-static int NeoPVCInit()
+static INT32 NeoPVCInit()
 {
-	PVCRAM = (unsigned char*)malloc(0x2000);
+	PVCRAM = (UINT8*)malloc(0x2000);
 	if (!PVCRAM) return 1;
 	
 	memset(PVCRAM, 0, 0x2000);
@@ -1491,7 +1491,7 @@ static int NeoPVCInit()
 	return NeoInit();
 }
 
-static int NeoPVCExit()
+static INT32 NeoPVCExit()
 {
 	if (PVCRAM) {
 		free(PVCRAM);
@@ -1507,7 +1507,7 @@ static int NeoPVCExit()
 
 static void lans2004_sx_decode()
 {
-	int i, j, n;
+	INT32 i, j, n;
 	for (i = 0; i < 0x20000; i+= 0x10) {
 		for (j = 0; j < 0x08; j++) {
 			n = NeoTextROM[nNeoActiveSlot][i + j + 8];
@@ -1517,9 +1517,9 @@ static void lans2004_sx_decode()
 	}
 }
 
-static void lans2004_cx_decode(int nLen)
+static void lans2004_cx_decode(INT32 nLen)
 {
-	int i, j, n;
+	INT32 i, j, n;
 	for (i = 0; i < nLen; i+= 0x80) {
 		for (j = 0; j < 0x40; j++) {
 			n = NeoSpriteROM[nNeoActiveSlot][i + j + 0x40];
@@ -1529,14 +1529,14 @@ static void lans2004_cx_decode(int nLen)
 	}
 }
 
-static void DoPerm(int g) // 0 - cthd2003, 1 - svcboot
+static void DoPerm(INT32 g) // 0 - cthd2003, 1 - svcboot
 {
-	static int idx[ 2 ][ 16 ] = {
+	static INT32 idx[ 2 ][ 16 ] = {
 		{ 0, 1, 2, 3, 3, 4, 4, 5, 0, 1, 2, 3, 3, 4, 4, 5 }, // 0
 		{ 0, 1, 0, 1, 2, 3, 2, 3, 3, 4, 3, 4, 4, 5, 4, 5 }, // 1
 	};
 
-	static int tbl[ 6 ][ 4 ] = {
+	static INT32 tbl[ 6 ][ 4 ] = {
 		{ 3, 0, 1, 2 },
 		{ 2, 3, 0, 1 },
 		{ 1, 2, 3, 0 },
@@ -1545,8 +1545,8 @@ static void DoPerm(int g) // 0 - cthd2003, 1 - svcboot
 		{ 3, 0, 2, 1 },
 	};
 
-	int i, j, k, *b;
-	unsigned char dst[0x800];
+	INT32 i, j, k, *b;
+	UINT8 dst[0x800];
 
 	for (i = 0; i < 0x4000000 >> 11; i++)
 	{
@@ -1885,7 +1885,7 @@ static void Alpham2pCallback()
 	BurnLoadRom(Neo68KROMActive + 0x000001, 1, 2);
 }
 
-static int Alpham2pInit()
+static INT32 Alpham2pInit()
 {
 	NeoCallbackActive->pInitialise = Alpham2pCallback;
 	
@@ -2225,7 +2225,7 @@ static void BurningfpCallback()
 	BurnLoadRom(Neo68KROMActive + 0x000001, 1, 2);
 }
 
-static int BurningfpInit()
+static INT32 BurningfpInit()
 {
 	NeoCallbackActive->pInitialise = BurningfpCallback;
 	
@@ -2834,7 +2834,7 @@ static void Kotm2pCallback()
 	BurnLoadRom(Neo68KROMActive + 0x000001, 1, 2);
 }
 
-static int Kotm2pInit()
+static INT32 Kotm2pInit()
 {
 	NeoCallbackActive->pInitialise = Kotm2pCallback;
 	
@@ -3172,11 +3172,11 @@ static struct BurnRomInfo fatfury2RomDesc[] = {
 STDROMPICKEXT(fatfury2, fatfury2, neogeo)
 STD_ROM_FN(fatfury2)
 
-static int prot_data;
+static INT32 prot_data;
 
-unsigned char __fastcall fatfury2ReadByteProtection(unsigned int sekAddress)
+UINT8 __fastcall fatfury2ReadByteProtection(UINT32 sekAddress)
 {
-	unsigned short res = (prot_data >> 24) & 0xFF;
+	UINT16 res = (prot_data >> 24) & 0xFF;
 
 //	bprintf(PRINT_NORMAL, _T("  - prot 0x%06X read byte (PC: 0x%06X)\n"), sekAddress, SekGetPC(-1));
 
@@ -3203,9 +3203,9 @@ unsigned char __fastcall fatfury2ReadByteProtection(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall fatfury2ReadWordProtection(unsigned int sekAddress)
+UINT16 __fastcall fatfury2ReadWordProtection(UINT32 sekAddress)
 {
-	unsigned short res = (prot_data >> 24) & 0xFF;
+	UINT16 res = (prot_data >> 24) & 0xFF;
 
 //	bprintf(PRINT_NORMAL, _T("  - prot 0x%06X read word (PC: 0x%06X)\n"), sekAddress, SekGetPC(-1));
 
@@ -3232,7 +3232,7 @@ unsigned short __fastcall fatfury2ReadWordProtection(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall fatfury2WriteByteProtection(unsigned int sekAddress, unsigned char /*byteValue*/)
+void __fastcall fatfury2WriteByteProtection(UINT32 sekAddress, UINT8 /*byteValue*/)
 {
 //	bprintf(PRINT_NORMAL, _T("  - prot 0x%06X -> 0x%02X (PC: 0x%06X)\n"), sekAddress, byteValue, SekGetPC(-1));
 
@@ -3253,7 +3253,7 @@ void __fastcall fatfury2WriteByteProtection(unsigned int sekAddress, unsigned ch
 	}
 }
 
-void __fastcall fatfury2WriteWordProtection(unsigned int sekAddress, unsigned short /*wordValue*/)
+void __fastcall fatfury2WriteWordProtection(UINT32 sekAddress, UINT16 /*wordValue*/)
 {
 //	bprintf(PRINT_NORMAL, _T("  - prot 0x%06X -> 0x%04X (PC: 0x%06X)\n"), sekAddress, wordValue, SekGetPC(-1));
 
@@ -3310,7 +3310,7 @@ void __fastcall fatfury2WriteWordProtection(unsigned int sekAddress, unsigned sh
 	}
 }
 
-int fatfury2Scan(int nAction, int* /*pnMin*/)
+INT32 fatfury2Scan(INT32 nAction, INT32* /*pnMin*/)
 {
 	if (nAction & ACB_DRIVER_DATA) {
 		SCAN_VAR(prot_data);
@@ -3330,7 +3330,7 @@ static void fatfury2InstallHanders()
 	SekSetReadByteHandler(6, fatfury2ReadByteProtection);
 }
 
-static int fatfury2Init()
+static INT32 fatfury2Init()
 {
 	NeoCallbackActive->pInstallHandlers = fatfury2InstallHanders;
 	NeoCallbackActive->pScan = fatfury2Scan;
@@ -3483,7 +3483,7 @@ static void aof2aCallback()
 	BurnLoadRom(Neo68KROMActive, 14, 1);
 }
 
-static int aof2aInit()
+static INT32 aof2aInit()
 {
 	NeoCallbackActive->pInitialise = aof2aCallback;
 
@@ -3567,7 +3567,7 @@ static void fatfurspaCallback()
 	BurnLoadRom(Neo68KROMActive, 13, 1);
 }
 
-static int fatfurspaInit()
+static INT32 fatfurspaInit()
 {
 	NeoCallbackActive->pInitialise = fatfurspaCallback;
 
@@ -3724,7 +3724,7 @@ static void samsho2kCallback()
 	BurnLoadRom(Neo68KROMActive + 0x080000, 16, 1);
 }
 
-static int samsho2kInit()
+static INT32 samsho2kInit()
 {
 	NeoCallbackActive->pInitialise = samsho2kCallback;
 
@@ -4064,7 +4064,7 @@ static void rbff1aCallback()
 	BurnLoadRom(Neo68KROMActive, 15, 1);
 }
 
-static int rbff1aInit()
+static INT32 rbff1aInit()
 {
 	NeoCallbackActive->pInitialise = rbff1aCallback;
 
@@ -4613,9 +4613,9 @@ STDROMPICKEXT(kog, kog, neogeo)
 STD_ROM_FN(kog)
 
 // This is actually set by a jumper on the PCB
-unsigned short __fastcall KogReadWord(unsigned int)
+UINT16 __fastcall KogReadWord(UINT32)
 {
-	extern int nBIOS;
+	extern INT32 nBIOS;
 	if (nBIOS == 5 || nBIOS == 6 || nBIOS == 7 || nBIOS == 8 || nBIOS == 10 || nBIOS == 11) {
 		return 0xff00;
 	} else {
@@ -4625,12 +4625,12 @@ unsigned short __fastcall KogReadWord(unsigned int)
 
 static void kogCallback()
 {
-	int i;
-	unsigned char *dst = (unsigned char *)malloc( 0x100000 );
+	INT32 i;
+	UINT8 *dst = (UINT8 *)malloc( 0x100000 );
 
 	if (dst)
 	{
-		static const int sec[] = { 0x3, 0x8, 0x7, 0xc, 0x1, 0xa, 0x6, 0xd };
+		static const INT32 sec[] = { 0x3, 0x8, 0x7, 0xc, 0x1, 0xa, 0x6, 0xd };
 	
 		for (i = 0; i < 0x100000 / 0x020000; i++) 
 			memcpy (dst + i * 0x020000, Neo68KROMActive + sec[i] * 0x020000, 0x020000);
@@ -4642,12 +4642,12 @@ static void kogCallback()
 	}
 
 	for (i = 0x90000; i < 0x94000; i+=2) {
-		if ((*((unsigned short *)(Neo68KROMActive + i + 0)) & 0xf2bf) == 0x42b9 && *((unsigned short *)(Neo68KROMActive + i + 2)) == 0)
-			*((unsigned short *)(Neo68KROMActive + i + 2)) = 0x0009;
+		if ((*((UINT16 *)(Neo68KROMActive + i + 0)) & 0xf2bf) == 0x42b9 && *((UINT16 *)(Neo68KROMActive + i + 2)) == 0)
+			*((UINT16 *)(Neo68KROMActive + i + 2)) = 0x0009;
 
-		if (*((unsigned short *)(Neo68KROMActive + i + 0)) == 0x4eb8) {
-			*((unsigned short *)(Neo68KROMActive + i + 0))  = 0x6100;
-			*((unsigned short *)(Neo68KROMActive + i + 2)) += 0xfffe - (i & 0xfffe);
+		if (*((UINT16 *)(Neo68KROMActive + i + 0)) == 0x4eb8) {
+			*((UINT16 *)(Neo68KROMActive + i + 0))  = 0x6100;
+			*((UINT16 *)(Neo68KROMActive + i + 2)) += 0xfffe - (i & 0xfffe);
 		}
 	}
 
@@ -4656,8 +4656,8 @@ static void kogCallback()
 	memcpy (Neo68KROMActive + 0x0007e6, Neo68KROMActive + 0x0907e6, 0x000006);
 	memcpy (Neo68KROMActive + 0x100000, Neo68KROMActive + 0x200000, 0x400000);
 
-	*((unsigned short *)(Neo68KROMActive + 0x924ac)) = 0x0009;
-	*((unsigned short *)(Neo68KROMActive + 0x9251c)) = 0x0009;
+	*((UINT16 *)(Neo68KROMActive + 0x924ac)) = 0x0009;
+	*((UINT16 *)(Neo68KROMActive + 0x9251c)) = 0x0009;
 	
 	lans2004_sx_decode();
 	lans2004_cx_decode(0x800000 * 5);
@@ -4670,9 +4670,9 @@ static void kogInstallHandlers()
 	SekSetReadWordHandler(6, KogReadWord);
 }
 
-static int kogInit()
+static INT32 kogInit()
 {
- 	int nRet;
+ 	INT32 nRet;
 
 	nBurnCPUSpeedAdjust = 0x010a;	// fix garbage on intro
 	NeoCallbackActive->pInitialise = kogCallback;
@@ -5000,10 +5000,10 @@ STD_ROM_FN(kof98)
 
 static void kof98Decrypt()
 {
-	int sec[] = {0x000000, 0x100000, 0x000004, 0x100004, 0x10000a, 0x00000a, 0x10000e, 0x00000e};
-	int pos[] = {0x000, 0x004, 0x00a, 0x00e};
+	INT32 sec[] = {0x000000, 0x100000, 0x000004, 0x100004, 0x10000a, 0x00000a, 0x10000e, 0x00000e};
+	INT32 pos[] = {0x000, 0x004, 0x00a, 0x00e};
 
-	unsigned char* pTemp = (unsigned char*)malloc(0x200000);
+	UINT8* pTemp = (UINT8*)malloc(0x200000);
 
 	if (pTemp == NULL) {
 		return;
@@ -5011,20 +5011,20 @@ static void kof98Decrypt()
 
 	memcpy(pTemp, Neo68KROMActive, 0x200000);
 
-	for (int i = 0x0800; i < 0x100000; i += 0x0200) {
-		for (int j = 0; j < 0x0100; j += 0x10) {
-			for (int k = 0; k < 8; k++) {
+	for (INT32 i = 0x0800; i < 0x100000; i += 0x0200) {
+		for (INT32 j = 0; j < 0x0100; j += 0x10) {
+			for (INT32 k = 0; k < 8; k++) {
 				memcpy(&Neo68KROMActive[i + j + k * 2 +      0], &pTemp[i + j + sec[k] + 0x0100], 2);
 				memcpy(&Neo68KROMActive[i + j + k * 2 + 0x0100], &pTemp[i + j + sec[k] +      0], 2);
 			}
 			if (i >= 0x080000 && i < 0x0c0000) {
-				for (int k = 0; k < 4; k++) {
+				for (INT32 k = 0; k < 4; k++) {
 					memcpy(&Neo68KROMActive[i + j + pos[k] +      0], &pTemp[i + j + pos[k] +      0], 2);
 					memcpy(&Neo68KROMActive[i + j + pos[k] + 0x0100], &pTemp[i + j + pos[k] + 0x0100], 2);
 				}
 			}
 			if (i >= 0x0c0000) {
-				for (int k = 0; k < 4; k++) {
+				for (INT32 k = 0; k < 4; k++) {
 					memcpy(&Neo68KROMActive[i + j + pos[k] +      0], &pTemp[i + j + pos[k] + 0x0100], 2);
 					memcpy(&Neo68KROMActive[i + j + pos[k] + 0x0100], &pTemp[i + j + pos[k] +      0], 2);
 				}
@@ -5045,24 +5045,24 @@ static void kof98Decrypt()
 	}
 }
 
-static unsigned short nkof98Protection;
+static UINT16 nkof98Protection;
 
 static void kof98Protection()
 {
 	// We need two writes because the BIOS vector block is actually 1024 bytes large
 	switch (nkof98Protection) {
 		case 0x0090:
-			*((unsigned int*)Neo68KROMActive + 0x0100) = 0x00C200FD;
+			*((UINT32*)Neo68KROMActive + 0x0100) = 0x00C200FD;
 			SekWriteLongROM(0x000100, 0x00C200FD);
 			break;
 		case 0x00F0:
-			*((unsigned int*)Neo68KROMActive + 0x0100) = 0x4E454F2D;
+			*((UINT32*)Neo68KROMActive + 0x0100) = 0x4E454F2D;
 			SekWriteLongROM(0x000100, 0x4E454F2D);
 			break;
 	}
 }
 
-void __fastcall kof98WriteByteProtection(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall kof98WriteByteProtection(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x20AAAA: {
@@ -5078,7 +5078,7 @@ void __fastcall kof98WriteByteProtection(unsigned int sekAddress, unsigned char 
 	}
 }
 
-void __fastcall kof98WriteWordProtection(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall kof98WriteWordProtection(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 		case 0x20AAAA: {
@@ -5097,7 +5097,7 @@ static void kof98InstallHandler()
 	nkof98Protection = 0;
 }
 
-static int kof98Init()
+static INT32 kof98Init()
 {
 	NeoCallbackActive->pInitialise = kof98Decrypt;
 	NeoCallbackActive->pInstallHandlers = kof98InstallHandler;
@@ -5323,26 +5323,26 @@ STD_ROM_FN(mslugx)
 
 static void mslugxPatch()
 {
-	for (int i = 0; i < 0x100000 - 8; i += 2) {
-		if (*((unsigned short*)(Neo68KROMActive + i + 0)) == 0x0243 && *((unsigned short*)(Neo68KROMActive + i + 2)) == 0x0001 && *((unsigned short*)(Neo68KROMActive + i + 4)) == 0x6600) {
-			*((unsigned short*)(Neo68KROMActive + i + 4)) = 0x4e71;
-			*((unsigned short*)(Neo68KROMActive + i + 6)) = 0x4e71;
+	for (INT32 i = 0; i < 0x100000 - 8; i += 2) {
+		if (*((UINT16*)(Neo68KROMActive + i + 0)) == 0x0243 && *((UINT16*)(Neo68KROMActive + i + 2)) == 0x0001 && *((UINT16*)(Neo68KROMActive + i + 4)) == 0x6600) {
+			*((UINT16*)(Neo68KROMActive + i + 4)) = 0x4e71;
+			*((UINT16*)(Neo68KROMActive + i + 6)) = 0x4e71;
 		}
 	}
 
-	*((unsigned short*)(Neo68KROMActive + 0x3bdc)) = 0x4e71;
-	*((unsigned short*)(Neo68KROMActive + 0x3bde)) = 0x4e71;
-	*((unsigned short*)(Neo68KROMActive + 0x3be0)) = 0x4e71;
+	*((UINT16*)(Neo68KROMActive + 0x3bdc)) = 0x4e71;
+	*((UINT16*)(Neo68KROMActive + 0x3bde)) = 0x4e71;
+	*((UINT16*)(Neo68KROMActive + 0x3be0)) = 0x4e71;
 
-	*((unsigned short*)(Neo68KROMActive + 0x3c0c)) = 0x4e71;
-	*((unsigned short*)(Neo68KROMActive + 0x3c0e)) = 0x4e71;
-	*((unsigned short*)(Neo68KROMActive + 0x3c10)) = 0x4e71;
+	*((UINT16*)(Neo68KROMActive + 0x3c0c)) = 0x4e71;
+	*((UINT16*)(Neo68KROMActive + 0x3c0e)) = 0x4e71;
+	*((UINT16*)(Neo68KROMActive + 0x3c10)) = 0x4e71;
 
-	*((unsigned short*)(Neo68KROMActive + 0x3c36)) = 0x4e71;
-	*((unsigned short*)(Neo68KROMActive + 0x3c38)) = 0x4e71;
+	*((UINT16*)(Neo68KROMActive + 0x3c36)) = 0x4e71;
+	*((UINT16*)(Neo68KROMActive + 0x3c38)) = 0x4e71;
 }
 
-static int mslugxInit()
+static INT32 mslugxInit()
 {
 	NeoCallbackActive->pInitialise = mslugxPatch;
 
@@ -5388,27 +5388,27 @@ STD_ROM_FN(kof99)
 
 static void kof99SMADecrypt()
 {
-	for (int i = 0; i < 0x800000 / 2; i++) {
-		((unsigned short*)(Neo68KROMActive + 0x100000))[i] = BITSWAP16(((unsigned short*)(Neo68KROMActive + 0x100000))[i], 13, 7, 3, 0, 9, 4, 5, 6, 1, 12, 8, 14, 10, 11, 2, 15);
+	for (INT32 i = 0; i < 0x800000 / 2; i++) {
+		((UINT16*)(Neo68KROMActive + 0x100000))[i] = BITSWAP16(((UINT16*)(Neo68KROMActive + 0x100000))[i], 13, 7, 3, 0, 9, 4, 5, 6, 1, 12, 8, 14, 10, 11, 2, 15);
 	}
 
-	for (int i = 0; i < 0x0C0000 / 2; i++) {
-		((unsigned short*)Neo68KROMActive)[i] = ((unsigned short*)Neo68KROMActive)[0x700000 / 2 + BITSWAP24(i, 23, 22, 21, 20, 19, 18, 11, 6, 14, 17, 16, 5, 8, 10, 12, 0, 4, 3, 2, 7, 9, 15, 13, 1)];
+	for (INT32 i = 0; i < 0x0C0000 / 2; i++) {
+		((UINT16*)Neo68KROMActive)[i] = ((UINT16*)Neo68KROMActive)[0x700000 / 2 + BITSWAP24(i, 23, 22, 21, 20, 19, 18, 11, 6, 14, 17, 16, 5, 8, 10, 12, 0, 4, 3, 2, 7, 9, 15, 13, 1)];
 	}
 
-	for (int i = 0; i < 0x600000 / 2; i += 0x0800 / 2) {
-		unsigned short nBuffer[0x0800 / 2];
-		memcpy(nBuffer, &((unsigned short*)(Neo68KROMActive + 0x100000))[i], 0x0800);
-		for (int j = 0; j < 0x0800 / 2; j++) {
-			((unsigned short*)(Neo68KROMActive + 0x100000))[i + j] = nBuffer[BITSWAP24(j, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 6, 2, 4, 9, 8, 3, 1, 7, 0, 5)];
+	for (INT32 i = 0; i < 0x600000 / 2; i += 0x0800 / 2) {
+		UINT16 nBuffer[0x0800 / 2];
+		memcpy(nBuffer, &((UINT16*)(Neo68KROMActive + 0x100000))[i], 0x0800);
+		for (INT32 j = 0; j < 0x0800 / 2; j++) {
+			((UINT16*)(Neo68KROMActive + 0x100000))[i + j] = nBuffer[BITSWAP24(j, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 6, 2, 4, 9, 8, 3, 1, 7, 0, 5)];
 		}
 	}
 }
 
-void __fastcall kof99WriteWordBankswitch(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall kof99WriteWordBankswitch(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (sekAddress == 0x2FFFF0) {
-		static unsigned int bankoffset[64] = {
+		static UINT32 bankoffset[64] = {
 			0x100000, 0x200000, 0x300000, 0x400000,
 			0x4cc000, 0x5cc000, 0x4f2000, 0x5f2000,
 			0x507800, 0x607800, 0x50d000, 0x60d000,
@@ -5421,7 +5421,7 @@ void __fastcall kof99WriteWordBankswitch(unsigned int sekAddress, unsigned short
 		};
 
 		// Unscramble bank number
-		int nBank =
+		INT32 nBank =
 			(((wordValue >> 14) & 1) << 0) +
 			(((wordValue >>  6) & 1) << 1) +
 			(((wordValue >>  8) & 1) << 2) +
@@ -5437,7 +5437,7 @@ void __fastcall kof99WriteWordBankswitch(unsigned int sekAddress, unsigned short
 	}
 }
 
-static int kof99Init()
+static INT32 kof99Init()
 {
 	nNeoProtectionXor = 0x00;
 
@@ -5556,7 +5556,7 @@ static struct BurnRomInfo kof99kRomDesc[] = {
 STDROMPICKEXT(kof99k, kof99k, neogeo)
 STD_ROM_FN(kof99k)
 
-int kof99kInit()
+INT32 kof99kInit()
 {
 	nNeoProtectionXor = 0x00;
 	return NeoInit();
@@ -5641,27 +5641,27 @@ STD_ROM_FN(garou)
 
 static void garouSMADecrypt()
 {
-	for (int i = 0; i < 0x800000 / 2; i++) {
-		((unsigned short*)(Neo68KROMActive + 0x100000))[i] = BITSWAP16(((unsigned short*)(Neo68KROMActive + 0x100000))[i], 13, 12, 14, 10, 8, 2, 3, 1, 5, 9, 11, 4, 15, 0, 6, 7);
+	for (INT32 i = 0; i < 0x800000 / 2; i++) {
+		((UINT16*)(Neo68KROMActive + 0x100000))[i] = BITSWAP16(((UINT16*)(Neo68KROMActive + 0x100000))[i], 13, 12, 14, 10, 8, 2, 3, 1, 5, 9, 11, 4, 15, 0, 6, 7);
 	}
 
-	for (int i = 0; i < 0x0C0000 / 2; i++) {
-		((unsigned short*)Neo68KROMActive)[i] = ((unsigned short*)Neo68KROMActive)[0x710000 / 2 + BITSWAP24(i, 23, 22, 21, 20, 19, 18, 4, 5, 16, 14, 7, 9, 6, 13, 17, 15, 3, 1, 2, 12, 11, 8, 10, 0)];
+	for (INT32 i = 0; i < 0x0C0000 / 2; i++) {
+		((UINT16*)Neo68KROMActive)[i] = ((UINT16*)Neo68KROMActive)[0x710000 / 2 + BITSWAP24(i, 23, 22, 21, 20, 19, 18, 4, 5, 16, 14, 7, 9, 6, 13, 17, 15, 3, 1, 2, 12, 11, 8, 10, 0)];
 	}
 
-	for (int i = 0; i < 0x800000 / 2; i += 0x8000 / 2) {
-		unsigned short nBuffer[0x8000 / 2];
-		memcpy(nBuffer, &((unsigned short*)(Neo68KROMActive + 0x100000))[i], 0x8000);
-		for (int j = 0; j < 0x8000 / 2; j++) {
-			((unsigned short*)(Neo68KROMActive + 0x100000))[i + j] = nBuffer[BITSWAP24(j, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 9, 4, 8, 3, 13, 6, 2, 7, 0, 12, 1, 11, 10, 5)];
+	for (INT32 i = 0; i < 0x800000 / 2; i += 0x8000 / 2) {
+		UINT16 nBuffer[0x8000 / 2];
+		memcpy(nBuffer, &((UINT16*)(Neo68KROMActive + 0x100000))[i], 0x8000);
+		for (INT32 j = 0; j < 0x8000 / 2; j++) {
+			((UINT16*)(Neo68KROMActive + 0x100000))[i + j] = nBuffer[BITSWAP24(j, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 9, 4, 8, 3, 13, 6, 2, 7, 0, 12, 1, 11, 10, 5)];
 		}
 	}
 }
 
-void __fastcall garouWriteWordBankswitch(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall garouWriteWordBankswitch(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (sekAddress == 0x2FFFC0) {
-		static unsigned int bankoffset[64] = {
+		static UINT32 bankoffset[64] = {
 			0x100000, 0x200000, 0x300000, 0x400000, // 00
 			0x380000, 0x480000, 0x3d0000, 0x4d0000, // 04
 			0x3f0000, 0x4f0000, 0x500000, 0x600000, // 08
@@ -5679,7 +5679,7 @@ void __fastcall garouWriteWordBankswitch(unsigned int sekAddress, unsigned short
 		};
 
 		// Unscramble bank number
-		int nBank =
+		INT32 nBank =
 			(((wordValue >>  5) & 1) << 0) +
 			(((wordValue >>  9) & 1) << 1) +
 			(((wordValue >>  7) & 1) << 2) +
@@ -5695,7 +5695,7 @@ void __fastcall garouWriteWordBankswitch(unsigned int sekAddress, unsigned short
 	}
 }
 
-static int garouInit()
+static INT32 garouInit()
 {
 	nNeoProtectionXor = 0x06;
 
@@ -5741,27 +5741,27 @@ STD_ROM_FN(garouo)
 
 static void garouoSMADecrypt()
 {
-	for (int i = 0; i < 0x800000 / 2; i++) {
-		((unsigned short*)(Neo68KROMActive + 0x100000))[i] = BITSWAP16(((unsigned short*)(Neo68KROMActive + 0x100000))[i], 14, 5, 1, 11, 7, 4, 10, 15, 3, 12, 8, 13, 0, 2, 9, 6);
+	for (INT32 i = 0; i < 0x800000 / 2; i++) {
+		((UINT16*)(Neo68KROMActive + 0x100000))[i] = BITSWAP16(((UINT16*)(Neo68KROMActive + 0x100000))[i], 14, 5, 1, 11, 7, 4, 10, 15, 3, 12, 8, 13, 0, 2, 9, 6);
 	}
 
-	for (int i = 0; i < 0x0C0000 / 2; i++) {
-		((unsigned short*)Neo68KROMActive)[i] = ((unsigned short*)Neo68KROMActive)[0x7F8000 / 2 + BITSWAP24(i, 23, 22, 21, 20, 19, 18, 5, 16, 11, 2, 6, 7, 17, 3, 12, 8, 14, 4, 0, 9, 1, 10, 15, 13)];
+	for (INT32 i = 0; i < 0x0C0000 / 2; i++) {
+		((UINT16*)Neo68KROMActive)[i] = ((UINT16*)Neo68KROMActive)[0x7F8000 / 2 + BITSWAP24(i, 23, 22, 21, 20, 19, 18, 5, 16, 11, 2, 6, 7, 17, 3, 12, 8, 14, 4, 0, 9, 1, 10, 15, 13)];
 	}
 
-	for (int i = 0; i < 0x800000 / 2; i += 0x8000 / 2) {
-		unsigned short nBuffer[0x8000 / 2];
-		memcpy(nBuffer, &((unsigned short*)(Neo68KROMActive + 0x100000))[i], 0x8000);
-		for (int j = 0; j < 0x8000 / 2; j++) {
-			((unsigned short*)(Neo68KROMActive + 0x100000))[i + j] = nBuffer[BITSWAP24(j, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 12, 8, 1, 7, 11, 3, 13, 10, 6, 9, 5, 4, 0, 2)];
+	for (INT32 i = 0; i < 0x800000 / 2; i += 0x8000 / 2) {
+		UINT16 nBuffer[0x8000 / 2];
+		memcpy(nBuffer, &((UINT16*)(Neo68KROMActive + 0x100000))[i], 0x8000);
+		for (INT32 j = 0; j < 0x8000 / 2; j++) {
+			((UINT16*)(Neo68KROMActive + 0x100000))[i + j] = nBuffer[BITSWAP24(j, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 12, 8, 1, 7, 11, 3, 13, 10, 6, 9, 5, 4, 0, 2)];
 		}
 	}
 }
 
-void __fastcall garouoWriteWordBankswitch(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall garouoWriteWordBankswitch(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (sekAddress == 0x2FFFC0) {
-		static unsigned int bankoffset[64] = {
+		static UINT32 bankoffset[64] = {
 			0x100000, 0x200000, 0x300000, 0x400000, // 00
 			0x380000, 0x480000, 0x3d0000, 0x4d0000, // 04
 			0x3c8000, 0x4c8000, 0x500000, 0x600000, // 08
@@ -5781,7 +5781,7 @@ void __fastcall garouoWriteWordBankswitch(unsigned int sekAddress, unsigned shor
 		};
 
 		// Unscramble bank number
-		int nBank =
+		INT32 nBank =
 			(((wordValue >>  4) & 1) << 0) +
 			(((wordValue >>  8) & 1) << 1) +
 			(((wordValue >> 14) & 1) << 2) +
@@ -5797,7 +5797,7 @@ void __fastcall garouoWriteWordBankswitch(unsigned int sekAddress, unsigned shor
 	}
 }
 
-static int garouoInit()
+static INT32 garouoInit()
 {
 	nNeoProtectionXor = 0x06;
 
@@ -5878,7 +5878,7 @@ STD_ROM_FN(garoubl)
 
 static void garoubl_sx_decode()
 {
-	int i;
+	INT32 i;
 	for (i = 0; i < 0x020000; i++)
 		NeoTextROM[nNeoActiveSlot][i] = BITSWAP08(NeoTextROM[nNeoActiveSlot][i], 7, 6, 0, 4, 3, 2, 1, 5);
 }
@@ -5889,7 +5889,7 @@ static void garoublCallback()
 	lans2004_cx_decode(0x800000 * 8);
 }
 
-static int garoublInit()
+static INT32 garoublInit()
 {
 	NeoCallbackActive->pInitialise = garoublCallback;
 
@@ -5935,30 +5935,30 @@ STD_ROM_FN(mslug3)
 
 static void mslug3SMADecrypt()
 {
-	for (int i = 0; i < 0x800000 / 2; i++) {
-		((unsigned short*)(Neo68KROMActive + 0x100000))[i] = BITSWAP16(((unsigned short*)(Neo68KROMActive + 0x100000))[i], 4, 11, 14, 3, 1, 13, 0, 7, 2, 8, 12, 15, 10, 9, 5, 6);
+	for (INT32 i = 0; i < 0x800000 / 2; i++) {
+		((UINT16*)(Neo68KROMActive + 0x100000))[i] = BITSWAP16(((UINT16*)(Neo68KROMActive + 0x100000))[i], 4, 11, 14, 3, 1, 13, 0, 7, 2, 8, 12, 15, 10, 9, 5, 6);
 	}
 
-	for (int i = 0; i < 0x0C0000 / 2; i++) {
-		((unsigned short*)Neo68KROMActive)[i] = ((unsigned short*)Neo68KROMActive)[0x5D0000 / 2 + BITSWAP24(i, 23, 22, 21, 20, 19, 18, 15, 2, 1, 13, 3, 0, 9, 6, 16, 4, 11, 5, 7, 12, 17, 14, 10, 8)];
+	for (INT32 i = 0; i < 0x0C0000 / 2; i++) {
+		((UINT16*)Neo68KROMActive)[i] = ((UINT16*)Neo68KROMActive)[0x5D0000 / 2 + BITSWAP24(i, 23, 22, 21, 20, 19, 18, 15, 2, 1, 13, 3, 0, 9, 6, 16, 4, 11, 5, 7, 12, 17, 14, 10, 8)];
 	}
 
-	for (int i = 0; i < 0x800000 / 2; i += 0x010000 / 2) {
-		unsigned short nBuffer[0x010000 / 2];
-		memcpy(nBuffer, &((unsigned short*)(Neo68KROMActive + 0x100000))[i], 0x010000);
-		for (int j = 0; j < 0x010000 / 2; j++) {
-			((unsigned short*)(Neo68KROMActive + 0x100000))[i + j] = nBuffer[BITSWAP24(j, 23, 22, 21, 20, 19, 18, 17, 16, 15, 2, 11, 0, 14, 6, 4, 13, 8, 9, 3, 10, 7, 5, 12, 1)];
+	for (INT32 i = 0; i < 0x800000 / 2; i += 0x010000 / 2) {
+		UINT16 nBuffer[0x010000 / 2];
+		memcpy(nBuffer, &((UINT16*)(Neo68KROMActive + 0x100000))[i], 0x010000);
+		for (INT32 j = 0; j < 0x010000 / 2; j++) {
+			((UINT16*)(Neo68KROMActive + 0x100000))[i + j] = nBuffer[BITSWAP24(j, 23, 22, 21, 20, 19, 18, 17, 16, 15, 2, 11, 0, 14, 6, 4, 13, 8, 9, 3, 10, 7, 5, 12, 1)];
 		}
 	}
 }
 
-void __fastcall mslug3WriteWordBankswitch(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall mslug3WriteWordBankswitch(UINT32 sekAddress, UINT16 wordValue)
 {
 
 //	bprintf(PRINT_NORMAL, " -- bankswitch: 0x%08X -> 0x%04X\n", sekAddress, wordValue);
 
 	if (sekAddress == 0x2FFFE4) {
-		static unsigned int bankoffset[64] = {
+		static UINT32 bankoffset[64] = {
 			0x100000, 0x120000, 0x140000, 0x160000, // 00
 			0x170000, 0x190000, 0x1b0000, 0x1d0000, // 04
 			0x1e0000, 0x1f0000, 0x220000, 0x230000, // 08
@@ -5975,7 +5975,7 @@ void __fastcall mslug3WriteWordBankswitch(unsigned int sekAddress, unsigned shor
 		};
 
 		// Unscramble bank number
-		int nBank =
+		INT32 nBank =
 			(((wordValue >> 14) & 1) << 0) +
 			(((wordValue >> 12) & 1) << 1) +
 			(((wordValue >> 15) & 1) << 2) +
@@ -5991,7 +5991,7 @@ void __fastcall mslug3WriteWordBankswitch(unsigned int sekAddress, unsigned shor
 	}
 }
 
-static int mslug3Init()
+static INT32 mslug3Init()
 {
 	nNeoProtectionXor = 0xAD;
 
@@ -6034,7 +6034,7 @@ static struct BurnRomInfo mslug3hRomDesc[] = {
 STDROMPICKEXT(mslug3h, mslug3h, neogeo)
 STD_ROM_FN(mslug3h)
 
-static int mslug3hInit()
+static INT32 mslug3hInit()
 {
 	nNeoProtectionXor = 0xAD;
 
@@ -6086,7 +6086,7 @@ static void mslug3b6Callback()
 	garoubl_sx_decode();
 }
 
-static int mslug3b6Init()
+static INT32 mslug3b6Init()
 {
 	NeoCallbackActive->pInitialise = mslug3b6Callback;
 	nNeoProtectionXor = 0xAD;
@@ -6133,27 +6133,27 @@ STD_ROM_FN(kof2000)
 
 static void kof2000SMADecrypt()
 {
-	for (int i = 0; i < 0x800000 / 2; i++) {
-		((unsigned short*)(Neo68KROMActive + 0x100000))[i] = BITSWAP16(((unsigned short*)(Neo68KROMActive + 0x100000))[i], 12, 8, 11, 3, 15, 14, 7, 0, 10, 13, 6, 5, 9, 2, 1, 4);
+	for (INT32 i = 0; i < 0x800000 / 2; i++) {
+		((UINT16*)(Neo68KROMActive + 0x100000))[i] = BITSWAP16(((UINT16*)(Neo68KROMActive + 0x100000))[i], 12, 8, 11, 3, 15, 14, 7, 0, 10, 13, 6, 5, 9, 2, 1, 4);
 	}
 
-	for (int i = 0; i < 0x0C0000 / 2; i++) {
-		((unsigned short*)Neo68KROMActive)[i] = ((unsigned short*)Neo68KROMActive)[0x73A000 / 2 + BITSWAP24(i, 23, 22, 21, 20, 19, 18, 8, 4, 15, 13, 3, 14, 16, 2, 6, 17, 7, 12, 10, 0, 5, 11, 1, 9)];
+	for (INT32 i = 0; i < 0x0C0000 / 2; i++) {
+		((UINT16*)Neo68KROMActive)[i] = ((UINT16*)Neo68KROMActive)[0x73A000 / 2 + BITSWAP24(i, 23, 22, 21, 20, 19, 18, 8, 4, 15, 13, 3, 14, 16, 2, 6, 17, 7, 12, 10, 0, 5, 11, 1, 9)];
 	}
 
-	for (int i = 0; i < 0x63A000 / 2; i += 0x0800 / 2) {
-		unsigned short nBuffer[0x0800 / 2];
-		memcpy(nBuffer, &((unsigned short*)(Neo68KROMActive + 0x100000))[i], 0x0800);
-		for (int j = 0; j < 0x0800 / 2; j++) {
-			((unsigned short*)(Neo68KROMActive + 0x100000))[i + j] = nBuffer[BITSWAP24(j, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 4, 1, 3, 8, 6, 2, 7, 0, 9, 5)];
+	for (INT32 i = 0; i < 0x63A000 / 2; i += 0x0800 / 2) {
+		UINT16 nBuffer[0x0800 / 2];
+		memcpy(nBuffer, &((UINT16*)(Neo68KROMActive + 0x100000))[i], 0x0800);
+		for (INT32 j = 0; j < 0x0800 / 2; j++) {
+			((UINT16*)(Neo68KROMActive + 0x100000))[i + j] = nBuffer[BITSWAP24(j, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 4, 1, 3, 8, 6, 2, 7, 0, 9, 5)];
 		}
 	}
 }
 
-void __fastcall kof2000WriteWordBankswitch(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall kof2000WriteWordBankswitch(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (sekAddress == 0x2FFFEC) {
-		static unsigned int bankoffset[64] = {
+		static UINT32 bankoffset[64] = {
 			0x100000, 0x200000, 0x300000, 0x400000, // 00
 			0x4f7800, 0x5f7800, 0x4ff800, 0x5ff800, // 04
 			0x507800, 0x607800, 0x50f800, 0x60f800, // 08
@@ -6166,7 +6166,7 @@ void __fastcall kof2000WriteWordBankswitch(unsigned int sekAddress, unsigned sho
 		};
 
 		// Unscramble bank number
-		int nBank =
+		INT32 nBank =
 			(((wordValue >> 15) & 1) << 0) +
 			(((wordValue >> 14) & 1) << 1) +
 			(((wordValue >>  7) & 1) << 2) +
@@ -6182,7 +6182,7 @@ void __fastcall kof2000WriteWordBankswitch(unsigned int sekAddress, unsigned sho
 	}
 }
 
-static int kof2000Init()
+static INT32 kof2000Init()
 {
 	nNeoProtectionXor = 0x00;
 
@@ -6225,7 +6225,7 @@ static struct BurnRomInfo kof2000nRomDesc[] = {
 STDROMPICKEXT(kof2000n, kof2000n, neogeo)
 STD_ROM_FN(kof2000n)
 
-static int kof2000nInit()
+static INT32 kof2000nInit()
 {
 	nNeoProtectionXor = 0x00;
 	return NeoInit();
@@ -6257,7 +6257,7 @@ static struct BurnRomInfo zupapaRomDesc[] = {
 STDROMPICKEXT(zupapa, zupapa, neogeo)
 STD_ROM_FN(zupapa)
 
-static int zupapaInit()
+static INT32 zupapaInit()
 {
 	nNeoProtectionXor = 0xBD;
 	return NeoInit();
@@ -6294,7 +6294,7 @@ static struct BurnRomInfo sengoku3RomDesc[] = {
 STDROMPICKEXT(sengoku3, sengoku3, neogeo)
 STD_ROM_FN(sengoku3)
 
-static int sengoku3Init()
+static INT32 sengoku3Init()
 {
 	nNeoProtectionXor = 0xFE;
 	return NeoInit();
@@ -6336,7 +6336,7 @@ static struct BurnRomInfo kof2001RomDesc[] = {
 STDROMPICKEXT(kof2001, kof2001, neogeo)
 STD_ROM_FN(kof2001)
 
-static int kof2001Init()
+static INT32 kof2001Init()
 {
 	nNeoProtectionXor = 0x1E;
 	return NeoInit();
@@ -6416,9 +6416,9 @@ static struct BurnRomInfo cthd2003RomDesc[] = {
 STDROMPICKEXT(cthd2003, cthd2003, neogeo)
 STD_ROM_FN(cthd2003)
 
-static void cthd2003Bankswitch(unsigned int nBank)
+static void cthd2003Bankswitch(UINT32 nBank)
 {
-	static unsigned int cthd2003_banks[8] =	{
+	static UINT32 cthd2003_banks[8] =	{
 		0x200000, 0x100000, 0x200000, 0x100000, 0x200000, 0x100000, 0x400000, 0x300000,
 	};
 
@@ -6430,14 +6430,14 @@ static void cthd2003Bankswitch(unsigned int nBank)
 	}
 }
 
-void __fastcall cthd2003WriteByteBankswitch(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall cthd2003WriteByteBankswitch(UINT32 sekAddress, UINT8 byteValue)
 {
 	if (sekAddress == 0x2ffff0) {
 		cthd2003Bankswitch(byteValue);
 	}
 }
 
-void __fastcall cthd2003WriteWordBankswitch(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall cthd2003WriteWordBankswitch(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (sekAddress == 0x2ffff0) {
 		cthd2003Bankswitch(wordValue);
@@ -6445,34 +6445,34 @@ void __fastcall cthd2003WriteWordBankswitch(unsigned int sekAddress, unsigned sh
 }
 static void cthd2003_decode()
 {
-	int i, n;
+	INT32 i, n;
 
 	// fix garbage on s1 layer over everything
-	*((unsigned short*)(Neo68KROMActive + 0xf415a)) = 0x4ef9;
-	*((unsigned short*)(Neo68KROMActive + 0xf415c)) = 0x000f;
-	*((unsigned short*)(Neo68KROMActive + 0xf415e)) = 0x4cf2;
+	*((UINT16*)(Neo68KROMActive + 0xf415a)) = 0x4ef9;
+	*((UINT16*)(Neo68KROMActive + 0xf415c)) = 0x000f;
+	*((UINT16*)(Neo68KROMActive + 0xf415e)) = 0x4cf2;
 
 	// Fix corruption in attract mode before title screen
 	for (i = 0x1ae290; i < 0x1ae8d0; i+=2) {
-		*((unsigned short*)(Neo68KROMActive + i)) = 0x0000;
+		*((UINT16*)(Neo68KROMActive + i)) = 0x0000;
 	}
 
 	// Fix for title page
 	for (i = 0x1f8ef0; i < 0x1fa1f0; i += 4) {
-		*((unsigned short*)(Neo68KROMActive + i + 0)) -= 0x7000;
-		*((unsigned short*)(Neo68KROMActive + i + 2)) -= 0x0010;
+		*((UINT16*)(Neo68KROMActive + i + 0)) -= 0x7000;
+		*((UINT16*)(Neo68KROMActive + i + 2)) -= 0x0010;
 	}
 
 	// Fix for green dots on title page
 	for (i = 0xac500; i < 0xac520; i+=2) {
-		*((unsigned short*)(Neo68KROMActive + i)) = 0xffff;
+		*((UINT16*)(Neo68KROMActive + i)) = 0xffff;
 	}
 
 	// Fix for blanks as screen change level end clear
-	*((unsigned short*)(Neo68KROMActive + 0x991d0)) = 0xdd03;
-	*((unsigned short*)(Neo68KROMActive + 0x99306)) = 0xdd03;
-	*((unsigned short*)(Neo68KROMActive + 0x99354)) = 0xdd03;
-	*((unsigned short*)(Neo68KROMActive + 0x9943e)) = 0xdd03;
+	*((UINT16*)(Neo68KROMActive + 0x991d0)) = 0xdd03;
+	*((UINT16*)(Neo68KROMActive + 0x99306)) = 0xdd03;
+	*((UINT16*)(Neo68KROMActive + 0x99354)) = 0xdd03;
+	*((UINT16*)(Neo68KROMActive + 0x9943e)) = 0xdd03;
 
 	// Swap bits 15 & 16 in the address of the Z80 ROM
 	for (i = 0; i < 0x10000 / 2; i++) {
@@ -6486,7 +6486,7 @@ static void cthd2003_decode()
 
 static void cthd2003Callback()
 {
-	int i, n;
+	INT32 i, n;
 	for (i = 0; i < 0x8000; i++)
 	{
 		n = NeoTextROM[nNeoActiveSlot][0x08000 + i];
@@ -6506,7 +6506,7 @@ static void cthd2003InstallBankSwitchHandler()
 	cthd2003Bankswitch(0);
 }
 
-static int cthd2003Init()
+static INT32 cthd2003Init()
 {
 	nBurnCPUSpeedAdjust = 0x010a;
 	
@@ -6557,8 +6557,8 @@ STD_ROM_FN(ct2k3sp)
 
 static void ct2k3spCallback()
 {
-	int i, j;
-	unsigned char *dst = (unsigned char *)malloc( 0x040000 );
+	INT32 i, j;
+	UINT8 *dst = (UINT8 *)malloc( 0x040000 );
 	if (dst)
 	{
 		for (i = 0; i < 0x040000; i++)
@@ -6585,7 +6585,7 @@ static void ct2kspInstallBankSwitchHandler()
 	cthd2003Bankswitch(0);
 }
 
-static int ct2k3spInit()
+static INT32 ct2k3spInit()
 {
 	nBurnCPUSpeedAdjust = 0x010a;
 	
@@ -6635,7 +6635,7 @@ static struct BurnRomInfo ct2k3saRomDesc[] = {
 STDROMPICKEXT(ct2k3sa, ct2k3sa, neogeo)
 STD_ROM_FN(ct2k3sa)
 
-static int ct2k3saInit()
+static INT32 ct2k3saInit()
 {
 	nBurnCPUSpeedAdjust = 0x010d;
 	NeoCallbackActive->pInitialise = cthd2003_decode;
@@ -6676,9 +6676,9 @@ static struct BurnRomInfo kof2002RomDesc[] = {
 STDROMPICKEXT(kof2002, kof2002, neogeo)
 STD_ROM_FN(kof2002)
 
-static int kof2002Init()
+static INT32 kof2002Init()
 {
-	int nRet;
+	INT32 nRet;
 
 	nNeoProtectionXor = 0xEC;
 	NeoCallbackActive->pInitialise = PCM2DecryptP;
@@ -6730,10 +6730,10 @@ static struct BurnRomInfo kof2002bRomDesc[] = {
 STDROMPICKEXT(kof2002b, kof2002b, neogeo)
 STD_ROM_FN(kof2002b)
 
-void kof2002b_gfx_decrypt(unsigned char *src, int nLen)
+void kof2002b_gfx_decrypt(UINT8 *src, INT32 nLen)
 {
-	int i, j, k, *m;
-	int tbl[8][6] = {
+	INT32 i, j, k, *m;
+	INT32 tbl[8][6] = {
 		{ 1, 2, 6, 7, 8, 0 },
 		{ 2, 6, 7, 8, 0, 1 },
 		{ 6, 7, 8, 0, 1, 2 },
@@ -6744,7 +6744,7 @@ void kof2002b_gfx_decrypt(unsigned char *src, int nLen)
 		{ 1, 2, 6, 7, 0, 8 }
 	};
 
-	unsigned char dst[0x10000];
+	UINT8 dst[0x10000];
 
 	for (i = 0; i < nLen; i+= 0x10000)
 	{
@@ -6766,9 +6766,9 @@ static void kof2002bCallback()
 	kof2002b_gfx_decrypt(NeoTextROM[nNeoActiveSlot], 0x020000);
 }
 
-static int kof2002bInit()
+static INT32 kof2002bInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	NeoCallbackActive->pInitialise = kof2002bCallback;
 
@@ -6894,7 +6894,7 @@ STD_ROM_FN(kf2k2mp)
 
 static void kf2k2mpCallback()
 {
-	int i, j;
+	INT32 i, j;
 	for (i = 0; i < 0x500000; i++)
 	{
 		j = (i & 0xffff00) + BITSWAP08(i, 7, 3, 4, 5, 6, 1, 2, 0);
@@ -6904,9 +6904,9 @@ static void kf2k2mpCallback()
 	garoubl_sx_decode();
 }
 
-static int kf2k2mpInit()
+static INT32 kf2k2mpInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	nNeoProtectionXor = 0xEC;
 	NeoCallbackActive->pInitialise = kf2k2mpCallback;
@@ -6968,9 +6968,9 @@ static void kf2k2mp2Callback()
 	lans2004_sx_decode();
 }
 
-static int kof2km2Init()
+static INT32 kof2km2Init()
 {
-	int nRet;
+	INT32 nRet;
 
 	nNeoProtectionXor = 0xEC;
 	NeoCallbackActive->pInitialise = kf2k2mp2Callback;
@@ -7027,9 +7027,9 @@ static struct BurnRomInfo kof10thRomDesc[] = {
 STDROMPICKEXT(kof10th, kof10th, neogeo)
 STD_ROM_FN(kof10th)
 
-static unsigned char* kof10thExtraRAMA,  *kof10thExtraRAMB;
+static UINT8* kof10thExtraRAMA,  *kof10thExtraRAMB;
 
-static void kof10thBankswitch(unsigned int nBank)
+static void kof10thBankswitch(UINT32 nBank)
 {
 	nBank = 0x100000 + ((nBank & 7) << 20);
 	if (nBank >= 0x700000) {
@@ -7043,17 +7043,17 @@ static void kof10thBankswitch(unsigned int nBank)
 }
 
 // Text data extraction, game does this on the fly!
-void __fastcall kof10thWriteWordCustom(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall kof10thWriteWordCustom(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (kof10thExtraRAMB[0x1ffc]) {
 		NeoUpdateTextOne(((sekAddress >> 1) & 0x1ffff), BITSWAP08(wordValue, 3, 2, 1, 5, 7, 6, 0, 4));
 	} else {
-		*(unsigned short*)(kof10thExtraRAMA + (sekAddress & 0x1fffe)) = wordValue;
+		*(UINT16*)(kof10thExtraRAMA + (sekAddress & 0x1fffe)) = wordValue;
 	}
 }
 
 // 68K Bankswitch and RAM Handlers
-void __fastcall kof10thWriteByteBankswitch(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall kof10thWriteByteBankswitch(UINT32 sekAddress, UINT8 byteValue)
 {
 	sekAddress ^= 1;
 	if (sekAddress == 0x2ffff0)
@@ -7062,20 +7062,20 @@ void __fastcall kof10thWriteByteBankswitch(unsigned int sekAddress, unsigned cha
 	kof10thExtraRAMB[sekAddress & 0x1fff] = byteValue;
 }
 
-void __fastcall kof10thWriteWordBankswitch(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall kof10thWriteWordBankswitch(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (sekAddress == 0x2ffff0)
 		kof10thBankswitch(wordValue);
-	else if (sekAddress == 0x2ffff8 && *(unsigned short*)(kof10thExtraRAMB + 0x1ff8) != wordValue)
+	else if (sekAddress == 0x2ffff8 && *(UINT16*)(kof10thExtraRAMB + 0x1ff8) != wordValue)
 		SekMapMemory(Neo68KROMActive + ((wordValue & 1) ? 0x710000 : 0x010000) , 0x010000, 0x0dffff, SM_ROM);
 
-	*(unsigned short*)(kof10thExtraRAMB + (sekAddress & 0x01ffe)) = wordValue;
+	*(UINT16*)(kof10thExtraRAMB + (sekAddress & 0x01ffe)) = wordValue;
 }
 
 static void kof10thCallback()
 {
-	int i, j, k;
-	unsigned char *dst = (unsigned char*)malloc(0x100000);
+	INT32 i, j, k;
+	UINT8 *dst = (UINT8*)malloc(0x100000);
 	if (dst)
 	{
 		for (i = 0; i < 0x800000; i+=0x100000)
@@ -7095,12 +7095,12 @@ static void kof10thCallback()
 	}
 
 	// Altera protection chip patches these over P ROM
-	*((unsigned short *)(Neo68KROMActive + 0x0124)) = 0x000d; // Enables XOR for RAM moves, forces SoftDIPs, and USA region
-	*((unsigned short *)(Neo68KROMActive + 0x0126)) = 0xf7a8;
+	*((UINT16 *)(Neo68KROMActive + 0x0124)) = 0x000d; // Enables XOR for RAM moves, forces SoftDIPs, and USA region
+	*((UINT16 *)(Neo68KROMActive + 0x0126)) = 0xf7a8;
 
-	*((unsigned short *)(Neo68KROMActive + 0x8bf4)) = 0x4ef9; // Run code to change "S" data
-	*((unsigned short *)(Neo68KROMActive + 0x8bf6)) = 0x000d;
-	*((unsigned short *)(Neo68KROMActive + 0x8bf8)) = 0xf980;
+	*((UINT16 *)(Neo68KROMActive + 0x8bf4)) = 0x4ef9; // Run code to change "S" data
+	*((UINT16 *)(Neo68KROMActive + 0x8bf6)) = 0x000d;
+	*((UINT16 *)(Neo68KROMActive + 0x8bf8)) = 0xf980;
 }
 
 static void kof10thMapBank()
@@ -7108,7 +7108,7 @@ static void kof10thMapBank()
 	SekMapMemory(Neo68KROMActive + nNeo68KROMBank, 0x200000, 0x2fdfff, SM_ROM);
 }
 
-static int kof10thScan(int nAction, int* pnMin)
+static INT32 kof10thScan(INT32 nAction, INT32* pnMin)
 {
 	struct BurnArea ba;
 	
@@ -7151,9 +7151,9 @@ static void kof10thInstallHandlers()
 	kof10thBankswitch(0);
 }
 
-static int kof10thInit()
+static INT32 kof10thInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	NeoCallbackActive->pInitialise = kof10thCallback;
 	NeoCallbackActive->pInstallHandlers = kof10thInstallHandlers;
@@ -7221,11 +7221,11 @@ STD_ROM_FN(kf10thep)
 
 static void kf10thepCallback()
 {
-	int i;
-	unsigned char *dst = (unsigned char*)malloc(0x100000);
+	INT32 i;
+	UINT8 *dst = (UINT8*)malloc(0x100000);
 	if (dst)
 	{
-		unsigned int sec[8] = { 0x3, 0x8, 0x7, 0xC, 0x1, 0xA, 0x6, 0xD };
+		UINT32 sec[8] = { 0x3, 0x8, 0x7, 0xC, 0x1, 0xA, 0x6, 0xD };
 
 		for (i = 0; i < 8; i++)
 			memcpy (dst + i * 0x20000, Neo68KROMActive + sec[i] * 0x20000, 0x20000);
@@ -7241,18 +7241,18 @@ static void kf10thepCallback()
 
 	for (i = 0xf92bc; i < 0xf9e58; i += 2)
 	{
-		if ((*((unsigned short*)(Neo68KROMActive + i + 0)) & 0xffbf) == 0x4eb9 && *((unsigned short*)(Neo68KROMActive + i + 2)) == 0x0000)
+		if ((*((UINT16*)(Neo68KROMActive + i + 0)) & 0xffbf) == 0x4eb9 && *((UINT16*)(Neo68KROMActive + i + 2)) == 0x0000)
 		{
-			*((unsigned short*)(Neo68KROMActive + i + 2)) = 0x000f;
+			*((UINT16*)(Neo68KROMActive + i + 2)) = 0x000f;
  		}
 	}
 
-	*((unsigned short *)(Neo68KROMActive + 0x00342)) = 0x000f;
+	*((UINT16 *)(Neo68KROMActive + 0x00342)) = 0x000f;
 
 	lans2004_sx_decode();
 }
 
-static int kf10thepInit()
+static INT32 kf10thepInit()
 {
 	NeoCallbackActive->pInitialise = kf10thepCallback;
 
@@ -7305,8 +7305,8 @@ STD_ROM_FN(kf2k5uni)
 
 static void kf2k5uniCallback()
 {
-	int i, j, k;
-	unsigned char dst[0x80];
+	INT32 i, j, k;
+	UINT8 dst[0x80];
 
 	for (i = 0; i < 0x800000; i+=0x80)
 	{
@@ -7327,7 +7327,7 @@ static void kf2k5uniCallback()
 		NeoTextROM[nNeoActiveSlot][i] = BITSWAP08(NeoTextROM[nNeoActiveSlot][i], 4, 5, 6, 7, 0, 1, 2, 3);
 }
 
-static int kf2k5uniInit()
+static INT32 kf2k5uniInit()
 {
 	NeoCallbackActive->pInitialise = kf2k5uniCallback;
 
@@ -7373,7 +7373,7 @@ STD_ROM_FN(kof2k4se)
 
 static void kof2k4seCallback()
 {
-	unsigned char *dst = (unsigned char*)malloc(0x100000);
+	UINT8 *dst = (UINT8*)malloc(0x100000);
 
 	if (dst)
 	{
@@ -7389,7 +7389,7 @@ static void kof2k4seCallback()
 	}
 }
 
-static int kof2k4seInit()
+static INT32 kof2k4seInit()
 {
 	NeoCallbackActive->pInitialise = kof2k4seCallback;
 
@@ -7432,7 +7432,7 @@ STD_ROM_FN(mslug5)
 
 static void mslug5Callback()
 {
-	int i, j, k;
+	INT32 i, j, k;
 	for (i = 0; i < 0x100000; i++)
 		Neo68KROMActive[i] ^= Neo68KROMActive[0x0fffe0 + (i & 0x1f)];
 
@@ -7441,9 +7441,9 @@ static void mslug5Callback()
 
 	for (i = 0x100000; i < 0x0500000; i += 4)
 	{
-		unsigned short rom16 = *((unsigned short *)(Neo68KROMActive + i + 1));
+		UINT16 rom16 = *((UINT16 *)(Neo68KROMActive + i + 1));
 		rom16 = BITSWAP16(rom16, 15, 14, 13, 12, 10, 11, 8, 9, 6, 7, 4, 5, 3, 2, 1, 0);
-		*((unsigned short *)(Neo68KROMActive + i + 1)) = rom16;
+		*((UINT16 *)(Neo68KROMActive + i + 1)) = rom16;
 	}
 
 	memcpy (Neo68KROMActive + 0x700000, Neo68KROMActive, 0x100000);
@@ -7466,9 +7466,9 @@ static void mslug5Callback()
 	}
 }
 
-static int mslug5Init()
+static INT32 mslug5Init()
 {
-	int nRet;
+	INT32 nRet;
 	
 	nNeoProtectionXor = 0x19;
 	NeoCallbackActive->pInitialise = mslug5Callback;
@@ -7590,11 +7590,11 @@ static struct BurnRomInfo ms5plusRomDesc[] = {
 STDROMPICKEXT(ms5plus, ms5plus, neogeo)
 STD_ROM_FN(ms5plus)
 
-void __fastcall ms5plusWriteWordBankSwitch(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall ms5plusWriteWordBankSwitch(UINT32 sekAddress, UINT16 wordValue)
 {
 	if (sekAddress==0x2ffff4)
 	{
-		unsigned int nBank = wordValue << 16;
+		UINT32 nBank = wordValue << 16;
 		if (nNeo68KROMBank != nBank)
 		{
 			nNeo68KROMBank = nBank;
@@ -7609,9 +7609,9 @@ static void ms5plusInstallHandlers()
 	SekSetWriteWordHandler(6, ms5plusWriteWordBankSwitch);
 }
 
-static int ms5plusInit()
+static INT32 ms5plusInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	NeoCallbackActive->pInitialise = lans2004_sx_decode;
 	NeoCallbackActive->pInstallHandlers = ms5plusInstallHandlers;
@@ -7658,7 +7658,7 @@ STD_ROM_FN(svcpcb)
 
 static void svcCallback()
 {
-	int i, j, k;
+	INT32 i, j, k;
 	for (i = 0; i < 0x100000; i++)
 		Neo68KROMActive[i] ^= ~Neo68KROMActive[0x0fffe0 + (i & 0x1f)];
 
@@ -7667,9 +7667,9 @@ static void svcCallback()
 
 	for (i = 0x100000; i < 0x0600000; i+=4)
 	{
-		unsigned short rom16 = *((unsigned short *)(Neo68KROMActive + i + 1));
+		UINT16 rom16 = *((UINT16 *)(Neo68KROMActive + i + 1));
 		rom16 = BITSWAP16(rom16, 15, 14, 13, 12, 10, 11, 8, 9, 6, 7, 4, 5, 3, 2, 1, 0);
-		*((unsigned short *)(Neo68KROMActive + i + 1)) = rom16;
+		*((UINT16 *)(Neo68KROMActive + i + 1)) = rom16;
 	}
 
 	memcpy (Neo68KROMActive + 0x700000, Neo68KROMActive, 0x100000);
@@ -7694,9 +7694,9 @@ static void svcCallback()
 	}
 }
 
-static int svcpcbInit()
+static INT32 svcpcbInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	nNeoProtectionXor = 0x57;
 	NeoCallbackActive->pInitialise = svcCallback;
@@ -7814,8 +7814,8 @@ STD_ROM_FN(svcboot)
 
 static void svcboot_sx_decode()
 {
-	for (int i = 0; i < 0x20000 / 2; i++) {
-		int n = NeoTextROM[nNeoActiveSlot][i];
+	for (INT32 i = 0; i < 0x20000 / 2; i++) {
+		INT32 n = NeoTextROM[nNeoActiveSlot][i];
 		NeoTextROM[nNeoActiveSlot][i] = NeoTextROM[nNeoActiveSlot][0x10000 + i];
 		NeoTextROM[nNeoActiveSlot][0x10000 + i] = n;
 	}
@@ -7825,8 +7825,8 @@ static void svcboot_decode()
 {
 	DoPerm(1);
 
-	for (int i = 0; i < 0x20000 / 2; i++) {
-		int n = NeoZ80ROMActive[i];
+	for (INT32 i = 0; i < 0x20000 / 2; i++) {
+		INT32 n = NeoZ80ROMActive[i];
 		NeoZ80ROMActive[i] = NeoZ80ROMActive[0x10000 + i];
 		NeoZ80ROMActive[0x10000 + i] = n;
 	}
@@ -7834,7 +7834,7 @@ static void svcboot_decode()
 
 static void svcbootCallback()
 {
-	int i, j, k;
+	INT32 i, j, k;
 	for (i = 0x100000; i < 0x800000; i+=0x100000)
 	{
 		memcpy (Neo68KROMActive, Neo68KROMActive + i, 0x100000);
@@ -7853,9 +7853,9 @@ static void svcbootCallback()
 }
 
 
-static int svcbootInit()
+static INT32 svcbootInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	NeoCallbackActive->pInitialise = svcbootCallback;
 
@@ -7909,8 +7909,8 @@ STD_ROM_FN(svcplus)
 
 static void svcplusCallback()
 {
-	int i, j, k;
-	unsigned char *dst = (unsigned char*)malloc(0x100000);
+	INT32 i, j, k;
+	UINT8 *dst = (UINT8*)malloc(0x100000);
 
 	if (dst)
 	{
@@ -7934,15 +7934,15 @@ static void svcplusCallback()
 		dst = NULL;
 	}
 
-	*((unsigned short*)(Neo68KROMActive + 0xf8016)) = 0x33c1; // Patch protected address
+	*((UINT16*)(Neo68KROMActive + 0xf8016)) = 0x33c1; // Patch protected address
 
 	lans2004_sx_decode();
 	svcboot_decode();
 }
 
-static int svcplusInit()
+static INT32 svcplusInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	NeoCallbackActive->pInitialise = svcplusCallback;
 
@@ -7995,7 +7995,7 @@ STD_ROM_FN(svcplusa)
 
 static void svcplusaCallback()
 {
-	unsigned char *dst = (unsigned char*)malloc(0x100000);
+	UINT8 *dst = (UINT8*)malloc(0x100000);
 	if (dst)
 	{
 		memcpy (dst, Neo68KROMActive + 0x500000, 0x100000);
@@ -8005,15 +8005,15 @@ static void svcplusaCallback()
 		dst = NULL;
 	}
 
-	*((unsigned short*)(Neo68KROMActive + 0xf8016)) = 0x33c1; // Patch protected address
+	*((UINT16*)(Neo68KROMActive + 0xf8016)) = 0x33c1; // Patch protected address
 
 	svcboot_sx_decode();
 	svcboot_decode();
 }
 
-static int svcplusaInit()
+static INT32 svcplusaInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	NeoCallbackActive->pInitialise = svcplusaCallback;
 
@@ -8066,13 +8066,13 @@ STD_ROM_FN(svcsplus)
 
 static void svcsplus_sx_decode()
 {
-	for (int i = 0; i < 0x20000; i++)
+	for (INT32 i = 0; i < 0x20000; i++)
 		NeoTextROM[nNeoActiveSlot][i] = BITSWAP08(NeoTextROM[nNeoActiveSlot][i], 7, 6, 0, 4, 3, 2, 1, 5);
 }
 
 static void svcsplusCallback()
 {
-	int i, j, k;
+	INT32 i, j, k;
 	for (i = 0x100000; i < 0x800000; i+=0x10000)
 	{
 		memcpy (Neo68KROMActive, Neo68KROMActive + i, 0x10000);
@@ -8086,19 +8086,19 @@ static void svcsplusCallback()
 
 	memcpy (Neo68KROMActive, Neo68KROMActive + 0x600000, 0x100000);
 
-	*((unsigned short*)(Neo68KROMActive + 0x9e90)) = 0x000f; // Enable S. Plus
-	*((unsigned short*)(Neo68KROMActive + 0x9e92)) = 0xc9c0;
-	*((unsigned short*)(Neo68KROMActive + 0xa10c)) = 0x4eb9; // Enable boss icons
-	*((unsigned short*)(Neo68KROMActive + 0xa10e)) = 0x000e;
-	*((unsigned short*)(Neo68KROMActive + 0xa110)) = 0x9750;
+	*((UINT16*)(Neo68KROMActive + 0x9e90)) = 0x000f; // Enable S. Plus
+	*((UINT16*)(Neo68KROMActive + 0x9e92)) = 0xc9c0;
+	*((UINT16*)(Neo68KROMActive + 0xa10c)) = 0x4eb9; // Enable boss icons
+	*((UINT16*)(Neo68KROMActive + 0xa10e)) = 0x000e;
+	*((UINT16*)(Neo68KROMActive + 0xa110)) = 0x9750;
 
 	svcsplus_sx_decode();
 	svcboot_decode();
 }
 
-static int svcsplusInit()
+static INT32 svcsplusInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	NeoCallbackActive->pInitialise = svcsplusCallback;
 
@@ -8152,13 +8152,13 @@ static void samsho5Callback()
 	PCM2DecryptP2(&Info);
 }
 
-static int samsho5Init()
+static INT32 samsho5Init()
 {
 	nNeoProtectionXor = 0x0F;
 	
 	NeoCallbackActive->pInitialise = samsho5Callback;
 
-	int nRet = NeoInit();
+	INT32 nRet = NeoInit();
 	
 	if (nRet == 0) {
 		PCM2DecryptV2Info Info = { 0x0A000, 0xFEB2C0, { 0xCB, 0x29, 0x7D, 0x43, 0xD2, 0x3A, 0xC2, 0xB4 } };
@@ -8239,11 +8239,11 @@ STD_ROM_FN(samsho5b)
 
 static void samsho5b_sx_decode()
 {
-	unsigned char *Buf = (unsigned char*)malloc(0x20000);
+	UINT8 *Buf = (UINT8*)malloc(0x20000);
 	if (Buf) {
 		memcpy(Buf, NeoTextROM[nNeoActiveSlot], 0x20000);
 		
-		for (int i = 0; i < 0x20000; i += 0x10) {
+		for (INT32 i = 0; i < 0x20000; i += 0x10) {
 			memcpy(&NeoTextROM[nNeoActiveSlot][i + 0], &Buf[i + 8], 8);
 			memcpy(&NeoTextROM[nNeoActiveSlot][i + 8], &Buf[i + 0], 8);
 		}
@@ -8255,14 +8255,14 @@ static void samsho5b_sx_decode()
 
 static void samsho5b_vx_decode()
 {
-	for (int i = 0; i < 0x400000 * 4; i++)
+	for (INT32 i = 0; i < 0x400000 * 4; i++)
 		YM2610ADPCMAROM[nNeoActiveSlot][i] = BITSWAP08(YM2610ADPCMAROM[nNeoActiveSlot][i], 0, 1, 5, 4, 3, 2, 6, 7);
 }
 
 static void samsho5bCallback()
 {
-	int i, j, k;
-	unsigned char *dst = (unsigned char *)malloc(0x100000);
+	INT32 i, j, k;
+	UINT8 *dst = (UINT8 *)malloc(0x100000);
 
 	if (dst)
 	{
@@ -8292,9 +8292,9 @@ static void samsho5bCallback()
 	
 }
 
-static int samsho5bInit()
+static INT32 samsho5bInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	NeoCallbackActive->pInitialise = samsho5bCallback;
 
@@ -8341,8 +8341,8 @@ STD_ROM_FN(kf2k3pcb)
 
 void kf2k3pcb_bios_decode()
 {
-	int i, j;
-	static const int address[0x40] = {
+	INT32 i, j;
+	static const INT32 address[0x40] = {
 		0x04,0x0a,0x04,0x0a,0x04,0x0a,0x04,0x0a,
 		0x0a,0x04,0x0a,0x04,0x0a,0x04,0x0a,0x04,
 		0x09,0x07,0x09,0x07,0x09,0x07,0x09,0x07,
@@ -8353,9 +8353,9 @@ void kf2k3pcb_bios_decode()
 		0x04,0x00,0x04,0x00,0x0e,0x0a,0x0e,0x0a
 	};
 
-	extern unsigned char *Neo68KBIOS;
-	unsigned short *src = (unsigned short*)Neo68KBIOS;
-	unsigned short *dst = (unsigned short*)malloc( 0x80000 );
+	extern UINT8 *Neo68KBIOS;
+	UINT16 *src = (UINT16*)Neo68KBIOS;
+	UINT16 *dst = (UINT16*)malloc( 0x80000 );
 
 	for (i = 0; i < 0x80000 / 2; i++) {
 				  j  = i;
@@ -8385,7 +8385,7 @@ void kf2k3pcb_bios_decode()
 
 static void kf2k3pcbCallback()
 {
-	int i, j, k;
+	INT32 i, j, k;
 	for (i = 0; i < 0x100000; i++)
 	        Neo68KROMActive[0x800000 + i] ^= Neo68KROMActive[0x100002 | i];
 
@@ -8393,9 +8393,9 @@ static void kf2k3pcbCallback()
 		Neo68KROMActive[i] ^= ~Neo68KROMActive[0x7fffe0 + (i & 0x1f)];
 
 	for (i = 0x100000; i < 0x700000; i += 4) {
-		unsigned short rom16 = *((unsigned short *)(Neo68KROMActive + i + 1));
+		UINT16 rom16 = *((UINT16 *)(Neo68KROMActive + i + 1));
 		rom16 = BITSWAP16(rom16, 15, 14, 13, 12, 4, 5, 6, 7, 8, 9, 10, 11, 3, 2, 1, 0);
-		*((unsigned short *)(Neo68KROMActive + i + 1)) = rom16;
+		*((UINT16 *)(Neo68KROMActive + i + 1)) = rom16;
 	}
 
 	memcpy (Neo68KROMActive + 0x700000, Neo68KROMActive, 0x100000);
@@ -8421,9 +8421,9 @@ static void kf2k3pcbCallback()
 	}
 }
 
-static int kf2k3pcbInit()
+static INT32 kf2k3pcbInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	NeoCallbackActive->pInitialise = kf2k3pcbCallback;
 	
@@ -8438,7 +8438,7 @@ static int kf2k3pcbInit()
 		PCM2DecryptV2(&Info);
 		
 		// M1 has additional swap
-		for (int i = 0; i < 0x80000; i++) {
+		for (INT32 i = 0; i < 0x80000; i++) {
 			NeoZ80ROMActive[i] = BITSWAP08(NeoZ80ROMActive[i], 5, 6, 1, 4, 3, 0, 7, 2);
 		}
 	}
@@ -8483,7 +8483,7 @@ STD_ROM_FN(kof2003)
 
 static void kof2003Callback()
 {
-	int i, j, k;
+	INT32 i, j, k;
 	for (i = 0; i < 0x100000; i++)
 		Neo68KROMActive[i] ^= ~Neo68KROMActive[0x0fffe0 + (i & 0x1f)];
 
@@ -8494,9 +8494,9 @@ static void kof2003Callback()
 		Neo68KROMActive[i] ^= ~Neo68KROMActive[0x7fffe0 + (i & 0x1f)];
 
 	for (i = 0x100000; i < 0x800000; i += 4) {
-		unsigned short rom16 = *((unsigned short *)(Neo68KROMActive + i + 1));
+		UINT16 rom16 = *((UINT16 *)(Neo68KROMActive + i + 1));
 		rom16 = BITSWAP16(rom16, 15, 14, 13, 12, 5, 4, 7, 6, 9, 8, 11, 10, 3, 2, 1, 0);
-		*((unsigned short *)(Neo68KROMActive + i + 1)) = rom16;
+		*((UINT16 *)(Neo68KROMActive + i + 1)) = rom16;
 	}
 
 	memcpy (Neo68KROMActive + 0x700000, Neo68KROMActive, 0x100000);
@@ -8522,9 +8522,9 @@ static void kof2003Callback()
 	}
 }
 
-static int kof2003Init()
+static INT32 kof2003Init()
 {
-	int nRet;
+	INT32 nRet;
 
 	nNeoProtectionXor = 0x9D;
 	NeoCallbackActive->pInitialise = kof2003Callback;
@@ -8577,7 +8577,7 @@ STD_ROM_FN(kof2003h)
 
 static void kof2003hCallback()
 {
-	int i, j, k;
+	INT32 i, j, k;
 	for (i = 0; i < 0x100000; i++)
 		Neo68KROMActive[i] ^= ~Neo68KROMActive[0x0fffe0 + (i & 0x1f)];
 
@@ -8588,9 +8588,9 @@ static void kof2003hCallback()
 		Neo68KROMActive[i] ^= ~Neo68KROMActive[0x7fffe0 + (i & 0x1f)];
 
 	for (i = 0x100000; i < 0x800000; i += 4) {
-		unsigned short rom16 = *((unsigned short *)(Neo68KROMActive + i + 1));
+		UINT16 rom16 = *((UINT16 *)(Neo68KROMActive + i + 1));
 		rom16 = BITSWAP16(rom16, 15, 14, 13, 12, 10, 11, 8, 9, 6, 7, 4, 5, 3, 2, 1, 0);
-		*((unsigned short *)(Neo68KROMActive + i + 1)) = rom16;
+		*((UINT16 *)(Neo68KROMActive + i + 1)) = rom16;
 	}
 
 	memcpy (Neo68KROMActive + 0x700000, Neo68KROMActive, 0x100000);
@@ -8616,9 +8616,9 @@ static void kof2003hCallback()
 	}
 }
 
-static int kof2003hInit()
+static INT32 kof2003hInit()
 {
-	int nRet;
+	INT32 nRet;
 	
 	nNeoProtectionXor = 0x9D;
 	NeoCallbackActive->pInitialise = kof2003hCallback;
@@ -8670,12 +8670,12 @@ static struct BurnRomInfo kf2k3blRomDesc[] = {
 STDROMPICKEXT(kf2k3bl, kf2k3bl, neogeo)
 STD_ROM_FN(kf2k3bl)
 
-unsigned char __fastcall kf2k3blReadByteProtection(unsigned int)
+UINT8 __fastcall kf2k3blReadByteProtection(UINT32)
 {
 	return PVCRAM[0x1ff2];
 }
 
-unsigned short __fastcall kf2k3blReadWordProtection(unsigned int)
+UINT16 __fastcall kf2k3blReadWordProtection(UINT32)
 {
 	return PVCRAM[0x1ff2];
 }
@@ -8696,9 +8696,9 @@ static void kf2k3blInstallHandlers()
 	SekSetReadByteHandler(7,  kf2k3blReadByteProtection);
 }
 
-static int kf2k3blInit()
+static INT32 kf2k3blInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	nNeoProtectionXor = 0x9D;
 	NeoCallbackActive->pInitialise = kf2k3blCallback;
@@ -8755,8 +8755,8 @@ STD_ROM_FN(kf2k3bla)
 
 static void kf2k3blaCallback()
 {
-	int i, j, k;
-	unsigned char *dst = (unsigned char *)malloc(0x100000);
+	INT32 i, j, k;
+	UINT8 *dst = (UINT8 *)malloc(0x100000);
 	if (dst)
 	{
 		for (i = 0; i < 0x700000; i += 0x100000)
@@ -8775,18 +8775,18 @@ static void kf2k3blaCallback()
 	}
 
 	// patched by Altera protection chip
-	*((unsigned short*)(Neo68KROMActive + 0x0f38ac)) = 0x4e75;
+	*((UINT16*)(Neo68KROMActive + 0x0f38ac)) = 0x4e75;
 
 	lans2004_sx_decode();
 }
 
-void __fastcall kf2k3blaWriteWordBankswitch(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall kf2k3blaWriteWordBankswitch(UINT32 sekAddress, UINT16 wordValue)
 {
-	*((unsigned short*)(PVCRAM + (sekAddress & 0x1ffe))) = wordValue;
+	*((UINT16*)(PVCRAM + (sekAddress & 0x1ffe))) = wordValue;
 
 	if (sekAddress == 0x2ffff2)
 	{
-		unsigned int nBank = ((PVCRAM[0x1ff3] << 16) | (PVCRAM[0x1ff2] << 8) | PVCRAM[0x1ff0]) + 0x100000;
+		UINT32 nBank = ((PVCRAM[0x1ff3] << 16) | (PVCRAM[0x1ff2] << 8) | PVCRAM[0x1ff0]) + 0x100000;
 
 		if (nBank != nNeo68KROMBank)
 		{
@@ -8804,9 +8804,9 @@ static void kf2k3blaInstallHandlers()
 	SekSetWriteWordHandler(7, kf2k3blaWriteWordBankswitch);
 }
 
-static int kf2k3blaInit()
+static INT32 kf2k3blaInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	nNeoProtectionXor = 0x9D;
 
@@ -8900,7 +8900,7 @@ STD_ROM_FN(kf2k3upl)
 
 static void kf2k3uplCallback()
 {
-	int i, j;
+	INT32 i, j;
 	memcpy (Neo68KROMActive + 0x100000, Neo68KROMActive, 0x600000);
 	memcpy (Neo68KROMActive, Neo68KROMActive + 0x700000, 0x100000);
 
@@ -8912,9 +8912,9 @@ static void kf2k3uplCallback()
 	garoubl_sx_decode();
 }
 
-static int kof2k3uplInit()
+static INT32 kof2k3uplInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	nNeoProtectionXor = 0x9D;
 	NeoCallbackActive->pInitialise = kf2k3uplCallback;
@@ -8973,9 +8973,9 @@ static void samsh5spCallback()
 	PCM2DecryptP2(&Info);
 }
 
-static int samsh5spInit()
+static INT32 samsh5spInit()
 {
-	int nRet;
+	INT32 nRet;
 
 //	nNeoTextROMSize = 0x20000;
 	nNeoProtectionXor = 0x0D;
@@ -9880,7 +9880,7 @@ static struct BurnRomInfo preisle2RomDesc[] = {
 STDROMPICKEXT(preisle2, preisle2, neogeo)
 STD_ROM_FN(preisle2)
 
-int preisle2Init()
+INT32 preisle2Init()
 {
 	nNeoProtectionXor = 0x9F;
 	return NeoInit();
@@ -10130,7 +10130,7 @@ static struct BurnRomInfo nitdRomDesc[] = {
 STDROMPICKEXT(nitd, nitd, neogeo)
 STD_ROM_FN(nitd)
 
-int nitdInit()
+INT32 nitdInit()
 {
 	nNeoProtectionXor = 0xFF;
 	return NeoInit();
@@ -10511,7 +10511,7 @@ static struct BurnRomInfo s1945pRomDesc[] = {
 STDROMPICKEXT(s1945p, s1945p, neogeo)
 STD_ROM_FN(s1945p)
 
-static int s1945pInit()
+static INT32 s1945pInit()
 {
 	nNeoProtectionXor = 0x05;
 	return NeoInit();
@@ -10855,11 +10855,11 @@ STD_ROM_FN(lans2004)
 
 static void lans2004Callback()
 {
-	int i;
-	unsigned char *dst = (unsigned char*)malloc(0x100000);
+	INT32 i;
+	UINT8 *dst = (UINT8*)malloc(0x100000);
 	if (dst)
 	{
-		static const int sec[] = { 0x3, 0x8, 0x7, 0xc, 0x1, 0xa, 0x6, 0xd };
+		static const INT32 sec[] = { 0x3, 0x8, 0x7, 0xc, 0x1, 0xa, 0x6, 0xd };
 
 		for (i = 0; i < 8; i++)
 			memcpy (dst + i * 0x20000, Neo68KROMActive + sec[i] * 0x20000, 0x20000);
@@ -10874,36 +10874,36 @@ static void lans2004Callback()
 	memcpy (Neo68KROMActive + 0x100000, Neo68KROMActive + 0x200000, 0x400000);
 
 	for (i = 0xbbb00; i < 0xbe000; i+=2) {
-		if ((*((unsigned short *)(Neo68KROMActive + i + 0)) & 0xf2bf) == 0x42b9 &&
-		     *((unsigned short *)(Neo68KROMActive + i + 2)) == 0x0000)
+		if ((*((UINT16 *)(Neo68KROMActive + i + 0)) & 0xf2bf) == 0x42b9 &&
+		     *((UINT16 *)(Neo68KROMActive + i + 2)) == 0x0000)
 		{
-			*((unsigned short *)(Neo68KROMActive + i + 2)) = 0x000b;
-			*((unsigned short *)(Neo68KROMActive + i + 4)) += 0x6000;
+			*((UINT16 *)(Neo68KROMActive + i + 2)) = 0x000b;
+			*((UINT16 *)(Neo68KROMActive + i + 4)) += 0x6000;
 		}
 	}
 
-	*((unsigned short *)(Neo68KROMActive + 0x2d15c)) = 0x000b;
-	*((unsigned short *)(Neo68KROMActive + 0x2d15e)) = 0xbb00;
-	*((unsigned short *)(Neo68KROMActive + 0x2d1e4)) = 0x6002;
-	*((unsigned short *)(Neo68KROMActive + 0x2ea7e)) = 0x6002;
-	*((unsigned short *)(Neo68KROMActive + 0xbbcd0)) = 0x6002;
-	*((unsigned short *)(Neo68KROMActive + 0xbbdf2)) = 0x6002;
-	*((unsigned short *)(Neo68KROMActive + 0xbbe42)) = 0x6002;
+	*((UINT16 *)(Neo68KROMActive + 0x2d15c)) = 0x000b;
+	*((UINT16 *)(Neo68KROMActive + 0x2d15e)) = 0xbb00;
+	*((UINT16 *)(Neo68KROMActive + 0x2d1e4)) = 0x6002;
+	*((UINT16 *)(Neo68KROMActive + 0x2ea7e)) = 0x6002;
+	*((UINT16 *)(Neo68KROMActive + 0xbbcd0)) = 0x6002;
+	*((UINT16 *)(Neo68KROMActive + 0xbbdf2)) = 0x6002;
+	*((UINT16 *)(Neo68KROMActive + 0xbbe42)) = 0x6002;
 
 	lans2004_sx_decode();
 	lans2004_cx_decode(0x800000 * 6);
 }
 
-static int lans2004Init()
+static INT32 lans2004Init()
 {
-	int nRet;
+	INT32 nRet;
 
 	NeoCallbackActive->pInitialise = lans2004Callback;
 
  	nRet = NeoInit();
 
 	if (nRet == 0) {
-		for (int i = 0; i < 0xa00000; i++)
+		for (INT32 i = 0; i < 0xa00000; i++)
 			YM2610ADPCMAROM[nNeoActiveSlot][i] = BITSWAP08(YM2610ADPCMAROM[nNeoActiveSlot][i], 0, 1, 5, 4, 3, 2, 6, 7);
 	}
 
@@ -11102,9 +11102,9 @@ static struct BurnRomInfo pnyaaRomDesc[] = {
 STDROMPICKEXT(pnyaa, pnyaa, neogeo)
 STD_ROM_FN(pnyaa)
 
-int pnyaaInit()
+INT32 pnyaaInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	nNeoProtectionXor = 0x2E;
 
@@ -11350,7 +11350,7 @@ static void fightfevaCallback()
 	BurnLoadRom(Neo68KROMActive, 9, 1);
 }
 
-static int fightfevaInit()
+static INT32 fightfevaInit()
 {
 	NeoCallbackActive->pInitialise = fightfevaCallback;
 
@@ -11800,7 +11800,7 @@ static struct BurnRomInfo ganryuRomDesc[] = {
 STDROMPICKEXT(ganryu, ganryu, neogeo)
 STD_ROM_FN(ganryu)
 
-static int ganryuInit()
+static INT32 ganryuInit()
 {
 	nNeoProtectionXor = 0x07;
 	return NeoInit();
@@ -11833,7 +11833,7 @@ static struct BurnRomInfo bangbeadRomDesc[] = {
 STDROMPICKEXT(bangbead, bangbead, neogeo)
 STD_ROM_FN(bangbead)
 
-static int bangbeadInit()
+static INT32 bangbeadInit()
 {
 	nNeoProtectionXor = 0xF8;
 	return NeoInit();
@@ -11871,9 +11871,9 @@ static struct BurnRomInfo mslug4RomDesc[] = {
 STDROMPICKEXT(mslug4, mslug4, neogeo)
 STD_ROM_FN(mslug4)
 
-static int mslug4Init()
+static INT32 mslug4Init()
 {
-	int nRet;
+	INT32 nRet;
 
 //	nNeoTextROMSize = 0x080000;
 	nNeoProtectionXor = 0x31;
@@ -11988,9 +11988,9 @@ static struct BurnRomInfo rotdRomDesc[] = {
 STDROMPICKEXT(rotd, rotd, neogeo)
 STD_ROM_FN(rotd)
 
-static int rotdInit()
+static INT32 rotdInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	nNeoProtectionXor = 0x3F;
 
@@ -12037,9 +12037,9 @@ static struct BurnRomInfo matrimRomDesc[] = {
 STDROMPICKEXT(matrim, matrim, neogeo)
 STD_ROM_FN(matrim)
 
-static int matrimInit()
+static INT32 matrimInit()
 {
-	int nRet;
+	INT32 nRet;
 
 //	nNeoTextROMSize = 0x080000;
 	nNeoProtectionXor = 0x6A;
@@ -12094,8 +12094,8 @@ STD_ROM_FN(matrimbl)
 
 static void matrimblCallback()
 {
-	int i, j;
-	unsigned char *dst = (unsigned char *)malloc( 0x020000 );
+	INT32 i, j;
+	UINT8 *dst = (UINT8 *)malloc( 0x020000 );
 
 	if (dst) 
 	{
@@ -12118,9 +12118,9 @@ static void matrimblCallback()
 	NeoCMCExtractSData(NeoSpriteROM[nNeoActiveSlot], NeoTextROM[nNeoActiveSlot], 0x4000000, 0x080000);
 }
 
-static int matrimblInit()
+static INT32 matrimblInit()
 {
-	int nRet;
+	INT32 nRet;
 
 //	nNeoTextROMSize = 0x080000;
 	NeoCallbackActive->pInitialise = matrimblCallback;
@@ -12161,7 +12161,7 @@ static struct BurnRomInfo jockeygpRomDesc[] = {
 STDROMPICKEXT(jockeygp, jockeygp, neogeo)
 STD_ROM_FN(jockeygp)
 
-int jockeygpInit()
+INT32 jockeygpInit()
 {
 	nNeoProtectionXor = 0xAC;
 	return NeoInit();
@@ -12348,12 +12348,12 @@ STD_ROM_FN(cthd2k3a)
 
 static void cthd2k3aCallback()
 {
-	int i, n;
+	INT32 i, n;
 	
 	// P-ROM Encryption
-	unsigned char nBank[] = { 0x06, 0x02, 0x04, 0x05, 0x01, 0x03, 0x00, 0x07, 0x27, 0x0E, 0x1C, 0x15, 0x1B, 0x17, 0x0A, 0x0F, 0x16, 0x14, 0x23, 0x0B, 0x22, 0x26, 0x08, 0x24, 0x21, 0x13, 0x1A, 0x0C, 0x19, 0x1D, 0x25, 0x10, 0x09, 0x20, 0x18, 0x1F, 0x1E, 0x12, 0x0D, 0x11 };
+	UINT8 nBank[] = { 0x06, 0x02, 0x04, 0x05, 0x01, 0x03, 0x00, 0x07, 0x27, 0x0E, 0x1C, 0x15, 0x1B, 0x17, 0x0A, 0x0F, 0x16, 0x14, 0x23, 0x0B, 0x22, 0x26, 0x08, 0x24, 0x21, 0x13, 0x1A, 0x0C, 0x19, 0x1D, 0x25, 0x10, 0x09, 0x20, 0x18, 0x1F, 0x1E, 0x12, 0x0D, 0x11 };
 	
-	unsigned char *pTemp = (unsigned char*)malloc(0x500000);
+	UINT8 *pTemp = (UINT8*)malloc(0x500000);
 	if (pTemp) {
 		for (i = 0; i < 0x500000 / 0x20000; i++) {
 			memcpy(pTemp + (i * 0x20000), Neo68KROMActive + (nBank[i] * 0x20000), 0x20000);
@@ -12363,7 +12363,7 @@ static void cthd2k3aCallback()
 		pTemp = NULL;
 	}
 	
-	unsigned short *Rom = (unsigned short*)Neo68KROMActive;
+	UINT16 *Rom = (UINT16*)Neo68KROMActive;
 	Rom[0xed00e / 2] = 0x4e71;
 	Rom[0xed394 / 2] = 0x4e71;
 	Rom[0xa2b7e / 2] = 0x4e71;
@@ -12385,7 +12385,7 @@ static void cthd2k3aCallback()
 	DoPerm(0);
 }
 
-static int cthd2k3aInit()
+static INT32 cthd2k3aInit()
 {
 	NeoCallbackActive->pInitialise = cthd2k3aCallback;
 	
@@ -12429,7 +12429,7 @@ static void fr2chCallback()
 	UINT16 *src = (UINT16*)Neo68KROMActive;
 	UINT8 *rom = Neo68KROMActive;
 
-	int i;
+	INT32 i;
 	UINT8 data[16] = {
 		0x49, 0x46, 0x41, 0x4E, 0x20, 0x4C, 0x4F, 0x52,
 		0x41, 0x4D, 0x43, 0x4E, 0x20, 0x45, 0x20, 0x32
@@ -12469,7 +12469,7 @@ static void fr2chCallback()
 	src[0x80008 >> 1] = 0x4E75;
 }
 
-static int fr2chInit()
+static INT32 fr2chInit()
 {
 	NeoCallbackActive->pInitialise = fr2chCallback;
 
@@ -12577,12 +12577,12 @@ STD_ROM_FN(kf2k1pa)
 
 static void kf2k1paCallback()
 {
-	for (int i = 0; i < 0x20000; i++) {
+	for (INT32 i = 0; i < 0x20000; i++) {
 		NeoTextROM[nNeoActiveSlot][i] = BITSWAP08(NeoTextROM[nNeoActiveSlot][i], 3, 2, 4, 5, 1, 6, 0, 7);
 	}	
 }
 
-static int kf2k1paInit()
+static INT32 kf2k1paInit()
 {
 	nNeoProtectionXor = 0x1e;
 	NeoCallbackActive->pInitialise = kf2k1paCallback;
@@ -12628,7 +12628,7 @@ static struct BurnRomInfo kf2k1plsRomDesc[] = {
 STDROMPICKEXT(kf2k1pls, kf2k1pls, neogeo)
 STD_ROM_FN(kf2k1pls)
 
-static int kf2k1plsInit()
+static INT32 kf2k1plsInit()
 {
 	nNeoProtectionXor = 0x1e;
 
@@ -12714,9 +12714,9 @@ static void kf2k2plcCallback()
 	garoubl_sx_decode();
 }
 
-static int kf2k2plcInit()
+static INT32 kf2k2plcInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	nNeoProtectionXor = 0xEC;
 	NeoCallbackActive->pInitialise = kf2k2plcCallback;
@@ -12770,9 +12770,9 @@ static struct BurnRomInfo kf2k2ps2RomDesc[] = {
 STDROMPICKEXT(kf2k2ps2, kf2k2ps2, neogeo)
 STD_ROM_FN(kf2k2ps2)
 
-static int kf2k2ps2Init()
+static INT32 kf2k2ps2Init()
 {
-	int nRet;
+	INT32 nRet;
 
 	nRet = NeoInit();
 
@@ -12823,7 +12823,7 @@ STD_ROM_FN(kf2k4pls)
 
 static void kf2k4plsCallback()
 {
-	unsigned char *pTemp = (unsigned char*)malloc(0x600000);
+	UINT8 *pTemp = (UINT8*)malloc(0x600000);
 	
 	if (pTemp) {
 		memcpy(pTemp, Neo68KROMActive, 0x600000);
@@ -12853,7 +12853,7 @@ static void kf2k4plsCallback()
 	lans2004_sx_decode();
 }
 
-static int kf2k4plsInit()
+static INT32 kf2k4plsInit()
 {
 	NeoCallbackActive->pInitialise = kf2k4plsCallback;
 
@@ -12980,12 +12980,12 @@ STD_ROM_FN(kof96ep)
 
 static void kof96epCallback()
 {
-	unsigned char *pTemp = (unsigned char*)malloc(0x80000);
+	UINT8 *pTemp = (UINT8*)malloc(0x80000);
 	
 	if (pTemp) {
 		BurnLoadRom(pTemp, 15, 1);
 		
-		for (unsigned int i = 0; i < 0x80000; i++) {
+		for (UINT32 i = 0; i < 0x80000; i++) {
 			if (pTemp[i] - Neo68KROMActive[i] == 8) pTemp[i] = Neo68KROMActive[i];
 		}
 		
@@ -12996,7 +12996,7 @@ static void kof96epCallback()
 	}
 }
 
-static int kof96epInit()
+static INT32 kof96epInit()
 {
 	NeoCallbackActive->pInitialise = kof96epCallback;
 
@@ -13078,7 +13078,7 @@ static void kof97plaCallback()
 	lans2004_sx_decode();
 }
 
-static int kof97plaInit()
+static INT32 kof97plaInit()
 {
 	NeoCallbackActive->pInitialise = kof97plaCallback;
 
@@ -13230,7 +13230,7 @@ STD_ROM_FN(mslug5b)
 
 static void mslug5bCallback()
 {
-	unsigned char *pTemp = (unsigned char*)malloc(0x500000);
+	UINT8 *pTemp = (UINT8*)malloc(0x500000);
 	
 	if (pTemp) {
 		memcpy(pTemp, Neo68KROMActive, 0x500000);
@@ -13246,9 +13246,9 @@ static void mslug5bCallback()
 	}
 }
 
-static int mslug5bInit()
+static INT32 mslug5bInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	nNeoProtectionXor = 0x19;
 	NeoCallbackActive->pInitialise = mslug5bCallback;

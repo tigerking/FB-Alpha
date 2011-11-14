@@ -1,18 +1,18 @@
 #include "neogeo.h"
 // Neo Geo -- palette functions
 
-unsigned char* NeoPalSrc[2];		// Pointer to input palettes
-unsigned int* NeoPalette;
-int nNeoPaletteBank;				// Selected palette bank
+UINT8* NeoPalSrc[2];		// Pointer to input palettes
+UINT32* NeoPalette;
+INT32 nNeoPaletteBank;				// Selected palette bank
 
-static unsigned int* NeoPaletteData[2] = {NULL, NULL};
-static unsigned short* NeoPaletteCopy[2] = {NULL, NULL};
+static UINT32* NeoPaletteData[2] = {NULL, NULL};
+static UINT16* NeoPaletteCopy[2] = {NULL, NULL};
 
-unsigned char NeoRecalcPalette;
+UINT8 NeoRecalcPalette;
 
-int NeoInitPalette()
+INT32 NeoInitPalette()
 {
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		if (NeoPaletteData[i]) {
 			free(NeoPaletteData[i]);
 			NeoPaletteData[i] = NULL;
@@ -21,8 +21,8 @@ int NeoInitPalette()
 			free(NeoPaletteCopy[i]);
 			NeoPaletteCopy[i] = NULL;
 		}
-		NeoPaletteData[i] = (unsigned int*)malloc(4096 * sizeof(int));
-		NeoPaletteCopy[i] = (unsigned short*)malloc(4096 * sizeof(short));
+		NeoPaletteData[i] = (UINT32*)malloc(4096 * sizeof(UINT32));
+		NeoPaletteCopy[i] = (UINT16*)malloc(4096 * sizeof(UINT16));
 	}
 
 	NeoRecalcPalette = 1;
@@ -32,7 +32,7 @@ int NeoInitPalette()
 
 void NeoExitPalette()
 {
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		if (NeoPaletteData[i]) {
 			free(NeoPaletteData[i]);
 			NeoPaletteData[i] = NULL;
@@ -44,13 +44,13 @@ void NeoExitPalette()
 	}
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r = (nColour & 0x0F00) >> 4;	// Red
+	INT32 r = (nColour & 0x0F00) >> 4;	// Red
 	r |= (nColour >> 11) & 8;
-	int g = (nColour & 0x00F0);			// Green
+	INT32 g = (nColour & 0x00F0);			// Green
 	g |= (nColour >> 10) & 8;
-	int b = (nColour & 0x000F) << 4;	// Blue
+	INT32 b = (nColour & 0x000F) << 4;	// Blue
 	b |= (nColour >> 9) & 8;
 
 	r |= r >> 5;
@@ -60,17 +60,17 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-int NeoUpdatePalette()
+INT32 NeoUpdatePalette()
 {
 	if (NeoRecalcPalette) {
-		int i;
-		unsigned short* ps;
-		unsigned short* pc;
-		unsigned int* pd;
+		INT32 i;
+		UINT16* ps;
+		UINT16* pc;
+		UINT32* pd;
 
 		// Update both palette banks
-		for (int j = 0; j < 2; j++) {
-			for (i = 0, ps = (unsigned short*)NeoPalSrc[j], pc = NeoPaletteCopy[j], pd = NeoPaletteData[j]; i < 4096; i++, ps++, pc++, pd++) {
+		for (INT32 j = 0; j < 2; j++) {
+			for (i = 0, ps = (UINT16*)NeoPalSrc[j], pc = NeoPaletteCopy[j], pd = NeoPaletteData[j]; i < 4096; i++, ps++, pc++, pd++) {
 				*pc = *ps;
 				*pd = CalcCol(*ps);
 			}
@@ -89,25 +89,25 @@ void NeoSetPalette()
 }
 
 // Update the PC copy of the palette on writes to the palette memory
-void __fastcall NeoPalWriteByte(unsigned int nAddress, unsigned char byteValue)
+void __fastcall NeoPalWriteByte(UINT32 nAddress, UINT8 byteValue)
 {
 	nAddress &= 0x1FFF;
 	nAddress ^= 1;
 
 	NeoPalSrc[nNeoPaletteBank][nAddress] = byteValue;							// write byte
 
-	if (*((unsigned char*)(NeoPaletteCopy[nNeoPaletteBank] + nAddress)) != byteValue) {
-		*((unsigned char*)(NeoPaletteCopy[nNeoPaletteBank] + nAddress)) = byteValue;
-		NeoPaletteData[nNeoPaletteBank][nAddress >> 1] = CalcCol(*(unsigned short*)(NeoPalSrc[nNeoPaletteBank] + (nAddress & ~0x01)));
+	if (*((UINT8*)(NeoPaletteCopy[nNeoPaletteBank] + nAddress)) != byteValue) {
+		*((UINT8*)(NeoPaletteCopy[nNeoPaletteBank] + nAddress)) = byteValue;
+		NeoPaletteData[nNeoPaletteBank][nAddress >> 1] = CalcCol(*(UINT16*)(NeoPalSrc[nNeoPaletteBank] + (nAddress & ~0x01)));
 	}
 }
 
-void __fastcall NeoPalWriteWord(unsigned int nAddress, unsigned short wordValue)
+void __fastcall NeoPalWriteWord(UINT32 nAddress, UINT16 wordValue)
 {
 	nAddress &= 0x1FFF;
 	nAddress >>= 1;
 
-	((unsigned short*)NeoPalSrc[nNeoPaletteBank])[nAddress] = wordValue;		// write word
+	((UINT16*)NeoPalSrc[nNeoPaletteBank])[nAddress] = wordValue;		// write word
 
 	if (NeoPaletteCopy[nNeoPaletteBank][nAddress] != wordValue) {
 		NeoPaletteCopy[nNeoPaletteBank][nAddress] = wordValue;

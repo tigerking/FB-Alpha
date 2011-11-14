@@ -1,44 +1,44 @@
 #include "neogeo.h"
 
-unsigned char* NeoZoomROM;
+UINT8* NeoZoomROM;
 
-unsigned char* NeoSpriteROM[MAX_SLOT] = { NULL, };
+UINT8* NeoSpriteROM[MAX_SLOT] = { NULL, };
 
-unsigned int nNeoTileMask[MAX_SLOT];
-int nNeoMaxTile[MAX_SLOT];
+UINT32 nNeoTileMask[MAX_SLOT];
+INT32 nNeoMaxTile[MAX_SLOT];
 
-static unsigned char* NeoSpriteROMActive;
-static unsigned int nNeoTileMaskActive;
-static int nNeoMaxTileActive;
+static UINT8* NeoSpriteROMActive;
+static UINT32 nNeoTileMaskActive;
+static INT32 nNeoMaxTileActive;
 
-static unsigned char* NeoTileAttrib[MAX_SLOT] = { NULL, };
-static unsigned char* NeoTileAttribActive;
+static UINT8* NeoTileAttrib[MAX_SLOT] = { NULL, };
+static UINT8* NeoTileAttribActive;
 
-int nSliceStart, nSliceEnd, nSliceSize;
+INT32 nSliceStart, nSliceEnd, nSliceSize;
 
-static unsigned int* pTileData;
-static unsigned int* pTilePalette;
+static UINT32* pTileData;
+static UINT32* pTilePalette;
 
-static unsigned short* pBank;
+static UINT16* pBank;
 
-static int nBankSize;
-static int nBankXPos, nBankYPos;
-static int nBankXZoom, nBankYZoom;
+static INT32 nBankSize;
+static INT32 nBankXPos, nBankYPos;
+static INT32 nBankXZoom, nBankYZoom;
 
-static int nNeoSpriteFrame04, nNeoSpriteFrame08;
+static INT32 nNeoSpriteFrame04, nNeoSpriteFrame08;
 
-static int nLastBPP = -1;
+static INT32 nLastBPP = -1;
 
 typedef void (*RenderBankFunction)();
 static RenderBankFunction* RenderBank;
 
-static 	unsigned short BankAttrib01, BankAttrib02, BankAttrib03;
+static 	UINT16 BankAttrib01, BankAttrib02, BankAttrib03;
 
 
 // Include the tile rendering functions
 #include "neo_sprite_func.h"
 
-int NeoRenderSprites()
+INT32 NeoRenderSprites()
 {
 	if (nLastBPP != nBurnBpp ) {
 		nLastBPP = nBurnBpp;
@@ -50,15 +50,15 @@ int NeoRenderSprites()
 		return 0;
 	}
 
-//	unsigned short BankAttrib01, BankAttrib02, BankAttrib03;
+//	UINT16 BankAttrib01, BankAttrib02, BankAttrib03;
 
 	nNeoSpriteFrame04 = nNeoSpriteFrame & 3;
 	nNeoSpriteFrame08 = nNeoSpriteFrame & 7;
 	
 	// ssrpg hack! - NeoCD/SDL
-	int nStart = 0;
+	INT32 nStart = 0;
 	if (SekReadWord(0x108) == 0x0085) {
-		unsigned short *vidram = (unsigned short*)NeoGraphicsRAM;
+		UINT16 *vidram = (UINT16*)NeoGraphicsRAM;
 
 	   	if ((vidram[0x8202] & 0x40) == 0 && (vidram[0x8203] & 0x40) != 0) {
 			nStart = 3;
@@ -69,13 +69,13 @@ int NeoRenderSprites()
 		}
 	}
 
-	for (int nBank = 0; nBank < 0x17D; nBank++) {
-		int zBank = (nBank + nStart) % 0x17d;
-		BankAttrib01 = *((unsigned short*)(NeoGraphicsRAM + 0x010000 + (zBank << 1)));
-		BankAttrib02 = *((unsigned short*)(NeoGraphicsRAM + 0x010400 + (zBank << 1)));
-		BankAttrib03 = *((unsigned short*)(NeoGraphicsRAM + 0x010800 + (zBank << 1)));
+	for (INT32 nBank = 0; nBank < 0x17D; nBank++) {
+		INT32 zBank = (nBank + nStart) % 0x17d;
+		BankAttrib01 = *((UINT16*)(NeoGraphicsRAM + 0x010000 + (zBank << 1)));
+		BankAttrib02 = *((UINT16*)(NeoGraphicsRAM + 0x010400 + (zBank << 1)));
+		BankAttrib03 = *((UINT16*)(NeoGraphicsRAM + 0x010800 + (zBank << 1)));
 
-		pBank = (unsigned short*)(NeoGraphicsRAM + (zBank << 7));
+		pBank = (UINT16*)(NeoGraphicsRAM + (zBank << 7));
 
 		if (BankAttrib02 & 0x40) {
 			nBankXPos += nBankXZoom + 1;
@@ -114,11 +114,11 @@ int NeoRenderSprites()
 	return 0;
 }
 
-void NeoUpdateSprites(int nOffset, int nSize)
+void NeoUpdateSprites(INT32 nOffset, INT32 nSize)
 {
-	for (int i = nOffset & ~127; i < nOffset + nSize; i += 128) {
+	for (INT32 i = nOffset & ~127; i < nOffset + nSize; i += 128) {
 		bool bTransparent = true;
-		for (int j = i; j < i + 128; j++) {
+		for (INT32 j = i; j < i + 128; j++) {
 			if (NeoSpriteROMActive[j]) {
 				bTransparent = false;
 				break;
@@ -132,7 +132,7 @@ void NeoUpdateSprites(int nOffset, int nSize)
 	}
 }
 
-void NeoSetSpriteSlot(int nSlot)
+void NeoSetSpriteSlot(INT32 nSlot)
 {
 	NeoTileAttribActive = NeoTileAttrib[nSlot];
 	NeoSpriteROMActive  = NeoSpriteROM[nSlot];
@@ -140,14 +140,14 @@ void NeoSetSpriteSlot(int nSlot)
 	nNeoMaxTileActive   = nNeoMaxTile[nSlot];
 }
 
-int NeoInitSprites(int nSlot)
+INT32 NeoInitSprites(INT32 nSlot)
 {
 	// Create a table that indicates if a tile is transparent
-	NeoTileAttrib[nSlot] = (unsigned char*)malloc(nNeoTileMask[nSlot] + 1);
+	NeoTileAttrib[nSlot] = (UINT8*)malloc(nNeoTileMask[nSlot] + 1);
 
-	for (int i = 0; i < nNeoMaxTile[nSlot]; i++) {
+	for (INT32 i = 0; i < nNeoMaxTile[nSlot]; i++) {
 		bool bTransparent = true;
-		for (int j = i << 7; j < (i + 1) << 7; j++) {
+		for (INT32 j = i << 7; j < (i + 1) << 7; j++) {
 			if (NeoSpriteROM[nSlot][j]) {
 				bTransparent = false;
 				break;
@@ -159,7 +159,7 @@ int NeoInitSprites(int nSlot)
 			NeoTileAttrib[nSlot][i] = 0;
 		}
 	}
-	for (unsigned int i = nNeoMaxTile[nSlot]; i < nNeoTileMask[nSlot] + 1; i++) {
+	for (UINT32 i = nNeoMaxTile[nSlot]; i < nNeoTileMask[nSlot] + 1; i++) {
 		NeoTileAttrib[nSlot][i] = 1;
 	}
 
@@ -171,7 +171,7 @@ int NeoInitSprites(int nSlot)
 	return 0;
 }
 
-void NeoExitSprites(int nSlot)
+void NeoExitSprites(INT32 nSlot)
 {
 	if (NeoTileAttrib[nSlot]) {
 		free(NeoTileAttrib[nSlot]);

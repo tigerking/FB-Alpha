@@ -21,18 +21,18 @@
 
 #if BPP == 16
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTCLIP(a)) {			\
-   	*((unsigned short*)pPixel) = (unsigned short)pTilePalette[b];	\
+   	*((UINT16*)pPixel) = (UINT16)pTilePalette[b];	\
  }
 #elif BPP == 24
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTCLIP(a)) {			\
-	unsigned int nRGB = pTilePalette[b];							\
-	pPixel[0] = (unsigned char)nRGB;								\
-	pPixel[1] = (unsigned char)(nRGB >> 8);							\
-	pPixel[2] = (unsigned char)(nRGB >> 16);						\
+	UINT32 nRGB = pTilePalette[b];							\
+	pPixel[0] = (UINT8)nRGB;								\
+	pPixel[1] = (UINT8)(nRGB >> 8);							\
+	pPixel[2] = (UINT8)(nRGB >> 16);						\
  }
 #elif BPP == 32
  #define PLOTPIXEL(a,b) if (TESTCOLOUR(b) && TESTCLIP(a)) {			\
-	 *((unsigned int*)pPixel) = (unsigned int)pTilePalette[b];		\
+	 *((UINT32*)pPixel) = (UINT32)pTilePalette[b];		\
  }
 #else
  #error unsupported bitdepth specified.
@@ -479,17 +479,17 @@
 
 static void FUNCTIONNAME(BPP,XZOOM,CLIP,OPACITY)()
 {
-	unsigned char *pTileRow, *pPixel;
-	int nColour = 0, nTransparent = 0;
-	int nTileNumber, nTileAttrib = 0;
-	int nTile, nLine;
-	int nPrevTile;
-	int nYPos;
+	UINT8 *pTileRow, *pPixel;
+	INT32 nColour = 0, nTransparent = 0;
+	INT32 nTileNumber, nTileAttrib = 0;
+	INT32 nTile, nLine;
+	INT32 nPrevTile;
+	INT32 nYPos;
 
-	unsigned char* pZoomValue = NeoZoomROM + (nBankYZoom << 8);
+	UINT8* pZoomValue = NeoZoomROM + (nBankYZoom << 8);
 
-	int nLinesTotal = (nBankSize >= 0x20) ? 0x01FF : ((nBankSize << 4) - 1);
-	int nLinesDone  = 0;
+	INT32 nLinesTotal = (nBankSize >= 0x20) ? 0x01FF : ((nBankSize << 4) - 1);
+	INT32 nLinesDone  = 0;
 
 	while (nLinesDone <= nLinesTotal) {
 		nLine = (nBankYPos + nLinesDone) & 0x01FF;
@@ -510,11 +510,11 @@ static void FUNCTIONNAME(BPP,XZOOM,CLIP,OPACITY)()
 
 		// This part of the sprite strip is in the part of the display we need to render
 		{
-			int nStartTile = (nLinesDone >= 0x0100) ? 0x10 : 0;
-			int nStartLine = nLinesDone & 0xFF;
-			int nEndLine   = (nLinesDone < 0x0100 && nLinesTotal >= 0x0100) ? 0xFF : nLinesTotal & 0xFF;
+			INT32 nStartTile = (nLinesDone >= 0x0100) ? 0x10 : 0;
+			INT32 nStartLine = nLinesDone & 0xFF;
+			INT32 nEndLine   = (nLinesDone < 0x0100 && nLinesTotal >= 0x0100) ? 0xFF : nLinesTotal & 0xFF;
 
-			int nThisLine;
+			INT32 nThisLine;
 
 			// Handle wraparound for full-size sprite strips
 			if (nBankSize > 0x10 && nBankYZoom != 0xFF) {
@@ -620,7 +620,7 @@ static void FUNCTIONNAME(BPP,XZOOM,CLIP,OPACITY)()
 					nTransparent = NeoTileAttribActive[nTileNumber];
 
 					if (nTransparent == 0) {
-						pTileData = (unsigned int*)(NeoSpriteROMActive + (nTileNumber << 7));
+						pTileData = (UINT32*)(NeoSpriteROMActive + (nTileNumber << 7));
 						pTilePalette = &NeoPalette[(nTileAttrib & 0xFF00) >> 4];
 					}
 				}
