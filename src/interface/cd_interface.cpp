@@ -2,7 +2,7 @@
 #include "burner.h"
 
 bool bCDEmuOkay = false;
-unsigned int nCDEmuSelect = 0;
+UINT32 nCDEmuSelect = 0;
 
 CDEmuStatusValue CDEmuStatus;
 
@@ -34,7 +34,7 @@ TCHAR CDEmuImage[MAX_PATH] = _T("");
 
 // ----------------------------------------------------------------------------
 
-int CDEmuExit()
+INT32 CDEmuExit()
 {
 	IntInfoFree(&CDEmuInfo);
 
@@ -46,9 +46,9 @@ int CDEmuExit()
 	return pCDEmuDo[nCDEmuSelect]->CDEmuExit();
 }
 
-int CDEmuInit()
+INT32 CDEmuInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	if (nCDEmuSelect >= CDEMU_LEN) {
 		return 1;
@@ -63,7 +63,7 @@ int CDEmuInit()
 	return nRet;
 }
 
-int CDEmuStop()
+INT32 CDEmuStop()
 {
 	if (!bCDEmuOkay || nCDEmuSelect >= CDEMU_LEN) {
 		return 1;
@@ -72,7 +72,7 @@ int CDEmuStop()
 	return pCDEmuDo[nCDEmuSelect]->CDEmuStop();
 }
 
-int CDEmuPlay(unsigned char M, unsigned char S, unsigned char F)
+INT32 CDEmuPlay(UINT8 M, UINT8 S, UINT8 F)
 {
 	if (!bCDEmuOkay || nCDEmuSelect >= CDEMU_LEN) {
 		return 1;
@@ -81,7 +81,7 @@ int CDEmuPlay(unsigned char M, unsigned char S, unsigned char F)
 	return pCDEmuDo[nCDEmuSelect]->CDEmuPlay(M, S, F);
 }
 
-int CDEmuLoadSector(int LBA, char* pBuffer)
+INT32 CDEmuLoadSector(INT32 LBA, char* pBuffer)
 {
 	if (!bCDEmuOkay || nCDEmuSelect >= CDEMU_LEN) {
 		return 0;
@@ -90,7 +90,7 @@ int CDEmuLoadSector(int LBA, char* pBuffer)
 	return pCDEmuDo[nCDEmuSelect]->CDEmuLoadSector(LBA, pBuffer);
 }
 
-unsigned char* CDEmuReadTOC(int track)
+UINT8* CDEmuReadTOC(INT32 track)
 {
 	if (!bCDEmuOkay || nCDEmuSelect >= CDEMU_LEN) {
 		return NULL;
@@ -99,7 +99,7 @@ unsigned char* CDEmuReadTOC(int track)
 	return pCDEmuDo[nCDEmuSelect]->CDEmuReadTOC(track);
 }
 
-unsigned char* CDEmuReadQChannel()
+UINT8* CDEmuReadQChannel()
 {
 	if (!bCDEmuOkay || nCDEmuSelect >= CDEMU_LEN) {
 		return NULL;
@@ -108,7 +108,7 @@ unsigned char* CDEmuReadQChannel()
 	return pCDEmuDo[nCDEmuSelect]->CDEmuReadQChannel();
 }
 
-int CDEmuGetSoundBuffer(short* buffer, int samples)
+INT32 CDEmuGetSoundBuffer(INT16* buffer, INT32 samples)
 {
 	if (!bCDEmuOkay || nCDEmuSelect >= CDEMU_LEN) {
 		return 1;
