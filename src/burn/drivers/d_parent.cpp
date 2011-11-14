@@ -2,7 +2,7 @@
 
 #include "burnint.h"
 
-static unsigned char ParentReset         = 0;
+static UINT8 ParentReset         = 0;
 
 static struct BurnInputInfo ParentInputList[] = {
 	{"Reset"             , BIT_DIGITAL  , &ParentReset        , "reset"     },
@@ -10,12 +10,12 @@ static struct BurnInputInfo ParentInputList[] = {
 
 STDINPUTINFO(Parent)
 
-static int ParentInit()
+static INT32 ParentInit()
 {
 	return 1;
 }
 
-static int ParentExit()
+static INT32 ParentExit()
 {
 	return 0;
 }
