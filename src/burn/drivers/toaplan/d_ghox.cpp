@@ -3,25 +3,25 @@
 #define REFRESHRATE 60
 #define VBLANK_LINES (32)
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6] = {0, 0, 0, 0, 0, 0};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6] = {0, 0, 0, 0, 0, 0};
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *RamPal;
-static unsigned char *ShareRAM;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *RamPal;
+static UINT8 *ShareRAM;
 
 static INT8 Paddle[2];
 static INT8 PaddleOld[2];
 
-static int nColCount = 0x0800;
+static INT32 nColCount = 0x0800;
 
 static struct BurnInputInfo GhoxInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"},
@@ -138,11 +138,11 @@ static struct BurnDIPInfo GhoxDIPList[]=
 
 STDDIPINFO(Ghox)
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x040000;		// 68000 ROM
 	GP9001ROM[0]= Next; Next += nGP9001ROMSize[0];	// GP9001 tile data
 	RamStart	= Next;
@@ -150,16 +150,16 @@ static int MemIndex()
 	ShareRAM	= Next; Next += 0x001000;
 	RamPal		= Next; Next += 0x001000;		// palette
 	GP9001RAM[0]= Next; Next += 0x008000;		// Double size, as the game tests too much memory during POST
-	GP9001Reg[0]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
+	GP9001Reg[0]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
 	return 0;
 }
 
 // Scan ram
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -182,7 +182,7 @@ static int DrvScan(int nAction,int *pnMin)
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	ToaLoadCode(Rom01, 0, 2);
@@ -204,7 +204,7 @@ UINT8 PaddleRead(UINT8 Num)
 	return Value;	
 }
 
-unsigned char __fastcall ghoxReadByte(unsigned int sekAddress)
+UINT8 __fastcall ghoxReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x18000d:								// Player 1 inputs
@@ -247,7 +247,7 @@ unsigned char __fastcall ghoxReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall ghoxReadWord(unsigned int sekAddress)
+UINT16 __fastcall ghoxReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		case 0x18000c:								// Player 1 inputs
@@ -293,16 +293,16 @@ unsigned short __fastcall ghoxReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-static void ghox_mcu_write(int data)
+static void ghox_mcu_write(INT32 data)
 {
 	if ((data >= 0xd0) && (data < 0xe0))
 	{
-		int offset = ((data & 0x0f) * 2) + (0x38 / 2);
+		INT32 offset = ((data & 0x0f) * 2) + (0x38 / 2);
 		ShareRAM[(0x500 / 2) + offset  ] = 0x05;	// Return address for
 		ShareRAM[(0x500 / 2) + offset-1] = 0x56;	// RTS instruction
 	}
 	if (data == 0xd3) {
-		static const unsigned char prot_data[0x10] = {
+		static const UINT8 prot_data[0x10] = {
 			0x3a, 0x01, 0x08, 0x85, 0x00, 0x00, 0xcb, 0xfc,
 			0x00, 0x03, 0x90, 0x45, 0xe5, 0x09, 0x4e, 0x75
 		};
@@ -314,7 +314,7 @@ static void ghox_mcu_write(int data)
 	}
 }
 
-void __fastcall ghoxWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall ghoxWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 		case 0x180001:
@@ -331,7 +331,7 @@ void __fastcall ghoxWriteByte(unsigned int sekAddress, unsigned char byteValue)
 	}
 }
 
-void __fastcall ghoxWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall ghoxWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 
@@ -368,7 +368,7 @@ void __fastcall ghoxWriteWord(unsigned int sekAddress, unsigned short wordValue)
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -382,9 +382,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = false;
@@ -397,8 +397,8 @@ static int DrvInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -442,7 +442,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ToaPalExit();
 
@@ -458,7 +458,7 @@ static int DrvExit()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	ToaClearScreen(0);
 
@@ -472,21 +472,21 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 4;
+	INT32 nInterleave = 4;
 
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
 	memset (DrvInput, 0, 3);
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -505,15 +505,15 @@ static int DrvFrame()
 
 	SekIdle(nCyclesDone[0]);
 
-	nCyclesTotal[0] = (int)((long long)10000000 * nBurnCPUSpeedAdjust / (0x0100 * REFRESHRATE));
+	nCyclesTotal[0] = (INT32)((INT64)10000000 * nBurnCPUSpeedAdjust / (0x0100 * REFRESHRATE));
 
 	SekSetCyclesScanline(nCyclesTotal[0] / 262);
 	nToaCyclesDisplayStart = nCyclesTotal[0] - ((nCyclesTotal[0] * (TOA_VBLANK_LINES + 240)) / 262);
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	for (int i = 0; i < nInterleave; i++) {
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nNext;
 
 		// Run 68000
 		nNext = (i + 1) * nCyclesTotal[0] / nInterleave;

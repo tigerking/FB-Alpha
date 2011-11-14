@@ -2,26 +2,26 @@
 #include "eeprom.h"
 #include "vez.h"
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[5] = {0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[5] = {0x00, 0x00, 0x00, 0x00, 0x00};
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *RamPal;
-static unsigned char *ShareRAM, *EEPROM;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *RamPal;
+static UINT8 *ShareRAM, *EEPROM;
 
-static const int nColCount = 0x0800;
+static const INT32 nColCount = 0x0800;
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static int v25_reset = 0;
-static int set_region = 0;
+static INT32 v25_reset = 0;
+static INT32 set_region = 0;
 
 static struct BurnInputInfo FixeightInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvButton + 3,	"p1 coin"	},
@@ -69,7 +69,7 @@ static struct BurnDIPInfo FixeightDIPList[]=
 
 STDDIPINFO(Fixeight)
 
-unsigned char __fastcall fixeightReadByte(unsigned int sekAddress)
+UINT8 __fastcall fixeightReadByte(UINT32 sekAddress)
 {
 	if ((sekAddress & 0xff0000) == 0x280000) {
 		return ShareRAM[(sekAddress >> 1) & 0x7fff];
@@ -99,7 +99,7 @@ unsigned char __fastcall fixeightReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall fixeightReadWord(unsigned int sekAddress)
+UINT16 __fastcall fixeightReadWord(UINT32 sekAddress)
 {
 	if ((sekAddress & 0xff0000) == 0x280000) {
 		return ShareRAM[(sekAddress >> 1) & 0x7fff];
@@ -137,7 +137,7 @@ unsigned short __fastcall fixeightReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall fixeightWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall fixeightWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if ((sekAddress & 0xff0000) == 0x280000) {
 		ShareRAM[(sekAddress >> 1) & 0x7fff] = byteValue;
@@ -167,7 +167,7 @@ void __fastcall fixeightWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall fixeightWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall fixeightWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if ((sekAddress & 0xff0000) == 0x280000) {
 		ShareRAM[(sekAddress >> 1) & 0x7fff] = wordValue;
@@ -208,7 +208,7 @@ void __fastcall fixeightWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-void __fastcall fixeight_v25_write(unsigned int address, unsigned char data)
+void __fastcall fixeight_v25_write(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -226,7 +226,7 @@ void __fastcall fixeight_v25_write(unsigned int address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall fixeight_v25_read(unsigned int address)
+UINT8 __fastcall fixeight_v25_read(UINT32 address)
 {
 	switch (address)
 	{
@@ -243,7 +243,7 @@ unsigned char __fastcall fixeight_v25_read(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall fixeight_v25_read_port(unsigned int port)
+UINT8 __fastcall fixeight_v25_read_port(UINT32 port)
 {
 	switch (port)
 	{
@@ -254,7 +254,7 @@ unsigned char __fastcall fixeight_v25_read_port(unsigned int port)
 	return 0;
 }
 
-void __fastcall fixeight_v25_write_port(unsigned int port, unsigned char data)
+void __fastcall fixeight_v25_write_port(UINT32 port, UINT8 data)
 {
 	switch (port)
 	{
@@ -264,7 +264,7 @@ void __fastcall fixeight_v25_write_port(unsigned int port, unsigned char data)
 	}
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	MSM6295Exit(0);
 	BurnYM2151Exit();
@@ -287,7 +287,7 @@ static int DrvExit()
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -310,7 +310,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	ToaClearScreen(0);
 
@@ -325,14 +325,14 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 100;
+	INT32 nInterleave = 100;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -343,7 +343,7 @@ static int DrvFrame()
 	DrvInput[1] = 0x00;													// Player 1
 	DrvInput[2] = 0x00;													// Player 2
 	DrvInput[3] = 0x00;													// Player 3
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvJoy3[i] & 1) << i;
@@ -355,8 +355,8 @@ static int DrvFrame()
 	SekNewFrame();
 	VezNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	nCyclesTotal[1] = (int)((long long)8000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = (INT32)((INT64)8000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesDone[0] = 0;
 	nCyclesDone[1] = 0;
 
@@ -368,9 +368,9 @@ static int DrvFrame()
 	SekOpen(0);
 	VezOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-    		int nCurrentCPU;
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+    	INT32 nCurrentCPU;
+		INT32 nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -425,11 +425,11 @@ static int DrvFrame()
 	return 0;
 }
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x080000;		//
 	GP9001ROM[0]	= Next; Next += nGP9001ROMSize[0];	// GP9001 tile data
 	MSM6295ROM	= Next; Next += 0x040000;
@@ -443,15 +443,15 @@ static int MemIndex()
 	ExtraTSelect	= Next; Next += 0x001000;		//
 	RamPal		= Next; Next += 0x001000;		// palette
 	GP9001RAM[0]	= Next; Next += 0x004000;
-	GP9001Reg[0]	= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
+	GP9001Reg[0]	= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
@@ -469,7 +469,7 @@ static int LoadRoms()
 }
 
 // Scan ram
-static int DrvScan(int nAction, int* pnMin)
+static INT32 DrvScan(INT32 nAction, INT32* pnMin)
 {
 	if (pnMin) {						// Return minimum compatible version
 		*pnMin = 0x029497;
@@ -503,7 +503,7 @@ static int DrvScan(int nAction, int* pnMin)
 	return 0;
 }
 
-static unsigned char ts001turbo_decryption_table[256] = {
+static UINT8 ts001turbo_decryption_table[256] = {
 	0x90,0x05,0x57,0x5f,0xfe,0x4f,0xbd,0x36, 0x80,0x8b,0x8a,0x0a,0x89,0x90,0x47,0x80, /* 00 */
 	0x22,0x90,0x90,0x5d,0x81,0x3c,0xb5,0x83, 0x68,0xff,0x75,0x75,0x8d,0x5b,0x8a,0x38, /* 10 */
 	0x8b,0xeb,0xd2,0x0a,0xb4,0xc7,0x46,0xd1, 0x0a,0x53,0xbd,0x90,0x22,0xff,0x1f,0x03, /* 20 */
@@ -522,9 +522,9 @@ static unsigned char ts001turbo_decryption_table[256] = {
 	0x0f,0x75,0xc0,0xb9,0x07,0x74,0x3e,0xa2, 0x8a,0x48,0x3e,0x8d,0xeb,0x90,0xfe,0x90, /* f0 */
 };
 
-static int DrvInit(int region)
+static INT32 DrvInit(INT32 region)
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = true;
@@ -535,8 +535,8 @@ static int DrvInit(int region)
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -564,7 +564,7 @@ static int DrvInit(int region)
 
 		VezInit(0, V25_TYPE, 16000000 /*before divider*/);
 		VezOpen(0);
-		for (int i = 0x80000; i < 0x100000; i += 0x8000) {
+		for (INT32 i = 0x80000; i < 0x100000; i += 0x8000) {
 			VezMapArea(i, i + 0x7fff, 0, ShareRAM);
 			VezMapArea(i, i + 0x7fff, 1, ShareRAM);
 			VezMapArea(i, i + 0x7fff, 2, ShareRAM);
@@ -626,7 +626,7 @@ static struct BurnRomInfo fixeightRomDesc[] = {
 STD_ROM_PICK(fixeight)
 STD_ROM_FN(fixeight)
 
-static int fixeightInit() { return DrvInit(0x00); }
+static INT32 fixeightInit() { return DrvInit(0x00); }
 
 struct BurnDriver BurnDrvFixeight = {
 	"fixeight", NULL, NULL, NULL, "1992",
@@ -656,7 +656,7 @@ static struct BurnRomInfo fixeightktRomDesc[] = {
 STD_ROM_PICK(fixeightkt)
 STD_ROM_FN(fixeightkt)
 
-static int fixeightktInit() { return DrvInit(0x00); }
+static INT32 fixeightktInit() { return DrvInit(0x00); }
 
 struct BurnDriver BurnDrvFixeightkt = {
 	"fixeightkt", "fixeight", NULL, NULL, "1992",
@@ -686,7 +686,7 @@ static struct BurnRomInfo fixeightkRomDesc[] = {
 STD_ROM_PICK(fixeightk)
 STD_ROM_FN(fixeightk)
 
-static int fixeightkInit() { return DrvInit(0x01); }
+static INT32 fixeightkInit() { return DrvInit(0x01); }
 
 struct BurnDriver BurnDrvFixeightk = {
 	"fixeightk", "fixeight", NULL, NULL, "1992",
@@ -716,7 +716,7 @@ static struct BurnRomInfo fixeighthtRomDesc[] = {
 STD_ROM_PICK(fixeightht)
 STD_ROM_FN(fixeightht)
 
-static int fixeighthtInit() { return DrvInit(0x02); }
+static INT32 fixeighthtInit() { return DrvInit(0x02); }
 
 struct BurnDriver BurnDrvFixeightht = {
 	"fixeightht", "fixeight", NULL, NULL, "1992",
@@ -746,7 +746,7 @@ static struct BurnRomInfo fixeighthRomDesc[] = {
 STD_ROM_PICK(fixeighth)
 STD_ROM_FN(fixeighth)
 
-static int fixeighthInit() { return DrvInit(0x03); }
+static INT32 fixeighthInit() { return DrvInit(0x03); }
 
 struct BurnDriver BurnDrvFixeighth = {
 	"fixeighth", "fixeight", NULL, NULL, "1992",
@@ -776,7 +776,7 @@ static struct BurnRomInfo fixeighttwtRomDesc[] = {
 STD_ROM_PICK(fixeighttwt)
 STD_ROM_FN(fixeighttwt)
 
-static int fixeighttwtInit() { return DrvInit(0x04); }
+static INT32 fixeighttwtInit() { return DrvInit(0x04); }
 
 struct BurnDriver BurnDrvFixeighttwt = {
 	"fixeighttwt", "fixeight", NULL, NULL, "1992",
@@ -806,7 +806,7 @@ static struct BurnRomInfo fixeighttwRomDesc[] = {
 STD_ROM_PICK(fixeighttw)
 STD_ROM_FN(fixeighttw)
 
-static int fixeighttwInit() { return DrvInit(0x05); }
+static INT32 fixeighttwInit() { return DrvInit(0x05); }
 
 struct BurnDriver BurnDrvFixeighttw = {
 	"fixeighttw", "fixeight", NULL, NULL, "1992",
@@ -837,7 +837,7 @@ static struct BurnRomInfo fixeightatRomDesc[] = {
 STD_ROM_PICK(fixeightat)
 STD_ROM_FN(fixeightat)
 
-static int fixeightatInit() { return DrvInit(0x06); }
+static INT32 fixeightatInit() { return DrvInit(0x06); }
 
 struct BurnDriver BurnDrvFixeightat = {
 	"fixeightat", "fixeight", NULL, NULL, "1992",
@@ -867,7 +867,7 @@ static struct BurnRomInfo fixeightaRomDesc[] = {
 STD_ROM_PICK(fixeighta)
 STD_ROM_FN(fixeighta)
 
-static int fixeightaInit() { return DrvInit(0x07); }
+static INT32 fixeightaInit() { return DrvInit(0x07); }
 
 struct BurnDriver BurnDrvFixeighta = {
 	"fixeighta", "fixeight", NULL, NULL, "1992",
@@ -897,7 +897,7 @@ static struct BurnRomInfo fixeighttRomDesc[] = {
 STD_ROM_PICK(fixeightt)
 STD_ROM_FN(fixeightt)
 
-static int fixeighttInit() { return DrvInit(0x08); }
+static INT32 fixeighttInit() { return DrvInit(0x08); }
 
 struct BurnDriver BurnDrvFixeightt = {
 	"fixeightt", "fixeight", NULL, NULL, "1992",
@@ -927,7 +927,7 @@ static struct BurnRomInfo fixeightutRomDesc[] = {
 STD_ROM_PICK(fixeightut)
 STD_ROM_FN(fixeightut)
 
-static int fixeightutInit() { return DrvInit(0x0a); }
+static INT32 fixeightutInit() { return DrvInit(0x0a); }
 
 struct BurnDriver BurnDrvFixeightut = {
 	"fixeightut", "fixeight", NULL, NULL, "1992",
@@ -957,7 +957,7 @@ static struct BurnRomInfo fixeightuRomDesc[] = {
 STD_ROM_PICK(fixeightu)
 STD_ROM_FN(fixeightu)
 
-static int fixeightuInit() { return DrvInit(0x0b); }
+static INT32 fixeightuInit() { return DrvInit(0x0b); }
 
 struct BurnDriver BurnDrvFixeightu = {
 	"fixeightu", "fixeight", NULL, NULL, "1992",
@@ -987,7 +987,7 @@ static struct BurnRomInfo fixeightjtRomDesc[] = {
 STD_ROM_PICK(fixeightjt)
 STD_ROM_FN(fixeightjt)
 
-static int fixeightjtInit() { return DrvInit(0x0e); }
+static INT32 fixeightjtInit() { return DrvInit(0x0e); }
 
 struct BurnDriver BurnDrvFixeightjt = {
 	"fixeightjt", "fixeight", NULL, NULL, "1992",
@@ -1017,7 +1017,7 @@ static struct BurnRomInfo fixeightjRomDesc[] = {
 STD_ROM_PICK(fixeightj)
 STD_ROM_FN(fixeightj)
 
-static int fixeightjInit() { return DrvInit(0x0f); }
+static INT32 fixeightjInit() { return DrvInit(0x0f); }
 
 struct BurnDriver BurnDrvFixeightj = {
 	"fixeightj", "fixeight", NULL, NULL, "1992",

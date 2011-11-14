@@ -1,23 +1,23 @@
 #include "toaplan.h"
 // Battle Garegga
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static unsigned char nIRQPending;
+static UINT8 nIRQPending;
 
-static int nSoundCommand;
+static INT32 nSoundCommand;
 
 // Z80 ROM bank
-static int nCurrentBank;
+static INT32 nCurrentBank;
 
-static int nSpeedHackOffset;
+static INT32 nSpeedHackOffset;
 
 // Rom information
 static struct BurnRomInfo bgareggaRomDesc[] = {
@@ -335,19 +335,19 @@ STDDIPINFOEXT(bgaregcn, bgaregga, bgaregcnRegion)
 STDDIPINFOEXT(bgareghk, bgaregga, bgareghkRegion)
 STDDIPINFOEXT(bgaregtw, bgaregga, bgaregtwRegion)
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *Ram02, *RamPal;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *Ram02, *RamPal;
 
-static int nColCount = 0x0800;
-static int nMSM6295ROMSize = 0x100000;
+static INT32 nColCount = 0x0800;
+static INT32 nMSM6295ROMSize = 0x100000;
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x100000;			//
 	RomZ80		= Next; Next += 0x020000;			// Z80 ROM
 	GP9001ROM[0]= Next; Next += nGP9001ROMSize[0];	// GP9001 tile data
@@ -362,19 +362,19 @@ static int MemIndex()
 	RamPal		= Next; Next += 0x001000;			// palette
 	RamZ80		= Next; Next += 0x004000;			// Z80 RAM
 	GP9001RAM[0]= Next; Next += 0x004000;
-	GP9001Reg[0]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
+	GP9001Reg[0]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
 	return 0;
 }
 
-static void drvZ80Bankswitch(int nBank)
+static void drvZ80Bankswitch(INT32 nBank)
 {
 	nBank &= 0x07;
 	if (nBank != nCurrentBank) {
-		unsigned char* nStartAddress = RomZ80 + (nBank << 14);
+		UINT8* nStartAddress = RomZ80 + (nBank << 14);
 		ZetMapArea(0x8000, 0xBFFF, 0, nStartAddress);
 		ZetMapArea(0x8000, 0xBFFF, 2, nStartAddress);
 
@@ -383,7 +383,7 @@ static void drvZ80Bankswitch(int nBank)
 }
 
 // Scan ram
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -412,7 +412,7 @@ static int DrvScan(int nAction,int *pnMin)
 		SCAN_VAR(nIRQPending);
 
 		if (nAction & ACB_WRITE) {
-			int nBank = nCurrentBank;
+			INT32 nBank = nCurrentBank;
 			nCurrentBank = -1;
 			drvZ80Bankswitch(nBank);
 		}
@@ -421,7 +421,7 @@ static int DrvScan(int nAction,int *pnMin)
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	if (ToaLoadCode(Rom01, 0, 2)) {
@@ -443,7 +443,7 @@ static int LoadRoms()
 	return 0;
 }
 
-unsigned char __fastcall battlegZ80Read(unsigned short nAddress)
+UINT8 __fastcall battlegZ80Read(UINT16 nAddress)
 {
 //	printf("z80 read %4X\n", nAddress);
 	switch (nAddress) {
@@ -463,7 +463,7 @@ unsigned char __fastcall battlegZ80Read(unsigned short nAddress)
 	return 0;
 }
 
-void __fastcall battlegZ80Write(unsigned short nAddress, unsigned char nValue)
+void __fastcall battlegZ80Write(UINT16 nAddress, UINT8 nValue)
 {
 //	printf("z80 wrote %4X with %2X\n", nAddress, nValue);
 	switch (nAddress) {
@@ -504,7 +504,7 @@ void __fastcall battlegZ80Write(unsigned short nAddress, unsigned char nValue)
 	}
 }
 
-static int DrvZ80Init()
+static INT32 DrvZ80Init()
 {
 	ZetInit(1);
 	ZetOpen(0);
@@ -534,7 +534,7 @@ static int DrvZ80Init()
 	return 0;
 }
 
-unsigned char __fastcall battlegReadByte(unsigned int sekAddress)
+UINT8 __fastcall battlegReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -562,7 +562,7 @@ unsigned char __fastcall battlegReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall battlegReadWord(unsigned int sekAddress)
+UINT16 __fastcall battlegReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 
@@ -580,7 +580,7 @@ unsigned short __fastcall battlegReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall battlegWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall battlegWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress) {
 
@@ -604,7 +604,7 @@ void __fastcall battlegWriteByte(unsigned int sekAddress, unsigned char byteValu
 	}
 }
 
-void __fastcall battlegWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall battlegWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress) {
 
@@ -642,7 +642,7 @@ void __fastcall battlegWriteWord(unsigned int sekAddress, unsigned short wordVal
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	nIRQPending = 0;
@@ -660,9 +660,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int battlegInit()
+static INT32 battlegInit()
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = true;
@@ -673,8 +673,8 @@ static int battlegInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -745,7 +745,7 @@ static int battlegInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	MSM6295Exit(0);
 	BurnYM2151Exit();
@@ -765,7 +765,7 @@ static int DrvExit()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	ToaClearScreen(0);
 
@@ -780,10 +780,10 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 #if 1 && defined USE_SPEEDHACKS
-	int nCurrentPC = SekGetPC(-1);
+	INT32 nCurrentPC = SekGetPC(-1);
 
 	if (!nIRQPending && nCurrentPC >= 0x0009AC && nCurrentPC <= 0x0009B8) {
 		return 1;
@@ -802,9 +802,9 @@ inline static int CheckSleep(int)
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 8;
+	INT32 nInterleave = 8;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -814,7 +814,7 @@ static int DrvFrame()
 	DrvInput[0] = 0x00;													// Buttons
 	DrvInput[1] = 0x00;													// Player 1
 	DrvInput[2] = 0x00;													// Player 2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -824,7 +824,7 @@ static int DrvFrame()
 
 	SekNewFrame();
 
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[1] = TOA_Z80_SPEED / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
@@ -833,13 +833,13 @@ static int DrvFrame()
 	nToaCyclesVBlankStart = nCyclesTotal[0] - ((nCyclesTotal[0] * TOA_VBLANK_LINES) / 262);
 	bVBlank = false;
 
-	int nSoundBufferPos = 0;
+	INT32 nSoundBufferPos = 0;
 
 	SekOpen(0);
 	ZetOpen(0);
-	for (int i = 1; i <= nInterleave; i++) {
-    	int nCurrentCPU;
-		int nNext;
+	for (INT32 i = 1; i <= nInterleave; i++) {
+    	INT32 nCurrentCPU;
+		INT32 nNext;
 
 		// Run 68000
 
@@ -886,8 +886,8 @@ static int DrvFrame()
 
 			// Render sound segment
 			if (pBurnSoundOut) {
-				int nSegmentLength = (nBurnSoundLen * i / nInterleave) - nSoundBufferPos;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentLength = (nBurnSoundLen * i / nInterleave) - nSoundBufferPos;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 				nSoundBufferPos += nSegmentLength;
@@ -900,8 +900,8 @@ static int DrvFrame()
 	{
 		// Make sure the buffer is entirely filled.
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);

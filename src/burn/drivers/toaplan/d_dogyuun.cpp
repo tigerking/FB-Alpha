@@ -2,16 +2,16 @@
 #include "vez.h"
 // Dogyuun
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static unsigned char DrvReset = 0;
-static unsigned char bDrawScreen;
+static UINT8 DrvReset = 0;
+static UINT8 bDrawScreen;
 static bool bVBlank;
 
-static int v25_reset = 0;
+static INT32 v25_reset = 0;
 
 // Rom information
 static struct BurnRomInfo dogyuunRomDesc[] = {
@@ -243,19 +243,19 @@ static struct BurnDIPInfo dogyuuntRegionDIPList[] = {
 
 STDDIPINFOEXT(dogyuunt, dogyuuntRegion, dogyuun)
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *Rom01;
-static unsigned char *Ram01, *RamPal;
-static unsigned char *ShareRAM;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *Rom01;
+static UINT8 *Ram01, *RamPal;
+static UINT8 *ShareRAM;
 
-static int nColCount = 0x0800;
+static INT32 nColCount = 0x0800;
 
-// This routine is called first to determine how much memory is needed (MemEnd-(unsigned char *)0),
+// This routine is called first to determine how much memory is needed (MemEnd-(UINT8 *)0),
 // and then afterwards to set up all the pointers
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom01		= Next; Next += 0x080000;		//
 	GP9001ROM[0]= Next; Next += nGP9001ROMSize[0];	// GP9001 tile data
 	GP9001ROM[1]= Next; Next += nGP9001ROMSize[1];	// GP9001 tile data
@@ -266,17 +266,17 @@ static int MemIndex()
 	RamPal		= Next; Next += 0x001000;		// palette
 	GP9001RAM[0]= Next; Next += 0x004000;
 	GP9001RAM[1]= Next; Next += 0x004000;
-	GP9001Reg[0]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
-	GP9001Reg[1]= (unsigned short*)Next; Next += 0x0100 * sizeof(short);
+	GP9001Reg[0]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
+	GP9001Reg[1]= (UINT16*)Next; Next += 0x0100 * sizeof(UINT16);
 	RamEnd		= Next;
-	ToaPalette	= (unsigned int *)Next; Next += nColCount * sizeof(unsigned int);
+	ToaPalette	= (UINT32 *)Next; Next += nColCount * sizeof(UINT32);
 	MemEnd		= Next;
 
 	return 0;
 }
 
 // Scan ram
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -301,7 +301,7 @@ static int DrvScan(int nAction, int *pnMin)
 	return 0;
 }
 
-static int LoadRoms()
+static INT32 LoadRoms()
 {
 	// Load 68000 ROM
 	BurnLoadRom(Rom01, 0, 1);
@@ -315,7 +315,7 @@ static int LoadRoms()
 	return 0;
 }
 
-unsigned char __fastcall dogyuunReadByte(unsigned int sekAddress)
+UINT8 __fastcall dogyuunReadByte(UINT32 sekAddress)
 {
 	if ((sekAddress & 0xff0000) == 0x210000) {
 		return ShareRAM[(sekAddress / 2) & 0x7fff];
@@ -340,7 +340,7 @@ unsigned char __fastcall dogyuunReadByte(unsigned int sekAddress)
 
 }
 
-unsigned short __fastcall dogyuunReadWord(unsigned int sekAddress)
+UINT16 __fastcall dogyuunReadWord(UINT32 sekAddress)
 {
 	if ((sekAddress & 0xff0000) == 0x210000) {
 		return ShareRAM[(sekAddress / 2) & 0x7fff];
@@ -369,8 +369,8 @@ unsigned short __fastcall dogyuunReadWord(unsigned int sekAddress)
 			return ToaGP9001ReadRAM_Lo(1);
 
 		case 0x700000: {
-			static int i;
-			unsigned short nStatus;
+			static INT32 i;
+			UINT16 nStatus;
 
 			i++;
 			nStatus = 0xFFFF - (i & 0xFF);
@@ -388,7 +388,7 @@ unsigned short __fastcall dogyuunReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall dogyuunWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall dogyuunWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	if ((sekAddress & 0xff0000) == 0x210000) {
 		ShareRAM[(sekAddress / 2) & 0x7fff] = byteValue;
@@ -408,7 +408,7 @@ void __fastcall dogyuunWriteByte(unsigned int sekAddress, unsigned char byteValu
 	}
 }
 
-void __fastcall dogyuunWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall dogyuunWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	if ((sekAddress & 0xff0000) == 0x210000) {
 		ShareRAM[(sekAddress / 2) & 0x7fff] = wordValue;
@@ -460,7 +460,7 @@ void __fastcall dogyuunWriteWord(unsigned int sekAddress, unsigned short wordVal
 	}
 }
 
-void __fastcall dogyuun_v25_write(unsigned int address, unsigned char data)
+void __fastcall dogyuun_v25_write(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -478,7 +478,7 @@ void __fastcall dogyuun_v25_write(unsigned int address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall dogyuun_v25_read(unsigned int address)
+UINT8 __fastcall dogyuun_v25_read(UINT32 address)
 {
 	switch (address)
 	{
@@ -492,7 +492,7 @@ unsigned char __fastcall dogyuun_v25_read(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall dogyuun_v25_read_port(unsigned int port)
+UINT8 __fastcall dogyuun_v25_read_port(UINT32 port)
 {
 	switch (port)
 	{
@@ -509,7 +509,7 @@ unsigned char __fastcall dogyuun_v25_read_port(unsigned int port)
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -527,7 +527,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static unsigned char nitro_decryption_table[256] = {
+static UINT8 nitro_decryption_table[256] = {
 	0x1b,0x56,0x75,0x88,0x8c,0x06,0x58,0x72, 0x83,0x86,0x36,0x1a,0x5f,0xd3,0x8c,0xe9, /* 00 */
 	0x22,0x0f,0x03,0x2a,0xeb,0x2a,0xf9,0x0f, 0xa4,0xbd,0x75,0xf3,0x4f,0x53,0x8e,0xfe, /* 10 */
 	0x87,0xe8,0xb1,0x8d,0x36,0xb5,0x43,0x73, 0x2a,0x5b,0xf9,0x02,0x24,0x8a,0x03,0x80, /* 20 */
@@ -546,9 +546,9 @@ static unsigned char nitro_decryption_table[256] = {
 	0x2e,0x05,0x88,0x59,0x74,0x74,0x22,0x8e, 0x8a,0x8a,0x36,0x08,0x0f,0x45,0x90,0x2e, /* f0 */
 };
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nLen;
+	INT32 nLen;
 
 #ifdef DRIVER_ROTATION
 	bToaRotateScreen = true;
@@ -560,8 +560,8 @@ static int DrvInit()
 	// Find out how much memory is needed
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) {
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -586,7 +586,7 @@ static int DrvInit()
 
 		VezInit(0, V25_TYPE, 12500000 /*before divider*/);
 		VezOpen(0);
-		for (int i = 0x80000; i < 0x100000; i += 0x8000) {
+		for (INT32 i = 0x80000; i < 0x100000; i += 0x8000) {
 			VezMapArea(i, i + 0x7fff, 0, ShareRAM);
 			VezMapArea(i, i + 0x7fff, 1, ShareRAM);
 			VezMapArea(i, i + 0x7fff, 2, ShareRAM);
@@ -620,7 +620,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	ToaPalExit();
 
@@ -641,7 +641,7 @@ static int DrvExit()
 	return 0;
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	ToaClearScreen(0x120);
 
@@ -655,14 +655,14 @@ static int DrvDraw()
 	return 0;
 }
 
-inline static int CheckSleep(int)
+inline static INT32 CheckSleep(INT32)
 {
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 10;
+	INT32 nInterleave = 10;
 
 	if (DrvReset) {														// Reset machine
 		DrvDoReset();
@@ -672,7 +672,7 @@ static int DrvFrame()
 	DrvInput[0] = 0x00;													// Buttons
 	DrvInput[1] = 0x00;													// Player 1
 	DrvInput[2] = 0x00;													// Player 2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[2] |= (DrvButton[i] & 1) << i;
@@ -683,9 +683,9 @@ static int DrvFrame()
 	SekNewFrame();
 	VezNewFrame();
 
-	int nSoundBufferPos = 0;
-	nCyclesTotal[0] = (int)((long long)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
-	nCyclesTotal[1] = (int)((long long)6250000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	INT32 nSoundBufferPos = 0;
+	nCyclesTotal[0] = (INT32)((INT64)16000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[1] = (INT32)((INT64)6250000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesDone[0] = 0;
 	nCyclesDone[1] = 0;
 
@@ -697,9 +697,9 @@ static int DrvFrame()
 	SekOpen(0);
 	VezOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
-    	int nCurrentCPU;
-		int nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+    	INT32 nCurrentCPU;
+		INT32 nNext;
 
 		// Run 68000
 
@@ -735,9 +735,9 @@ static int DrvFrame()
 	}
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
 		if (nSegmentLength) {
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 
