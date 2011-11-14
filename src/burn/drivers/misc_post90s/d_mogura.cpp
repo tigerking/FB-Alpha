@@ -4,28 +4,28 @@
 #include "tiles_generic.h"
 #include "dac.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvColPROM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvGfxRAM;
-static unsigned char *DrvVidRAM;
-static unsigned char *DrvGfxROM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvColPROM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvGfxRAM;
+static UINT8 *DrvVidRAM;
+static UINT8 *DrvGfxROM;
 
-static unsigned int  *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32  *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char DrvJoy1[8] = {0, };
-static unsigned char DrvJoy2[8] = {0, };
-static unsigned char DrvJoy3[8] = {0, };
-static unsigned char DrvJoy4[8] = {0, };
-static unsigned char DrvJoy5[8] = {0, };
-static unsigned char DrvDiag[2] = {0, };
-static unsigned char DrvReset;
-static unsigned char DrvInputs[6] = {0, };
+static UINT8 DrvJoy1[8] = {0, };
+static UINT8 DrvJoy2[8] = {0, };
+static UINT8 DrvJoy3[8] = {0, };
+static UINT8 DrvJoy4[8] = {0, };
+static UINT8 DrvJoy5[8] = {0, };
+static UINT8 DrvDiag[2] = {0, };
+static UINT8 DrvReset;
+static UINT8 DrvInputs[6] = {0, };
 
 static struct BurnInputInfo MoguraInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -78,7 +78,7 @@ static struct BurnInputInfo MoguraInputList[] = {
 
 STDINPUTINFO(Mogura)
 
-inline void MoguraClearOpposites(unsigned char* nJoystickInputs)
+inline void MoguraClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -88,9 +88,9 @@ inline void MoguraClearOpposites(unsigned char* nJoystickInputs)
 	}
 }
 
-static inline void DrvTileDecode(int offset, int data)
+static inline void DrvTileDecode(INT32 offset, INT32 data)
 {
-	unsigned char *tile = DrvGfxROM + (offset << 2);
+	UINT8 *tile = DrvGfxROM + (offset << 2);
 
 	tile[0] = (data >> 6) & 3;
 	tile[1] = (data >> 4) & 3;
@@ -98,7 +98,7 @@ static inline void DrvTileDecode(int offset, int data)
 	tile[3] = (data >> 0) & 3;
 }
 
-void __fastcall mogura_write(unsigned short address, unsigned char data)
+void __fastcall mogura_write(UINT16 address, UINT8 data)
 {
 	if ((address & 0xf000) == 0xe000) {
 		DrvGfxRAM[address & 0xfff] = data;
@@ -107,7 +107,7 @@ void __fastcall mogura_write(unsigned short address, unsigned char data)
 	}
 }
 
-void __fastcall mogura_write_port(unsigned short port, unsigned char data)
+void __fastcall mogura_write_port(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
@@ -117,7 +117,7 @@ void __fastcall mogura_write_port(unsigned short port, unsigned char data)
 	}
 }
 
-unsigned char __fastcall mogura_read_port(unsigned short port)
+UINT8 __fastcall mogura_read_port(UINT16 port)
 {
 	switch (port & 0xff)
 	{
@@ -145,9 +145,9 @@ unsigned char __fastcall mogura_read_port(unsigned short port)
 
 static void DrvPaletteInit()
 {
-	for (int i = 0; i < 0x20; i++)
+	for (INT32 i = 0; i < 0x20; i++)
 	{
-		int bit0,bit1,bit2,r,g,b;
+		INT32 bit0,bit1,bit2,r,g,b;
 
 		bit0 = (DrvColPROM[i] >> 0) & 0x01;
 		bit1 = (DrvColPROM[i] >> 1) & 0x01;
@@ -168,7 +168,7 @@ static void DrvPaletteInit()
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -181,14 +181,14 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM	= Next; Next += 0x008000;
 	DrvColPROM	= Next; Next += 0x000020;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0020 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0020 * sizeof(int);
 
 	AllRam		= Next;
 
@@ -206,12 +206,12 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -249,7 +249,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -266,22 +266,22 @@ static int DrvExit()
 
 static void draw_background()
 {
-	for (int offs = 0; offs < 64 * 32; offs++)
+	for (INT32 offs = 0; offs < 64 * 32; offs++)
 	{
-		int sx = ((offs ^ 0x20) & 0x3f) << 3;
-		int sy = (offs >> 6) << 3;
+		INT32 sx = ((offs ^ 0x20) & 0x3f) << 3;
+		INT32 sy = (offs >> 6) << 3;
 
 		if (sx >= 256) sx ^= 128;
 		if (sx >= 320) continue;
 
-		int code  = DrvVidRAM[offs];
-		int color = (DrvVidRAM[offs + 0x800] >> 1) & 7;
+		INT32 code  = DrvVidRAM[offs];
+		INT32 color = (DrvVidRAM[offs + 0x800] >> 1) & 7;
 
 		Render8x8Tile(pTransDraw, code, sx, sy, color, 2, 0, DrvGfxROM);
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if (DrvRecalc) {
 		DrvPaletteInit();
@@ -295,7 +295,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -309,7 +309,7 @@ static int DrvFrame()
 		DrvInputs[4] = 0x00;
 		DrvInputs[5] = 0x00;
 
-		for (int i = 0; i < 8; i++) {
+		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] |= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] |= (DrvJoy3[i] & 1) << i;
@@ -325,27 +325,27 @@ static int DrvFrame()
 	MoguraClearOpposites(&DrvInputs[3]);
 	MoguraClearOpposites(&DrvInputs[4]);
 
-	int nInterleave = nBurnSoundLen ? nBurnSoundLen : 1;
-	int nSoundBufferPos = 0;
-	int nTotalCycles = 3000000 / 60;
+	INT32 nInterleave = nBurnSoundLen ? nBurnSoundLen : 1;
+	INT32 nSoundBufferPos = 0;
+	INT32 nTotalCycles = 3000000 / 60;
 
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		ZetRun(nTotalCycles / nInterleave);
 
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			DACUpdate(pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
 
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			DACUpdate(pSoundBuf, nSegmentLength);
@@ -363,7 +363,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

@@ -7,38 +7,38 @@
 #include "eeprom.h"
 #include "deco16ic.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvArmROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-//static unsigned char *DrvGfxROM4;
-static unsigned char *DrvSndROM;
-static unsigned char *DrvArmRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvSprRAM0;
-static unsigned char *DrvSprRAM1;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvArmROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+//static UINT8 *DrvGfxROM4;
+static UINT8 *DrvSndROM;
+static UINT8 *DrvArmRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvSprRAM0;
+static UINT8 *DrvSprRAM1;
 
-static unsigned short *DrvTmpBitmap0;
-static unsigned short *DrvTmpBitmap_p;
-static unsigned short *DrvTmpBitmap1;
+static UINT16 *DrvTmpBitmap0;
+static UINT16 *DrvTmpBitmap_p;
+static UINT16 *DrvTmpBitmap1;
 
-static unsigned int  *DrvPalette;
-static unsigned char  DrvRecalc;
+static UINT32  *DrvPalette;
+static UINT8  DrvRecalc;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvJoy3[16];
-static unsigned char DrvDips[1];
-static unsigned short DrvInputs[3];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvJoy3[16];
+static UINT8 DrvDips[1];
+static UINT16 DrvInputs[3];
+static UINT8 DrvReset;
 
-static unsigned int *priority;
-static int nPreviousDip;
+static UINT32 *priority;
+static INT32 nPreviousDip;
 
 static struct BurnInputInfo BackfireInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy3 + 0,	"p1 coin"	},
@@ -89,14 +89,14 @@ static struct BurnDIPInfo BackfireDIPList[]=
 
 STDDIPINFO(Backfire)
 
-void backfire_write_byte(unsigned int address, unsigned char data)
+void backfire_write_byte(UINT32 address, UINT8 data)
 {
-	Write16Byte(((unsigned char*)deco16_pf_control[0]),	0x100000, 0x10001f) // 16-bit
+	Write16Byte(((UINT8*)deco16_pf_control[0]),	0x100000, 0x10001f) // 16-bit
 	Write16Byte(deco16_pf_ram[0],		0x110000, 0x111fff) // 16-bit
 	Write16Byte(deco16_pf_ram[1],		0x114000, 0x115fff) // 16-bit
 	Write16Byte(deco16_pf_rowscroll[0],	0x120000, 0x120fff) // 16-bit
 	Write16Byte(deco16_pf_rowscroll[1],	0x124000, 0x124fff) // 16-bit
-	Write16Byte(((unsigned char*)deco16_pf_control[1]),	0x130000, 0x13001f) // 16-bit
+	Write16Byte(((UINT8*)deco16_pf_control[1]),	0x130000, 0x13001f) // 16-bit
 	Write16Byte(deco16_pf_ram[2],		0x140000, 0x141fff) // 16-bit
 	Write16Byte(deco16_pf_ram[3],		0x144000, 0x145fff) // 16-bit
 	Write16Byte(deco16_pf_rowscroll[2],	0x150000, 0x150fff) // 16-bit
@@ -114,14 +114,14 @@ void backfire_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-void backfire_write_long(unsigned int address, unsigned int data)
+void backfire_write_long(UINT32 address, UINT32 data)
 {
-	Write16Long(((unsigned char*)deco16_pf_control[0]),	0x100000, 0x10001f) // 16-bit
+	Write16Long(((UINT8*)deco16_pf_control[0]),	0x100000, 0x10001f) // 16-bit
 	Write16Long(deco16_pf_ram[0],		0x110000, 0x111fff) // 16-bit
 	Write16Long(deco16_pf_ram[1],		0x114000, 0x115fff) // 16-bit
 	Write16Long(deco16_pf_rowscroll[0],	0x120000, 0x120fff) // 16-bit
 	Write16Long(deco16_pf_rowscroll[1],	0x124000, 0x124fff) // 16-bit
-	Write16Long(((unsigned char*)deco16_pf_control[1]),	0x130000, 0x13001f) // 16-bit
+	Write16Long(((UINT8*)deco16_pf_control[1]),	0x130000, 0x13001f) // 16-bit
 	Write16Long(deco16_pf_ram[2],		0x140000, 0x141fff) // 16-bit
 	Write16Long(deco16_pf_ram[3],		0x144000, 0x145fff) // 16-bit
 	Write16Long(deco16_pf_rowscroll[2],	0x150000, 0x150fff) // 16-bit
@@ -151,14 +151,14 @@ void backfire_write_long(unsigned int address, unsigned int data)
 	}
 }
 
-unsigned char backfire_read_byte(unsigned int address)
+UINT8 backfire_read_byte(UINT32 address)
 {
-	Read16Byte(((unsigned char*)deco16_pf_control[0]),	0x100000, 0x10001f) // 16-bit
+	Read16Byte(((UINT8*)deco16_pf_control[0]),	0x100000, 0x10001f) // 16-bit
 	Read16Byte(deco16_pf_ram[0],		0x110000, 0x111fff) // 16-bit
 	Read16Byte(deco16_pf_ram[1],		0x114000, 0x115fff) // 16-bit
 	Read16Byte(deco16_pf_rowscroll[0],	0x120000, 0x120fff) // 16-bit
 	Read16Byte(deco16_pf_rowscroll[1],	0x124000, 0x124fff) // 16-bit
-	Read16Byte(((unsigned char*)deco16_pf_control[1]),	0x130000, 0x13001f) // 16-bit
+	Read16Byte(((UINT8*)deco16_pf_control[1]),	0x130000, 0x13001f) // 16-bit
 	Read16Byte(deco16_pf_ram[2],		0x140000, 0x141fff) // 16-bit
 	Read16Byte(deco16_pf_ram[3],		0x144000, 0x145fff) // 16-bit
 	Read16Byte(deco16_pf_rowscroll[2],	0x150000, 0x150fff) // 16-bit
@@ -177,14 +177,14 @@ unsigned char backfire_read_byte(unsigned int address)
 	return 0;
 }
 
-unsigned int backfire_read_long(unsigned int address)
+UINT32 backfire_read_long(UINT32 address)
 {
-	Read16Long(((unsigned char*)deco16_pf_control[0]),	0x100000, 0x10001f) // 16-bit
+	Read16Long(((UINT8*)deco16_pf_control[0]),	0x100000, 0x10001f) // 16-bit
 	Read16Long(deco16_pf_ram[0],		0x110000, 0x111fff) // 16-bit
 	Read16Long(deco16_pf_ram[1],		0x114000, 0x115fff) // 16-bit
 	Read16Long(deco16_pf_rowscroll[0],	0x120000, 0x120fff) // 16-bit
 	Read16Long(deco16_pf_rowscroll[1],	0x124000, 0x124fff) // 16-bit
-	Read16Long(((unsigned char*)deco16_pf_control[1]),	0x130000, 0x13001f) // 16-bit
+	Read16Long(((UINT8*)deco16_pf_control[1]),	0x130000, 0x13001f) // 16-bit
 	Read16Long(deco16_pf_ram[2],		0x140000, 0x141fff) // 16-bit
 	Read16Long(deco16_pf_ram[3],		0x144000, 0x145fff) // 16-bit
 	Read16Long(deco16_pf_rowscroll[2],	0x150000, 0x150fff) // 16-bit
@@ -193,10 +193,10 @@ unsigned int backfire_read_long(unsigned int address)
 	switch (address)
 	{
 		case 0x190000: {
-			unsigned int vblnk=0;
+			UINT32 vblnk=0;
 			vblnk ^= 1 << 16;
 
-			unsigned int ret = 0;
+			UINT32 ret = 0;
 			ret |= EEPROMRead() << 24;
 			ret |= (DrvInputs[2] & 0xbf) << 16;
 			ret |= deco16_vblank;
@@ -206,7 +206,7 @@ unsigned int backfire_read_long(unsigned int address)
 		}
 
 		case 0x194000: {
-			unsigned int ret = 0;
+			UINT32 ret = 0;
 			ret |= EEPROMRead() << 24;
 			ret |= DrvInputs[1] << 16;
 			ret |= DrvInputs[1] <<  0;
@@ -223,9 +223,9 @@ unsigned int backfire_read_long(unsigned int address)
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvArmROM		= Next; Next += 0x0100000;
 
@@ -238,11 +238,11 @@ static int MemIndex()
 	YMZ280BROM		= Next; 
 	DrvSndROM		= Next; Next += 0x0400000;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x800 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
 
-	DrvTmpBitmap_p		= (unsigned short*)Next;
-	DrvTmpBitmap0		= (unsigned short*)Next; Next += 320 * 240 * sizeof(short);
-	DrvTmpBitmap1		= (unsigned short*)Next; Next += 320 * 240 * sizeof(short);
+	DrvTmpBitmap_p		= (UINT16*)Next;
+	DrvTmpBitmap0		= (UINT16*)Next; Next += 320 * 240 * sizeof(INT16);
+	DrvTmpBitmap1		= (UINT16*)Next; Next += 320 * 240 * sizeof(INT16);
 
 	AllRam			= Next;
 
@@ -251,7 +251,7 @@ static int MemIndex()
 	DrvSprRAM0		= Next; Next += 0x0002000;
 	DrvSprRAM1		= Next; Next += 0x0002000;
 
-	priority		= (unsigned int*)Next; Next += 2 * sizeof(int);
+	priority		= (UINT32*)Next; Next += 2 * sizeof(UINT32);
 
 	RamEnd			= Next;
 
@@ -260,7 +260,7 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -277,7 +277,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int backfire_bank_callback( int bank )
+static INT32 backfire_bank_callback( INT32 bank )
 {
 	bank = bank >> 4;
 	bank = (bank & 1) | ((bank & 4) >> 1) | ((bank & 2) << 1);
@@ -285,13 +285,13 @@ static int backfire_bank_callback( int bank )
 	return bank * 0x1000;
 }
 
-static void sprite_decode(unsigned char *gfx, int len)
+static void sprite_decode(UINT8 *gfx, INT32 len)
 {
-	int Plane[4] = { 16, 0, 24, 8 };
-	int XOffs[16] = { 512,513,514,515,516,517,518,519, 0, 1, 2, 3, 4, 5, 6, 7 };
-	int YOffs[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,  8*32, 9*32,10*32,11*32,12*32,13*32,14*32,15*32};
+	INT32 Plane[4] = { 16, 0, 24, 8 };
+	INT32 XOffs[16] = { 512,513,514,515,516,517,518,519, 0, 1, 2, 3, 4, 5, 6, 7 };
+	INT32 YOffs[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,  8*32, 9*32,10*32,11*32,12*32,13*32,14*32,15*32};
 
-	unsigned char *tmp = (unsigned char*)malloc(len);
+	UINT8 *tmp = (UINT8*)malloc(len);
 	if (tmp == NULL) {
 		return;
 	}
@@ -308,9 +308,9 @@ static void sprite_decode(unsigned char *gfx, int len)
 
 static void decode_samples()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x200000);
+	UINT8 *tmp = (UINT8*)malloc(0x200000);
 
-	for (int i = 0; i < 0x200000; i++) {
+	for (INT32 i = 0; i < 0x200000; i++) {
 		tmp[((i & 1) << 20) | (i >> 1) ] = DrvSndROM[i];
 	}
 
@@ -328,11 +328,11 @@ static void pCommonSpeedhackCallback()
 	//bprintf (0, _T("idle skip triggered!\n"));
 }
 
-static int DrvInit(unsigned int speedhack)
+static INT32 DrvInit(UINT32 speedhack)
 {
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -340,15 +340,15 @@ static int DrvInit(unsigned int speedhack)
 		if (BurnLoadRom(DrvArmROM  + 0x000001,  0, 2)) return 1;
 		if (BurnLoadRom(DrvArmROM  + 0x000000,  1, 2)) return 1;
 
-		for (int i = 0; i < 0x100000; i+=4) {
+		for (INT32 i = 0; i < 0x100000; i+=4) {
 			BurnByteswap(DrvArmROM + i + 1, 2);
 		}
 
 		if (BurnLoadRom(DrvGfxROM1 + 0x000000,  2, 1)) return 1;
 		if (BurnLoadRom(DrvGfxROM1 + 0x200000,  3, 1)) return 1;
 
-		for (int i = 0; i < 0x400000; i++) {
-			int j = (i & 0x17ffff) | ((i & 0x80000) << 2) | ((i & 0x200000) >> 2);
+		for (INT32 i = 0; i < 0x400000; i++) {
+			INT32 j = (i & 0x17ffff) | ((i & 0x80000) << 2) | ((i & 0x200000) >> 2);
 			DrvGfxROM0[j] = DrvGfxROM1[i];
 		}
 		memset (DrvGfxROM1, 0, 0x400000);
@@ -419,7 +419,7 @@ static int DrvInit(unsigned int speedhack)
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	EEPROMExit();
 
@@ -442,13 +442,13 @@ static int DrvExit()
 
 static void simpl156_palette_recalc()
 {
-	unsigned int *p = (unsigned int*)DrvPalRAM;
+	UINT32 *p = (UINT32*)DrvPalRAM;
 
-	for (int i = 0; i < 0x2000 / 4; i++)
+	for (INT32 i = 0; i < 0x2000 / 4; i++)
 	{
-		int r = (p[i] >>  0) & 0x1f;
-		int g = (p[i] >>  5) & 0x1f;
-		int b = (p[i] >> 10) & 0x1f;
+		INT32 r = (p[i] >>  0) & 0x1f;
+		INT32 g = (p[i] >>  5) & 0x1f;
+		INT32 b = (p[i] >> 10) & 0x1f;
 
 		r = (r << 3) | (r >> 2);
 		g = (g << 3) | (g >> 2);
@@ -458,13 +458,13 @@ static void simpl156_palette_recalc()
 	}
 }
 
-static void draw_sprites(unsigned short *dest, unsigned char *ram, unsigned char *gfx, int coloff)
+static void draw_sprites(UINT16 *dest, UINT8 *ram, UINT8 *gfx, INT32 coloff)
 {
-	unsigned int *spriteram = (unsigned int*)ram;
+	UINT32 *spriteram = (UINT32*)ram;
 
-	for (int offs = (0x1400 / 4) - 4; offs >= 0; offs -= 4)
+	for (INT32 offs = (0x1400 / 4) - 4; offs >= 0; offs -= 4)
 	{
-		int x, y, sprite, colour, multi, fx, fy, inc, flash, mult, pri;
+		INT32 x, y, sprite, colour, multi, fx, fy, inc, flash, mult, pri;
 
 		sprite = spriteram[offs + 1] & 0xffff;
 
@@ -527,7 +527,7 @@ static void draw_sprites(unsigned short *dest, unsigned char *ram, unsigned char
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	if ((DrvDips[0] & 0x80) && nPreviousDip == 0) { // single screen
 		DrvTmpBitmap0 = pTransDraw;
@@ -551,7 +551,7 @@ static int DrvDraw()
 
 	// left
 	{
-		for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+		for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 			DrvTmpBitmap0[i] = 0x100;
 		}
 
@@ -570,7 +570,7 @@ static int DrvDraw()
 
 	// right
 	if (nPreviousDip == 0) {
-		for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+		for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 			DrvTmpBitmap1[i] = 0x500;
 		}
 
@@ -588,14 +588,14 @@ static int DrvDraw()
 
 	// combine
 
-		unsigned short *dst0 = pTransDraw;
-		unsigned short *dst1 = pTransDraw + 320;
-		unsigned short *src0 = DrvTmpBitmap0;
-		unsigned short *src1 = DrvTmpBitmap1;
+		UINT16 *dst0 = pTransDraw;
+		UINT16 *dst1 = pTransDraw + 320;
+		UINT16 *src0 = DrvTmpBitmap0;
+		UINT16 *src1 = DrvTmpBitmap1;
 
-		for (int y = 0; y < nScreenHeight; y++) {
-			memcpy (dst0, src0, 320 * sizeof(short));
-			memcpy (dst1, src1, 320 * sizeof(short));
+		for (INT32 y = 0; y < nScreenHeight; y++) {
+			memcpy (dst0, src0, 320 * sizeof(INT16));
+			memcpy (dst1, src1, 320 * sizeof(INT16));
 
 			dst0 += 640;
 			dst1 += 640;
@@ -611,7 +611,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -622,7 +622,7 @@ static int DrvFrame()
 		DrvInputs[1] = 0x00ff;
 		DrvInputs[2] = 0xffe7;
 
-		for (int i = 0; i < 16; i++) {
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[2] ^= (DrvJoy3[i] & 1) << i;
@@ -633,7 +633,7 @@ static int DrvFrame()
 		if (DrvDips[0] & 0x80) DrvInputs[1] |= 0x80;
 	}
 
-	int nTotalCycles = 28000000 / 60;
+	INT32 nTotalCycles = 28000000 / 60;
 
 	ArmOpen(0);
 	deco16_vblank = 0x10;
@@ -654,7 +654,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -710,7 +710,7 @@ static struct BurnRomInfo backfireRomDesc[] = {
 STD_ROM_PICK(backfire)
 STD_ROM_FN(backfire)
 
-static int backfireInit()
+static INT32 backfireInit()
 {
 	return DrvInit(0xce44);
 }
@@ -750,7 +750,7 @@ static struct BurnRomInfo backfireaRomDesc[] = {
 STD_ROM_PICK(backfirea)
 STD_ROM_FN(backfirea)
 
-static int backfireaInit()
+static INT32 backfireaInit()
 {
 	return DrvInit(0xcee4);
 }

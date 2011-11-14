@@ -5,42 +5,42 @@
 #include "burn_ym2203.h"
 #include "msm5205.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-static unsigned char *DrvGfxROM4;
-static unsigned char *DrvZ80Banks;
-static unsigned char *DrvPfRAM;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvZ80RAM;
-static unsigned char *DrvPalRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+static UINT8 *DrvGfxROM4;
+static UINT8 *DrvZ80Banks;
+static UINT8 *DrvPfRAM;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvZ80RAM;
+static UINT8 *DrvPalRAM;
 
-static unsigned int  *DrvPalette;
+static UINT32 *DrvPalette;
 
-static unsigned char *soundlatch;
-static unsigned char *soundstatus;
-static unsigned char *tilemap_reg;
+static UINT8 *soundlatch;
+static UINT8 *soundstatus;
+static UINT8 *tilemap_reg;
 
-static unsigned short *scrollx;
-static unsigned short *scrolly;
+static UINT16 *scrollx;
+static UINT16 *scrolly;
 
-static int flipscreen;
+static INT32 flipscreen;
 
-static unsigned char adpcm_byte = 0;
-static unsigned char MSM5205_vclk_toggle = 0;
+static UINT8 adpcm_byte = 0;
+static UINT8 MSM5205_vclk_toggle = 0;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
-static unsigned short DrvInputs[2];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
+static UINT16 DrvInputs[2];
 
 static struct BurnInputInfo AshnojoeInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 11,	"p1 coin"	},
@@ -109,12 +109,12 @@ static struct BurnDIPInfo AshnojoeDIPList[]=
 
 STDDIPINFO(Ashnojoe)
 
-void __fastcall ashnojoe_write_byte(unsigned int a, unsigned char d)
+void __fastcall ashnojoe_write_byte(UINT32 a, UINT8 d)
 {
 	bprintf (0, _T("%5.5x, %2.2x wb\n"), a, d);
 }
 
-void __fastcall ashnojoe_write_word(unsigned int a, unsigned short d)
+void __fastcall ashnojoe_write_word(UINT32 a, UINT16 d)
 {
 	switch (a)
 	{
@@ -145,14 +145,14 @@ void __fastcall ashnojoe_write_word(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall ashnojoe_read_byte(unsigned int a)
+UINT8 __fastcall ashnojoe_read_byte(UINT32 a)
 {
 	bprintf (0, _T("%5.5x, rb\n"), a);
 
 	return 0;
 }
 
-unsigned short __fastcall ashnojoe_read_word(unsigned int a)
+UINT16 __fastcall ashnojoe_read_word(UINT32 a)
 {
 	switch (a)
 	{
@@ -172,7 +172,7 @@ unsigned short __fastcall ashnojoe_read_word(unsigned int a)
 	return 0;
 }
 
-void __fastcall ashnojoe_sound_write_port(unsigned short p, unsigned char d)
+void __fastcall ashnojoe_sound_write_port(UINT16 p, UINT8 d)
 {
 	switch (p & 0xff)
 	{
@@ -190,7 +190,7 @@ void __fastcall ashnojoe_sound_write_port(unsigned short p, unsigned char d)
 	}
 }
 
-unsigned char __fastcall ashnojoe_sound_read_port(unsigned short p)
+UINT8 __fastcall ashnojoe_sound_read_port(UINT16 p)
 {
 	switch (p & 0xff)
 	{
@@ -211,20 +211,20 @@ unsigned char __fastcall ashnojoe_sound_read_port(unsigned short p)
 	return 0;
 }
 
-void DrvYM2203WritePortA(unsigned int, unsigned int d)
+void DrvYM2203WritePortA(UINT32, UINT32 d)
 {
 	MSM5205ResetWrite(0, !(d & 0x01));
 }
 
-void DrvYM2203WritePortB(unsigned int, unsigned int d)
+void DrvYM2203WritePortB(UINT32, UINT32 d)
 {
-	int bank = (d & 0x0f) * 0x8000;
+	INT32 bank = (d & 0x0f) * 0x8000;
 
 	ZetMapArea(0x8000, 0xffff, 0, DrvZ80Banks + bank);
 	ZetMapArea(0x8000, 0xffff, 2, DrvZ80Banks + bank);
 }
 
-inline static void DrvIRQHandler(int, int nStatus)
+inline static void DrvIRQHandler(INT32, INT32 nStatus)
 {
 	if (nStatus & 1) {
 		ZetSetIRQLine(0,    ZET_IRQSTATUS_ACK);
@@ -233,9 +233,9 @@ inline static void DrvIRQHandler(int, int nStatus)
 	}
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 4000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
 static double DrvGetTime()
@@ -258,7 +258,7 @@ static void ashnojoe_vclk_cb()
 	MSM5205_vclk_toggle ^= 1;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -280,9 +280,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM		= Next; Next += 0x100000;
 	DrvZ80ROM		= Next; Next += 0x010000;
@@ -294,7 +294,7 @@ static int MemIndex()
 	DrvGfxROM3		= Next; Next += 0x200000;
 	DrvGfxROM4		= Next; Next += 0x600000;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x0800 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x0800 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -309,8 +309,8 @@ static int MemIndex()
 
 	tilemap_reg		= Next; Next += 0x000001;
 
-	scrollx			= (unsigned short*)Next; Next += 0x000008 * sizeof(short);
-	scrolly			= (unsigned short*)Next; Next += 0x000008 * sizeof(short);
+	scrollx			= (UINT16*)Next; Next += 0x000008 * sizeof(INT16);
+	scrolly			= (UINT16*)Next; Next += 0x000008 * sizeof(INT16);
 
 	RamEnd			= Next;
 
@@ -319,22 +319,22 @@ static int MemIndex()
 	return 0;
 }
 
-static void DrvGfxExpand(unsigned char *gfx, int len, int bs) //0,1,2 -8x8, 3,4 16x16
+static void DrvGfxExpand(UINT8 *gfx, INT32 len, INT32 bs) //0,1,2 -8x8, 3,4 16x16
 {
 	if (bs) BurnByteswap(gfx, len);
 
-	for (int i = len-1; i >= 0; i--) {
+	for (INT32 i = len-1; i >= 0; i--) {
 		gfx[i * 2 + 1] = gfx[i] & 0x0f;
 		gfx[i * 2 + 0] = gfx[i] >> 4;
 	}
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -412,7 +412,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -432,11 +432,11 @@ static int DrvExit()
 
 static inline void DrvRecalcPalette()
 {
-	unsigned char r,g,b;
-	unsigned short *p = (unsigned short*)DrvPalRAM;
+	UINT8 r,g,b;
+	UINT16 *p = (UINT16*)DrvPalRAM;
 
-	for (int i = 0; i < 0x1000/2; i++) {
-		int d = p[i];
+	for (INT32 i = 0; i < 0x1000/2; i++) {
+		INT32 d = p[i];
 
 		r = (d >> 10) & 0x1f;
 		g = (d >>  5) & 0x1f;
@@ -450,17 +450,17 @@ static inline void DrvRecalcPalette()
 	}
 }
 
-static void draw_16x16_layer(unsigned char *ram, unsigned char *gfx, int color_off, int scroll_off, int mask, int transparent)
+static void draw_16x16_layer(UINT8 *ram, UINT8 *gfx, INT32 color_off, INT32 scroll_off, INT32 mask, INT32 transparent)
 {
-	int xscroll = (scrollx[scroll_off] + 112) & 0x1ff;
-	int yscroll = (scrolly[scroll_off] +  24) & 0x1ff;
+	INT32 xscroll = (scrollx[scroll_off] + 112) & 0x1ff;
+	INT32 yscroll = (scrolly[scroll_off] +  24) & 0x1ff;
 
-	unsigned short *vram = (unsigned short*)ram;
+	UINT16 *vram = (UINT16*)ram;
 
-	for (int offs = 0; offs < 32 * 32; offs++)
+	for (INT32 offs = 0; offs < 32 * 32; offs++)
 	{
-		int sx = (offs & 0x1f) << 4;
-		int sy = (offs >> 5) << 4;
+		INT32 sx = (offs & 0x1f) << 4;
+		INT32 sy = (offs >> 5) << 4;
 
 		sx -= xscroll;
 		if (sx < -15) sx += 512;
@@ -469,8 +469,8 @@ static void draw_16x16_layer(unsigned char *ram, unsigned char *gfx, int color_o
 
 		if (sx >= nScreenWidth || sy >= nScreenHeight) continue;
 
-		int code  =   vram[offs * 2 + 0] & mask;
-		int color = ((vram[offs * 2 + 1] >> 8) & 0x1f) + color_off; 
+		INT32 code  =   vram[offs * 2 + 0] & mask;
+		INT32 color = ((vram[offs * 2 + 1] >> 8) & 0x1f) + color_off; 
 
 		if (flipscreen) {
 			if (transparent) {
@@ -488,17 +488,17 @@ static void draw_16x16_layer(unsigned char *ram, unsigned char *gfx, int color_o
 	}
 }
 
-static void draw_8x8_layer(unsigned char *ram, unsigned char *gfx, int color_off, int scroll_off, int high)
+static void draw_8x8_layer(UINT8 *ram, UINT8 *gfx, INT32 color_off, INT32 scroll_off, INT32 high)
 {
-	int xscroll = (scrollx[scroll_off] + 112) & 0x1ff;
-	int yscroll = (scrolly[scroll_off] +  24) & (high ? 0x1ff : 0x0ff);
+	INT32 xscroll = (scrollx[scroll_off] + 112) & 0x1ff;
+	INT32 yscroll = (scrolly[scroll_off] +  24) & (high ? 0x1ff : 0x0ff);
 
-	unsigned short *vram = (unsigned short*)ram;
+	UINT16 *vram = (UINT16*)ram;
 
-	for (int offs = 0; offs < 64 * (32 << high); offs++)
+	for (INT32 offs = 0; offs < 64 * (32 << high); offs++)
 	{
-		int sx = (offs & 0x3f) << 3;
-		int sy = (offs >> 6) << 3;
+		INT32 sx = (offs & 0x3f) << 3;
+		INT32 sy = (offs >> 6) << 3;
 
 		sx -= xscroll;
 		if (sx < -7) sx += 512;
@@ -507,8 +507,8 @@ static void draw_8x8_layer(unsigned char *ram, unsigned char *gfx, int color_off
 
 		if (sx >= nScreenWidth || sy >= nScreenHeight) continue;
 
-		int code  =  vram[offs] & 0x0fff;
-		int color = (vram[offs] >> 12) + color_off; 
+		INT32 code  =  vram[offs] & 0x0fff;
+		INT32 color = (vram[offs] >> 12) + color_off; 
 
 		if (flipscreen) {
 			Render8x8Tile_Mask_FlipXY_Clip(pTransDraw, code, 280 - sx, 200 - sy, color, 4, 15, 0, gfx);
@@ -518,13 +518,13 @@ static void draw_8x8_layer(unsigned char *ram, unsigned char *gfx, int color_off
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	DrvRecalcPalette();
 
 	flipscreen = *tilemap_reg & 0x01;
 
-	int backlayer = (*tilemap_reg & 0x02) ? 0x7000 : 0x6000;
+	INT32 backlayer = (*tilemap_reg & 0x02) ? 0x7000 : 0x6000;
 
 	if (nSpriteEnable & 0x01) draw_16x16_layer(DrvPfRAM + backlayer, DrvGfxROM3, 0x70, 4, 0x1fff, 0);
 
@@ -543,7 +543,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -552,24 +552,24 @@ static int DrvFrame()
 	ZetNewFrame();
 
 	{
-		memset (DrvInputs, 0, 2 * sizeof(short));
+		memset (DrvInputs, 0, 2 * sizeof(INT16));
 
-		for (int i = 0; i < 16; i++) {
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
 
 	}
 
-	int nInterleave = MSM5205CalcInterleave(0, 4000000);
-	int nCyclesTotal[2] = { 8000000 / 60, 4000000 / 60 };
-	int nCyclesDone[2] = { 0, 0 };
-	int nNext[2] = { 0, 0 };
+	INT32 nInterleave = MSM5205CalcInterleave(0, 4000000);
+	INT32 nCyclesTotal[2] = { 8000000 / 60, 4000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
+	INT32 nNext[2] = { 0, 0 };
 
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (int i = 0; i < nInterleave; i++) {
+	for (INT32 i = 0; i < nInterleave; i++) {
 		nNext[0] += nCyclesTotal[0] / nInterleave;
 
 		nCyclesDone[0] += SekRun(nNext[0] - nCyclesDone[0]);
@@ -588,7 +588,7 @@ static int DrvFrame()
 
 		// ym2203 doesn't have a volume control and is MUCH TOO LOUD
 		// so go ahead and quiet it down a bit.
-		for (int i = 0; i < nBurnSoundLen * 2; i+=2) {
+		for (INT32 i = 0; i < nBurnSoundLen * 2; i+=2) {
 			pBurnSoundOut[i + 0] /= 10;
 			pBurnSoundOut[i + 1] /= 10;
 		}
@@ -606,7 +606,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

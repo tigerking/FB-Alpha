@@ -7,32 +7,32 @@
 #include "eeprom.h"
 #include "deco16ic.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *DrvArmROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvSndROM0;
-static unsigned char *DrvSndROM1;
-static unsigned char *DrvEEPROM;
-static unsigned char *DrvArmRAM;
-static unsigned char *DrvSysRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvSprRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *DrvArmROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvSndROM0;
+static UINT8 *DrvSndROM1;
+static UINT8 *DrvEEPROM;
+static UINT8 *DrvArmRAM;
+static UINT8 *DrvSysRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvSprRAM;
 
-static unsigned int  *DrvPalette;
-static unsigned char  DrvRecalc;
+static UINT32  *DrvPalette;
+static UINT8  DrvRecalc;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvDips[1];
-static unsigned short DrvInputs[2];
-static unsigned char DrvReset;
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvDips[1];
+static UINT16 DrvInputs[2];
+static UINT8 DrvReset;
 
-static int DrvOkiBank;
+static INT32 DrvOkiBank;
 
 static struct BurnInputInfo Simpl156InputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -75,7 +75,7 @@ STDDIPINFO(Simpl156)
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------
 
-static void oki_set_bank(int bank)
+static void oki_set_bank(INT32 bank)
 {
 	if (DrvOkiBank != (bank & 0x07)) {
 		DrvOkiBank = bank & 0x07;
@@ -84,12 +84,12 @@ static void oki_set_bank(int bank)
 }
 
 // use INT type for ADDRESS to kill mingw warnings
-static void CommonWrite32(int address, unsigned int data)
+static void CommonWrite32(INT32 address, UINT32 data)
 {
 	Write16Long(DrvArmRAM,			0x000000, 0x007fff) // 16-bit
 	Write16Long(DrvSprRAM,			0x010000, 0x011fff) // 16-bit
 	Write16Long(DrvPalRAM,			0x020000, 0x020fff) // 16-bit
-	Write16Long(((unsigned char*)deco16_pf_control[0]),	0x040000, 0x04001f) // 16-bit
+	Write16Long(((UINT8*)deco16_pf_control[0]),	0x040000, 0x04001f) // 16-bit
 	Write16Long(deco16_pf_ram[0],		0x050000, 0x051fff) // 16-bit
 	Write16Long(deco16_pf_ram[0],		0x052000, 0x053fff) // 16-bit mirror
 	Write16Long(deco16_pf_ram[1],		0x054000, 0x055fff) // 16-bit
@@ -103,12 +103,12 @@ static void CommonWrite32(int address, unsigned int data)
 	}
 }
 
-static void CommonWrite8(int address, unsigned char data)
+static void CommonWrite8(INT32 address, UINT8 data)
 {
 	Write16Byte(DrvArmRAM,			0x000000, 0x007fff) // 16-bit
 	Write16Byte(DrvSprRAM,			0x010000, 0x011fff) // 16-bit
 	Write16Byte(DrvPalRAM,			0x020000, 0x020fff) // 16-bit
-	Write16Byte(((unsigned char*)deco16_pf_control[0]),	0x040000, 0x04001f) // 16-bit
+	Write16Byte(((UINT8*)deco16_pf_control[0]),	0x040000, 0x04001f) // 16-bit
 	Write16Byte(deco16_pf_ram[0],		0x050000, 0x051fff) // 16-bit
 	Write16Byte(deco16_pf_ram[0],		0x052000, 0x053fff) // 16-bit mirror
 	Write16Byte(deco16_pf_ram[1],		0x054000, 0x055fff) // 16-bit
@@ -122,12 +122,12 @@ static void CommonWrite8(int address, unsigned char data)
 	}
 }
 
-static unsigned int CommonRead32(int address)
+static UINT32 CommonRead32(INT32 address)
 {
 	Read16Long(DrvArmRAM,			0x000000, 0x007fff) // 16-bit
 	Read16Long(DrvSprRAM,			0x010000, 0x011fff) // 16-bit
 	Read16Long(DrvPalRAM,			0x020000, 0x020fff) // 16-bit
-	Read16Long(((unsigned char*)deco16_pf_control[0]),	0x040000, 0x04001f) // 16-bit
+	Read16Long(((UINT8*)deco16_pf_control[0]),	0x040000, 0x04001f) // 16-bit
 	Read16Long(deco16_pf_ram[0],		0x050000, 0x051fff) // 16-bit
 	Read16Long(deco16_pf_ram[0],		0x052000, 0x053fff) // 16-bit mirror
 	Read16Long(deco16_pf_ram[1],		0x054000, 0x055fff) // 16-bit
@@ -141,12 +141,12 @@ static unsigned int CommonRead32(int address)
 	return 0;
 }
 
-static unsigned char CommonRead8(int address)
+static UINT8 CommonRead8(INT32 address)
 {
 	Read16Byte(DrvArmRAM,			0x000000, 0x007fff) // 16-bit
 	Read16Byte(DrvSprRAM,			0x010000, 0x011fff) // 16-bit
 	Read16Byte(DrvPalRAM,			0x020000, 0x020fff) // 16-bit
-	Read16Byte(((unsigned char*)deco16_pf_control[0]),	0x040000, 0x04001f) // 16-bit
+	Read16Byte(((UINT8*)deco16_pf_control[0]),	0x040000, 0x04001f) // 16-bit
 	Read16Byte(deco16_pf_ram[0],		0x050000, 0x051fff) // 16-bit
 	Read16Byte(deco16_pf_ram[0],		0x052000, 0x053fff) // 16-bit mirror
 	Read16Byte(deco16_pf_ram[1],		0x054000, 0x055fff) // 16-bit
@@ -167,9 +167,9 @@ static unsigned char CommonRead8(int address)
 
 //-----------------------------------------------------------------------------------------------------------------------------------------------
 
-static unsigned int map_offsets[3]; // memory, msm0, msm1
+static UINT32 map_offsets[3]; // memory, msm0, msm1
 
-void simpl156_write_byte(unsigned int address, unsigned char data)
+void simpl156_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xf80000) == map_offsets[0]) {
 		CommonWrite8(address & 0x7ffff, data);
@@ -186,7 +186,7 @@ void simpl156_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-void simpl156_write_long(unsigned int address, unsigned int data)
+void simpl156_write_long(UINT32 address, UINT32 data)
 {
 	if ((address & 0xf80000) == map_offsets[0]) {
 		CommonWrite32(address & 0x7ffff, data);
@@ -203,7 +203,7 @@ void simpl156_write_long(unsigned int address, unsigned int data)
 	}
 }
 
-unsigned char simpl156_read_byte(unsigned int address)
+UINT8 simpl156_read_byte(UINT32 address)
 {
 	if ((address & 0xf80000) == map_offsets[0]) {
 		return CommonRead8(address & 0x7ffff);
@@ -224,7 +224,7 @@ unsigned char simpl156_read_byte(unsigned int address)
 	return 0;
 }
 
-unsigned int simpl156_read_long(unsigned int address)
+UINT32 simpl156_read_long(UINT32 address)
 {
 	if ((address & 0xf80000) == map_offsets[0]) {
 		return CommonRead32(address & 0x7ffff);
@@ -245,7 +245,7 @@ unsigned int simpl156_read_long(unsigned int address)
 	return 0;
 }
 
-static void common_map(int ram, int sfx, int mus)
+static void common_map(INT32 ram, INT32 sfx, INT32 mus)
 {
 	map_offsets[0] = ram; // ram regions
 	map_offsets[1] = sfx; // oki #0 (sfx)
@@ -269,12 +269,12 @@ static void joemacr_map()  { common_map(0x100000, 0x180000, 0x1c0000); }
 static void chainrec_map() { common_map(0x400000, 0x480000, 0x3c0000); }
 static void magdropp_map() { common_map(0x680000, 0x780000, 0x4c0000); }
 
-static int simpl156_bank_callback(const int bank)
+static INT32 simpl156_bank_callback(const INT32 bank)
 {
 	return ((bank >> 4) & 0x7) * 0x1000;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -299,9 +299,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	DrvArmROM		= Next; Next += 0x0080000;
 
@@ -313,7 +313,7 @@ static int MemIndex()
 	DrvSndROM0		= Next; Next += 0x0180000;
 	DrvSndROM1		= Next; Next += 0x0200000;
 
-	DrvPalette		= (unsigned int*)Next; Next += 0x400 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x400 * sizeof(UINT32);
 
 	DrvEEPROM		= Next; Next += 0x0000080;
 
@@ -333,9 +333,9 @@ static int MemIndex()
 
 static void decode_samples()
 {
-	unsigned char *tmp = (unsigned char*)malloc(0x200000);
+	UINT8 *tmp = (UINT8*)malloc(0x200000);
 
-	for (int i = 0; i < 0x200000; i++) {
+	for (INT32 i = 0; i < 0x200000; i++) {
 		tmp[((i & 1) << 20) | (i >> 1)] = DrvSndROM1[i];
 	}
 
@@ -352,15 +352,15 @@ static void pCommonSpeedhackCallback()
 	ArmIdleCycles(1120); // ok?
 }
 
-static int CommonInit(int (*pRomLoad)(int *, int *), void (*pMap)(), int msm, unsigned int speedhack)
+static INT32 CommonInit(INT32 (*pRomLoad)(INT32 *, INT32 *), void (*pMap)(), INT32 msm, UINT32 speedhack)
 {
 	BurnSetRefreshRate(58.00);
 
-	int gfx0len, gfx1len;
+	INT32 gfx0len, gfx1len;
 
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -404,7 +404,7 @@ static int CommonInit(int (*pRomLoad)(int *, int *), void (*pMap)(), int msm, un
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	EEPROMExit();
 
@@ -428,13 +428,13 @@ static int DrvExit()
 
 static void simpl156_palette_recalc()
 {
-	unsigned short *p = (unsigned short*)DrvPalRAM;
+	UINT16 *p = (UINT16*)DrvPalRAM;
 
-	for (int i = 0; i < 0x1000 / 4; i++)
+	for (INT32 i = 0; i < 0x1000 / 4; i++)
 	{
-		int r = (p[i] >>  0) & 0x1f;
-		int g = (p[i] >>  5) & 0x1f;
-		int b = (p[i] >> 10) & 0x1f;
+		INT32 r = (p[i] >>  0) & 0x1f;
+		INT32 g = (p[i] >>  5) & 0x1f;
+		INT32 b = (p[i] >> 10) & 0x1f;
 
 		r = (r << 3) | (r >> 2);
 		g = (g << 3) | (g >> 2);
@@ -446,22 +446,22 @@ static void simpl156_palette_recalc()
 
 static void draw_sprites()
 {
-	unsigned short *spriteram = (unsigned short*)DrvSprRAM;
+	UINT16 *spriteram = (UINT16*)DrvSprRAM;
 
-	for (int offs = (0x1400 / 4) - 4; offs >= 0; offs -= 4)
+	for (INT32 offs = (0x1400 / 4) - 4; offs >= 0; offs -= 4)
 	{
-		int mult, inc;
+		INT32 mult, inc;
 
-		int sy	  = spriteram[offs + 0];
+		INT32 sy	  = spriteram[offs + 0];
 		if ((sy & 0x1000) && (nCurrentFrame & 1)) continue;
 
-		int code  = spriteram[offs + 1];
-		int sx    = spriteram[offs + 2];
-		int color = (sx >> 9) & 0x1f;
-		int pri   = sx & 0xc000;
-		int flipx = sy & 0x2000;
-		int flipy = sy & 0x4000;
-		int multi = (1 << ((sy & 0x0600) >> 9)) - 1;
+		INT32 code  = spriteram[offs + 1];
+		INT32 sx    = spriteram[offs + 2];
+		INT32 color = (sx >> 9) & 0x1f;
+		INT32 pri   = sx & 0xc000;
+		INT32 flipx = sy & 0x2000;
+		INT32 flipy = sy & 0x4000;
+		INT32 multi = (1 << ((sy & 0x0600) >> 9)) - 1;
 
 		switch (pri)
 		{
@@ -509,14 +509,14 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 	simpl156_palette_recalc();
 
 	deco16_pf12_update();
 	deco16_clear_prio_map();
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x100;
 	}
 
@@ -530,7 +530,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -540,13 +540,13 @@ static int DrvFrame()
 		DrvInputs[0] = 0x0007 | (DrvDips[0] & 8);
 		DrvInputs[1] = 0xffff;
 
-		for (int i = 0; i < 16; i++) {
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
 	}
 
-	int nTotalCycles = 28000000 / 58;
+	INT32 nTotalCycles = 28000000 / 58;
 
 	ArmOpen(0);
 	deco16_vblank = 0xf0;
@@ -557,7 +557,7 @@ static int DrvFrame()
 	ArmClose();
 
 	if (pBurnSoundOut) {
-		memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(short) * 2);
+		memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(INT16)/* * 2*/);
 		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 		MSM6295Render(1, pBurnSoundOut, nBurnSoundLen);
 	}
@@ -569,7 +569,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -597,7 +597,7 @@ static int DrvScan(int nAction, int *pnMin)
 	}
 
 	if (nAction & ACB_WRITE) {
-		int bank = DrvOkiBank;
+		INT32 bank = DrvOkiBank;
 		DrvOkiBank = -1;
 		oki_set_bank(bank);
 	}
@@ -625,7 +625,7 @@ static struct BurnRomInfo joemacrRomDesc[] = {
 STD_ROM_PICK(joemacr)
 STD_ROM_FN(joemacr)
 
-static int joemacrLoadCallback(int *gfxlen0, int *gfxlen1)
+static INT32 joemacrLoadCallback(INT32 *gfxlen0, INT32 *gfxlen1)
 {
 	if (BurnLoadRom(DrvArmROM  + 0x000000,  0, 1)) return 1;
 
@@ -645,7 +645,7 @@ static int joemacrLoadCallback(int *gfxlen0, int *gfxlen1)
 	return 0;
 }
 
-static int joemacrInit()
+static INT32 joemacrInit()
 {
 	return CommonInit(joemacrLoadCallback, joemacr_map, 1, 0x0284);
 }
@@ -712,7 +712,7 @@ static struct BurnRomInfo chainrecRomDesc[] = {
 STD_ROM_PICK(chainrec)
 STD_ROM_FN(chainrec)
 
-static int chainrecLoadCallback(int *gfxlen0, int *gfxlen1)
+static INT32 chainrecLoadCallback(INT32 *gfxlen0, INT32 *gfxlen1)
 {
 	if (BurnLoadRom(DrvArmROM  + 0x000000,  0, 1)) return 1;
 
@@ -735,7 +735,7 @@ static int chainrecLoadCallback(int *gfxlen0, int *gfxlen1)
 	return 0;
 }
 
-static int chainrecInit()
+static INT32 chainrecInit()
 {
 	return CommonInit(chainrecLoadCallback, chainrec_map, 1, 0x02d4);
 }
@@ -771,7 +771,7 @@ static struct BurnRomInfo magdropRomDesc[] = {
 STD_ROM_PICK(magdrop)
 STD_ROM_FN(magdrop)
 
-static int magdropLoadCallback(int *gfxlen0, int *gfxlen1)
+static INT32 magdropLoadCallback(INT32 *gfxlen0, INT32 *gfxlen1)
 {
 	if (BurnLoadRom(DrvArmROM  + 0x000000,  0, 1)) return 1;
 
@@ -792,7 +792,7 @@ static int magdropLoadCallback(int *gfxlen0, int *gfxlen1)
 	return 0;
 }
 
-static int magdropInit()
+static INT32 magdropInit()
 {
 	return CommonInit(magdropLoadCallback, magdrop_map, 1, 0x02d4);
 }
@@ -828,7 +828,7 @@ static struct BurnRomInfo magdroppRomDesc[] = {
 STD_ROM_PICK(magdropp)
 STD_ROM_FN(magdropp)
 
-static int magdroppInit()
+static INT32 magdroppInit()
 {
 	return CommonInit(magdropLoadCallback, magdropp_map, 1, 0x02d4);
 }
@@ -862,13 +862,13 @@ static struct BurnRomInfo charlienRomDesc[] = {
 STD_ROM_PICK(charlien)
 STD_ROM_FN(charlien)
 
-static int charlienLoadCallback(int *gfxlen0, int *gfxlen1)
+static INT32 charlienLoadCallback(INT32 *gfxlen0, INT32 *gfxlen1)
 {
 	if (BurnLoadRom(DrvArmROM  + 0x000000,  0, 1)) return 1;
 
 	if (BurnLoadRom(DrvGfxROM0 + 0x000000,  1, 1)) return 1;
-	for (int i = 0; i < 0x80000; i++) {
-		int t = DrvGfxROM0[0x080000 + i];
+	for (INT32 i = 0; i < 0x80000; i++) {
+		INT32 t = DrvGfxROM0[0x080000 + i];
 		DrvGfxROM0[0x080000 + i] = DrvGfxROM0[0x100000 + i];
 		DrvGfxROM0[0x100000 + i] = t;
 	}
@@ -886,7 +886,7 @@ static int charlienLoadCallback(int *gfxlen0, int *gfxlen1)
 	return 0;
 }
 
-static int charlienInit()
+static INT32 charlienInit()
 {
 	return CommonInit(charlienLoadCallback, mitchell_map, 2, 0xc8c8);
 }
@@ -924,13 +924,13 @@ static struct BurnRomInfo prtytimeRomDesc[] = {
 STD_ROM_PICK(prtytime)
 STD_ROM_FN(prtytime)
 
-static int prtytimeLoadCallback(int *gfxlen0, int *gfxlen1)
+static INT32 prtytimeLoadCallback(INT32 *gfxlen0, INT32 *gfxlen1)
 {
 	if (BurnLoadRom(DrvArmROM  + 0x000000,  0, 1)) return 1;
 
 	if (BurnLoadRom(DrvGfxROM0 + 0x000000,  1, 1)) return 1;
-	for (int i = 0; i < 0x80000; i++) {
-		int t = DrvGfxROM0[0x080000 + i];
+	for (INT32 i = 0; i < 0x80000; i++) {
+		INT32 t = DrvGfxROM0[0x080000 + i];
 		DrvGfxROM0[0x080000 + i] = DrvGfxROM0[0x100000 + i];
 		DrvGfxROM0[0x100000 + i] = t;
 	}
@@ -952,7 +952,7 @@ static int prtytimeLoadCallback(int *gfxlen0, int *gfxlen1)
 	return 0;
 }
 
-static int prtytimeInit()
+static INT32 prtytimeInit()
 {
 	return CommonInit(prtytimeLoadCallback, mitchell_map, 2, 0x04f0);
 }
@@ -1023,7 +1023,7 @@ static struct BurnRomInfo osmanRomDesc[] = {
 STD_ROM_PICK(osman)
 STD_ROM_FN(osman)
 
-static int osmanInit()
+static INT32 osmanInit()
 {
 	return CommonInit(prtytimeLoadCallback, mitchell_map, 2, 0x5974);
 }

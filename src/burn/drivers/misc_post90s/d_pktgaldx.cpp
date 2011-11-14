@@ -5,32 +5,32 @@
 #include "deco16ic.h"
 #include "msm6295.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *Drv68KCode;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvSndROM0;
-static unsigned char *DrvSndROM1;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvProtRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *Drv68KCode;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvSndROM0;
+static UINT8 *DrvSndROM1;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvProtRAM;
 
-static unsigned int  *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *flipscreen;
+static UINT8 *flipscreen;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
-static unsigned short DrvInputs[2];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
+static UINT16 DrvInputs[2];
 
 static struct BurnInputInfo PktgaldxInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -39,6 +39,7 @@ static struct BurnInputInfo PktgaldxInputList[] = {
 	{"P1 Down",		BIT_DIGITAL,	DrvJoy2 + 1,	"p1 down"	},
 	{"P1 Left",		BIT_DIGITAL,	DrvJoy2 + 2,	"p1 left"	},
 	{"P1 Right",		BIT_DIGITAL,	DrvJoy2 + 3,	"p1 right"	},
+
 	{"P1 Button 1",		BIT_DIGITAL,	DrvJoy2 + 4,	"p1 fire 1"	},
 	{"P1 Button 2",		BIT_DIGITAL,	DrvJoy2 + 5,	"p1 fire 2"	},
 	{"P1 Button 3",		BIT_DIGITAL,	DrvJoy2 + 6,	"p1 fire 3"	},
@@ -117,7 +118,7 @@ static struct BurnDIPInfo PktgaldxDIPList[]=
 
 STDDIPINFO(Pktgaldx)
 
-void __fastcall pktgaldx_write_word(unsigned int address, unsigned short data)
+void __fastcall pktgaldx_write_word(UINT32 address, UINT16 data)
 {
 	if ((address & 0xfffff0) == 0x140000) {
 		MSM6295Command(0, data);
@@ -137,7 +138,7 @@ void __fastcall pktgaldx_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-void __fastcall pktgaldx_write_byte(unsigned int address, unsigned char data)
+void __fastcall pktgaldx_write_byte(UINT32 address, UINT8 data)
 {
 	if ((address & 0xfffff0) == 0x140000) {
 		MSM6295Command(0, data);
@@ -157,7 +158,7 @@ void __fastcall pktgaldx_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-unsigned short __fastcall pktgaldx_read_word(unsigned int address)
+UINT16 __fastcall pktgaldx_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -177,16 +178,16 @@ unsigned short __fastcall pktgaldx_read_word(unsigned int address)
 			return DrvInputs[1];
 
 		case 0x167d10:
-			return *((unsigned short*)(DrvProtRAM + 0));
+			return *((UINT16*)(DrvProtRAM + 0));
 
 		case 0x167d1a:
-			return *((unsigned short*)(DrvProtRAM + 2));
+			return *((UINT16*)(DrvProtRAM + 2));
 	}
 
 	return 0;
 }
 
-unsigned char __fastcall pktgaldx_read_byte(unsigned int address)
+UINT8 __fastcall pktgaldx_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -227,12 +228,12 @@ unsigned char __fastcall pktgaldx_read_byte(unsigned int address)
 	return 0;
 }
 
-static int pktgaldx_bank_callback( const int bank )
+static INT32 pktgaldx_bank_callback( const INT32 bank )
 {
 	return ((bank >> 4) & 0x7) * 0x1000;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -248,9 +249,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x080000;
 	Drv68KCode	= Next; Next += 0x080000;
@@ -263,7 +264,7 @@ static int MemIndex()
 	DrvSndROM0	= Next; Next += 0x140000;
 	DrvSndROM1	= Next; Next += 0x100000;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0400 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0400 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -281,14 +282,14 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -346,7 +347,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 	deco16Exit();
@@ -368,25 +369,25 @@ static int DrvExit()
 
 static void draw_sprites()
 {
-	unsigned short *spriteram = (unsigned short *)DrvSprRAM;
+	UINT16 *spriteram = (UINT16 *)DrvSprRAM;
 
-	for (int offs = 0; offs < 0x400; offs += 4)
+	for (INT32 offs = 0; offs < 0x400; offs += 4)
 	{
-		int inc, mult;
+		INT32 inc, mult;
 
-		int sprite = spriteram[offs+1];
+		INT32 sprite = spriteram[offs+1];
 		if (!sprite) continue;
 
-		int y = spriteram[offs];
+		INT32 y = spriteram[offs];
 
 		if ((y & 0x1000) && (nCurrentFrame & 1)) continue; // flash
 
-		int x = spriteram[offs + 2];
-		int colour = (x >> 9) & 0x1f;
+		INT32 x = spriteram[offs + 2];
+		INT32 colour = (x >> 9) & 0x1f;
 
-		int fx = y & 0x2000;
-		int fy = y & 0x4000;
-		int multi = (1 << ((y & 0x0600) >> 9)) - 1;
+		INT32 fx = y & 0x2000;
+		INT32 fy = y & 0x4000;
+		INT32 multi = (1 << ((y & 0x0600) >> 9)) - 1;
 
 		x = x & 0x01ff;
 		y = y & 0x01ff;
@@ -437,7 +438,7 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 //	if (DrvRecalc) {
 		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
@@ -446,7 +447,7 @@ static int DrvDraw()
 
 	deco16_pf12_update();
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 00;
 	}
 
@@ -461,29 +462,29 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
 	}
 
 	{
-		memset (DrvInputs, 0xff, 2 * sizeof(short)); 
-		for (int i = 0; i < 16; i++) {
+		memset (DrvInputs, 0xff, 2 * sizeof(INT16)); 
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
 	}
 
-	int nInterleave = 256;
-	int nCyclesTotal[1] = { 14000000 / 58 };
-	int nCyclesDone[1] = { 0 };
+	INT32 nInterleave = 256;
+	INT32 nCyclesTotal[1] = { 14000000 / 58 };
+	INT32 nCyclesDone[1] = { 0 };
 
 	SekOpen(0);
 
 	deco16_vblank = 0;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		nCyclesDone[0] += SekRun(nCyclesTotal[0] / nInterleave);
 
@@ -495,7 +496,7 @@ static int DrvFrame()
 	SekClose();
 
 	if (pBurnSoundOut) {
-		memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(int));
+		memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(INT16));
 		MSM6295Render(1, pBurnSoundOut, nBurnSoundLen);
 		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 	}
@@ -507,7 +508,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -616,7 +617,7 @@ static struct BurnRomInfo pktgaldxbRomDesc[] = {
 STD_ROM_PICK(pktgaldxb)
 STD_ROM_FN(pktgaldxb)
 
-static int pkgaldxbInit()
+static INT32 pkgaldxbInit()
 {
 	return 1;
 }

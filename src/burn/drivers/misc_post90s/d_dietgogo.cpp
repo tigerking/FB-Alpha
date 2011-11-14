@@ -7,33 +7,33 @@
 #include "msm6295.h"
 #include "h6280_intf.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *Drv68KCode;
-static unsigned char *DrvHucROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvSndROM;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvHucRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *Drv68KCode;
+static UINT8 *DrvHucROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvSndROM;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvHucRAM;
 
-static unsigned int  *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32  *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *soundlatch;
-static unsigned char *flipscreen;
+static UINT8 *soundlatch;
+static UINT8 *flipscreen;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvDips[2];
-static unsigned char DrvReset;
-static unsigned short DrvInputs[2];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvDips[2];
+static UINT8 DrvReset;
+static UINT16 DrvInputs[2];
 
 static struct BurnInputInfo DietgoInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 0,	"p1 coin"	},
@@ -116,7 +116,7 @@ static struct BurnDIPInfo DietgoDIPList[]=
 
 STDDIPINFO(Dietgo)
 
-void __fastcall dietgogo_main_write_word(unsigned int address, unsigned short data)
+void __fastcall dietgogo_main_write_word(UINT32 address, UINT16 data)
 {
 	deco16_write_control_word(0, address, 0x200000, data)
 
@@ -129,7 +129,7 @@ void __fastcall dietgogo_main_write_word(unsigned int address, unsigned short da
 	}
 }
 
-void __fastcall dietgogo_main_write_byte(unsigned int address, unsigned char data)
+void __fastcall dietgogo_main_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -141,7 +141,7 @@ void __fastcall dietgogo_main_write_byte(unsigned int address, unsigned char dat
 	}
 }
 
-unsigned short __fastcall dietgogo_main_read_word(unsigned int address)
+UINT16 __fastcall dietgogo_main_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -158,7 +158,7 @@ unsigned short __fastcall dietgogo_main_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall dietgogo_main_read_byte(unsigned int address)
+UINT8 __fastcall dietgogo_main_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -180,12 +180,12 @@ unsigned char __fastcall dietgogo_main_read_byte(unsigned int address)
 	return 0;
 }
 
-static int dietgo_bank_callback(const int bank)
+static INT32 dietgo_bank_callback(const INT32 bank)
 {
 	return ((bank >> 4) & 0x7) * 0x1000;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -200,9 +200,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x080000;
 	Drv68KCode	= Next; Next += 0x080000;
@@ -215,7 +215,7 @@ static int MemIndex()
 	MSM6295ROM	= Next;
 	DrvSndROM	= Next; Next += 0x080000;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0300 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0300 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -234,14 +234,14 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -299,7 +299,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 
@@ -316,25 +316,25 @@ static int DrvExit()
 
 static void draw_sprites()
 {
-	unsigned short *ram = (unsigned short*)DrvSprRAM;
+	UINT16 *ram = (UINT16*)DrvSprRAM;
 
-	for (int offs = 0; offs < 0x400; offs += 4)
+	for (INT32 offs = 0; offs < 0x400; offs += 4)
 	{
 		if (ram[offs + 1] == 0) continue;
 
-		int inc, mult;
+		INT32 inc, mult;
 
-		int sy     = ram[offs + 0];
-		int code   = ram[offs + 1] & 0x3fff;
-		int sx     = ram[offs + 2];
+		INT32 sy     = ram[offs + 0];
+		INT32 code   = ram[offs + 1] & 0x3fff;
+		INT32 sx     = ram[offs + 2];
 
 		if ((sy & 0x1000) && (nCurrentFrame & 1)) continue;
 
-		int color = (sx >> 9) & 0x1f;
+		INT32 color = (sx >> 9) & 0x1f;
 
-		int flipx = sy & 0x2000;
-		int flipy = sy & 0x4000;
-		int multi = (1 << ((sy & 0x0600) >> 9)) - 1;
+		INT32 flipx = sy & 0x2000;
+		INT32 flipy = sy & 0x4000;
+		INT32 multi = (1 << ((sy & 0x0600) >> 9)) - 1;
 
 		sx &= 0x01ff;
 		sy &= 0x01ff;
@@ -386,7 +386,7 @@ static void draw_sprites()
 	}
 }
 
-static int DrvDraw()
+static INT32 DrvDraw()
 {
 //	if (DrvRecalc) {
 		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
@@ -395,7 +395,7 @@ static int DrvDraw()
 
 	deco16_pf12_update();
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x100;
 	}
 
@@ -410,7 +410,7 @@ static int DrvDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -419,23 +419,23 @@ static int DrvFrame()
 	h6280NewFrame();
 
 	{
-		memset (DrvInputs, 0xff, 2 * sizeof(short)); 
-		for (int i = 0; i < 16; i++) {
+		memset (DrvInputs, 0xff, 2 * sizeof(INT16)); 
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
 	}
 
-	int nInterleave = 256;
-	int nCyclesTotal[2] = { 14000000 / 58, 2685000 / 58 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = 256;
+	INT32 nCyclesTotal[2] = { 14000000 / 58, 2685000 / 58 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 	h6280Open(0);
 
 	deco16_vblank = 0;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		nCyclesDone[0] += SekRun(nCyclesTotal[0] / nInterleave);
 		nCyclesDone[1] += h6280Run(nCyclesTotal[1] / nInterleave);
@@ -460,7 +460,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

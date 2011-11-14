@@ -8,48 +8,48 @@
 #include "burn_ym2151.h"
 #include "msm6295.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvZ80ROM;
-static unsigned char *DrvHucROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-static unsigned char *DrvGfxROM4;
-static unsigned char *DrvSndROM0;
-static unsigned char *DrvSndROM1;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvSprRAM1;
-static unsigned char *DrvSprBuf;
-static unsigned char *DrvSprBuf1;
-static unsigned char *DrvPrtRAM;
-static unsigned char *DrvZ80RAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvZ80ROM;
+static UINT8 *DrvHucROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+static UINT8 *DrvGfxROM4;
+static UINT8 *DrvSndROM0;
+static UINT8 *DrvSndROM1;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvSprRAM1;
+static UINT8 *DrvSprBuf;
+static UINT8 *DrvSprBuf1;
+static UINT8 *DrvPrtRAM;
+static UINT8 *DrvZ80RAM;
 
-static unsigned int  *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32  *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *soundlatch;
-static unsigned char *flipscreen;
+static UINT8 *soundlatch;
+static UINT8 *flipscreen;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvDips[3];
-static unsigned char DrvReset;
-static unsigned short DrvInputs[3];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvDips[3];
+static UINT8 DrvReset;
+static UINT16 DrvInputs[3];
 
-static int scanline;
-static int irq_mask;
-static int irq_timer;
+static INT32 scanline;
+static INT32 irq_mask;
+static INT32 irq_timer;
 
-static int DrvOkiBank;
+static INT32 DrvOkiBank;
 
-static int has_z80 = 0;
+static INT32 has_z80 = 0;
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy2 + 0,	"p1 coin"	},
@@ -475,7 +475,7 @@ static struct BurnDIPInfo Robocop2DIPList[]=
 
 STDDIPINFO(Robocop2)
 
-void __fastcall cninja_main_write_word(unsigned int address, unsigned short data)
+void __fastcall cninja_main_write_word(UINT32 address, UINT16 data)
 {
 	deco16_write_control_word(0, address, 0x140000, data)
 	deco16_write_control_word(1, address, 0x150000, data)
@@ -528,7 +528,7 @@ void __fastcall cninja_main_write_word(unsigned int address, unsigned short data
 	//}
 }
 
-void __fastcall cninja_main_write_byte(unsigned int address, unsigned char data)
+void __fastcall cninja_main_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -583,7 +583,7 @@ void __fastcall cninja_main_write_byte(unsigned int address, unsigned char data)
 	//}
 }
 
-unsigned short __fastcall cninja_main_read_word(unsigned int address)
+UINT16 __fastcall cninja_main_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -618,7 +618,7 @@ unsigned short __fastcall cninja_main_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall cninja_main_read_byte(unsigned int address)
+UINT8 __fastcall cninja_main_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -664,7 +664,7 @@ unsigned char __fastcall cninja_main_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall mutantf_main_write_word(unsigned int address, unsigned short data)
+void __fastcall mutantf_main_write_word(UINT32 address, UINT16 data)
 {
 	deco16_write_control_word(0, address, 0x300000, data)
 	deco16_write_control_word(1, address, 0x310000, data)
@@ -695,7 +695,7 @@ void __fastcall mutantf_main_write_word(unsigned int address, unsigned short dat
 	}
 }
 
-void __fastcall mutantf_main_write_byte(unsigned int address, unsigned char data)
+void __fastcall mutantf_main_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -727,7 +727,7 @@ void __fastcall mutantf_main_write_byte(unsigned int address, unsigned char data
 	}
 }
 
-unsigned short __fastcall mutantf_main_read_word(unsigned int address)
+UINT16 __fastcall mutantf_main_read_word(UINT32 address)
 {
 	if ((address & 0xfffff800) == 0x1a0000) {
 		return deco16_66_prot_r(address);
@@ -736,7 +736,7 @@ unsigned short __fastcall mutantf_main_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall mutantf_main_read_byte(unsigned int address)
+UINT8 __fastcall mutantf_main_read_byte(UINT32 address)
 {
 	if (address == 0x1c0001) return deco16ic_71_read() & 0xff;
 
@@ -747,7 +747,7 @@ unsigned char __fastcall mutantf_main_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall robocop2_main_write_word(unsigned int address, unsigned short data)
+void __fastcall robocop2_main_write_word(UINT32 address, UINT16 data)
 {
 	deco16_write_control_word(0, address, 0x140000, data)
 	deco16_write_control_word(1, address, 0x150000, data)
@@ -784,7 +784,7 @@ void __fastcall robocop2_main_write_word(unsigned int address, unsigned short da
 	}
 }
 
-void __fastcall robocop2_main_write_byte(unsigned int address, unsigned char data)
+void __fastcall robocop2_main_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -823,7 +823,7 @@ void __fastcall robocop2_main_write_byte(unsigned int address, unsigned char dat
 	}
 }
 
-unsigned short __fastcall robocop2_main_read_word(unsigned int address)
+UINT16 __fastcall robocop2_main_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -854,7 +854,7 @@ unsigned short __fastcall robocop2_main_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall robocop2_main_read_byte(unsigned int address)
+UINT8 __fastcall robocop2_main_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -896,7 +896,7 @@ unsigned char __fastcall robocop2_main_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall stoneage_sound_write(unsigned short address, unsigned char data)
+void __fastcall stoneage_sound_write(UINT16 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -914,7 +914,7 @@ void __fastcall stoneage_sound_write(unsigned short address, unsigned char data)
 	}
 }
 
-unsigned char __fastcall stoneage_sound_read(unsigned short address)
+UINT8 __fastcall stoneage_sound_read(UINT16 address)
 {
 	switch (address)
 	{
@@ -933,7 +933,7 @@ unsigned char __fastcall stoneage_sound_read(unsigned short address)
 	return 0;
 }
 
-static void DrvYM2151IrqHandler(int state)
+static void DrvYM2151IrqHandler(INT32 state)
 {
 	if (has_z80) {
 		ZetSetIRQLine(0, state ? ZET_IRQSTATUS_ACK : ZET_IRQSTATUS_NONE);
@@ -942,16 +942,16 @@ static void DrvYM2151IrqHandler(int state)
 	}
 }
 
-static void DrvYM2151WritePort(unsigned int, unsigned int data)
+static void DrvYM2151WritePort(UINT32, UINT32 data)
 {
 	DrvOkiBank = data & 1;
 
 	memcpy (DrvSndROM1, DrvSndROM1 + 0x40000 + (data & 1) * 0x40000, 0x40000);
 }
 
-static int DrvSynchroniseStream(int nSoundRate)
+static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return 0 * nSoundRate; //(long long)HucTotalCycles() * nSoundRate / 4027500;
+	return 0 * nSoundRate; //(INT64)HucTotalCycles() * nSoundRate / 4027500;
 }
 
 static double DrvGetTime()
@@ -959,28 +959,28 @@ static double DrvGetTime()
 	return 0; //(double)HucTotalCycles() / 4027500.0;
 }
 
-static int cninja_bank_callback(const int bank)
+static INT32 cninja_bank_callback(const INT32 bank)
 {
 	if ((bank >> 4) & 0xf) return 0x0000;
 	return 0x1000;
 }
 
-static int mutantf_1_bank_callback(const int bank)
+static INT32 mutantf_1_bank_callback(const INT32 bank)
 {
 	return ((bank >> 4) & 0x3) << 12;
 }
 
-static int mutantf_2_bank_callback(const int bank)
+static INT32 mutantf_2_bank_callback(const INT32 bank)
 {
 	return ((bank >> 5) & 0x1) << 14;
 }
 
-static int robocop2_bank_callback(const int bank)
+static INT32 robocop2_bank_callback(const INT32 bank)
 {
 	return (bank & 0x30) << 8;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -1012,18 +1012,18 @@ static int DrvDoReset()
 	return 0;
 }
 
-static void DrvBootlegCharDecode(unsigned char *gfx, int len)
+static void DrvBootlegCharDecode(UINT8 *gfx, INT32 len)
 {
-	unsigned char *dst = (unsigned char*)malloc(len);
+	UINT8 *dst = (UINT8*)malloc(len);
 
 	memcpy (dst, gfx, len);
 
-	for (int r = 0; r < len; r+=4) {
-		for (int i = 0; i < 8; i++) {	
-			int t0 = (dst[r + 3] >> (7 - (i & 7))) & 1;
-			int t1 = (dst[r + 1] >> (7 - (i & 7))) & 1;
-			int t2 = (dst[r + 2] >> (7 - (i & 7))) & 1;
-			int t3 = (dst[r + 0] >> (7 - (i & 7))) & 1;
+	for (INT32 r = 0; r < len; r+=4) {
+		for (INT32 i = 0; i < 8; i++) {	
+			INT32 t0 = (dst[r + 3] >> (7 - (i & 7))) & 1;
+			INT32 t1 = (dst[r + 1] >> (7 - (i & 7))) & 1;
+			INT32 t2 = (dst[r + 2] >> (7 - (i & 7))) & 1;
+			INT32 t3 = (dst[r + 0] >> (7 - (i & 7))) & 1;
 	
 			gfx[(r * 2) + i] = (t0 << 3) | (t1 << 2) | (t2 << 1) | (t3 << 0);
 		}
@@ -1035,9 +1035,9 @@ static void DrvBootlegCharDecode(unsigned char *gfx, int len)
 	}
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x100000;
 	DrvZ80ROM	= Next;
@@ -1053,7 +1053,7 @@ static int MemIndex()
 	DrvSndROM0	= Next; Next += 0x100000;
 	DrvSndROM1	= Next; Next += 0x0c0000;
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0800 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0800 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -1064,7 +1064,7 @@ static int MemIndex()
 	DrvSprBuf1	= Next; Next += 0x000800;
 	DrvPalRAM	= Next; Next += 0x002000;
 
-	deco16_prot_ram	= (unsigned short*)Next;
+	deco16_prot_ram	= (UINT16*)Next;
 	DrvPrtRAM	= Next; Next += 0x000800;
 
 	DrvZ80RAM	= Next; Next += 0x000800;
@@ -1081,9 +1081,9 @@ static int MemIndex()
 
 static void cninja_patch()
 {
-	unsigned short *rom = (unsigned short *)Drv68KROM;
+	UINT16 *rom = (UINT16 *)Drv68KROM;
 
-	for (int i = 0; i < 0x80000 / 2; i++)
+	for (INT32 i = 0; i < 0x80000 / 2; i++)
 	{
 		if (rom[i] == 0x66ff || rom[i] == 0x67ff)
 		{
@@ -1099,14 +1099,14 @@ static void cninja_patch()
 	}
 }
 
-static int CninjaInit()
+static INT32 CninjaInit()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1128,8 +1128,8 @@ static int CninjaInit()
 		if (BurnLoadRom(DrvGfxROM2 + 0x00000, 10, 1)) return 1;
 		if (BurnLoadRom(DrvGfxROM2 + 0x80000, 11, 1)) return 1;
 
-		for (int i = 0; i < 0x40000; i++) {
-			int n = DrvGfxROM2[i + 0x40000];
+		for (INT32 i = 0; i < 0x40000; i++) {
+			INT32 n = DrvGfxROM2[i + 0x40000];
 			DrvGfxROM2[i + 0x40000] = DrvGfxROM2[i + 0x80000];
 			DrvGfxROM2[i + 0x80000] = n;
 		}
@@ -1202,14 +1202,14 @@ static int CninjaInit()
 	return 0;
 }
 
-static int EdrandyInit()
+static INT32 EdrandyInit()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1233,8 +1233,8 @@ static int EdrandyInit()
 		if (BurnLoadRom(DrvGfxROM2 + 0x00000, 12, 1)) return 1;
 		if (BurnLoadRom(DrvGfxROM2 + 0x80000, 13, 1)) return 1;
 
-		for (int i = 0; i < 0x40000; i++) {
-			int n = DrvGfxROM2[i + 0x40000];
+		for (INT32 i = 0; i < 0x40000; i++) {
+			INT32 n = DrvGfxROM2[i + 0x40000];
 			DrvGfxROM2[i + 0x40000] = DrvGfxROM2[i + 0x80000];
 			DrvGfxROM2[i + 0x80000] = n;
 		}
@@ -1311,14 +1311,14 @@ static int EdrandyInit()
 	return 0;
 }
 
-static int MutantfInit()
+static INT32 MutantfInit()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1342,8 +1342,8 @@ static int MutantfInit()
 		if (BurnLoadRom(DrvGfxROM2 + 0x00000,  8, 1)) return 1;
 		if (BurnLoadRom(DrvGfxROM2 + 0x80000,  9, 1)) return 1;
 
-		for (int i = 0; i < 0x40000; i++) {
-			int n = DrvGfxROM2[i + 0x40000];
+		for (INT32 i = 0; i < 0x40000; i++) {
+			INT32 n = DrvGfxROM2[i + 0x40000];
 			DrvGfxROM2[i + 0x40000] = DrvGfxROM2[i + 0x80000];
 			DrvGfxROM2[i + 0x80000] = n;
 		}
@@ -1432,14 +1432,14 @@ static int MutantfInit()
 	return 0;
 }
 
-static int CninjablInit()
+static INT32 CninjablInit()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1449,13 +1449,13 @@ static int CninjablInit()
 
 		if (BurnLoadRom(DrvZ80ROM  + 0x00000,  2, 1)) return 1;
 
-		unsigned char *tmp = (unsigned char*)malloc(0x400000);
+		UINT8 *tmp = (UINT8*)malloc(0x400000);
 
 		if (BurnLoadRom(tmp + 0x00000,  3, 2)) return 1;
 		if (BurnLoadRom(tmp + 0x00001,  4, 2)) return 1;
 		BurnByteswap(tmp, 0x400000);
 
-		for (int i = 0; i < 0x200000; i++) tmp[i] ^= 0xff;
+		for (INT32 i = 0; i < 0x200000; i++) tmp[i] ^= 0xff;
 
 		memcpy (DrvGfxROM0 + 0x000000, tmp + 0x000000, 0x020000);
 		memcpy (DrvGfxROM1 + 0x000000, tmp + 0x080000, 0x080000);
@@ -1537,14 +1537,14 @@ static int CninjablInit()
 	return 0;
 }
 
-static int StoneageInit()
+static INT32 StoneageInit()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1566,8 +1566,8 @@ static int StoneageInit()
 		if (BurnLoadRom(DrvGfxROM2 + 0x00000, 10, 1)) return 1;
 		if (BurnLoadRom(DrvGfxROM2 + 0x80000, 11, 1)) return 1;
 
-		for (int i = 0; i < 0x40000; i++) {
-			int n = DrvGfxROM2[i + 0x40000];
+		for (INT32 i = 0; i < 0x40000; i++) {
+			INT32 n = DrvGfxROM2[i + 0x40000];
 			DrvGfxROM2[i + 0x40000] = DrvGfxROM2[i + 0x80000];
 			DrvGfxROM2[i + 0x80000] = n;
 		}
@@ -1653,14 +1653,14 @@ static int StoneageInit()
 	return 0;
 }
 
-static int Robocop2Init()
+static INT32 Robocop2Init()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1682,8 +1682,8 @@ static int Robocop2Init()
 		if (BurnLoadRom(DrvGfxROM1 + 0x00000, 11, 1)) return 1;
 		if (BurnLoadRom(DrvGfxROM1 + 0x80000, 12, 1)) return 1;
 
-		for (int i = 0; i < 0x40000; i++) {
-			int n = DrvGfxROM1[i + 0x40000];
+		for (INT32 i = 0; i < 0x40000; i++) {
+			INT32 n = DrvGfxROM1[i + 0x40000];
 			DrvGfxROM1[i + 0x40000] = DrvGfxROM1[i + 0x80000];
 			DrvGfxROM1[i + 0x80000] = n;
 		}
@@ -1770,7 +1770,7 @@ static int Robocop2Init()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 	deco16Exit();
@@ -1801,11 +1801,11 @@ static int DrvExit()
 
 static void cninja_draw_sprites()
 {
-	unsigned short *buffered_spriteram = (unsigned short*)DrvSprBuf;
+	UINT16 *buffered_spriteram = (UINT16*)DrvSprBuf;
 
-	for (int offs = 0x400 - 4; offs >=0 ; offs -= 4)
+	for (INT32 offs = 0x400 - 4; offs >=0 ; offs -= 4)
 	{
-		int x, y, sprite, color, multi, flipx, flipy, inc, flash, mult, pri = 0;
+		INT32 x, y, sprite, color, multi, flipx, flipy, inc, flash, mult, pri = 0;
 		sprite = buffered_spriteram[offs + 1];
 		if (!sprite)
 			continue;
@@ -1869,14 +1869,14 @@ static void cninja_draw_sprites()
 
 static void cninjabl_draw_sprites()
 {
-	unsigned short *buffered_spriteram = (unsigned short*)DrvSprBuf;
-	int offs;
-	int endoffs;
+	UINT16 *buffered_spriteram = (UINT16*)DrvSprBuf;
+	INT32 offs;
+	INT32 endoffs;
 
 	endoffs = 0x400 - 4;
 	for (offs = 0; offs < 0x400 - 4 ; offs += 4)
 	{
-		int y = buffered_spriteram[offs + 1];
+		INT32 y = buffered_spriteram[offs + 1];
 
 		if (y == 0x180)
 		{
@@ -1887,7 +1887,7 @@ static void cninjabl_draw_sprites()
 
 	for (offs = endoffs; offs >=0 ; offs -= 4)
 	{
-		int x, y, sprite, colour, multi, fx, fy, inc, flash, mult, pri = 0;
+		INT32 x, y, sprite, colour, multi, fx, fy, inc, flash, mult, pri = 0;
 
 		sprite = buffered_spriteram[offs + 0];
 		y = buffered_spriteram[offs + 1];
@@ -1954,11 +1954,11 @@ static void cninjabl_draw_sprites()
 	}
 }
 
-static void mutantf_draw_sprites(unsigned char *ram, unsigned char *gfx, int colbank, int gfxbank)
+static void mutantf_draw_sprites(UINT8 *ram, UINT8 *gfx, INT32 colbank, INT32 gfxbank)
 {
-	unsigned short *spriteptr = (unsigned short*)ram;
+	UINT16 *spriteptr = (UINT16*)ram;
 
-	int offs, end, inc;
+	INT32 offs, end, inc;
 
 	if (gfxbank == 4)
 	{
@@ -1975,8 +1975,8 @@ static void mutantf_draw_sprites(unsigned char *ram, unsigned char *gfx, int col
 
 	while (offs != end)
 	{
-		int x, y, sprite, colour, fx, fy, w, h, sx, sy, x_mult, y_mult;
-		int alpha = 0xff;
+		INT32 x, y, sprite, colour, fx, fy, w, h, sx, sy, x_mult, y_mult;
+		INT32 alpha = 0xff;
 
 		sprite = spriteptr[offs + 3];
 		if (!sprite)
@@ -2047,7 +2047,7 @@ static void mutantf_draw_sprites(unsigned char *ram, unsigned char *gfx, int col
 	}
 }
 
-static int CninjaDraw()
+static INT32 CninjaDraw()
 {
 //	if (DrvRecalc) {
 		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
@@ -2057,7 +2057,7 @@ static int CninjaDraw()
 	deco16_pf12_update();
 	deco16_pf34_update();
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x200;
 	}
 
@@ -2077,7 +2077,7 @@ static int CninjaDraw()
 	return 0;
 }
 
-static int CninjablDraw()
+static INT32 CninjablDraw()
 {
 //	if (DrvRecalc) {
 		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
@@ -2087,7 +2087,7 @@ static int CninjablDraw()
 	deco16_pf12_update();
 	deco16_pf34_update();
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x200;
 	}
 
@@ -2107,7 +2107,7 @@ static int CninjablDraw()
 	return 0;
 }
 
-static int EdrandyDraw()
+static INT32 EdrandyDraw()
 {
 //	if (DrvRecalc) {
 		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
@@ -2117,7 +2117,7 @@ static int EdrandyDraw()
 	deco16_pf12_update();
 	deco16_pf34_update();
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0;
 	}
 
@@ -2136,7 +2136,7 @@ static int EdrandyDraw()
 	return 0;
 }
 
-static int Robocop2Draw()
+static INT32 Robocop2Draw()
 {
 //	if (DrvRecalc) {
 		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
@@ -2146,13 +2146,13 @@ static int Robocop2Draw()
 	deco16_pf12_update();
 	deco16_pf34_update();
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x200;
 	}
 
 	deco16_clear_prio_map();
 
-	int layer_8bpp = 0;
+	INT32 layer_8bpp = 0;
 
 	if (deco16_priority & 4)
 	{
@@ -2188,7 +2188,7 @@ static int Robocop2Draw()
 }
 
 
-static int MutantfDraw()
+static INT32 MutantfDraw()
 {
 //	if (DrvRecalc) {
 		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
@@ -2198,7 +2198,7 @@ static int MutantfDraw()
 	deco16_pf12_update();
 	deco16_pf34_update();
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x400;
 	}
 
@@ -2228,7 +2228,7 @@ static int MutantfDraw()
 	return 0;
 }
 
-static int CninjaFrame()
+static INT32 CninjaFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -2236,23 +2236,23 @@ static int CninjaFrame()
 
 	{
 		deco16_prot_inputs = DrvInputs;
-		memset (DrvInputs, 0xff, 2 * sizeof(short)); 
-		for (int i = 0; i < 16; i++) {
+		memset (DrvInputs, 0xff, 2 * sizeof(INT16)); 
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
 		DrvInputs[2] = (DrvDips[1] << 8) | (DrvDips[0] << 0);
 	}
 
-	int nInterleave = 256;
-	int nCyclesTotal[2] = { 12000000 / 58, 8055000 / 58 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = 256;
+	INT32 nCyclesTotal[2] = { 12000000 / 58, 8055000 / 58 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 
 	deco16_vblank = 0;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		nCyclesDone[0] += SekRun(nCyclesTotal[0] / nInterleave);
 	//	nCyclesDone[1] += HucRun(nCyclesTotal[1] / nInterleave);
@@ -2282,7 +2282,7 @@ static int CninjaFrame()
 	return 0;
 }
 
-static int MutantfFrame()
+static INT32 MutantfFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -2290,23 +2290,23 @@ static int MutantfFrame()
 
 	{
 		deco16_prot_inputs = DrvInputs;
-		memset (DrvInputs, 0xff, 2 * sizeof(short)); 
-		for (int i = 0; i < 16; i++) {
+		memset (DrvInputs, 0xff, 2 * sizeof(INT16)); 
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
 		DrvInputs[2] = (DrvDips[1] << 8) | (DrvDips[0] << 0);
 	}
 
-	int nInterleave = 256;
-	int nCyclesTotal[2] = { 14000000 / 58, 8055000 / 58 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = 256;
+	INT32 nCyclesTotal[2] = { 14000000 / 58, 8055000 / 58 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 
 	deco16_vblank = 0;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		nCyclesDone[0] += SekRun(nCyclesTotal[0] / nInterleave);
 	//	nCyclesDone[1] += HucRun(nCyclesTotal[1] / nInterleave);
@@ -2331,7 +2331,7 @@ static int MutantfFrame()
 	return 0;
 }
 
-static int StoneageFrame()
+static INT32 StoneageFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -2339,24 +2339,24 @@ static int StoneageFrame()
 
 	{
 		deco16_prot_inputs = DrvInputs;
-		memset (DrvInputs, 0xff, 2 * sizeof(short)); 
-		for (int i = 0; i < 16; i++) {
+		memset (DrvInputs, 0xff, 2 * sizeof(INT16)); 
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 		}
 		DrvInputs[2] = (DrvDips[1] << 8) | (DrvDips[0] << 0);
 	}
 
-	int nInterleave = 256;
-	int nCyclesTotal[2] = { 12000000 / 58, 3579545 / 58 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = 256;
+	INT32 nCyclesTotal[2] = { 12000000 / 58, 3579545 / 58 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 	ZetOpen(0);
 
 	deco16_vblank = 0;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		nCyclesDone[0] += SekRun(nCyclesTotal[0] / nInterleave);
 		nCyclesDone[1] += ZetRun(nCyclesTotal[1] / nInterleave);
@@ -2386,7 +2386,7 @@ static int StoneageFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

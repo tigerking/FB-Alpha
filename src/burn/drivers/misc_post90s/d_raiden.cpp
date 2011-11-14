@@ -9,57 +9,57 @@
 #include "msm6295.h"
 #include "vez.h"
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
-static unsigned char *RomV30A;
-static unsigned char *RomV30B;
-static unsigned char *RomZ80;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
+static UINT8 *RomV30A;
+static UINT8 *RomV30B;
+static UINT8 *RomZ80;
 
-static unsigned char *RomGfx1;
-static unsigned char *RomGfx2;
-static unsigned char *RomGfx3;
-static unsigned char *RomGfx4;
+static UINT8 *RomGfx1;
+static UINT8 *RomGfx2;
+static UINT8 *RomGfx3;
+static UINT8 *RomGfx4;
 
-static unsigned char *RamV30A;
-static unsigned char *RamV30B;
-static unsigned char *RamV30S;
-static unsigned char *RamZ80;
+static UINT8 *RamV30A;
+static UINT8 *RamV30B;
+static UINT8 *RamV30S;
+static UINT8 *RamZ80;
 
-static unsigned char *RamSpr;
-static unsigned short *RamFg;
-static unsigned short *RamBg;
-static unsigned short *RamTxt;
-static unsigned char *RamPal;
-static unsigned char *RamScroll;
+static UINT8 *RamSpr;
+static UINT16 *RamFg;
+static UINT16 *RamBg;
+static UINT16 *RamTxt;
+static UINT8 *RamPal;
+static UINT8 *RamScroll;
 
-static unsigned short *RamCurPal;
+static UINT16 *RamCurPal;
 
-static unsigned char bRecalcPalette = 0;
-static unsigned char DrvReset = 0;
+static UINT8 bRecalcPalette = 0;
+static UINT8 DrvReset = 0;
 
-static unsigned char DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInput[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvButton[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvJoy2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInput[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-static unsigned char main2sub[2] = {0, 0};
-static unsigned char sub2main[2] = {0, 0};
-static int main2sub_pending = 0;
-static int sub2main_pending = 0;
-static unsigned char z80_irq1, z80_irq2;
-static int seibu_bank = 0;
+static UINT8 main2sub[2] = {0, 0};
+static UINT8 sub2main[2] = {0, 0};
+static INT32 main2sub_pending = 0;
+static INT32 sub2main_pending = 0;
+static UINT8 z80_irq1, z80_irq2;
+static INT32 seibu_bank = 0;
 
 #define	GAME_RAIDEN		0
 #define	GAME_RAIDENA	1
 #define	GAME_RAIDENK	2
 #define	GAME_RAIDENT	3
-static int game_drv;
+static INT32 game_drv;
 
-inline static unsigned int CalcCol(int offs)
+inline static UINT32 CalcCol(INT32 offs)
 {
 	// xxxxBBBBGGGGRRRR
-	int nColour = RamPal[offs + 0] | (RamPal[offs + 1] << 8);
-	int r, g, b;
+	INT32 nColour = RamPal[offs + 0] | (RamPal[offs + 1] << 8);
+	INT32 r, g, b;
 
 	r = (nColour & 0x000F) << 4;	// Red
 	r |= r >> 4;
@@ -266,7 +266,7 @@ static void update_irq_lines()
 		}
 }
 
-static unsigned char seibu_main_v30_r(unsigned int offset)
+static UINT8 seibu_main_v30_r(UINT32 offset)
 {
 	switch (offset) {
 		case 0x4: return sub2main[0];
@@ -281,7 +281,7 @@ static unsigned char seibu_main_v30_r(unsigned int offset)
 	}
 }
 
-static void seibu_main_v30_w(unsigned int offset, unsigned char data)
+static void seibu_main_v30_w(UINT32 offset, UINT8 data)
 {
 	switch (offset) {
 		case 0x0: main2sub[0] = data; break;
@@ -299,13 +299,13 @@ static void seibu_main_v30_w(unsigned int offset, unsigned char data)
 	}
 }
 
-void raidenFMIRQHandler(int, int nStatus)
+void raidenFMIRQHandler(INT32, INT32 nStatus)
 {
 	z80_irq1 = (nStatus) ? 0xd7 : 0xff;
 	update_irq_lines();
 }
 
-static void set_seibu_bank(int bank) 
+static void set_seibu_bank(INT32 bank) 
 {
 	bank &= 1;
 	if (seibu_bank != bank) {
@@ -315,12 +315,12 @@ static void set_seibu_bank(int bank)
 	}
 }
 
-int raidenSynchroniseStream(int nSoundRate)
+INT32 raidenSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 3579545;
+	return (INT64)ZetTotalCycles() * nSoundRate / 3579545;
 }
 
-unsigned char __fastcall raidenReadByte(unsigned int vezAddress)
+UINT8 __fastcall raidenReadByte(UINT32 vezAddress)
 {
 	switch (vezAddress) {
 		case 0x0b000: return ~DrvInput[1];
@@ -349,7 +349,7 @@ unsigned char __fastcall raidenReadByte(unsigned int vezAddress)
 	return 0;
 }
 
-void __fastcall raidenWriteByte(unsigned int vezAddress, unsigned char byteValue)
+void __fastcall raidenWriteByte(UINT32 vezAddress, UINT8 byteValue)
 {
 	
 	switch (vezAddress) {
@@ -398,7 +398,7 @@ void __fastcall raidenWriteByte(unsigned int vezAddress, unsigned char byteValue
 	}
 }
 
-unsigned char __fastcall raidenAltReadByte(unsigned int vezAddress)
+UINT8 __fastcall raidenAltReadByte(UINT32 vezAddress)
 {
 	switch (vezAddress) {
 		case 0x0a000:
@@ -427,7 +427,7 @@ unsigned char __fastcall raidenAltReadByte(unsigned int vezAddress)
 	return 0;
 }
 
-void __fastcall raidenAltWriteByte(unsigned int vezAddress, unsigned char byteValue)
+void __fastcall raidenAltWriteByte(UINT32 vezAddress, UINT8 byteValue)
 {
 	
 	switch (vezAddress) {
@@ -474,12 +474,12 @@ void __fastcall raidenAltWriteByte(unsigned int vezAddress, unsigned char byteVa
 	}
 }
 
-unsigned char __fastcall raidenSubReadByte(unsigned int vezAddress)
+UINT8 __fastcall raidenSubReadByte(UINT32 vezAddress)
 {
 	switch (vezAddress) {
 		case 0x04008: {
-			unsigned char nRet = RamV30S[0x8];
-			//int pc = VezPC();
+			UINT8 nRet = RamV30S[0x8];
+			//INT32 pc = VezPC();
 			//if (pc==0xfcde6 && ret!=0x40) cpu_spin();
 			bprintf(PRINT_NORMAL, _T("sub_cpu_spin_r %02x%02x\n"), RamV30S[0x8], RamV30S[0x9]);
 			return nRet; }
@@ -493,7 +493,7 @@ unsigned char __fastcall raidenSubReadByte(unsigned int vezAddress)
 	return 0;
 }
 
-void __fastcall raidenSubWriteByte(unsigned int vezAddress, unsigned char byteValue)
+void __fastcall raidenSubWriteByte(UINT32 vezAddress, UINT8 byteValue)
 {
 	if ((vezAddress & 0xFF000) == 0x03000 ) {
 		vezAddress -= 0x03000;
@@ -510,7 +510,7 @@ void __fastcall raidenSubWriteByte(unsigned int vezAddress, unsigned char byteVa
 
 }
 
-unsigned char __fastcall raidenZ80Read(unsigned short a)
+UINT8 __fastcall raidenZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0x4008: return BurnYM3812Read(0);
@@ -526,7 +526,7 @@ unsigned char __fastcall raidenZ80Read(unsigned short a)
 }
 
 
-void __fastcall raidenZ80Write(unsigned short a,unsigned char v)
+void __fastcall raidenZ80Write(UINT16 a,UINT8 v)
 {
 	switch (a) {
 		case 0x4000:
@@ -579,7 +579,7 @@ void __fastcall raidenZ80Write(unsigned short a,unsigned char v)
 	}
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	
 	VezOpen(0);
@@ -606,9 +606,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	RomV30A		= Next; Next += 0x060000;			// V30 main cpu
 	RomV30B		= Next; Next += 0x040000;			// V30 sub cpu
 	RomZ80		= Next; Next += 0x020000;			// Z80 sound cpu
@@ -628,25 +628,25 @@ static int MemIndex()
 	RamZ80		= Next; Next += 0x000800;
 	
 	RamSpr		= Next; Next += 0x001000;
-	RamFg		= (unsigned short *)Next; Next += 0x000800;
-	RamBg		= (unsigned short *)Next; Next += 0x000800;
-	RamTxt		= (unsigned short *)Next; Next += 0x000800;
+	RamFg		= (UINT16 *)Next; Next += 0x000800;
+	RamBg		= (UINT16 *)Next; Next += 0x000800;
+	RamTxt		= (UINT16 *)Next; Next += 0x000800;
 
 	RamPal		= Next; Next += 0x001000;
 	RamScroll	= Next; Next += 0x000008;
 
 	RamEnd		= Next;
 
-	RamCurPal	= (unsigned short *) Next; Next += 0x001000;
+	RamCurPal	= (UINT16 *) Next; Next += 0x001000;
 	
 	MemEnd		= Next;
 	return 0;
 }
 
-void decode_gfx_1(unsigned char * dst, unsigned char * src)
+void decode_gfx_1(UINT8 * dst, UINT8 * src)
 {
-	for(int i=0;i<0x10000/32;i++) {
-		for (int j=0;j<8;j++) {
+	for(INT32 i=0;i<0x10000/32;i++) {
+		for (INT32 j=0;j<8;j++) {
 			
 			dst[0] = (((src[0] >> 7) & 1) << 2) | (((src[0] >> 3) & 1) << 3) | (((src[0x8000] >> 7) & 1) << 0) | (((src[0x8000] >> 3) & 1) << 1);
 			dst[1] = (((src[0] >> 6) & 1) << 2) | (((src[0] >> 2) & 1) << 3) | (((src[0x8000] >> 6) & 1) << 0) | (((src[0x8000] >> 2) & 1) << 1);
@@ -663,10 +663,10 @@ void decode_gfx_1(unsigned char * dst, unsigned char * src)
 	}
 }
 
-void decode_gfx_2(unsigned char * dst, unsigned char * src)
+void decode_gfx_2(UINT8 * dst, UINT8 * src)
 {
-	for(int i=0;i<0x80000/128;i++) {
-		for (int j=0;j<16;j++) {
+	for(INT32 i=0;i<0x80000/128;i++) {
+		for (INT32 j=0;j<16;j++) {
 			
 			dst[ 0] = (((src[ 1] >> 7) & 1) << 2) | (((src[ 1] >> 3) & 1) << 3) | (((src[ 0] >> 7) & 1) << 0) | (((src[ 0] >> 3) & 1) << 1);
 			dst[ 1] = (((src[ 1] >> 6) & 1) << 2) | (((src[ 1] >> 2) & 1) << 3) | (((src[ 0] >> 6) & 1) << 0) | (((src[ 0] >> 2) & 1) << 1);
@@ -696,11 +696,11 @@ void decode_gfx_2(unsigned char * dst, unsigned char * src)
 
 static void common_decrypt()
 {
-	unsigned char *RAM = RomV30A;
-	int i;
-	unsigned char a;
+	UINT8 *RAM = RomV30A;
+	INT32 i;
+	UINT8 a;
 
-	static const unsigned char xor_table[4][16]={
+	static const UINT8 xor_table[4][16]={
 	  {0xF1,0xF9,0xF5,0xFD,0xF1,0xF1,0x3D,0x3D,0x73,0xFB,0x77,0xFF,0x73,0xF3,0x3F,0x3F},   // rom 3
 	  {0xDF,0xFF,0xFF,0xFF,0xDB,0xFF,0xFB,0xFF,0xFF,0xFF,0xFF,0xFF,0xFB,0xFF,0xFB,0xFF},   // rom 4
 	  {0x7F,0x7F,0xBB,0x77,0x77,0x77,0xBE,0xF6,0x7F,0x7F,0xBB,0x77,0x77,0x77,0xBE,0xF6},   // rom 5
@@ -758,7 +758,7 @@ static void common_decrypt()
 		 (BIT(val,B1) << 1) | \
 		 (BIT(val,B0) << 0))
 
-static unsigned char decrypt_data(int a,unsigned char src)
+static UINT8 decrypt_data(INT32 a,UINT8 src)
 {
 	if ( BIT(a,9)  &  BIT(a,8))             src ^= 0x80;
 	if ( BIT(a,11) &  BIT(a,4) &  BIT(a,1)) src ^= 0x40;
@@ -772,7 +772,7 @@ static unsigned char decrypt_data(int a,unsigned char src)
 	return src;
 }
 
-static unsigned char decrypt_opcode(int a,unsigned char src)
+static UINT8 decrypt_opcode(INT32 a,UINT8 src)
 {
 	if ( BIT(a,9)  &  BIT(a,8))             src ^= 0x80;
 	if ( BIT(a,11) &  BIT(a,4) &  BIT(a,1)) src ^= 0x40;
@@ -793,16 +793,16 @@ static unsigned char decrypt_opcode(int a,unsigned char src)
 
 void seibu_sound_decrypt()
 {
-	for (int i=0; i<0x10000;i++) {
-		unsigned char src = RomZ80[i];
+	for (INT32 i=0; i<0x10000;i++) {
+		UINT8 src = RomZ80[i];
 		RomZ80[i+0x00000] = decrypt_data(i,src);
 		RomZ80[i+0x10000] = decrypt_opcode(i,src);
 	}
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nRet;
+	INT32 nRet;
 
 	if ( strcmp(BurnDrvGetTextA(DRV_NAME), "raiden") == 0 )
 		game_drv = GAME_RAIDEN;
@@ -820,8 +820,8 @@ static int DrvInit()
 	
 	Mem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();	
 	
@@ -841,7 +841,7 @@ static int DrvInit()
 	if (game_drv == GAME_RAIDENA || game_drv == GAME_RAIDENT) 
 		seibu_sound_decrypt();
 
-	unsigned char * tmp = (unsigned char *) malloc (0x80000);
+	UINT8 * tmp = (UINT8 *) malloc (0x80000);
 	if (tmp == 0) return 1;
 	
 	BurnLoadRom(tmp + 0x00000,  7, 1);
@@ -875,7 +875,7 @@ static int DrvInit()
 		VezMapArea(0x07000, 0x07fff, 0, RamSpr);			// Sprites
 		VezMapArea(0x07000, 0x07fff, 1, RamSpr);
 
-		VezMapArea(0x0c000, 0x0c7ff, 1, (unsigned char *)RamTxt);
+		VezMapArea(0x0c000, 0x0c7ff, 1, (UINT8 *)RamTxt);
 		
 		VezMapArea(0xA0000, 0xFFFFF, 0, RomV30A);			// CPU 0 ROM
 		VezMapArea(0xA0000, 0xFFFFF, 2, RomV30A);			// CPU 0 ROM
@@ -900,11 +900,11 @@ static int DrvInit()
 		VezMapArea(0x00000, 0x01fff, 0, RamV30B);			// RAM
 		VezMapArea(0x00000, 0x01fff, 1, RamV30B);
 
-		VezMapArea(0x02000, 0x027ff, 0, (unsigned char *)RamBg);				// Background
-		VezMapArea(0x02000, 0x027ff, 1, (unsigned char *)RamBg);
+		VezMapArea(0x02000, 0x027ff, 0, (UINT8 *)RamBg);				// Background
+		VezMapArea(0x02000, 0x027ff, 1, (UINT8 *)RamBg);
 
-		VezMapArea(0x02800, 0x02fff, 0, (unsigned char *)RamFg);				// Foreground
-		VezMapArea(0x02800, 0x02fff, 1, (unsigned char *)RamFg);
+		VezMapArea(0x02800, 0x02fff, 0, (UINT8 *)RamFg);				// Foreground
+		VezMapArea(0x02800, 0x02fff, 1, (UINT8 *)RamFg);
 
 		VezMapArea(0x03000, 0x03fff, 0, RamPal);			// Palette
 		//VezMapArea(0x03000, 0x03fff, 1, RamPal);
@@ -956,7 +956,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	MSM6295Exit(0);
 	BurnYM3812Exit();
@@ -975,8 +975,8 @@ static int DrvExit()
 static void drawBackground()
 {
 	/* cccc tttt tttt tttt */
-	unsigned short * pal = RamCurPal + 0;
-	int offs, mx, my, x, y, sx, sy;
+	UINT16 * pal = RamCurPal + 0;
+	INT32 offs, mx, my, x, y, sx, sy;
 	
 	if (game_drv == GAME_RAIDEN) {
 		sx = (RamScroll[0] | (RamScroll[1] << 8)) & 0x1ff;
@@ -1003,14 +1003,14 @@ static void drawBackground()
 		
 		if (x<=-16 || x>=256 || y<=-16 || y>=224) continue;
 		else {
-			unsigned int tileno = RamBg[offs] & 0x0FFF;
+			UINT32 tileno = RamBg[offs] & 0x0FFF;
 			//if (tileno == 0) continue;
- 			unsigned int c = (RamBg[offs] & 0xF000) >> 8;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 256 + x;
-			unsigned char *d = RomGfx2 + (tileno << 8);
+ 			UINT32 c = (RamBg[offs] & 0xF000) >> 8;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 256 + x;
+			UINT8 *d = RomGfx2 + (tileno << 8);
 			
 			if (x<0 || x>(256-16) || y<0 || y>(224-16))
-				for (int k=0;k<16;k++) {
+				for (INT32 k=0;k<16;k++) {
 					if ((y+k)>=0 && (y+k)<224) {
 		 				if ((x+ 0)>=0 && (x+ 0)<256) p[ 0] = pal[d[ 0]|c];
 		 				if ((x+ 1)>=0 && (x+ 1)<256) p[ 1] = pal[d[ 1]|c];
@@ -1033,7 +1033,7 @@ static void drawBackground()
 	 				p += 256;
 	 			}
 			else 
-				for (int k=0;k<16;k++) {
+				for (INT32 k=0;k<16;k++) {
 	 				p[ 0] = pal[d[ 0]|c];
 	 				p[ 1] = pal[d[ 1]|c];
 	 				p[ 2] = pal[d[ 2]|c];
@@ -1061,8 +1061,8 @@ static void drawBackground()
 static void drawForeground()
 {
 	/* cccc tttt tttt tttt */
-	unsigned short * pal = RamCurPal + 256;
-	int offs, mx, my, x, y, sx, sy;
+	UINT16 * pal = RamCurPal + 256;
+	INT32 offs, mx, my, x, y, sx, sy;
 
 	if (game_drv == GAME_RAIDEN) {
 		sx = (RamScroll[4] | (RamScroll[5] << 8)) & 0x1ff;
@@ -1089,14 +1089,14 @@ static void drawForeground()
 		
 		if (x<=-16 || x>=256 || y<=-16 || y>=224) continue;
 		else {
-			unsigned int tileno = RamFg[offs] & 0x0FFF;
+			UINT32 tileno = RamFg[offs] & 0x0FFF;
 			if (tileno == 0) continue;
- 			unsigned int c = (RamFg[offs] & 0xF000) >> 8;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 256 + x;
-			unsigned char *d = RomGfx3 + (tileno << 8);
+ 			UINT32 c = (RamFg[offs] & 0xF000) >> 8;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 256 + x;
+			UINT8 *d = RomGfx3 + (tileno << 8);
 			
 			if (x<0 || x>(256-16) || y<0 || y>(224-16))
-				for (int k=0;k<16;k++) {
+				for (INT32 k=0;k<16;k++) {
 					if ((y+k)>=0 && (y+k)<224) {
 		 				if (d[ 0]!=15 && (x+ 0)>=0 && (x+ 0)<256) p[ 0] = pal[d[ 0]|c];
 		 				if (d[ 1]!=15 && (x+ 1)>=0 && (x+ 1)<256) p[ 1] = pal[d[ 1]|c];
@@ -1119,7 +1119,7 @@ static void drawForeground()
 	 				p += 256;
 	 			}
 			else 
-				for (int k=0;k<16;k++) {
+				for (INT32 k=0;k<16;k++) {
 	 				if (d[ 0] != 15) p[ 0] = pal[d[ 0]|c];
 	 				if (d[ 1] != 15) p[ 1] = pal[d[ 1]|c];
 	 				if (d[ 2] != 15) p[ 2] = pal[d[ 2]|c];
@@ -1144,31 +1144,31 @@ static void drawForeground()
 	}
 }
 
-static void drawSprites(int pri)
+static void drawSprites(INT32 pri)
 {
 	/* yyyyyyyy -ff-CCCC tttttttt ----TTTT xxxxxxxx PP-----X -------- EEEEEEEE */
-	unsigned short * pal = RamCurPal + 512;
+	UINT16 * pal = RamCurPal + 512;
 	
-	for(unsigned char * pSpr = RamSpr + 0x1000 - 8; pSpr>=RamSpr; pSpr-=8 ) {
+	for(UINT8 * pSpr = RamSpr + 0x1000 - 8; pSpr>=RamSpr; pSpr-=8 ) {
 		
 		if (pSpr[7]!=0xf) continue;
 		if (!(pri & pSpr[5])) continue;
 
-		int fx= pSpr[1] & 0x20;
-		int fy= pSpr[1] & 0x40;
-		int y = pSpr[0] - 16;
-		int x = pSpr[4];
+		INT32 fx= pSpr[1] & 0x20;
+		INT32 fy= pSpr[1] & 0x40;
+		INT32 y = pSpr[0] - 16;
+		INT32 x = pSpr[4];
 
 		if (pSpr[5]&1) x = 0 - (0x100-x);
 
-		int c = (pSpr[1] & 0xf) << 4;
-		int sprite = (pSpr[2] | (pSpr[3] << 8)) & 0x0fff;
+		INT32 c = (pSpr[1] & 0xf) << 4;
+		INT32 sprite = (pSpr[2] | (pSpr[3] << 8)) & 0x0fff;
 		
 		if (x<=-16 || x>=256 || y<=-16 || y>=224) continue;
 		else {
 			
-			unsigned char *d = RomGfx4 + (sprite << 8);
- 			unsigned short * p = (unsigned short *) pBurnDraw ;
+			UINT8 *d = RomGfx4 + (sprite << 8);
+ 			UINT16 * p = (UINT16 *) pBurnDraw ;
 			p += y * 256 + x;
 			
 			if (x<0 || x>(256-16) || y<0 || y>(224-16)) {
@@ -1178,7 +1178,7 @@ static void drawSprites(int pri)
 					p += 256 * 15;
 					
 					if ( fx )
-						for (int k=15;k>=0;k--) {
+						for (INT32 k=15;k>=0;k--) {
 							if ((y+k)>=0 && (y+k)<224) {
 				 				if (d[15]!=15 && (x+ 0)>=0 && (x+ 0)<256) p[ 0] = pal[d[15]|c];
 				 				if (d[14]!=15 && (x+ 1)>=0 && (x+ 1)<256) p[ 1] = pal[d[14]|c];
@@ -1201,7 +1201,7 @@ static void drawSprites(int pri)
 			 				p -= 256;
 			 			}
 					else
-						for (int k=15;k>=0;k--) {
+						for (INT32 k=15;k>=0;k--) {
 							if ((y+k)>=0 && (y+k)<224) {
 				 				if (d[ 0]!=15 && (x+ 0)>=0 && (x+ 0)<256) p[ 0] = pal[d[ 0]|c];
 				 				if (d[ 1]!=15 && (x+ 1)>=0 && (x+ 1)<256) p[ 1] = pal[d[ 1]|c];
@@ -1227,7 +1227,7 @@ static void drawSprites(int pri)
 				} else {
 
 					if ( fx )
-						for (int k=0;k<16;k++) {
+						for (INT32 k=0;k<16;k++) {
 							if ((y+k)>=0 && (y+k)<224) {
 				 				if (d[15]!=15 && (x+ 0)>=0 && (x+ 0)<256) p[ 0] = pal[d[15]|c];
 				 				if (d[14]!=15 && (x+ 1)>=0 && (x+ 1)<256) p[ 1] = pal[d[14]|c];
@@ -1250,7 +1250,7 @@ static void drawSprites(int pri)
 			 				p += 256;
 			 			}
 					else
-						for (int k=0;k<16;k++) {
+						for (INT32 k=0;k<16;k++) {
 							if ((y+k)>=0 && (y+k)<224) {
 				 				if (d[ 0]!=15 && (x+ 0)>=0 && (x+ 0)<256) p[ 0] = pal[d[ 0]|c];
 				 				if (d[ 1]!=15 && (x+ 1)>=0 && (x+ 1)<256) p[ 1] = pal[d[ 1]|c];
@@ -1282,7 +1282,7 @@ static void drawSprites(int pri)
 					
 					if ( fx ) {
 					
-						for (int k=15;k>=0;k--) {
+						for (INT32 k=15;k>=0;k--) {
 			 				if (d[15] != 15) p[ 0] = pal[d[15]|c];
 			 				if (d[14] != 15) p[ 1] = pal[d[14]|c];
 			 				if (d[13] != 15) p[ 2] = pal[d[13]|c];
@@ -1306,7 +1306,7 @@ static void drawSprites(int pri)
 			 			
 		 			} else {
 		 				
-						for (int k=15;k>=0;k--) {
+						for (INT32 k=15;k>=0;k--) {
 			 				if (d[ 0] != 15) p[ 0] = pal[d[ 0]|c];
 			 				if (d[ 1] != 15) p[ 1] = pal[d[ 1]|c];
 			 				if (d[ 2] != 15) p[ 2] = pal[d[ 2]|c];
@@ -1334,7 +1334,7 @@ static void drawSprites(int pri)
 				
 					if ( fx ) {
 					
-						for (int k=0;k<16;k++) {
+						for (INT32 k=0;k<16;k++) {
 			 				if (d[15] != 15) p[ 0] = pal[d[15]|c];
 			 				if (d[14] != 15) p[ 1] = pal[d[14]|c];
 			 				if (d[13] != 15) p[ 2] = pal[d[13]|c];
@@ -1358,7 +1358,7 @@ static void drawSprites(int pri)
 			 			
 		 			} else {
 		 				
-						for (int k=0;k<16;k++) {
+						for (INT32 k=0;k<16;k++) {
 			 				if (d[ 0] != 15) p[ 0] = pal[d[ 0]|c];
 			 				if (d[ 1] != 15) p[ 1] = pal[d[ 1]|c];
 			 				if (d[ 2] != 15) p[ 2] = pal[d[ 2]|c];
@@ -1393,8 +1393,8 @@ static void drawSprites(int pri)
 static void drawText()
 {
 	/* TT-- cccc  tttt tttt */
-	unsigned short * pal = RamCurPal + 768;
-	int offs, mx, my, x, y;
+	UINT16 * pal = RamCurPal + 768;
+	INT32 offs, mx, my, x, y;
 
 	mx = 0;
 	my = -1;
@@ -1409,13 +1409,13 @@ static void drawText()
 		
 		if ( y<0 || y>=224) continue;
 		else {
-			unsigned int tileno = (RamTxt[offs] & 0x00FF) | ((RamTxt[offs] & 0xC000) >> 6);
+			UINT32 tileno = (RamTxt[offs] & 0x00FF) | ((RamTxt[offs] & 0xC000) >> 6);
 			if (tileno == 0) continue;
- 			unsigned int c = (RamTxt[offs] & 0x0F00) >> 4;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 256 + x;
-			unsigned char *d = RomGfx1 + (tileno << 6);
+ 			UINT32 c = (RamTxt[offs] & 0x0F00) >> 4;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 256 + x;
+			UINT8 *d = RomGfx1 + (tileno << 6);
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
  				if (d[0] != 15) p[0] = pal[d[0]|c];
  				if (d[1] != 15) p[1] = pal[d[1]|c];
  				if (d[2] != 15) p[2] = pal[d[2]|c];
@@ -1434,8 +1434,8 @@ static void drawText()
 static void drawTextAlt()
 {
 	/* TT-- cccc  tttt tttt */
-	unsigned short * pal = RamCurPal + 768;
-	int offs, mx, my, x, y;
+	UINT16 * pal = RamCurPal + 768;
+	INT32 offs, mx, my, x, y;
 
 	mx = -1;
 	my = 0;
@@ -1450,13 +1450,13 @@ static void drawTextAlt()
 		
 		if ( y<0 || y>=224) continue;
 		else {
-			unsigned int tileno = (RamTxt[offs] & 0x00FF) | ((RamTxt[offs] & 0xC000) >> 6);
+			UINT32 tileno = (RamTxt[offs] & 0x00FF) | ((RamTxt[offs] & 0xC000) >> 6);
 			if (tileno == 0) continue;
- 			unsigned int c = (RamTxt[offs] & 0x0F00) >> 4;
- 			unsigned short * p = (unsigned short *) pBurnDraw + y * 256 + x;
-			unsigned char *d = RomGfx1 + (tileno << 6);
+ 			UINT32 c = (RamTxt[offs] & 0x0F00) >> 4;
+ 			UINT16 * p = (UINT16 *) pBurnDraw + y * 256 + x;
+			UINT8 *d = RomGfx1 + (tileno << 6);
 			
-			for (int k=0;k<8;k++) {
+			for (INT32 k=0;k<8;k++) {
  				if (d[0] != 15) p[0] = pal[d[0]|c];
  				if (d[1] != 15) p[1] = pal[d[1]|c];
  				if (d[2] != 15) p[2] = pal[d[2]|c];
@@ -1481,12 +1481,12 @@ static void DrvDraw()
 	drawText();
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) DrvDoReset();
 	
 	if (bRecalcPalette) {
-		for (int i=0;i<(0x1000/2);i++)
+		for (INT32 i=0;i<(0x1000/2);i++)
 			RamCurPal[i] = CalcCol(i << 1);
 		bRecalcPalette = 0;
 	}
@@ -1494,7 +1494,7 @@ static int DrvFrame()
 	DrvInput[0] = 0x00;	// Buttons
 	DrvInput[1] = 0x00;	// Joy1
 	DrvInput[2] = 0x00;	// Joy2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvButton[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[2] |= (DrvJoy2[i] & 1) << i;
@@ -1503,7 +1503,7 @@ static int DrvFrame()
 	VezNewFrame();
 	ZetNewFrame();
 	
-	for (int i=0; i<200; i++) {
+	for (INT32 i=0; i<200; i++) {
 		VezOpen(0);
 		VezRun(10000000 / 60 / 200);
 		VezOpen(1);
@@ -1544,12 +1544,12 @@ static void DrvDrawAlt()
 	drawTextAlt();
 }
 
-static int DrvFrameAlt()
+static INT32 DrvFrameAlt()
 {
 	if (DrvReset) DrvDoReset();
 	
 	if (bRecalcPalette) {
-		for (int i=0;i<(0x1000/2);i++)
+		for (INT32 i=0;i<(0x1000/2);i++)
 			RamCurPal[i] = CalcCol(i << 1);
 		bRecalcPalette = 0;
 	}
@@ -1557,7 +1557,7 @@ static int DrvFrameAlt()
 	DrvInput[0] = 0x00;	// Buttons
 	DrvInput[1] = 0x00;	// Joy1
 	DrvInput[2] = 0x00;	// Joy2
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvButton[i] & 1) << i;
 		DrvInput[1] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[2] |= (DrvJoy2[i] & 1) << i;
@@ -1566,7 +1566,7 @@ static int DrvFrameAlt()
 	VezNewFrame();
 	ZetNewFrame();
 	
-	for (int i=0; i<120; i++) {
+	for (INT32 i=0; i<120; i++) {
 		VezOpen(0);
 		VezRun(10000000 / 60 / 120);
 		VezOpen(1);
@@ -1595,7 +1595,7 @@ static int DrvFrameAlt()
 	return 0;	
 }
 
-static int DrvScan(int nAction,int *pnMin)
+static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 {
 	if ( pnMin ) *pnMin =  0x029671;
 	
@@ -1620,7 +1620,7 @@ static int DrvScan(int nAction,int *pnMin)
 		BurnYM3812Scan(nAction, pnMin);
 		MSM6295Scan(0, nAction);
 
-		int cbank;
+		INT32 cbank;
 		if (nAction & ACB_WRITE) {
 			SCAN_VAR(cbank);
 			set_seibu_bank(cbank);

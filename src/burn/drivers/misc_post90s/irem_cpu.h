@@ -1,4 +1,3 @@
-
 extern const UINT8 gunforce_decryption_table[];
 extern const UINT8 bomberman_decryption_table[];
 extern const UINT8 lethalth_decryption_table[];
@@ -16,4 +15,4 @@ extern const UINT8 matchit2_decryption_table[];
 
 extern const UINT8 test_decryption_table[];
 
-extern void irem_cpu_decrypt(int cpu,const UINT8 *decryption_table, UINT8 *src,UINT8 *dest, int size);
+extern void irem_cpu_decrypt(INT32 cpu,const UINT8 *decryption_table, UINT8 *src,UINT8 *dest, INT32 size);

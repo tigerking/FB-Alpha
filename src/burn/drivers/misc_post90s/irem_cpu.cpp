@@ -648,9 +648,9 @@ const UINT8 test_decryption_table[256] = {
 };
 
 
-void irem_cpu_decrypt(int /*cpu*/,const UINT8 *decryption_table, UINT8 *src, UINT8 *dest, int size)
+void irem_cpu_decrypt(INT32 /*cpu*/,const UINT8 *decryption_table, UINT8 *src, UINT8 *dest, INT32 size)
 {
-	for (int A = 0;A < size;A++)
+	for (INT32 A = 0;A < size;A++)
 	{
 		dest[A] = decryption_table[src[A]];
 	}

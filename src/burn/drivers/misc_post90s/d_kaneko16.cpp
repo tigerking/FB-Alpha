@@ -13,55 +13,55 @@ extern "C" {
 Driver Variables
 ===============================================================================================*/
 
-static unsigned char Kaneko16InputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char Kaneko16InputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char Kaneko16InputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char Kaneko16InputPort3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char Kaneko16Dip[2]        = {0, 0};
-static unsigned char Kaneko16Input[4]      = {0x00, 0x00, 0x00, 0x00};
-static unsigned char Kaneko16Reset         = 0;
+static UINT8 Kaneko16InputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 Kaneko16InputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 Kaneko16InputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 Kaneko16InputPort3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 Kaneko16Dip[2]        = {0, 0};
+static UINT8 Kaneko16Input[4]      = {0x00, 0x00, 0x00, 0x00};
+static UINT8 Kaneko16Reset         = 0;
 
-static unsigned char *Mem                  = NULL;
-static unsigned char *MemEnd               = NULL;
-static unsigned char *RamStart             = NULL;
-static unsigned char *RamEnd               = NULL;
-static unsigned char *Kaneko16Rom          = NULL;
-static unsigned char *Kaneko16Z80Rom       = NULL;
-static unsigned char *MSM6295ROMData       = NULL;
-static unsigned char *MSM6295ROMData2      = NULL;
-static unsigned char *Kaneko16Ram          = NULL;
-static unsigned char *Kaneko16Z80Ram       = NULL;
-static unsigned char *Kaneko16MCURam       = NULL;
-static unsigned char *Kaneko16NVRam        = NULL;
-static unsigned char *Kaneko16PaletteRam   = NULL;
-static unsigned char *Kaneko16SpriteRam    = NULL;
-static unsigned char *Kaneko16Video0Ram    = NULL;
-static unsigned char *Kaneko16Video1Ram    = NULL;
-static unsigned char *Kaneko16Video2Ram    = NULL;
-static unsigned char *Kaneko16Video3Ram    = NULL;
-static unsigned char *Kaneko16VScrl0Ram    = NULL;
-static unsigned char *Kaneko16VScrl1Ram    = NULL;
-static unsigned char *Kaneko16VScrl2Ram    = NULL;
-static unsigned char *Kaneko16VScrl3Ram    = NULL;
-static unsigned int  *Kaneko16Palette      = NULL;
-static unsigned char *Kaneko16Tiles        = NULL;
-static unsigned char *Kaneko16Tiles2       = NULL;
-static unsigned char *Kaneko16Sprites      = NULL;
-static unsigned char *Kaneko16TempGfx      = NULL;
+static UINT8 *Mem                  = NULL;
+static UINT8 *MemEnd               = NULL;
+static UINT8 *RamStart             = NULL;
+static UINT8 *RamEnd               = NULL;
+static UINT8 *Kaneko16Rom          = NULL;
+static UINT8 *Kaneko16Z80Rom       = NULL;
+static UINT8 *MSM6295ROMData       = NULL;
+static UINT8 *MSM6295ROMData2      = NULL;
+static UINT8 *Kaneko16Ram          = NULL;
+static UINT8 *Kaneko16Z80Ram       = NULL;
+static UINT8 *Kaneko16MCURam       = NULL;
+static UINT8 *Kaneko16NVRam        = NULL;
+static UINT8 *Kaneko16PaletteRam   = NULL;
+static UINT8 *Kaneko16SpriteRam    = NULL;
+static UINT8 *Kaneko16Video0Ram    = NULL;
+static UINT8 *Kaneko16Video1Ram    = NULL;
+static UINT8 *Kaneko16Video2Ram    = NULL;
+static UINT8 *Kaneko16Video3Ram    = NULL;
+static UINT8 *Kaneko16VScrl0Ram    = NULL;
+static UINT8 *Kaneko16VScrl1Ram    = NULL;
+static UINT8 *Kaneko16VScrl2Ram    = NULL;
+static UINT8 *Kaneko16VScrl3Ram    = NULL;
+static UINT32  *Kaneko16Palette      = NULL;
+static UINT8 *Kaneko16Tiles        = NULL;
+static UINT8 *Kaneko16Tiles2       = NULL;
+static UINT8 *Kaneko16Sprites      = NULL;
+static UINT8 *Kaneko16TempGfx      = NULL;
 
-static short* pFMBuffer;
-static short* pAY8910Buffer[6];
+static INT16* pFMBuffer;
+static INT16* pAY8910Buffer[6];
 
-static unsigned int Kaneko16SoundLatch;
-static int MSM6295Bank0;
-static int MSM6295Bank1;
+static UINT32 Kaneko16SoundLatch;
+static INT32 MSM6295Bank0;
+static INT32 MSM6295Bank1;
 
 static UINT16 ToyboxMCUCom[4];
 
 static UINT16 Kaneko16Bg15Reg;
 static UINT16 Kaneko16Bg15Select;
-static unsigned short *Kaneko16Bg15Data = NULL;
-static unsigned char Kaneko16RecalcBg15Palette;
+static UINT16 *Kaneko16Bg15Data = NULL;
+static UINT8 Kaneko16RecalcBg15Palette;
 
 static UINT16 Kaneko16SpriteFlipX;
 static UINT16 Kaneko16SpriteFlipY;
@@ -72,28 +72,28 @@ static UINT32 Kaneko16SpritesColourOffset;
 static UINT32 Kaneko16LayersColourOffset;
 static UINT32 Kaneko16SpritesColourMask;
 static UINT16 Kaneko16DisplayEnable;
-static int Kaneko16TilesXOffset;
-static int Kaneko16TilesYOffset;
-static int Kaneko16SpriteXOffset;
+static INT32 Kaneko16TilesXOffset;
+static INT32 Kaneko16TilesYOffset;
+static INT32 Kaneko16SpriteXOffset;
 
 static UINT32 *LayerQueueXY[4];
 static UINT32 *LayerQueueColour[4];
-static unsigned char *LayerQueuePriority[4];
-static int LayerQueueSize[4];
+static UINT8 *LayerQueuePriority[4];
+static INT32 LayerQueueSize[4];
 
-static int Kaneko16NumTiles;
-static int Kaneko16NumTiles2;
-static int Kaneko16NumSprites;
-static int Kaneko16SpriteRamSize;
+static INT32 Kaneko16NumTiles;
+static INT32 Kaneko16NumTiles2;
+static INT32 Kaneko16NumSprites;
+static INT32 Kaneko16SpriteRamSize;
 
 // Flags
-static int Kaneko168BppSprites;
-static int Kaneko16Eeprom;
-static int Kaneko16Bg15;
-static int Gtmr;
-static int Bloodwar;
-static int Bonkadv;
-static int Mgcrystl;
+static INT32 Kaneko168BppSprites;
+static INT32 Kaneko16Eeprom;
+static INT32 Kaneko16Bg15;
+static INT32 Gtmr;
+static INT32 Bloodwar;
+static INT32 Bonkadv;
+static INT32 Mgcrystl;
 
 typedef void (*MCURun)();
 MCURun ToyboxMCURun;
@@ -107,23 +107,23 @@ void ExplbrkrFrameRender();
 void GtmrFrameRender();
 void MgcrystlFrameRender();
 
-typedef int (*ParseSprite)(int, struct tempsprite*);
+typedef INT32 (*ParseSprite)(INT32, struct tempsprite*);
 ParseSprite Kaneko16ParseSprite;
-static int Kaneko16ParseSpriteType0(int i, struct tempsprite *s);
-static int Kaneko16ParseSpriteType1(int i, struct tempsprite *s);
-static int Kaneko16ParseSpriteType2(int i, struct tempsprite *s);
+static INT32 Kaneko16ParseSpriteType0(INT32 i, struct tempsprite *s);
+static INT32 Kaneko16ParseSpriteType1(INT32 i, struct tempsprite *s);
+static INT32 Kaneko16ParseSpriteType2(INT32 i, struct tempsprite *s);
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
-static int nSoundBufferPos;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
+static INT32 nSoundBufferPos;
 
 struct tempsprite
 {
-	int code,color;
-	int x,y;
-	int xoffs,yoffs;
-	int flipx,flipy;
-	int priority;
+	INT32 code,color;
+	INT32 x,y;
+	INT32 xoffs,yoffs;
+	INT32 flipx,flipy;
+	INT32 priority;
 };
 
 static struct
@@ -343,7 +343,7 @@ static struct BurnInputInfo MgcrystlInputList[] = {
 
 STDINPUTINFO(Mgcrystl)
 
-inline void Kaneko16ClearOpposites(unsigned char* nJoystickInputs)
+inline void Kaneko16ClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -359,7 +359,7 @@ inline void Kaneko16MakeInputs()
 	Kaneko16Input[0] = Kaneko16Input[1] = Kaneko16Input[2] = Kaneko16Input[3] = 0x00;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		Kaneko16Input[0] |= (Kaneko16InputPort0[i] & 1) << i;
 		Kaneko16Input[1] |= (Kaneko16InputPort1[i] & 1) << i;
 		Kaneko16Input[2] |= (Kaneko16InputPort2[i] & 1) << i;
@@ -1130,14 +1130,14 @@ Graphics Decoding
 
 static void Kaneko16DecodeBg15Bitmaps()
 {
-	int sx, x, y;
+	INT32 sx, x, y;
 	
 	for (sx = 0; sx < 32; sx++) {
 		for (x = 0; x < 256; x++) {
 			for (y = 0; y < 256; y++) {
-				int addr = (sx * 256 * 256) + (y * 256) + x;
-				int data = (Kaneko16TempGfx[addr * 2 + 0] * 256) + Kaneko16TempGfx[addr * 2 + 1];
-				int r, g, b;
+				INT32 addr = (sx * 256 * 256) + (y * 256) + x;
+				INT32 data = (Kaneko16TempGfx[addr * 2 + 0] * 256) + Kaneko16TempGfx[addr * 2 + 1];
+				INT32 r, g, b;
 				
 				r = (data & 0x07c0) >> 6;
 				g = (data & 0xf800) >> 11;
@@ -1164,10 +1164,10 @@ static void Kaneko16DecodeBg15Bitmaps()
 Unscramble Tile/Sound ROM Functions
 ===============================================================================================*/
 
-static void UnscrambleTiles(int length)
+static void UnscrambleTiles(INT32 length)
 {
 	UINT8 *RAM = Kaneko16TempGfx;
-	int i;
+	INT32 i;
 
 	if (RAM == NULL) return;
 
@@ -1179,7 +1179,7 @@ static void UnscrambleTiles(int length)
 
 static void ExpandSampleBanks()
 {
-	int bank;
+	INT32 bank;
 
 	for (bank = 15; bank > 0; bank--)
 	{
@@ -1196,9 +1196,9 @@ static void ExpandSampleBanks()
 Allocate Memory
 ===============================================================================================*/
 
-static int GtmrMemIndex()
+static INT32 GtmrMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Kaneko16Rom           = Next; Next += 0x100000;
 	MSM6295ROM            = Next; Next += 0x140000;
@@ -1240,15 +1240,15 @@ static int GtmrMemIndex()
 		LayerQueuePriority[2] = Next; Next += nScreenWidth * nScreenHeight;
 		LayerQueuePriority[3] = Next; Next += nScreenWidth * nScreenHeight;
 	}
-	Kaneko16Palette       = (unsigned int*)Next; Next += 0x010000 * sizeof(unsigned int);
+	Kaneko16Palette       = (UINT32*)Next; Next += 0x010000 * sizeof(UINT32);
 	MemEnd = Next;
 
 	return 0;
 }
 
-static int ExplbrkrMemIndex()
+static INT32 ExplbrkrMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Kaneko16Rom           = Next; Next += 0x080000;
 	MSM6295ROM            = Next; Next += 0x040000;
@@ -1289,19 +1289,19 @@ static int ExplbrkrMemIndex()
 	}
 	pFMBuffer             = (short*)Next; Next += nBurnSoundLen * 6 * sizeof(short);
 	if (Kaneko16Bg15) {
-		Kaneko16Bg15Data     = (unsigned short*)Next; Next += (32 * 256 * 256) * sizeof(unsigned short); // 32 bitmaps - 256 x 256
-		Kaneko16Palette      = (unsigned int*)Next; Next += (0x001000 + 32768) * sizeof(unsigned int);
+		Kaneko16Bg15Data     = (UINT16*)Next; Next += (32 * 256 * 256) * sizeof(UINT16); // 32 bitmaps - 256 x 256
+		Kaneko16Palette      = (UINT32*)Next; Next += (0x001000 + 32768) * sizeof(UINT32);
 	} else {
-		Kaneko16Palette      = (unsigned int*)Next; Next += 0x001000 * sizeof(unsigned int);
+		Kaneko16Palette      = (UINT32*)Next; Next += 0x001000 * sizeof(UINT32);
 	}
 	MemEnd = Next;
 
 	return 0;
 }
 
-static int BlazeonMemIndex()
+static INT32 BlazeonMemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Kaneko16Rom           = Next; Next += 0x080000;
 	Kaneko16Z80Rom        = Next; Next += 0x020000;
@@ -1327,7 +1327,7 @@ static int BlazeonMemIndex()
 	LayerQueueColour[1]   = (UINT32*)Next; Next += nScreenWidth * nScreenHeight * sizeof(UINT32);
 	LayerQueuePriority[0] = Next; Next += nScreenWidth * nScreenHeight;
 	LayerQueuePriority[1] = Next; Next += nScreenWidth * nScreenHeight;
-	Kaneko16Palette       = (unsigned int*)Next; Next += 0x001000 * sizeof(unsigned int);
+	Kaneko16Palette       = (UINT32*)Next; Next += 0x001000 * sizeof(UINT32);
 
 	MemEnd = Next;
 
@@ -1376,7 +1376,7 @@ INT16 calc_compute_y(void)
 	return y_coll;
 }
 
-static UINT16 BloodwarCalcRead(int offset)
+static UINT16 BloodwarCalcRead(INT32 offset)
 {
 	UINT16 data = 0;
 	INT16 x_coll, y_coll;
@@ -1433,7 +1433,7 @@ static UINT16 BloodwarCalcRead(int offset)
 	return 0;
 }
 
-static UINT16 BonkadvCalcRead(int offset)
+static UINT16 BonkadvCalcRead(INT32 offset)
 {
 	UINT16 data = 0;
 
@@ -1481,7 +1481,7 @@ static UINT16 BonkadvCalcRead(int offset)
 	return 0;
 }
 
-static void BloodwarCalcWrite(int offset, UINT16 data)
+static void BloodwarCalcWrite(INT32 offset, UINT16 data)
 {
 	switch (offset) {
 		case 0x20 >> 1: hit.x1p = data; return;
@@ -1496,7 +1496,7 @@ static void BloodwarCalcWrite(int offset, UINT16 data)
 	}
 }
 
-static void BonkadvCalcWrite(int offset, UINT16 data)
+static void BonkadvCalcWrite(INT32 offset, UINT16 data)
 {
 	switch (offset) {
 		case 0x00 >> 1: hit.x1p = data; return;
@@ -1769,7 +1769,7 @@ static void GtmrevoMCURun()
 	}
 }
 
-static void ToyboxMCUComWrite(int which, UINT16 data)
+static void ToyboxMCUComWrite(INT32 which, UINT16 data)
 {
 	ToyboxMCUCom[which] = data;
 	if (ToyboxMCUCom[0] != 0xffff) return;
@@ -1785,7 +1785,7 @@ static void ToyboxMCUComWrite(int which, UINT16 data)
 Reset Functions
 ===============================================================================================*/
 
-static int Kaneko16DoReset()
+static INT32 Kaneko16DoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -1801,11 +1801,11 @@ static int Kaneko16DoReset()
 	return 0;
 }
 
-static int BerlwallDoReset()
+static INT32 BerlwallDoReset()
 {
-	int nRet = Kaneko16DoReset();
+	INT32 nRet = Kaneko16DoReset();
 	
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		AY8910Reset(i);
 	}
 	
@@ -1818,9 +1818,9 @@ static int BerlwallDoReset()
 	return nRet;
 }
 
-static int BlazeonDoReset()
+static INT32 BlazeonDoReset()
 {
-	int nRet = Kaneko16DoReset();
+	INT32 nRet = Kaneko16DoReset();
 	
 	ZetOpen(0);
 	ZetReset();
@@ -1833,11 +1833,11 @@ static int BlazeonDoReset()
 	return nRet;
 }
 
-static int ExplbrkrDoReset()
+static INT32 ExplbrkrDoReset()
 {
-	int nRet = Kaneko16DoReset();
+	INT32 nRet = Kaneko16DoReset();
 	
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		AY8910Reset(i);
 	}
 	
@@ -1849,9 +1849,9 @@ static int ExplbrkrDoReset()
 	return nRet;
 }
 
-static int GtmrDoReset()
+static INT32 GtmrDoReset()
 {
-	int nRet = Kaneko16DoReset();
+	INT32 nRet = Kaneko16DoReset();
 	
 	MSM6295Reset(0);
 	MSM6295Reset(1);
@@ -1867,7 +1867,7 @@ static int GtmrDoReset()
 Memory Handlers
 ===============================================================================================*/
 
-unsigned char __fastcall BerlwallReadByte(unsigned int a)
+UINT8 __fastcall BerlwallReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x680000: {
@@ -1899,7 +1899,7 @@ unsigned char __fastcall BerlwallReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall BerlwallWriteByte(unsigned int a, unsigned char d)
+void __fastcall BerlwallWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x700000: {
@@ -1935,7 +1935,7 @@ void __fastcall BerlwallWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall BerlwallReadWord(unsigned int a)
+UINT16 __fastcall BerlwallReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x780000: {
@@ -1972,7 +1972,7 @@ unsigned short __fastcall BerlwallReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall BerlwallWriteWord(unsigned int a, unsigned short d)
+void __fastcall BerlwallWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x480000: {
@@ -2044,7 +2044,7 @@ void __fastcall BerlwallWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall BlazeonReadByte(unsigned int a)
+UINT8 __fastcall BlazeonReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xc00000: {
@@ -2084,7 +2084,7 @@ unsigned char __fastcall BlazeonReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall BlazeonWriteByte(unsigned int a, unsigned char d)
+void __fastcall BlazeonWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0xd00000: {
@@ -2106,7 +2106,7 @@ void __fastcall BlazeonWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall BlazeonReadWord(unsigned int a)
+UINT16 __fastcall BlazeonReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0xc00000: {
@@ -2136,7 +2136,7 @@ unsigned short __fastcall BlazeonReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall BlazeonWriteWord(unsigned int a, unsigned short /*d*/)
+void __fastcall BlazeonWriteWord(UINT32 a, UINT16 /*d*/)
 {
 	switch (a) {
 		case 0xd00000: {
@@ -2150,7 +2150,7 @@ void __fastcall BlazeonWriteWord(unsigned int a, unsigned short /*d*/)
 	}
 }
 
-unsigned char __fastcall ExplbrkrReadByte(unsigned int a)
+UINT8 __fastcall ExplbrkrReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x400001: {
@@ -2195,7 +2195,7 @@ unsigned char __fastcall ExplbrkrReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall ExplbrkrWriteByte(unsigned int a, unsigned char d)
+void __fastcall ExplbrkrWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x40000f:
@@ -2236,7 +2236,7 @@ void __fastcall ExplbrkrWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall ExplbrkrReadWord(unsigned int a)
+UINT16 __fastcall ExplbrkrReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0xa00000: {
@@ -2257,7 +2257,7 @@ unsigned short __fastcall ExplbrkrReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall ExplbrkrWriteWord(unsigned int a, unsigned short d)
+void __fastcall ExplbrkrWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x400000:
@@ -2332,7 +2332,7 @@ void __fastcall ExplbrkrWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall MgcrystlReadByte(unsigned int a)
+UINT8 __fastcall MgcrystlReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x400001: {
@@ -2373,7 +2373,7 @@ unsigned char __fastcall MgcrystlReadByte(unsigned int a)
 	return 0;
 }
 
-unsigned char __fastcall GtmrReadByte(unsigned int a)
+UINT8 __fastcall GtmrReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x900014: {
@@ -2410,7 +2410,7 @@ unsigned char __fastcall GtmrReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall GtmrWriteByte(unsigned int a, unsigned char d)
+void __fastcall GtmrWriteByte(UINT32 a, UINT8 d)
 {
 	switch (a) {
 		case 0x600000:
@@ -2473,7 +2473,7 @@ void __fastcall GtmrWriteByte(unsigned int a, unsigned char d)
 		case 0x70001a:
 		case 0x70001c:
 		case 0x70001e: {
-			unsigned int offset = (a - 0x700000) >> 1;
+			UINT32 offset = (a - 0x700000) >> 1;
 			Kaneko16SpriteRegs[offset] = d;
 			if (offset == 0 && (d & 0xff)) {
 				Kaneko16SpriteFlipX = d & 2;
@@ -2503,7 +2503,7 @@ void __fastcall GtmrWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall GtmrReadWord(unsigned int a)
+UINT16 __fastcall GtmrReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x800000: {
@@ -2582,7 +2582,7 @@ unsigned short __fastcall GtmrReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall GtmrWriteWord(unsigned int a, unsigned short d)
+void __fastcall GtmrWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x2a0000: {
@@ -2696,7 +2696,7 @@ void __fastcall GtmrWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall Kaneko16Z80PortRead(unsigned short a)
+UINT8 __fastcall Kaneko16Z80PortRead(UINT16 a)
 {
 	a &= 0xff;
 	
@@ -2713,7 +2713,7 @@ unsigned char __fastcall Kaneko16Z80PortRead(unsigned short a)
 	return 0;
 }
 
-void __fastcall Kaneko16Z80PortWrite(unsigned short a, unsigned char d)
+void __fastcall Kaneko16Z80PortWrite(UINT16 a, UINT8 d)
 {
 	a &= 0xff;
 	
@@ -2734,22 +2734,22 @@ void __fastcall Kaneko16Z80PortWrite(unsigned short a, unsigned char d)
 Sound Chip Handlers
 ===============================================================================================*/
 
-static unsigned char Kaneko16EepromRead(unsigned int /*a*/)
+static UINT8 Kaneko16EepromRead(UINT32 /*a*/)
 {
 	return EEPROMRead() & 0x01;
 }
 
-static void Kaneko16EepromReset(unsigned int /*a*/, unsigned int d)
+static void Kaneko16EepromReset(UINT32 /*a*/, UINT32 d)
 {
 	EEPROMSetCSLine((d & 0x01) ? EEPROM_CLEAR_LINE : EEPROM_ASSERT_LINE );
 }
 
-static unsigned char Kaneko16Dip0Read(unsigned int /*a*/)
+static UINT8 Kaneko16Dip0Read(UINT32 /*a*/)
 {
 	return Kaneko16Dip[0];
 }
 
-static unsigned char Kaneko16Dip1Read(unsigned int /*a*/)
+static UINT8 Kaneko16Dip1Read(UINT32 /*a*/)
 {
 	return Kaneko16Dip[1];
 }
@@ -2792,7 +2792,7 @@ static void Kaneko16VideoInit()
 	Kaneko16RecalcBg15Palette = 0;
 }
 
-static int GtmrMachineInit()
+static INT32 GtmrMachineInit()
 {
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -2811,9 +2811,9 @@ static int GtmrMachineInit()
 	SekMapMemory(Kaneko16Video2Ram    , 0x581000, 0x581fff, SM_RAM);
 	SekMapMemory(Kaneko16VScrl3Ram    , 0x582000, 0x582fff, SM_RAM);
 	SekMapMemory(Kaneko16VScrl2Ram    , 0x583000, 0x583fff, SM_RAM);
-	SekMapMemory((unsigned char*)Kaneko16Layer0Regs    , 0x600000, 0x60001f, SM_WRITE);
-	SekMapMemory((unsigned char*)Kaneko16Layer1Regs    , 0x680000, 0x68001f, SM_WRITE);
-	SekMapMemory((unsigned char*)Kaneko16SpriteRegs + 2, 0x700002, 0x70001f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16Layer0Regs    , 0x600000, 0x60001f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16Layer1Regs    , 0x680000, 0x68001f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16SpriteRegs + 2, 0x700002, 0x70001f, SM_WRITE);
 	SekSetReadByteHandler(0, GtmrReadByte);
 	SekSetReadWordHandler(0, GtmrReadWord);
 	SekSetWriteByteHandler(0, GtmrWriteByte);
@@ -2827,16 +2827,16 @@ static int GtmrMachineInit()
 	return 0;
 }
 
-static int FourBppPlaneOffsets[4]  = { 0, 1, 2, 3 };
-static int FourBppXOffsets[16]     = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
-static int FourBppYOffsets[16]     = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
-static int EightBppPlaneOffsets[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-static int EightBppXOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 512, 520, 528, 536, 544, 552, 560, 568 };
-static int EightBppYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472 };
+static INT32 FourBppPlaneOffsets[4]  = { 0, 1, 2, 3 };
+static INT32 FourBppXOffsets[16]     = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
+static INT32 FourBppYOffsets[16]     = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
+static INT32 EightBppPlaneOffsets[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+static INT32 EightBppXOffsets[16]    = { 0, 8, 16, 24, 32, 40, 48, 56, 512, 520, 528, 536, 544, 552, 560, 568 };
+static INT32 EightBppYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 1024, 1088, 1152, 1216, 1280, 1344, 1408, 1472 };
 
-static int BerlwallInit()
+static INT32 BerlwallInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	Kaneko16NumSprites = 0x2400;
 	Kaneko16NumTiles = 0x1000;
@@ -2850,12 +2850,12 @@ static int BerlwallInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	ExplbrkrMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	ExplbrkrMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)malloc(0x400000);
+	Kaneko16TempGfx = (UINT8*)malloc(0x400000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2903,8 +2903,8 @@ static int BerlwallInit()
 	SekMapMemory(Kaneko16Video0Ram    , 0xc01000, 0xc01fff, SM_RAM);
 	SekMapMemory(Kaneko16VScrl1Ram    , 0xc02000, 0xc02fff, SM_RAM);
 	SekMapMemory(Kaneko16VScrl0Ram    , 0xc03000, 0xc03fff, SM_RAM);
-	SekMapMemory((unsigned char*)Kaneko16Layer0Regs    , 0xd00000, 0xd0001f, SM_WRITE);
-	SekMapMemory((unsigned char*)Kaneko16SpriteRegs + 2, 0x600002, 0x60003f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16Layer0Regs    , 0xd00000, 0xd0001f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16SpriteRegs + 2, 0x600002, 0x60003f, SM_WRITE);
 	SekSetReadByteHandler(0, BerlwallReadByte);
 	SekSetReadWordHandler(0, BerlwallReadWord);
 	SekSetWriteByteHandler(0, BerlwallWriteByte);
@@ -2932,9 +2932,9 @@ static int BerlwallInit()
 	return 0;
 }
 
-static int BlazeonInit()
+static INT32 BlazeonInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	Kaneko16NumSprites = 0x4000;
 	Kaneko16NumTiles = 0x2000;
@@ -2947,12 +2947,12 @@ static int BlazeonInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	BlazeonMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	BlazeonMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)malloc(0x200000);
+	Kaneko16TempGfx = (UINT8*)malloc(0x200000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2982,8 +2982,8 @@ static int BlazeonInit()
 	SekMapMemory(Kaneko16VScrl1Ram    , 0x602000, 0x602fff, SM_RAM);
 	SekMapMemory(Kaneko16VScrl0Ram    , 0x603000, 0x603fff, SM_RAM);
 	SekMapMemory(Kaneko16SpriteRam    , 0x700000, 0x700fff, SM_RAM);
-	SekMapMemory((unsigned char*)Kaneko16Layer0Regs    , 0x800000, 0x80000f, SM_WRITE);
-	SekMapMemory((unsigned char*)Kaneko16SpriteRegs + 2, 0x900002, 0x90001f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16Layer0Regs    , 0x800000, 0x80000f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16SpriteRegs + 2, 0x900002, 0x90001f, SM_WRITE);
 	SekSetReadByteHandler(0, BlazeonReadByte);
 	SekSetReadWordHandler(0, BlazeonReadWord);
 	SekSetWriteByteHandler(0, BlazeonWriteByte);
@@ -3014,9 +3014,9 @@ static int BlazeonInit()
 	return 0;
 }
 
-static int BloodwarInit()
+static INT32 BloodwarInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	Bloodwar = 1;
 	
@@ -3030,12 +3030,12 @@ static int BloodwarInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	GtmrMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)malloc(0x1e00000);
+	Kaneko16TempGfx = (UINT8*)malloc(0x1e00000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3095,9 +3095,9 @@ static int BloodwarInit()
 	return 0;
 }
 
-static int BonkadvInit()
+static INT32 BonkadvInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	Bonkadv = 1;
 	
@@ -3111,12 +3111,12 @@ static int BonkadvInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	GtmrMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)malloc(0x500000);
+	Kaneko16TempGfx = (UINT8*)malloc(0x500000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3162,9 +3162,9 @@ static int BonkadvInit()
 	return 0;
 }
 
-static int ExplbrkrInit()
+static INT32 ExplbrkrInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	Kaneko16NumSprites = 0x4800;
 	Kaneko16NumTiles = 0x2000;
@@ -3175,12 +3175,12 @@ static int ExplbrkrInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	ExplbrkrMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	ExplbrkrMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)malloc(0x240000);
+	Kaneko16TempGfx = (UINT8*)malloc(0x240000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3240,9 +3240,9 @@ static int ExplbrkrInit()
 	SekMapMemory(Kaneko16VScrl2Ram    , 0x583000, 0x583fff, SM_RAM);
 	SekMapMemory(Kaneko16SpriteRam    , 0x600000, 0x601fff, SM_RAM);
 	SekMapMemory(Kaneko16PaletteRam   , 0x700000, 0x700fff, SM_RAM);
-	SekMapMemory((unsigned char*)Kaneko16Layer0Regs    , 0x800000, 0x80001f, SM_WRITE);
-	SekMapMemory((unsigned char*)Kaneko16SpriteRegs + 2, 0x900002, 0x90001f, SM_WRITE);
-	SekMapMemory((unsigned char*)Kaneko16Layer1Regs    , 0xb00000, 0xb0001f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16Layer0Regs    , 0x800000, 0x80001f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16SpriteRegs + 2, 0x900002, 0x90001f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16Layer1Regs    , 0xb00000, 0xb0001f, SM_WRITE);
 	SekSetReadByteHandler(0, ExplbrkrReadByte);
 	SekSetReadWordHandler(0, ExplbrkrReadWord);
 	SekSetWriteByteHandler(0, ExplbrkrWriteByte);
@@ -3273,9 +3273,9 @@ static int ExplbrkrInit()
 	return 0;
 }
 
-static int GtmrInit()
+static INT32 GtmrInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	Gtmr = 1;
 	
@@ -3289,12 +3289,12 @@ static int GtmrInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	GtmrMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)malloc(0x840000);
+	Kaneko16TempGfx = (UINT8*)malloc(0x840000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3335,9 +3335,9 @@ static int GtmrInit()
 	return 0;
 }
 
-static int GtmrevoInit()
+static INT32 GtmrevoInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	Gtmr = 1;
 	
@@ -3351,12 +3351,12 @@ static int GtmrevoInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	GtmrMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)malloc(0x800000);
+	Kaneko16TempGfx = (UINT8*)malloc(0x800000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3398,9 +3398,9 @@ static int GtmrevoInit()
 	return 0;
 }
 
-int Gtmr2Init()
+INT32 Gtmr2Init()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	Gtmr = 1;
 	
@@ -3414,12 +3414,12 @@ int Gtmr2Init()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	GtmrMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)malloc(0x800000);
+	Kaneko16TempGfx = (UINT8*)malloc(0x800000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3463,9 +3463,9 @@ int Gtmr2Init()
 	return 0;
 }
 
-int Gtmr2uInit()
+INT32 Gtmr2uInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	Gtmr = 1;
 	
@@ -3479,12 +3479,12 @@ int Gtmr2uInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	GtmrMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)malloc(0x800000);
+	Kaneko16TempGfx = (UINT8*)malloc(0x800000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3528,9 +3528,9 @@ int Gtmr2uInit()
 	return 0;
 }
 
-static int MgcrystlInit()
+static INT32 MgcrystlInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	
 	Mgcrystl = 1;
 	
@@ -3543,12 +3543,12 @@ static int MgcrystlInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	ExplbrkrMemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	ExplbrkrMemIndex();
 
-	Kaneko16TempGfx = (unsigned char*)malloc(0x280000);
+	Kaneko16TempGfx = (UINT8*)malloc(0x280000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3596,9 +3596,9 @@ static int MgcrystlInit()
 	SekMapMemory(Kaneko16VScrl3Ram    , 0x682000, 0x682fff, SM_RAM);
 	SekMapMemory(Kaneko16VScrl2Ram    , 0x683000, 0x683fff, SM_RAM);
 	SekMapMemory(Kaneko16SpriteRam    , 0x700000, 0x701fff, SM_RAM);
-	SekMapMemory((unsigned char*)Kaneko16Layer0Regs    , 0x800000, 0x80001f, SM_WRITE);
-	SekMapMemory((unsigned char*)Kaneko16SpriteRegs + 2, 0x900002, 0x90001f, SM_WRITE);
-	SekMapMemory((unsigned char*)Kaneko16Layer1Regs    , 0xb00000, 0xb0001f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16Layer0Regs    , 0x800000, 0x80001f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16SpriteRegs + 2, 0x900002, 0x90001f, SM_WRITE);
+	SekMapMemory((UINT8*)Kaneko16Layer1Regs    , 0xb00000, 0xb0001f, SM_WRITE);
 	SekSetReadByteHandler(0, MgcrystlReadByte);
 	SekSetReadWordHandler(0, ExplbrkrReadWord);
 	SekSetWriteByteHandler(0, ExplbrkrWriteByte);
@@ -3629,7 +3629,7 @@ static int MgcrystlInit()
 	return 0;
 }
 
-int Kaneko16Exit()
+INT32 Kaneko16Exit()
 {
 	SekExit();
 	MSM6295Exit(0);
@@ -3638,7 +3638,7 @@ int Kaneko16Exit()
 	ZetExit();
 	BurnYM2151Exit();
 	
-	for (int i = 0; i < 2; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		AY8910Exit(i);
 	}
 
@@ -3696,9 +3696,9 @@ Sprite Rendering
 #define USE_LATCHED_CODE	2
 #define USE_LATCHED_COLOUR	4
 
-static int Kaneko16ParseSpriteType0(int i, struct tempsprite *s)
+static INT32 Kaneko16ParseSpriteType0(INT32 i, struct tempsprite *s)
 {
-	int Attr, xOffs, Offset;
+	INT32 Attr, xOffs, Offset;
 	UINT16 *SpriteRam = (UINT16*)Kaneko16SpriteRam;
 	
 	Offset = (i * 8) >> 1;
@@ -3724,9 +3724,9 @@ static int Kaneko16ParseSpriteType0(int i, struct tempsprite *s)
 	return ((Attr & 0x2000) ? USE_LATCHED_XY : 0) | ((Attr & 0x4000) ? USE_LATCHED_COLOUR: 0) | ((Attr & 0x8000) ? USE_LATCHED_CODE : 0);
 }
 
-static int Kaneko16ParseSpriteType1(int i, struct tempsprite *s)
+static INT32 Kaneko16ParseSpriteType1(INT32 i, struct tempsprite *s)
 {
-	int Attr, xOffs, Offset;
+	INT32 Attr, xOffs, Offset;
 	UINT16 *SpriteRam = (UINT16*)Kaneko16SpriteRam;
 	
 	Offset = (i * 8) >> 1;
@@ -3753,9 +3753,9 @@ static int Kaneko16ParseSpriteType1(int i, struct tempsprite *s)
 	return ((Attr & 0x2000) ? USE_LATCHED_XY : 0) | ((Attr & 0x4000) ? USE_LATCHED_COLOUR: 0) | ((Attr & 0x8000) ? USE_LATCHED_CODE : 0);
 }
 
-static int Kaneko16ParseSpriteType2(int i, struct tempsprite *s)
+static INT32 Kaneko16ParseSpriteType2(INT32 i, struct tempsprite *s)
 {
-	int Attr, xOffs, Offset;
+	INT32 Attr, xOffs, Offset;
 	UINT16 *SpriteRam = (UINT16*)Kaneko16SpriteRam;
 	
 	Offset = (i * (16 >> 1)) + (8 >> 1);
@@ -3781,12 +3781,12 @@ static int Kaneko16ParseSpriteType2(int i, struct tempsprite *s)
 	return ((Attr & 0x2000) ? USE_LATCHED_XY : 0) | ((Attr & 0x4000) ? USE_LATCHED_COLOUR: 0) | ((Attr & 0x8000) ? USE_LATCHED_CODE : 0);
 }
 
-static void Kaneko16RenderSprite(UINT32 Code, UINT32 Colour, int FlipX, int FlipY, int sx, int sy)
+static void Kaneko16RenderSprite(UINT32 Code, UINT32 Colour, INT32 FlipX, INT32 FlipY, INT32 sx, INT32 sy)
 {
 	UINT8 *SourceBase = Kaneko16Sprites + ((Code % Kaneko16NumSprites) * 256);
 	
-	int SpriteScreenHeight = ((1 << 16) * 16 + 0x8000) >> 16;
-	int SpriteScreenWidth = ((1 << 16) * 16 + 0x8000) >> 16;
+	INT32 SpriteScreenHeight = ((1 << 16) * 16 + 0x8000) >> 16;
+	INT32 SpriteScreenWidth = ((1 << 16) * 16 + 0x8000) >> 16;
 	
 	if (Kaneko168BppSprites) {
 		Colour = 0x100 * (Colour % 0x40);
@@ -3795,14 +3795,14 @@ static void Kaneko16RenderSprite(UINT32 Code, UINT32 Colour, int FlipX, int Flip
 	}
 	
 	if (SpriteScreenHeight && SpriteScreenWidth) {
-		int dx = (16 << 16) / SpriteScreenWidth;
-		int dy = (16 << 16) / SpriteScreenHeight;
+		INT32 dx = (16 << 16) / SpriteScreenWidth;
+		INT32 dy = (16 << 16) / SpriteScreenHeight;
 		
-		int ex = sx + SpriteScreenWidth;
-		int ey = sy + SpriteScreenHeight;
+		INT32 ex = sx + SpriteScreenWidth;
+		INT32 ey = sy + SpriteScreenHeight;
 		
-		int xIndexBase;
-		int yIndex;
+		INT32 xIndexBase;
+		INT32 yIndex;
 		
 		if (FlipX) {
 			xIndexBase = (SpriteScreenWidth - 1) * dx;
@@ -3819,39 +3819,39 @@ static void Kaneko16RenderSprite(UINT32 Code, UINT32 Colour, int FlipX, int Flip
 		}
 		
 		if (sx < 0) {
-			int Pixels = 0 - sx;
+			INT32 Pixels = 0 - sx;
 			sx += Pixels;
 			xIndexBase += Pixels * dx;
 		}
 		
 		if (sy < 0) {
-			int Pixels = 0 - sy;
+			INT32 Pixels = 0 - sy;
 			sy += Pixels;
 			yIndex += Pixels * dy;
 		}
 		
 		if (ex > nScreenWidth + 1) {
-			int Pixels = ex - nScreenWidth - 1;
+			INT32 Pixels = ex - nScreenWidth - 1;
 			ex -= Pixels;
 		}
 		
 		if (ey > nScreenHeight + 1) {
-			int Pixels = ey - nScreenHeight - 1;
+			INT32 Pixels = ey - nScreenHeight - 1;
 			ey -= Pixels;	
 		}
 		
 		if (ex > sx) {
-			int y;
+			INT32 y;
 			
 			for (y = sy; y < ey; y++) {
 				UINT8 *Source = SourceBase + ((yIndex >> 16) * 16);
-				unsigned short* pPixel = pTransDraw + (y * nScreenWidth);
+				UINT16* pPixel = pTransDraw + (y * nScreenWidth);
 				
 				if (y < 0 || y > (nScreenHeight - 1)) continue;
 				
-				int x, xIndex = xIndexBase;
+				INT32 x, xIndex = xIndexBase;
 				for (x = sx; x <ex; x++) {
-					int c = Source[xIndex >> 16];
+					INT32 c = Source[xIndex >> 16];
 					if (c != 0) {
 						if (x >= 0 && x < nScreenWidth) pPixel[x] = (c | Colour | Kaneko16SpritesColourOffset) & Kaneko16SpritesColourMask;
 					}
@@ -3864,23 +3864,23 @@ static void Kaneko16RenderSprite(UINT32 Code, UINT32 Colour, int FlipX, int Flip
 	}
 }
 
-static void Kaneko16RenderSprites(int PriorityDraw)
+static void Kaneko16RenderSprites(INT32 PriorityDraw)
 {
 	struct tempsprite *s = spritelist.first_sprite;
 	
-	int i = 0;
-	int x = 0;
-	int y = 0;
-	int Colour = 0;
-	int Code = 0;
-	int Priority = 0;
-	int xOffs = 0;
-	int yOffs = 0;
-	int FlipX = 0;
-	int FlipY = 0;
+	INT32 i = 0;
+	INT32 x = 0;
+	INT32 y = 0;
+	INT32 Colour = 0;
+	INT32 Code = 0;
+	INT32 Priority = 0;
+	INT32 xOffs = 0;
+	INT32 yOffs = 0;
+	INT32 FlipX = 0;
+	INT32 FlipY = 0;
 	
 	while (1) {
-		int Flags;
+		INT32 Flags;
 		
 		Flags = Kaneko16ParseSprite(i, s);
 		
@@ -3942,7 +3942,7 @@ static void Kaneko16RenderSprites(int PriorityDraw)
 Tile Rendering
 ===============================================================================================*/
 
-static int Kaneko16GetLayerFlipOffset(int curroffs)
+static INT32 Kaneko16GetLayerFlipOffset(INT32 curroffs)
 {
 	if (curroffs ==  0) return 15;
 	if (curroffs ==  1) return 14;
@@ -3964,10 +3964,10 @@ static int Kaneko16GetLayerFlipOffset(int curroffs)
 	return 0;
 }
 
-static void Kaneko16QueueTilesLayer(int Layer)
+static void Kaneko16QueueTilesLayer(INT32 Layer)
 {
-	int x, y, mx, my, px, py, Code, Attr, Colour, Flip, Priority, LineScroll, TileIndex, pSrcXOffs, pSrcYOffs, xScroll, yScroll;
-	unsigned char pTileSrc;
+	INT32 x, y, mx, my, px, py, Code, Attr, Colour, Flip, Priority, LineScroll, TileIndex, pSrcXOffs, pSrcYOffs, xScroll, yScroll;
+	UINT8 pTileSrc;
 	
 	LayerQueueSize[Layer] = 0;
 	TileIndex = 0;
@@ -3975,11 +3975,11 @@ static void Kaneko16QueueTilesLayer(int Layer)
 	UINT16 *VRAM = NULL;
 	UINT16 *VSCROLLRAM = NULL;
 	UINT16 *LAYERREGS = NULL;
-	unsigned char *TILEDATA = NULL;
-	int xScrollReg = 0;
-	int yScrollReg = 0;
-	int xOffs = 0;
-	int numTiles = 0;
+	UINT8 *TILEDATA = NULL;
+	INT32 xScrollReg = 0;
+	INT32 yScrollReg = 0;
+	INT32 xOffs = 0;
+	INT32 numTiles = 0;
 	
 	switch (Layer) {
 		case 0: {
@@ -4081,26 +4081,26 @@ static void Kaneko16QueueTilesLayer(int Layer)
 	}
 }
 
-static void Kaneko16RenderLayerQueue(int Layer, int Priority)
+static void Kaneko16RenderLayerQueue(INT32 Layer, INT32 Priority)
 {
-	for (int i = 0; i < LayerQueueSize[Layer]; i++) {
+	for (INT32 i = 0; i < LayerQueueSize[Layer]; i++) {
 		if (LayerQueuePriority[Layer][i] == Priority) {
-			unsigned short* pPixel = pTransDraw + ((LayerQueueXY[Layer][i] >> 9) * nScreenWidth) + (LayerQueueXY[Layer][i] & 0x1ff);
+			UINT16* pPixel = pTransDraw + ((LayerQueueXY[Layer][i] >> 9) * nScreenWidth) + (LayerQueueXY[Layer][i] & 0x1ff);
 			pPixel[0] = LayerQueueColour[Layer][i] | Kaneko16LayersColourOffset;
 		}
 	}
 }
 
-void Kaneko16RenderTileLayer(int Layer, int PriorityDraw, int xScroll)
+void Kaneko16RenderTileLayer(INT32 Layer, INT32 PriorityDraw, INT32 xScroll)
 {
-	int mx, my, Code, Attr, Colour, Flip, Priority, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Attr, Colour, Flip, Priority, x, y, TileIndex = 0;
 	
 	UINT16 *VRAM = NULL;
 	UINT16 *LAYERREGS = NULL;
-	unsigned char *TILEDATA = NULL;
-	int yScrollReg = 0;
-	int xOffs = 0;
-	int numTiles = 0;
+	UINT8 *TILEDATA = NULL;
+	INT32 yScrollReg = 0;
+	INT32 xOffs = 0;
+	INT32 numTiles = 0;
 	
 	switch (Layer) {
 		case 0: {
@@ -4192,16 +4192,16 @@ Background Bitmap Rendering
 
 static void Kaneko16RenderBg15Bitmap()
 {
-	int Select = Kaneko16Bg15Select;
-	int Flip = Select & 0x20;
-	int x, y;
+	INT32 Select = Kaneko16Bg15Select;
+	INT32 Flip = Select & 0x20;
+	INT32 x, y;
 	
 	if (Flip) Select ^= 0x1f;
 	Select &= 0x1f;
 	
 	for (y = 0; y < nScreenHeight; y++) {
-		unsigned short *pPixel = pTransDraw + (y * nScreenWidth);
-		unsigned short *data = Kaneko16Bg15Data + (Select * 256 * 256) + ((y + 16) * 256);
+		UINT16 *pPixel = pTransDraw + (y * nScreenWidth);
+		UINT16 *data = Kaneko16Bg15Data + (Select * 256 * 256) + ((y + 16) * 256);
 		
 		for (x = 0; x < nScreenWidth; x++) {
 			pPixel[x] = data[x];
@@ -4213,15 +4213,15 @@ static void Kaneko16RenderBg15Bitmap()
 Palette Handling
 ===============================================================================================*/
 
-static inline unsigned char pal5bit(unsigned char bits)
+static inline UINT8 pal5bit(UINT8 bits)
 {
 	bits &= 0x1f;
 	return (bits << 3) | (bits >> 2);
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = pal5bit(nColour >>  5);
 	g = pal5bit(nColour >> 10);
@@ -4230,13 +4230,13 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-int Kaneko16CalcPalette(int num)
+INT32 Kaneko16CalcPalette(INT32 num)
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)Kaneko16PaletteRam, pd = Kaneko16Palette; i < num; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)Kaneko16PaletteRam, pd = Kaneko16Palette; i < num; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 
@@ -4250,9 +4250,9 @@ Graphics Rendering
 // If the VScroll RAM is the same all the way through then just apply it as an xScroll value - much faster then doing line scroll on every line
 #define HANDLE_VSCROLL(_N_) \
 	if (Layer##_N_##Enabled) { \
-		int vScrollFast = 1; \
+		INT32 vScrollFast = 1; \
 		UINT16 *VSCROLLRAM = (UINT16*)Kaneko16VScrl##_N_##Ram; \
-		int LineScroll = VSCROLLRAM[0]; \
+		INT32 LineScroll = VSCROLLRAM[0]; \
 		for (i = 0; i < 0x200; i++) { \
 			if (VSCROLLRAM[i] != LineScroll) { \
 				vScrollFast = 0; \
@@ -4271,15 +4271,15 @@ Graphics Rendering
 
 void BerlwallFrameRender()
 {
-	int i;
-	int Layer0Enabled = 0;
-	int Layer1Enabled = 0;
+	INT32 i;
+	INT32 Layer0Enabled = 0;
+	INT32 Layer1Enabled = 0;
 	
-	int vScroll0Enabled = 0;
-	int vScroll1Enabled = 0;
+	INT32 vScroll0Enabled = 0;
+	INT32 vScroll1Enabled = 0;
 	
-	int xScroll0 = Kaneko16Layer0Regs[2];
-	int xScroll1 = Kaneko16Layer0Regs[0];
+	INT32 xScroll0 = Kaneko16Layer0Regs[2];
+	INT32 xScroll1 = Kaneko16Layer0Regs[0];
 
 	if (~Kaneko16Layer0Regs[4] & 0x1000) Layer0Enabled = 1;
 	if (~Kaneko16Layer0Regs[4] & 0x0010) Layer1Enabled = 1;
@@ -4289,9 +4289,9 @@ void BerlwallFrameRender()
 	
 	if (Kaneko16RecalcBg15Palette) {
 	 	for (i = 0; i < 32768; i++) {
-			int r = pal5bit(i >> 5);
-			int g = pal5bit(i >> 10);
-			int b = pal5bit(i >> 0);
+			INT32 r = pal5bit(i >> 5);
+			INT32 g = pal5bit(i >> 10);
+			INT32 b = pal5bit(i >> 0);
 			Kaneko16Palette[i + 2048] = BurnHighCol(r, g, b, 0);
 		}
 		
@@ -4323,15 +4323,15 @@ void BerlwallFrameRender()
 
 void BlazeonFrameRender()
 {
-	int i;
-	int Layer0Enabled = 0;
-	int Layer1Enabled = 0;
+	INT32 i;
+	INT32 Layer0Enabled = 0;
+	INT32 Layer1Enabled = 0;
 	
-	int vScroll0Enabled = 0;
-	int vScroll1Enabled = 0;
+	INT32 vScroll0Enabled = 0;
+	INT32 vScroll1Enabled = 0;
 	
-	int xScroll0 = Kaneko16Layer0Regs[2];
-	int xScroll1 = Kaneko16Layer0Regs[0];
+	INT32 xScroll0 = Kaneko16Layer0Regs[2];
+	INT32 xScroll1 = Kaneko16Layer0Regs[0];
 
 	if (~Kaneko16Layer0Regs[4] & 0x1000) Layer0Enabled = 1;
 	if (~Kaneko16Layer0Regs[4] & 0x0010) Layer1Enabled = 1;
@@ -4362,21 +4362,21 @@ void BlazeonFrameRender()
 
 void BloodwarFrameRender()
 {
-	int i;
-	int Layer0Enabled = 0;
-	int Layer1Enabled = 0;
-	int Layer2Enabled = 0;
-	int Layer3Enabled = 0;
+	INT32 i;
+	INT32 Layer0Enabled = 0;
+	INT32 Layer1Enabled = 0;
+	INT32 Layer2Enabled = 0;
+	INT32 Layer3Enabled = 0;
 	
-	int vScroll0Enabled = 0;
-	int vScroll1Enabled = 0;
-	int vScroll2Enabled = 0;
-	int vScroll3Enabled = 0;
+	INT32 vScroll0Enabled = 0;
+	INT32 vScroll1Enabled = 0;
+	INT32 vScroll2Enabled = 0;
+	INT32 vScroll3Enabled = 0;
 	
-	int xScroll0 = Kaneko16Layer0Regs[2];
-	int xScroll1 = Kaneko16Layer0Regs[0];
-	int xScroll2 = Kaneko16Layer1Regs[2];
-	int xScroll3 = Kaneko16Layer1Regs[0];
+	INT32 xScroll0 = Kaneko16Layer0Regs[2];
+	INT32 xScroll1 = Kaneko16Layer0Regs[0];
+	INT32 xScroll2 = Kaneko16Layer1Regs[2];
+	INT32 xScroll3 = Kaneko16Layer1Regs[0];
 	
 	if (~Kaneko16Layer0Regs[4] & 0x1000) Layer0Enabled = 1;
 	if (~Kaneko16Layer0Regs[4] & 0x0010) Layer1Enabled = 1;
@@ -4421,21 +4421,21 @@ void BloodwarFrameRender()
 
 void ExplbrkrFrameRender()
 {
-	int i;
-	int Layer0Enabled = 0;
-	int Layer1Enabled = 0;
-	int Layer2Enabled = 0;
-	int Layer3Enabled = 0;
+	INT32 i;
+	INT32 Layer0Enabled = 0;
+	INT32 Layer1Enabled = 0;
+	INT32 Layer2Enabled = 0;
+	INT32 Layer3Enabled = 0;
 	
-	int vScroll0Enabled = 0;
-	int vScroll1Enabled = 0;
-	int vScroll2Enabled = 0;
-	int vScroll3Enabled = 0;
+	INT32 vScroll0Enabled = 0;
+	INT32 vScroll1Enabled = 0;
+	INT32 vScroll2Enabled = 0;
+	INT32 vScroll3Enabled = 0;
 	
-	int xScroll0 = Kaneko16Layer0Regs[2];
-	int xScroll1 = Kaneko16Layer0Regs[0];
-	int xScroll2 = Kaneko16Layer1Regs[2];
-	int xScroll3 = Kaneko16Layer1Regs[0];
+	INT32 xScroll0 = Kaneko16Layer0Regs[2];
+	INT32 xScroll1 = Kaneko16Layer0Regs[0];
+	INT32 xScroll2 = Kaneko16Layer1Regs[2];
+	INT32 xScroll3 = Kaneko16Layer1Regs[0];
 	
 	if (~Kaneko16Layer0Regs[4] & 0x1000) Layer0Enabled = 1;
 	if (~Kaneko16Layer0Regs[4] & 0x0010) Layer1Enabled = 1;
@@ -4478,21 +4478,21 @@ void ExplbrkrFrameRender()
 
 void GtmrFrameRender()
 {
-	int i;
-	int Layer0Enabled = 0;
-	int Layer1Enabled = 0;
-	int Layer2Enabled = 0;
-	int Layer3Enabled = 0;
+	INT32 i;
+	INT32 Layer0Enabled = 0;
+	INT32 Layer1Enabled = 0;
+	INT32 Layer2Enabled = 0;
+	INT32 Layer3Enabled = 0;
 	
-	int vScroll0Enabled = 0;
-	int vScroll1Enabled = 0;
-	int vScroll2Enabled = 0;
-	int vScroll3Enabled = 0;
+	INT32 vScroll0Enabled = 0;
+	INT32 vScroll1Enabled = 0;
+	INT32 vScroll2Enabled = 0;
+	INT32 vScroll3Enabled = 0;
 	
-	int xScroll0 = Kaneko16Layer0Regs[2];
-	int xScroll1 = Kaneko16Layer0Regs[0];
-	int xScroll2 = Kaneko16Layer1Regs[2];
-	int xScroll3 = Kaneko16Layer1Regs[0];
+	INT32 xScroll0 = Kaneko16Layer0Regs[2];
+	INT32 xScroll1 = Kaneko16Layer0Regs[0];
+	INT32 xScroll2 = Kaneko16Layer1Regs[2];
+	INT32 xScroll3 = Kaneko16Layer1Regs[0];
 	
 	if (~Kaneko16Layer0Regs[4] & 0x1000) Layer0Enabled = 1;
 	if (~Kaneko16Layer0Regs[4] & 0x0010) Layer1Enabled = 1;
@@ -4537,21 +4537,21 @@ void GtmrFrameRender()
 
 void MgcrystlFrameRender()
 {
-	int i;
-	int Layer0Enabled = 0;
-	int Layer1Enabled = 0;
-	int Layer2Enabled = 0;
-	int Layer3Enabled = 0;
+	INT32 i;
+	INT32 Layer0Enabled = 0;
+	INT32 Layer1Enabled = 0;
+	INT32 Layer2Enabled = 0;
+	INT32 Layer3Enabled = 0;
 	
-	int vScroll0Enabled = 0;
-	int vScroll1Enabled = 0;
-	int vScroll2Enabled = 0;
-	int vScroll3Enabled = 0;
+	INT32 vScroll0Enabled = 0;
+	INT32 vScroll1Enabled = 0;
+	INT32 vScroll2Enabled = 0;
+	INT32 vScroll3Enabled = 0;
 	
-	int xScroll0 = Kaneko16Layer0Regs[2];
-	int xScroll1 = Kaneko16Layer0Regs[0];
-	int xScroll2 = Kaneko16Layer1Regs[2];
-	int xScroll3 = Kaneko16Layer1Regs[0];
+	INT32 xScroll0 = Kaneko16Layer0Regs[2];
+	INT32 xScroll1 = Kaneko16Layer0Regs[0];
+	INT32 xScroll2 = Kaneko16Layer1Regs[2];
+	INT32 xScroll3 = Kaneko16Layer1Regs[0];
 	
 	if (~Kaneko16Layer0Regs[4] & 0x1000) Layer0Enabled = 1;
 	if (~Kaneko16Layer0Regs[4] & 0x0010) Layer1Enabled = 1;
@@ -4596,9 +4596,9 @@ void MgcrystlFrameRender()
 Frame functions
 ===============================================================================================*/
 
-int ExplbrkrFrame()
+INT32 ExplbrkrFrame()
 {
-	int nInterleave = 10;
+	INT32 nInterleave = 10;
 	nSoundBufferPos = 0;
 	
 	if (Kaneko16Reset) ExplbrkrDoReset();
@@ -4608,8 +4608,8 @@ int ExplbrkrFrame()
 	nCyclesTotal[0] = 12000000 / 60;
 	nCyclesDone[0] = 0;
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		nCurrentCPU = 0;
 		SekOpen(nCurrentCPU);
@@ -4623,12 +4623,12 @@ int ExplbrkrFrame()
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			int nSample;
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSample;
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -4654,13 +4654,13 @@ int ExplbrkrFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSample;
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSample;
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
-			for (int n = 0; n < nSegmentLength; n++) {
+			for (INT32 n = 0; n < nSegmentLength; n++) {
 				nSample  = pAY8910Buffer[0][n] >> 2;
 				nSample += pAY8910Buffer[1][n] >> 2;
 				nSample += pAY8910Buffer[2][n] >> 2;
@@ -4689,9 +4689,9 @@ int ExplbrkrFrame()
 	return 0;
 }
 
-int BlazeonFrame()
+INT32 BlazeonFrame()
 {
-	int nInterleave = 10;
+	INT32 nInterleave = 10;
 	nSoundBufferPos = 0;
 		
 	if (Kaneko16Reset) BlazeonDoReset();
@@ -4702,8 +4702,8 @@ int BlazeonFrame()
 	nCyclesTotal[1] = 4000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		nCurrentCPU = 0;
 		SekOpen(nCurrentCPU);
@@ -4726,8 +4726,8 @@ int BlazeonFrame()
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			ZetOpen(0);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			ZetClose();
@@ -4737,8 +4737,8 @@ int BlazeonFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			ZetOpen(0);
@@ -4753,7 +4753,7 @@ int BlazeonFrame()
 	return 0;
 }
 
-int GtmrFrame()
+INT32 GtmrFrame()
 {
 	if (Kaneko16Reset) GtmrDoReset();
 
@@ -4786,7 +4786,7 @@ int GtmrFrame()
 Scan Driver
 ===============================================================================================*/
 
-static int Kaneko16Scan(int nAction,int *pnMin)
+static INT32 Kaneko16Scan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
@@ -4836,7 +4836,7 @@ static int Kaneko16Scan(int nAction,int *pnMin)
 	return 0;
 }
 
-static int BlazeonScan(int nAction,int *pnMin)
+static INT32 BlazeonScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {
 		*pnMin =  0x029672;
@@ -4852,7 +4852,7 @@ static int BlazeonScan(int nAction,int *pnMin)
 	return Kaneko16Scan(nAction, pnMin);;
 }
 
-static int ExplbrkrScan(int nAction,int *pnMin)
+static INT32 ExplbrkrScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {
 		*pnMin =  0x029672;
@@ -4872,7 +4872,7 @@ static int ExplbrkrScan(int nAction,int *pnMin)
 	return Kaneko16Scan(nAction, pnMin);;
 }
 
-static int GtmrScan(int nAction,int *pnMin)
+static INT32 GtmrScan(INT32 nAction,INT32 *pnMin)
 {
 	if (pnMin != NULL) {
 		*pnMin =  0x029672;

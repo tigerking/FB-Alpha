@@ -6,44 +6,44 @@
 #include "burn_ym2151.h"
 #include "msm6295.h"
 
-static unsigned char *AllMem;
-static unsigned char *MemEnd;
-static unsigned char *AllRam;
-static unsigned char *RamEnd;
-static unsigned char *Drv68KROM;
-static unsigned char *DrvHucROM;
-static unsigned char *DrvGfxROM0;
-static unsigned char *DrvGfxROM1;
-static unsigned char *DrvGfxROM2;
-static unsigned char *DrvGfxROM3;
-static unsigned char *DrvGfxROM4;
-static unsigned char *DrvSndROM0;
-static unsigned char *DrvSndROM1;
-static unsigned char *Drv68KRAM;
-static unsigned char *DrvPalRAM;
-static unsigned char *DrvPalBuf;
-static unsigned char *DrvSprRAM;
-static unsigned char *DrvSprRAM2;
-static unsigned char *DrvSprBuf;
-static unsigned char *DrvSprBuf2;
-static unsigned char *DrvPrtRAM;
+static UINT8 *AllMem;
+static UINT8 *MemEnd;
+static UINT8 *AllRam;
+static UINT8 *RamEnd;
+static UINT8 *Drv68KROM;
+static UINT8 *DrvHucROM;
+static UINT8 *DrvGfxROM0;
+static UINT8 *DrvGfxROM1;
+static UINT8 *DrvGfxROM2;
+static UINT8 *DrvGfxROM3;
+static UINT8 *DrvGfxROM4;
+static UINT8 *DrvSndROM0;
+static UINT8 *DrvSndROM1;
+static UINT8 *Drv68KRAM;
+static UINT8 *DrvPalRAM;
+static UINT8 *DrvPalBuf;
+static UINT8 *DrvSprRAM;
+static UINT8 *DrvSprRAM2;
+static UINT8 *DrvSprBuf;
+static UINT8 *DrvSprBuf2;
+static UINT8 *DrvPrtRAM;
 
-static unsigned int  *DrvPalette;
-static unsigned char DrvRecalc;
+static UINT32  *DrvPalette;
+static UINT8 DrvRecalc;
 
-static unsigned char *soundlatch;
-static unsigned char *flipscreen;
+static UINT8 *soundlatch;
+static UINT8 *flipscreen;
 
-static unsigned char DrvJoy1[16];
-static unsigned char DrvJoy2[16];
-static unsigned char DrvJoy3[16];
-static unsigned char DrvDips[3];
-static unsigned char DrvReset;
-static unsigned short DrvInputs[4];
+static UINT8 DrvJoy1[16];
+static UINT8 DrvJoy2[16];
+static UINT8 DrvJoy3[16];
+static UINT8 DrvDips[3];
+static UINT8 DrvReset;
+static UINT16 DrvInputs[4];
 
-static unsigned short *tempdraw[2];
+static UINT16 *tempdraw[2];
 
-static int DrvOkiBank;
+static INT32 DrvOkiBank;
 
 static struct BurnInputInfo RohgaInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy2 + 0,	"p1 coin"	},
@@ -377,7 +377,7 @@ static struct BurnDIPInfo NitrobalDIPList[]=
 
 STDDIPINFO(Nitrobal)
 
-void __fastcall rohga_main_write_word(unsigned int address, unsigned short data)
+void __fastcall rohga_main_write_word(UINT32 address, UINT16 data)
 {
 	deco16_write_control_word(0, address, 0x200000, data)
 	deco16_write_control_word(1, address, 0x240000, data)
@@ -414,7 +414,7 @@ void __fastcall rohga_main_write_word(unsigned int address, unsigned short data)
 	}
 }
 
-void __fastcall rohga_main_write_byte(unsigned int address, unsigned char data)
+void __fastcall rohga_main_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -452,7 +452,7 @@ void __fastcall rohga_main_write_byte(unsigned int address, unsigned char data)
 	}
 }
 
-unsigned short __fastcall rohga_main_read_word(unsigned int address)
+UINT16 __fastcall rohga_main_read_word(UINT32 address)
 {
 	switch (address)
 	{
@@ -475,7 +475,7 @@ unsigned short __fastcall rohga_main_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall rohga_main_read_byte(unsigned int address)
+UINT8 __fastcall rohga_main_read_byte(UINT32 address)
 {
 	switch (address)
 	{
@@ -502,7 +502,7 @@ unsigned char __fastcall rohga_main_read_byte(unsigned int address)
 	return 0;
 }
 
-void __fastcall wizdfire_main_write_word(unsigned int address, unsigned short data)
+void __fastcall wizdfire_main_write_word(UINT32 address, UINT16 data)
 {
 	deco16_write_control_word(0, address, 0x300000, data)
 	deco16_write_control_word(1, address, 0x310000, data)
@@ -548,7 +548,7 @@ void __fastcall wizdfire_main_write_word(unsigned int address, unsigned short da
 	}
 }
 
-void __fastcall wizdfire_main_write_byte(unsigned int address, unsigned char data)
+void __fastcall wizdfire_main_write_byte(UINT32 address, UINT8 data)
 {
 	switch (address)
 	{
@@ -600,7 +600,7 @@ void __fastcall wizdfire_main_write_byte(unsigned int address, unsigned char dat
 	}
 }
 
-unsigned short __fastcall wizdfire_main_read_word(unsigned int address)
+UINT16 __fastcall wizdfire_main_read_word(UINT32 address)
 {
 	if (address == 0x320000) return DrvInputs[2];
 
@@ -615,7 +615,7 @@ unsigned short __fastcall wizdfire_main_read_word(unsigned int address)
 	return 0;
 }
 
-unsigned char __fastcall wizdfire_main_read_byte(unsigned int address)
+UINT8 __fastcall wizdfire_main_read_byte(UINT32 address)
 {
 	if (address == 0x320000 || address == 0x320001) return DrvInputs[2] >> ((~address & 1) << 3);
 
@@ -630,29 +630,29 @@ unsigned char __fastcall wizdfire_main_read_byte(unsigned int address)
 	return 0;
 }
 
-static void DrvYM2151IrqHandler(int state)
+static void DrvYM2151IrqHandler(INT32 state)
 {
 	state = state; // kill warnings...
 //	HucSetIRQLine(1, state ? HUC_IRQSTATUS_ACK : HUC_IRQSTATUS_NONE);
 }
 
-static void DrvYM2151WritePort(unsigned int, unsigned int data)
+static void DrvYM2151WritePort(UINT32, UINT32 data)
 {
-	if ((data & 0x01) != (unsigned int)(DrvOkiBank & 0x01))
+	if ((data & 0x01) != (UINT32)(DrvOkiBank & 0x01))
 		memcpy (DrvSndROM0, DrvSndROM0 + ((data & 0x01) >> 0) * 0x40000, 0x40000);
 
-	if ((data & 0x02) != (unsigned int)(DrvOkiBank & 0x02))
+	if ((data & 0x02) != (UINT32)(DrvOkiBank & 0x02))
 		memcpy (DrvSndROM1, DrvSndROM1 + ((data & 0x02) >> 1) * 0x40000, 0x40000);
 
 	DrvOkiBank = data;
 }
 
-static int rohga_bank_callback( const int bank )
+static INT32 rohga_bank_callback( const INT32 bank )
 {
 	return ((bank >> 4) & 0x3) << 12;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	memset (AllRam, 0, RamEnd - AllRam);
 
@@ -674,9 +674,9 @@ static int DrvDoReset()
 	return 0;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = AllMem;
+	UINT8 *Next; Next = AllMem;
 
 	Drv68KROM	= Next; Next += 0x200000;
 	DrvHucROM	= Next; Next += 0x010000;
@@ -691,10 +691,10 @@ static int MemIndex()
 	DrvSndROM0	= Next; Next += 0x100000;
 	DrvSndROM1	= Next; Next += 0x0c0000;
 
-	tempdraw[0]	= (unsigned short*)Next; Next += 320 * 240 * sizeof(short);
-	tempdraw[1]	= (unsigned short*)Next; Next += 320 * 240 * sizeof(short);
+	tempdraw[0]	= (UINT16*)Next; Next += 320 * 240 * sizeof(UINT16);
+	tempdraw[1]	= (UINT16*)Next; Next += 320 * 240 * sizeof(UINT16);
 
-	DrvPalette	= (unsigned int*)Next; Next += 0x0800 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0800 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -704,9 +704,9 @@ static int MemIndex()
 	DrvSprBuf2	= Next; Next += 0x000800;
 	DrvSprBuf	= Next; Next += 0x000800;
 
-	deco16_prot_ram	= (unsigned short*)Next;
+	deco16_prot_ram	= (UINT16*)Next;
 	DrvPrtRAM	= Next; Next += 0x000800;
-	deco16_buffer_ram = (unsigned short*)Next; Next += 0x000800;
+	deco16_buffer_ram = (UINT16*)Next; Next += 0x000800;
 
 	DrvPalRAM	= Next; Next += 0x002000;
 	DrvPalBuf	= Next; Next += 0x002000;
@@ -721,13 +721,13 @@ static int MemIndex()
 	return 0;
 }
 
-static int DrvSpriteDecode()
+static INT32 DrvSpriteDecode()
 {
-	int Plane[6] = { 0x400000*8+8, 0x400000*8, 0x200000*8+8, 0x200000*8, 8, 0 };
-	int XOffs[16] = { 7,6,5,4,3,2,1,0, 32*8+7, 32*8+6, 32*8+5, 32*8+4, 32*8+3, 32*8+2, 32*8+1, 32*8+0 };
-	int YOffs[16] = { 15*16, 14*16, 13*16, 12*16, 11*16, 10*16, 9*16, 8*16,	7*16, 6*16, 5*16, 4*16, 3*16, 2*16, 1*16, 0*16};
+	INT32 Plane[6] = { 0x400000*8+8, 0x400000*8, 0x200000*8+8, 0x200000*8, 8, 0 };
+	INT32 XOffs[16] = { 7,6,5,4,3,2,1,0, 32*8+7, 32*8+6, 32*8+5, 32*8+4, 32*8+3, 32*8+2, 32*8+1, 32*8+0 };
+	INT32 YOffs[16] = { 15*16, 14*16, 13*16, 12*16, 11*16, 10*16, 9*16, 8*16,	7*16, 6*16, 5*16, 4*16, 3*16, 2*16, 1*16, 0*16};
 
-	unsigned char *tmp = (unsigned char*)malloc(0x600000);
+	UINT8 *tmp = (UINT8*)malloc(0x600000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -744,14 +744,14 @@ static int DrvSpriteDecode()
 	return 0;
 }
 
-static int RohgaInit()
+static INT32 RohgaInit()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -842,14 +842,14 @@ static int RohgaInit()
 	return 0;
 }
 
-static int WizdfireInit()
+static INT32 WizdfireInit()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -941,14 +941,14 @@ static int WizdfireInit()
 	return 0;
 }
 
-static int SchmeisrInit()
+static INT32 SchmeisrInit()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1035,14 +1035,14 @@ static int SchmeisrInit()
 	return 0;
 }
 
-static int NitrobalInit()
+static INT32 NitrobalInit()
 {
 	BurnSetRefreshRate(58.00);
 
 	AllMem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((AllMem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1144,7 +1144,7 @@ static int NitrobalInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	GenericTilesExit();
 	deco16Exit();
@@ -1165,18 +1165,18 @@ static int DrvExit()
 	return 0;
 }
 
-static void rohga_draw_sprites(unsigned char *ram, int is_schmeisr)
+static void rohga_draw_sprites(UINT8 *ram, INT32 is_schmeisr)
 {
-	unsigned short *spriteptr = (unsigned short*)ram;
+	UINT16 *spriteptr = (UINT16*)ram;
 
-	for (int offs = 0x400 - 4; offs >= 0; offs -= 4)
+	for (INT32 offs = 0x400 - 4; offs >= 0; offs -= 4)
 	{
-		int inc, mult, pri = 0;
-		int sprite = spriteptr[offs + 1];
+		INT32 inc, mult, pri = 0;
+		INT32 sprite = spriteptr[offs + 1];
 
 		if (!sprite) continue;
 
-		int x = spriteptr[offs + 2];
+		INT32 x = spriteptr[offs + 2];
 
 		switch (x & 0x6000)
 		{
@@ -1186,16 +1186,16 @@ static void rohga_draw_sprites(unsigned char *ram, int is_schmeisr)
 			case 0x2000: pri = 0; break;
 		}
 
-		int y = spriteptr[offs];
+		INT32 y = spriteptr[offs];
 
 		if ((y & 0x1000) && (nCurrentFrame & 1)) continue; // flash
 
-		int colour = (((x >> 9) & 0xf) << 6);
+		INT32 colour = (((x >> 9) & 0xf) << 6);
 		if (is_schmeisr) colour += ((x & 0x8000) >> 15) << 4;
 
-		int fx = y & 0x2000;
-		int fy = y & 0x4000;
-		int multi = (1 << ((y & 0x0600) >> 9)) - 1;
+		INT32 fx = y & 0x2000;
+		INT32 fy = y & 0x4000;
+		INT32 multi = (1 << ((y & 0x0600) >> 9)) - 1;
 
 		x = x & 0x01ff;
 		y = y & 0x01ff;
@@ -1231,18 +1231,18 @@ static void rohga_draw_sprites(unsigned char *ram, int is_schmeisr)
 	}
 }
 
-static void wizdfire_draw_sprites(unsigned char *ram, unsigned char *gfx, int coloff, int mode, int bank)
+static void wizdfire_draw_sprites(UINT8 *ram, UINT8 *gfx, INT32 coloff, INT32 mode, INT32 bank)
 {
-	unsigned short *spriteptr = (unsigned short*)ram;
+	UINT16 *spriteptr = (UINT16*)ram;
 
-	for (int offs = 0; offs < 0x400; offs += 4)
+	for (INT32 offs = 0; offs < 0x400; offs += 4)
 	{
-		int inc, mult, prio = 0, alpha = 0xff;
+		INT32 inc, mult, prio = 0, alpha = 0xff;
 
-		int sprite = spriteptr[offs + 1];
+		INT32 sprite = spriteptr[offs + 1];
 		if (!sprite) continue;
 
-		int x = spriteptr[offs + 2];
+		INT32 x = spriteptr[offs + 2];
 
 		switch (mode)
 		{
@@ -1270,11 +1270,11 @@ static void wizdfire_draw_sprites(unsigned char *ram, unsigned char *gfx, int co
 			break;
 		}
 
-		int y = spriteptr[offs];
+		INT32 y = spriteptr[offs];
 
 		if ((y & 0x1000) && (nCurrentFrame & 1)) continue; // flash
 
-		int colour = (x >> 9) & 0x1f;
+		INT32 colour = (x >> 9) & 0x1f;
 
 		if (bank == 4 && colour & 0x10)
 		{
@@ -1282,9 +1282,9 @@ static void wizdfire_draw_sprites(unsigned char *ram, unsigned char *gfx, int co
 			colour &= 0xf;
 		}
 
-		int fx = y & 0x2000;
-		int fy = y & 0x4000;
-		int multi = (1 << ((y & 0x0600) >> 9)) - 1;
+		INT32 fx = y & 0x2000;
+		INT32 fy = y & 0x4000;
+		INT32 multi = (1 << ((y & 0x0600) >> 9)) - 1;
 
 		x = x & 0x01ff;
 		y = y & 0x01ff;
@@ -1333,21 +1333,21 @@ static void wizdfire_draw_sprites(unsigned char *ram, unsigned char *gfx, int co
 	}
 }
 
-static void nitrobal_draw_sprites(unsigned char *ram, int gfxbank, int /*bpp*/)
+static void nitrobal_draw_sprites(UINT8 *ram, INT32 gfxbank, INT32 /*bpp*/)
 {
 //	if (bpp != (nBurnBpp & 0x04)) return;
 
-	unsigned short *spriteptr = (unsigned short*)ram;
+	UINT16 *spriteptr = (UINT16*)ram;
 
-	int offs = 0x3fc;
-	int end = -4;
-	int inc = -4;
-	unsigned char *gfx;
+	INT32 offs = 0x3fc;
+	INT32 end = -4;
+	INT32 inc = -4;
+	UINT8 *gfx;
 
 	while (offs != end)
 	{
-		int x, y, sprite, colour, fx, fy, w, h, sx, sy, x_mult, y_mult, tilemap_pri, sprite_pri, coloff;
-		int alpha = 0xff;
+		INT32 x, y, sprite, colour, fx, fy, w, h, sx, sy, x_mult, y_mult, tilemap_pri, sprite_pri, coloff;
+		INT32 alpha = 0xff;
 
 		sprite = spriteptr[offs + 3];
 		if (!sprite)
@@ -1460,7 +1460,7 @@ static void nitrobal_draw_sprites(unsigned char *ram, int gfxbank, int /*bpp*/)
 
 static void draw_combined_playfield_step1()
 {
-	unsigned char *tptr = deco16_pf_rowscroll[3];
+	UINT8 *tptr = deco16_pf_rowscroll[3];
 	deco16_pf_rowscroll[3] = deco16_pf_rowscroll[2];
 
 	deco16_draw_layer(2, tempdraw[0], 0x10000);
@@ -1469,15 +1469,15 @@ static void draw_combined_playfield_step1()
 	deco16_pf_rowscroll[3] = tptr;
 }
 
-static void draw_combined_playfield(int color, int priority) // opaque
+static void draw_combined_playfield(INT32 color, INT32 priority) // opaque
 {
-	unsigned short *src0 = tempdraw[0];
-	unsigned short *src1 = tempdraw[1];
-	unsigned short *dest = pTransDraw;
-	unsigned char *prio = deco16_prio_map;
+	UINT16 *src0 = tempdraw[0];
+	UINT16 *src1 = tempdraw[1];
+	UINT16 *dest = pTransDraw;
+	UINT8 *prio = deco16_prio_map;
 
-	for (int y = 0; y < nScreenHeight; y++) {
-		for (int x = 0; x < nScreenWidth; x++) {
+	for (INT32 y = 0; y < nScreenHeight; y++) {
+		for (INT32 x = 0; x < nScreenWidth; x++) {
 			dest[x] = color | (src0[x] & 0x0f) | ((src1[x] & 0x0f) << 4);
 			prio[x] = priority;
 		}
@@ -1488,7 +1488,7 @@ static void draw_combined_playfield(int color, int priority) // opaque
 	}
 }
 
-static void update_rohga(int is_schmeisr)
+static void update_rohga(INT32 is_schmeisr)
 {
 //	if (DrvRecalc) {
 		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
@@ -1498,7 +1498,7 @@ static void update_rohga(int is_schmeisr)
 	deco16_pf12_update();
 	deco16_pf34_update();
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x300;
 	}
 
@@ -1543,21 +1543,21 @@ static void update_rohga(int is_schmeisr)
 	BurnTransferCopy(DrvPalette);
 }
 
-static int RohgaDraw()
+static INT32 RohgaDraw()
 {
 	update_rohga(0);
 
 	return 0;
 }
 
-static int SchmeisrDraw()
+static INT32 SchmeisrDraw()
 {
 	update_rohga(1);
 
 	return 0;
 }
 
-static int WizdfireDraw()
+static INT32 WizdfireDraw()
 {
 //	if (DrvRecalc) {
 		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
@@ -1567,7 +1567,7 @@ static int WizdfireDraw()
 	deco16_pf12_update();
 	deco16_pf34_update();
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x200;
 	}
 
@@ -1596,7 +1596,7 @@ static int WizdfireDraw()
 	return 0;
 }
 
-static int NitrobalDraw()
+static INT32 NitrobalDraw()
 {
 //	if (DrvRecalc) {
 		deco16_palette_recalculate(DrvPalette, DrvPalRAM);
@@ -1606,7 +1606,7 @@ static int NitrobalDraw()
 	deco16_pf12_update();
 	deco16_pf34_update();
 
-	for (int i = 0; i < nScreenWidth * nScreenHeight; i++) {
+	for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++) {
 		pTransDraw[i] = 0x200;
 	}
 
@@ -1633,7 +1633,7 @@ static int NitrobalDraw()
 	return 0;
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
 	if (DrvReset) {
 		DrvDoReset();
@@ -1641,8 +1641,8 @@ static int DrvFrame()
 
 	{
 		deco16_prot_inputs = DrvInputs;
-		memset (DrvInputs, 0xff, 4 * sizeof(short)); 
-		for (int i = 0; i < 16; i++) {
+		memset (DrvInputs, 0xff, 4 * sizeof(INT16)); 
+		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
 			DrvInputs[3] ^= (DrvJoy3[i] & 1) << i;
@@ -1650,15 +1650,15 @@ static int DrvFrame()
 		DrvInputs[2] = (DrvDips[1] << 8) | (DrvDips[0] << 0);
 	}
 
-	int nInterleave = 256;
-	int nCyclesTotal[2] = { 14000000 / 58, 2685000 / 58 };
-	int nCyclesDone[2] = { 0, 0 };
+	INT32 nInterleave = 256;
+	INT32 nCyclesTotal[2] = { 14000000 / 58, 2685000 / 58 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 
 	deco16_vblank = 0;
 
-	for (int i = 0; i < nInterleave; i++)
+	for (INT32 i = 0; i < nInterleave; i++)
 	{
 		nCyclesDone[0] += SekRun(nCyclesTotal[0] / nInterleave);
 	//	nCyclesDone[1] += HucRun(nCyclesTotal[1] / nInterleave);
@@ -1683,7 +1683,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	
@@ -1711,7 +1711,7 @@ static int DrvScan(int nAction, int *pnMin)
 
 		SCAN_VAR(DrvOkiBank);
 
-		int bank = DrvOkiBank;
+		INT32 bank = DrvOkiBank;
 		DrvOkiBank = -1;
 		DrvYM2151WritePort(0, bank);
 	}

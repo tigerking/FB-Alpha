@@ -10,53 +10,53 @@
 #include "msm6295.h"
 #include "burn_ym2203.h"
 
-static unsigned char *Mem = NULL, *MemEnd = NULL;
-static unsigned char *RamStart, *RamEnd;
+static UINT8 *Mem = NULL, *MemEnd = NULL;
+static UINT8 *RamStart, *RamEnd;
 
-static unsigned char *Rom68K;
-static unsigned char *RomZ80;
-static unsigned char *RomBg;
-static unsigned char *RomFg;
-static unsigned char *RomSpr;
+static UINT8 *Rom68K;
+static UINT8 *RomZ80;
+static UINT8 *RomBg;
+static UINT8 *RomFg;
+static UINT8 *RomSpr;
 
-static unsigned char *RamZ80;
-static unsigned short *RamPal;
-static unsigned short *RamBg;
-static unsigned short *RamFg;
-static unsigned short *RamSpr;
-static unsigned short *RamVReg;
+static UINT8 *RamZ80;
+static UINT16 *RamPal;
+static UINT16 *RamBg;
+static UINT16 *RamFg;
+static UINT16 *RamSpr;
+static UINT16 *RamVReg;
 
-static unsigned int *RamCurPal;
+static UINT32 *RamCurPal;
 
-static unsigned char DrvButton[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-static unsigned char DrvJoy1[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-static unsigned char DrvJoy2[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-static unsigned char DrvInput[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static UINT8 DrvButton[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static UINT8 DrvJoy1[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static UINT8 DrvJoy2[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static UINT8 DrvInput[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-static unsigned char bRecalcPalette = 0;
-static unsigned char DrvReset = 0;
+static UINT8 bRecalcPalette = 0;
+static UINT8 DrvReset = 0;
 
-static unsigned int tile_bank;
-static int m6295size;
-static unsigned short soundlatch = 0;
-static int oki_bank = -1;
+static UINT32 tile_bank;
+static INT32 m6295size;
+static UINT16 soundlatch = 0;
+static INT32 oki_bank = -1;
 
 #define	GAME_POWERINS	1
 #define	GAME_POWERINA	2
 #define	GAME_POWERINB	3
 
-static int game_drv = 0;
+static INT32 game_drv = 0;
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
-inline static void CalcCol(int idx)
+inline static void CalcCol(INT32 idx)
 {
 	/* RRRR GGGG BBBB RGBx */
-	unsigned short wordValue = RamPal[idx];
-	int r = ((wordValue >> 8) & 0xF0 ) | ((wordValue << 0) & 0x08) | ((wordValue >> 13) & 0x07 );
-	int g = ((wordValue >> 4) & 0xF0 ) | ((wordValue << 1) & 0x08) | ((wordValue >>  9) & 0x07 );
-	int b = ((wordValue >> 0) & 0xF0 ) | ((wordValue << 2) & 0x08) | ((wordValue >>  5) & 0x07 );
+	UINT16 wordValue = RamPal[idx];
+	INT32 r = ((wordValue >> 8) & 0xF0 ) | ((wordValue << 0) & 0x08) | ((wordValue >> 13) & 0x07 );
+	INT32 g = ((wordValue >> 4) & 0xF0 ) | ((wordValue << 1) & 0x08) | ((wordValue >>  9) & 0x07 );
+	INT32 b = ((wordValue >> 0) & 0xF0 ) | ((wordValue << 2) & 0x08) | ((wordValue >>  5) & 0x07 );
 	RamCurPal[idx] = BurnHighCol(r, g, b, 0);
 }
 
@@ -337,18 +337,18 @@ static struct BurnRomInfo powerinbRomDesc[] = {
 STD_ROM_PICK(powerinb)
 STD_ROM_FN(powerinb)
 
-static void sndSetBank(unsigned char offset, unsigned char data)
+static void sndSetBank(UINT8 offset, UINT8 data)
 {
-	int chip = (offset & 4) >> 2;
-	int bank = offset & 3;
+	INT32 chip = (offset & 4) >> 2;
+	INT32 bank = offset & 3;
 
 	MSM6295SampleInfo[chip][bank] = MSM6295ROM + 0x200000 * chip + 0x010000 * data + (bank << 8);
 	MSM6295SampleData[chip][bank] = MSM6295ROM + 0x200000 * chip + 0x010000 * data;
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 	Rom68K 		= Next; Next += 0x0100000;			// 68000 ROM
 	RomZ80		= Next; Next += 0x0020000;			// Z80 ROM
 	RomBg		= Next; Next += 0x0500000;
@@ -360,21 +360,21 @@ static int MemIndex()
 
 	RamZ80		= Next; Next += 0x002000;
 
-	RamPal		= (unsigned short *) Next; Next += 0x001000;
-	RamBg		= (unsigned short *) Next; Next += 0x004000;
-	RamFg		= (unsigned short *) Next; Next += 0x001000;
-	RamSpr		= (unsigned short *) Next; Next += 0x010000;
-	RamVReg		= (unsigned short *) Next; Next += 0x000008;
+	RamPal		= (UINT16 *) Next; Next += 0x001000;
+	RamBg		= (UINT16 *) Next; Next += 0x004000;
+	RamFg		= (UINT16 *) Next; Next += 0x001000;
+	RamSpr		= (UINT16 *) Next; Next += 0x010000;
+	RamVReg		= (UINT16 *) Next; Next += 0x000008;
 
 	RamEnd		= Next;
 
-	RamCurPal	= (unsigned int *) Next; Next += 0x000800 * sizeof(unsigned int);
+	RamCurPal	= (UINT32 *) Next; Next += 0x000800 * sizeof(UINT32);
 
 	MemEnd		= Next;
 	return 0;
 }
 
-unsigned char __fastcall powerinsReadByte(unsigned int sekAddress)
+UINT8 __fastcall powerinsReadByte(UINT32 sekAddress)
 {
 	switch (sekAddress) {
 		
@@ -387,7 +387,7 @@ unsigned char __fastcall powerinsReadByte(unsigned int sekAddress)
 	return 0;
 }
 
-unsigned short __fastcall powerinsReadWord(unsigned int sekAddress)
+UINT16 __fastcall powerinsReadWord(UINT32 sekAddress)
 {
 	switch (sekAddress)
 	{
@@ -409,7 +409,7 @@ unsigned short __fastcall powerinsReadWord(unsigned int sekAddress)
 	return 0;
 }
 
-void __fastcall powerinsWriteByte(unsigned int sekAddress, unsigned char byteValue)
+void __fastcall powerinsWriteByte(UINT32 sekAddress, UINT8 byteValue)
 {
 	switch (sekAddress)
 	{
@@ -435,7 +435,7 @@ void __fastcall powerinsWriteByte(unsigned int sekAddress, unsigned char byteVal
 	}
 }
 
-void __fastcall powerinsWriteWord(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall powerinsWriteWord(UINT32 sekAddress, UINT16 wordValue)
 {
 	switch (sekAddress)
 	{
@@ -471,7 +471,7 @@ void __fastcall powerinsWriteWord(unsigned int sekAddress, unsigned short wordVa
 	}
 }
 
-void __fastcall powerinsWriteWordPalette(unsigned int sekAddress, unsigned short wordValue)
+void __fastcall powerinsWriteWordPalette(UINT32 sekAddress, UINT16 wordValue)
 {
 	sekAddress -= 0x120000;
 	sekAddress >>= 1;
@@ -479,7 +479,7 @@ void __fastcall powerinsWriteWordPalette(unsigned int sekAddress, unsigned short
 	CalcCol( sekAddress );
 }
 
-unsigned char __fastcall powerinsZ80Read(unsigned short a)
+UINT8 __fastcall powerinsZ80Read(UINT16 a)
 {
 	switch (a)
 	{
@@ -494,7 +494,7 @@ unsigned char __fastcall powerinsZ80Read(unsigned short a)
 }
 
 #if 1 && defined FBA_DEBUG
-void __fastcall powerinsZ80Write(unsigned short a,unsigned char v)
+void __fastcall powerinsZ80Write(UINT16 a,UINT8 v)
 {
 	switch (a) {
 		case 0xE000:
@@ -507,7 +507,7 @@ void __fastcall powerinsZ80Write(unsigned short a,unsigned char v)
 }
 #endif
 
-unsigned char __fastcall powerinsZ80In(unsigned short p)
+UINT8 __fastcall powerinsZ80In(UINT16 p)
 {
 	switch (p & 0xFF)
 	{
@@ -536,7 +536,7 @@ unsigned char __fastcall powerinsZ80In(unsigned short p)
 	return 0;
 }
 
-void __fastcall powerinsZ80Out(unsigned short p, unsigned char v)
+void __fastcall powerinsZ80Out(UINT16 p, UINT8 v)
 {
 	switch (p & 0x0FF) {
 		case 0x00:
@@ -571,7 +571,7 @@ void __fastcall powerinsZ80Out(unsigned short p, unsigned char v)
 	}
 }
 
-static void powerinsIRQHandler(int, int nStatus)
+static void powerinsIRQHandler(INT32, INT32 nStatus)
 {
 //	bprintf(PRINT_NORMAL, _T("powerinsIRQHandler %i\n"), nStatus);
 	
@@ -582,9 +582,9 @@ static void powerinsIRQHandler(int, int nStatus)
 	}
 }
 
-static int powerinsSynchroniseStream(int nSoundRate)
+static INT32 powerinsSynchroniseStream(INT32 nSoundRate)
 {
-	return (long long)ZetTotalCycles() * nSoundRate / 6000000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 6000000;
 }
 
 static double powerinsGetTime()
@@ -592,7 +592,7 @@ static double powerinsGetTime()
 	return (double)ZetTotalCycles() / 6000000;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekSetIRQLine(0, SEK_IRQSTATUS_NONE);
@@ -615,12 +615,12 @@ static int DrvDoReset()
 	return 0;
 }
 
-static void LoadDecodeBgRom(unsigned char *tmp, unsigned char * dest, int id, int size)
+static void LoadDecodeBgRom(UINT8 *tmp, UINT8 * dest, INT32 id, INT32 size)
 {
 	BurnLoadRom(tmp, id, 1);
 
-	for (int z=0;z<(size/128);z++) {
-		for (int y=0;y<16;y++) {
+	for (INT32 z=0;z<(size/128);z++) {
+		for (INT32 y=0;y<16;y++) {
 			dest[ 0] = tmp[ 0] >> 4;
 			dest[ 1] = tmp[ 0] & 15;
 			dest[ 2] = tmp[ 1] >> 4;
@@ -648,7 +648,7 @@ static void LoadDecodeBgRom(unsigned char *tmp, unsigned char * dest, int id, in
 	}
 }
 
-static void LoadDecodeSprRom(unsigned char *tmp, unsigned char * dest, int id, int size)
+static void LoadDecodeSprRom(UINT8 *tmp, UINT8 * dest, INT32 id, INT32 size)
 {
 	if ( game_drv == GAME_POWERINB ) {
 		BurnLoadRom(tmp + 0,  9 + id*2, 2);
@@ -656,8 +656,8 @@ static void LoadDecodeSprRom(unsigned char *tmp, unsigned char * dest, int id, i
 	} else 
 		BurnLoadRom(tmp, id, 1);
 
-	for (int z=0;z<(size/128);z++) {
-		for (int y=0;y<16;y++) {
+	for (INT32 z=0;z<(size/128);z++) {
+		for (INT32 y=0;y<16;y++) {
 			dest[ 0] = tmp[ 1] >> 4;
 			dest[ 1] = tmp[ 1] & 15;
 			dest[ 2] = tmp[ 0] >> 4;
@@ -685,10 +685,10 @@ static void LoadDecodeSprRom(unsigned char *tmp, unsigned char * dest, int id, i
 	}
 }
 
-static int powerinsInit()
+static INT32 powerinsInit()
 {
-	int nRet;
-	unsigned char * tmp;
+	INT32 nRet;
+	UINT8 * tmp;
 
 	m6295size = 0x80000 * 4 * 2;
 
@@ -706,14 +706,14 @@ static int powerinsInit()
 
 	Mem = NULL;
 	MemIndex();
-	int nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	INT32 nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();	
 
 	// load roms
 
-	tmp = (unsigned char *)malloc(0x200000);
+	tmp = (UINT8 *)malloc(0x200000);
 	if (tmp==0) return 1;
 
 	if ( game_drv == GAME_POWERINS ) {
@@ -730,7 +730,7 @@ static int powerinsInit()
 		BurnLoadRom(RomFg + 0x000000,  6, 1);
 
 		// load sprite roms
-		for (int i=0;i<8;i++)
+		for (INT32 i=0;i<8;i++)
 			LoadDecodeSprRom(tmp, RomSpr+0x200000*i, i+7, 0x100000);
 
 		BurnLoadRom(MSM6295ROM + 0x000000, 15, 1);
@@ -752,7 +752,7 @@ static int powerinsInit()
 		BurnLoadRom(RomFg + 0x000000,  4, 1);
 
 		// load sprite roms
-		for (int i=0;i<4;i++)
+		for (INT32 i=0;i<4;i++)
 			LoadDecodeSprRom(tmp, RomSpr+0x400000*i, i+5, 0x200000);
 
 		BurnLoadRom(MSM6295ROM + 0x10000, 9, 1);
@@ -767,14 +767,14 @@ static int powerinsInit()
 		nRet = BurnLoadRom(RomZ80 + 0x000000, 2, 1); if (nRet != 0) return 1;
 
 		// load background tile roms
-		for (int i=0;i<5;i++)
+		for (INT32 i=0;i<5;i++)
 			LoadDecodeBgRom(tmp, RomBg+0x100000*i, i+3, 0x80000);
 
 		// load foreground tile roms
 		BurnLoadRom(RomFg + 0x000000,  8, 1);
 
 		// load sprite roms
-		for (int i=0;i<8;i++)
+		for (INT32 i=0;i<8;i++)
 			LoadDecodeSprRom(tmp, RomSpr+0x200000*i, i, 0x100000);
 
 		BurnLoadRom(MSM6295ROM + 0x000000, 25, 1);
@@ -799,15 +799,15 @@ static int powerinsInit()
 
 		// Map 68000 memory:
 		SekMapMemory(Rom68K,		0x000000, 0x0FFFFF, SM_ROM);	// CPU 0 ROM
-		SekMapMemory((unsigned char *)RamPal,
+		SekMapMemory((UINT8 *)RamPal,
 									0x120000, 0x120FFF, SM_ROM);	// palette
-		SekMapMemory((unsigned char *)RamBg,
+		SekMapMemory((UINT8 *)RamBg,
 									0x140000, 0x143fff, SM_RAM);	// b ground
-		SekMapMemory((unsigned char *)RamFg,		
+		SekMapMemory((UINT8 *)RamFg,		
 									0x170000, 0x170fff, SM_RAM);	// f ground
-		SekMapMemory((unsigned char *)RamFg,		
+		SekMapMemory((UINT8 *)RamFg,		
 									0x171000, 0x171fff, SM_RAM);	// f ground Mirror
-		SekMapMemory((unsigned char *)RamSpr,
+		SekMapMemory((UINT8 *)RamSpr,
 									0x180000, 0x18ffff, SM_RAM);	// sprites
 
 		SekMapHandler(1,			0x120000, 0x120FFF, SM_WRITE);
@@ -873,7 +873,7 @@ static int powerinsInit()
 	return 0;
 }
 
-static int powerinsExit()
+static INT32 powerinsExit()
 {
 	GenericTilesExit();
 
@@ -898,20 +898,20 @@ static int powerinsExit()
 
 static void TileBackground()
 {
-	for (int offs = 256*32-1; offs >=0; offs--) {
+	for (INT32 offs = 256*32-1; offs >=0; offs--) {
 
-		int page = offs >> 8;
-		int x = (offs >> 4) & 0xF;
-		int y = (offs >> 0) & 0xF;
+		INT32 page = offs >> 8;
+		INT32 x = (offs >> 4) & 0xF;
+		INT32 y = (offs >> 0) & 0xF;
 
 		x = x * 16 + (page &  7) * 256 + 32 - ((RamVReg[1]&0xff) + (RamVReg[0]&0xff)*256);
 		y = y * 16 + (page >> 4) * 256 - 16 - ((RamVReg[3]&0xff) + (RamVReg[2]&0xff)*256);
 
 		if ( x<=-16 || x>=320 || y <=-16 || y>=224 ) continue;
 		else {
-			int attr = RamBg[offs];
-			int code = ((attr & 0x7ff) + tile_bank);
-			int color = (attr >> 12) | ((attr >> 7) & 0x10);
+			INT32 attr = RamBg[offs];
+			INT32 code = ((attr & 0x7ff) + tile_bank);
+			INT32 color = (attr >> 12) | ((attr >> 7) & 0x10);
 
 			if ( x >=0 && x <= (320-16) && y>=0 && y <=(224-16) ) {
 				Render16x16Tile(pTransDraw, code, x, y, color, 4, 0, RomBg);
@@ -924,17 +924,17 @@ static void TileBackground()
 
 static void TileForeground()
 {
-	for (int offs = 0; offs < 64*32; offs++) {
-		int x = ((offs & 0xFFE0) >> 2 ) + 32;
-		int y = ((offs & 0x001F) << 3 ) - 16;
+	for (INT32 offs = 0; offs < 64*32; offs++) {
+		INT32 x = ((offs & 0xFFE0) >> 2 ) + 32;
+		INT32 y = ((offs & 0x001F) << 3 ) - 16;
 		if (x > 320) x -= 512;
 		if ( x<0 || x>(320-8) || y<0 || y>(224-8)) continue;
 		else {
 			if ((RamFg[offs] & 0x0FFF) == 0) continue;
-			unsigned char *d = RomFg + (RamFg[offs] & 0x0FFF) * 32;
- 			unsigned short c = ((RamFg[offs] & 0xF000) >> 8) | 0x200;
- 			unsigned short *p = pTransDraw + y * 320 + x;
-			for (int k=0;k<8;k++) {
+			UINT8 *d = RomFg + (RamFg[offs] & 0x0FFF) * 32;
+ 			UINT16 c = ((RamFg[offs] & 0xF000) >> 8) | 0x200;
+ 			UINT16 *p = pTransDraw + y * 320 + x;
+			for (INT32 k=0;k<8;k++) {
  				if ((d[0] >>  4) != 15) p[0] = (d[0] >>  4) | c;
  				if ((d[0] & 0xF) != 15) p[1] = (d[0] & 0xF) | c;
  				if ((d[1] >>  4) != 15) p[2] = (d[1] >>  4) | c;
@@ -950,7 +950,7 @@ static void TileForeground()
 	}
 }
 
-static inline void drawgfx(unsigned int code,unsigned int color,int flipx,/*int flipy,*/int sx,int sy)
+static inline void drawgfx(UINT32 code,UINT32 color,INT32 flipx,/*INT32 flipy,*/INT32 sx,INT32 sy)
 {
 	if (sx >= 0 && sx <= (320-16) && sy >= 0 && sy <= (224-16) ) {
 		if ( flipx )
@@ -967,27 +967,27 @@ static inline void drawgfx(unsigned int code,unsigned int color,int flipx,/*int 
 
 static void DrawSprites()
 {
-	unsigned short *source = RamSpr + 0x8000/2;
-	unsigned short *finish = RamSpr + 0x9000/2;
+	UINT16 *source = RamSpr + 0x8000/2;
+	UINT16 *finish = RamSpr + 0x9000/2;
 
 	for ( ; source < finish; source += 8 ) {
 
 		if (!(source[0]&1)) continue;
 
-		int	size	=	source[1];
-		int	code	=	(source[3] & 0x7fff) + ( (size & 0x0100) << 7 );
-		int	sx		=	source[4];
-		int	sy		=	source[6];
-		int	color	=	source[7] & 0x3F;
-		int	flipx	=	size & 0x1000;
-		int	dimx	=	((size >> 0) & 0xf ) + 1;
-		int	dimy	=	((size >> 4) & 0xf ) + 1;
+		INT32	size	=	source[1];
+		INT32	code	=	(source[3] & 0x7fff) + ( (size & 0x0100) << 7 );
+		INT32	sx		=	source[4];
+		INT32	sy		=	source[6];
+		INT32	color	=	source[7] & 0x3F;
+		INT32	flipx	=	size & 0x1000;
+		INT32	dimx	=	((size >> 0) & 0xf ) + 1;
+		INT32	dimy	=	((size >> 4) & 0xf ) + 1;
 
 		sx &= 0x3ff; if (sx > 0x1ff) sx -= 0x400; sx += 32;
 		sy &= 0x3ff; if (sy > 0x1ff) sy -= 0x400; sy -= 16;
 
-		for (int x = 0 ; x < dimx ; x++)
-			for (int y = 0 ; y < dimy ; y++) {
+		for (INT32 x = 0 ; x < dimx ; x++)
+			for (INT32 y = 0 ; y < dimy ; y++) {
 				drawgfx(code, color, flipx, /*flipy, */sx + x*16, sy + y*16);
 				code ++;
 			}
@@ -997,7 +997,7 @@ static void DrawSprites()
 static void DrvDraw()
 {
 	if (bRecalcPalette) {
-		for (int i=0; i<0x800; i++) CalcCol(i);
+		for (INT32 i=0; i<0x800; i++) CalcCol(i);
 		bRecalcPalette = 0;
 	}
 
@@ -1010,24 +1010,24 @@ static void DrvDraw()
 	BurnTransferCopy(RamCurPal);
 }
 
-static int powerinsFrame()
+static INT32 powerinsFrame()
 {
-	int nInterleave = 200;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 200;
+	INT32 nSoundBufferPos = 0;
 	
 	if (DrvReset) DrvDoReset();
 	
 	DrvInput[0] = 0x00;
 	DrvInput[2] = 0x00;
 	DrvInput[3] = 0x00;
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[2] |= (DrvJoy1[i] & 1) << i;
 		DrvInput[3] |= (DrvJoy2[i] & 1) << i;
 		DrvInput[0] |= (DrvButton[i] & 1) << i;
 	}
 	
-	nCyclesTotal[0] = (int)((long long)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 56));
-	if (game_drv == GAME_POWERINB) nCyclesTotal[0] = (int)((long long)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 56));
+	if (game_drv == GAME_POWERINB) nCyclesTotal[0] = (INT32)((INT64)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 	nCyclesTotal[1] = 6000000 / 60;
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
@@ -1039,7 +1039,7 @@ static int powerinsFrame()
 	}
 
 	if ( game_drv == GAME_POWERINA ) {
-		nCyclesTotal[0] = (int)((long long)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+		nCyclesTotal[0] = (INT32)((INT64)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 		SekRun(nCyclesTotal[0]);
 		SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
 
@@ -1047,8 +1047,8 @@ static int powerinsFrame()
 	}
 	
 	if (game_drv == GAME_POWERINS) {
-		for (int i = 0; i < nInterleave; i++) {
-			int nCurrentCPU, nNext;
+		for (INT32 i = 0; i < nInterleave; i++) {
+			INT32 nCurrentCPU, nNext;
 
 			nCurrentCPU = 0;
 			nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
@@ -1058,8 +1058,8 @@ static int powerinsFrame()
 			BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
 		
 			if (pBurnSoundOut) {
-				int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				BurnYM2203Update(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 				MSM6295Render(1, pSoundBuf, nSegmentLength);
@@ -1071,8 +1071,8 @@ static int powerinsFrame()
 	}	
 	
 	if (game_drv == GAME_POWERINB) {
-		for (int i = 0; i < nInterleave; i++) {
-			int nCurrentCPU, nNext;
+		for (INT32 i = 0; i < nInterleave; i++) {
+			INT32 nCurrentCPU, nNext;
 
 			nCurrentCPU = 0;
 			nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
@@ -1088,8 +1088,8 @@ static int powerinsFrame()
 			}
 		
 			if (pBurnSoundOut) {
-				int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-				short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 				MSM6295Render(1, pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
 				nSoundBufferPos += nSegmentLength;
@@ -1105,8 +1105,8 @@ static int powerinsFrame()
 		BurnTimerEndFrame(nCyclesTotal[1]);
 	
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				BurnYM2203Update(pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);
@@ -1121,8 +1121,8 @@ static int powerinsFrame()
 		ZetRun(nCyclesTotal[1] - nCyclesDone[1]);
 	
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			if (nSegmentLength) {
 				MSM6295Render(1, pSoundBuf, nSegmentLength);
 				MSM6295Render(0, pSoundBuf, nSegmentLength);				
@@ -1137,7 +1137,7 @@ static int powerinsFrame()
 	return 0;
 }
 
-static int powerinsScan(int nAction,int *pnMin)
+static INT32 powerinsScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 

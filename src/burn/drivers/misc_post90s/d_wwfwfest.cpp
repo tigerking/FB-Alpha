@@ -2,51 +2,51 @@
 #include "burn_ym2151.h"
 #include "msm6295.h"
 
-static unsigned char DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvInputPort4[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char DrvDip[2]        = {0, 0};
-static unsigned char DrvInput[5]      = {0, 0, 0, 0, 0};
-static unsigned char DrvReset         = 0;
+static UINT8 DrvInputPort0[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort1[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort2[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort3[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvInputPort4[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8 DrvDip[2]        = {0, 0};
+static UINT8 DrvInput[5]      = {0, 0, 0, 0, 0};
+static UINT8 DrvReset         = 0;
 
-static unsigned char *Mem                 = NULL;
-static unsigned char *MemEnd              = NULL;
-static unsigned char *RamStart            = NULL;
-static unsigned char *RamEnd              = NULL;
-static unsigned char *Drv68KRom           = NULL;
-static unsigned char *Drv68KRam           = NULL;
-static unsigned char *DrvZ80Rom           = NULL;
-static unsigned char *DrvZ80Ram           = NULL;
-static unsigned char *DrvMSM6295ROMSrc    = NULL;
-static unsigned char *DrvCharVideoRam     = NULL;
-static unsigned char *DrvSpriteRam        = NULL;
-static unsigned char *DrvSpriteRamBuff    = NULL;
-static unsigned char *DrvBg0VideoRam      = NULL;
-static unsigned char *DrvBg1VideoRam      = NULL;
-static unsigned char *DrvPaletteRam       = NULL;
-static unsigned char *DrvChars            = NULL;
-static unsigned char *DrvTiles            = NULL;
-static unsigned char *DrvSprites          = NULL;
-static unsigned char *DrvTempRom          = NULL;
-static unsigned int  *DrvPalette          = NULL;
+static UINT8 *Mem                 = NULL;
+static UINT8 *MemEnd              = NULL;
+static UINT8 *RamStart            = NULL;
+static UINT8 *RamEnd              = NULL;
+static UINT8 *Drv68KRom           = NULL;
+static UINT8 *Drv68KRam           = NULL;
+static UINT8 *DrvZ80Rom           = NULL;
+static UINT8 *DrvZ80Ram           = NULL;
+static UINT8 *DrvMSM6295ROMSrc    = NULL;
+static UINT8 *DrvCharVideoRam     = NULL;
+static UINT8 *DrvSpriteRam        = NULL;
+static UINT8 *DrvSpriteRamBuff    = NULL;
+static UINT8 *DrvBg0VideoRam      = NULL;
+static UINT8 *DrvBg1VideoRam      = NULL;
+static UINT8 *DrvPaletteRam       = NULL;
+static UINT8 *DrvChars            = NULL;
+static UINT8 *DrvTiles            = NULL;
+static UINT8 *DrvSprites          = NULL;
+static UINT8 *DrvTempRom          = NULL;
+static UINT32 *DrvPalette          = NULL;
 
-static unsigned char DrvVBlank;
-static unsigned char DrvOkiBank;
-static unsigned char DrvSoundLatch;
+static UINT8 DrvVBlank;
+static UINT8 DrvOkiBank;
+static UINT8 DrvSoundLatch;
 static UINT16        DrvBg0ScrollX;
 static UINT16        DrvBg0ScrollY;
 static UINT16        DrvBg1ScrollX;
 static UINT16        DrvBg1ScrollY;
 static UINT16        DrvVReg;
 
-static int DrvSpriteXOffset;
-static int DrvBg0XOffset;
-static int DrvBg1XOffset[2];
+static INT32 DrvSpriteXOffset;
+static INT32 DrvBg0XOffset;
+static INT32 DrvBg1XOffset[2];
 
-static int nCyclesDone[2], nCyclesTotal[2];
-static int nCyclesSegment;
+static INT32 nCyclesDone[2], nCyclesTotal[2];
+static INT32 nCyclesSegment;
 
 static struct BurnInputInfo DrvInputList[] =
 {
@@ -92,7 +92,7 @@ static struct BurnInputInfo DrvInputList[] =
 
 STDINPUTINFO(Drv)
 
-static inline void DrvClearOpposites(unsigned char* nJoystickInputs)
+static inline void DrvClearOpposites(UINT8* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -108,7 +108,7 @@ static inline void DrvMakeInputs()
 	DrvInput[0] = DrvInput[1] = DrvInput[2] = DrvInput[3] = DrvInput[4] = 0x00;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 8; i++) {
+	for (INT32 i = 0; i < 8; i++) {
 		DrvInput[0] |= (DrvInputPort0[i] & 1) << i;
 		DrvInput[1] |= (DrvInputPort1[i] & 1) << i;
 		DrvInput[2] |= (DrvInputPort2[i] & 1) << i;
@@ -291,9 +291,9 @@ static struct BurnRomInfo DrvjRomDesc[] = {
 STD_ROM_PICK(Drvj)
 STD_ROM_FN(Drvj)
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	Drv68KRom              = Next; Next += 0x80000;
 	DrvZ80Rom              = Next; Next += 0x10000;
@@ -316,14 +316,14 @@ static int MemIndex()
 	DrvChars               = Next; Next += 0x01000 * 8 * 8;
 	DrvTiles               = Next; Next += 0x01000 * 16 * 16;
 	DrvSprites             = Next; Next += 0x10000 * 16 * 16;
-	DrvPalette             = (unsigned int*)Next; Next += 0x02000 * sizeof(unsigned int);
+	DrvPalette             = (UINT32*)Next; Next += 0x02000 * sizeof(UINT32);
 
 	MemEnd                 = Next;
 
 	return 0;
 }
 
-static int DrvDoReset()
+static INT32 DrvDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -348,7 +348,7 @@ static int DrvDoReset()
 	return 0;
 }
 
-unsigned char __fastcall Wwfwfest68KReadByte(unsigned int a)
+UINT8 __fastcall Wwfwfest68KReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0x140020: {
@@ -386,7 +386,7 @@ unsigned char __fastcall Wwfwfest68KReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall Wwfwfest68KWriteByte(unsigned int a, unsigned char d)
+void __fastcall Wwfwfest68KWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x0c0000 && a <= 0x0c1fff) {
 		UINT16 *CharRam = (UINT16*)DrvCharVideoRam;
@@ -406,11 +406,11 @@ void __fastcall Wwfwfest68KWriteByte(unsigned int a, unsigned char d)
 	}
 }
 
-unsigned short __fastcall Wwfwfest68KReadWord(unsigned int a)
+UINT16 __fastcall Wwfwfest68KReadWord(UINT32 a)
 {
 	if (a >= 0x180000 && a <= 0x18ffff) {
 		UINT16 *PaletteRam = (UINT16*)DrvPaletteRam;
-		int Offset = (a - 0x180000) >> 1;
+		INT32 Offset = (a - 0x180000) >> 1;
 		Offset = (Offset & 0x0f) | (Offset & 0x7fc0) >> 2;
 		return PaletteRam[Offset];
 	}
@@ -455,7 +455,7 @@ unsigned short __fastcall Wwfwfest68KReadWord(unsigned int a)
 	return 0;
 }
 
-void __fastcall Wwfwfest68KWriteWord(unsigned int a, unsigned short d)
+void __fastcall Wwfwfest68KWriteWord(UINT32 a, UINT16 d)
 {
 	if (a >= 0x0c0000 && a <= 0x0c1fff) {
 		UINT16 *CharRam = (UINT16*)DrvCharVideoRam;
@@ -465,7 +465,7 @@ void __fastcall Wwfwfest68KWriteWord(unsigned int a, unsigned short d)
 	
 	if (a >= 0x180000 && a <= 0x18ffff) {
 		UINT16 *PaletteRam = (UINT16*)DrvPaletteRam;
-		int Offset = (a - 0x180000) >> 1;
+		INT32 Offset = (a - 0x180000) >> 1;
 		Offset = (Offset & 0x0f) | (Offset & 0x7fc0) >> 2;
 		PaletteRam[Offset] = d;
 		return;
@@ -542,7 +542,7 @@ void __fastcall Wwfwfest68KWriteWord(unsigned int a, unsigned short d)
 	}
 }
 
-unsigned char __fastcall WwfwfestZ80Read(unsigned short a)
+UINT8 __fastcall WwfwfestZ80Read(UINT16 a)
 {
 	switch (a) {
 		case 0xc801: {
@@ -565,7 +565,7 @@ unsigned char __fastcall WwfwfestZ80Read(unsigned short a)
 	return 0;
 }
 
-void __fastcall WwfwfestZ80Write(unsigned short a, unsigned char d)
+void __fastcall WwfwfestZ80Write(UINT16 a, UINT8 d)
 {
 	switch (a) {
 		case 0xc800: {
@@ -595,17 +595,17 @@ void __fastcall WwfwfestZ80Write(unsigned short a, unsigned char d)
 	}
 }
 
-static int CharPlaneOffsets[4]    = { 0, 2, 4, 6 };
-static int CharXOffsets[8]        = { 1, 0, 65, 64, 129, 128, 193, 192 };
-static int CharYOffsets[8]        = { 0, 8, 16, 24, 32, 40, 48, 56 };
-static int TilePlaneOffsets[4]    = { 8, 0, 0x200008, 0x200000 };
-static int TileXOffsets[16]       = { 0, 1, 2, 3, 4, 5, 6, 7, 256, 257, 258, 259, 260, 261, 262, 263 };
-static int TileYOffsets[16]       = { 0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240 };
-static int SpritePlaneOffsets[4]  = { 0, 0x1000000, 0x2000000, 0x3000000 };
-static int SpriteXOffsets[16]     = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
-static int SpriteYOffsets[16]     = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
+static INT32 CharPlaneOffsets[4]    = { 0, 2, 4, 6 };
+static INT32 CharXOffsets[8]        = { 1, 0, 65, 64, 129, 128, 193, 192 };
+static INT32 CharYOffsets[8]        = { 0, 8, 16, 24, 32, 40, 48, 56 };
+static INT32 TilePlaneOffsets[4]    = { 8, 0, 0x200008, 0x200000 };
+static INT32 TileXOffsets[16]       = { 0, 1, 2, 3, 4, 5, 6, 7, 256, 257, 258, 259, 260, 261, 262, 263 };
+static INT32 TileYOffsets[16]       = { 0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240 };
+static INT32 SpritePlaneOffsets[4]  = { 0, 0x1000000, 0x2000000, 0x3000000 };
+static INT32 SpriteXOffsets[16]     = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
+static INT32 SpriteYOffsets[16]     = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-static void DrvYM2151IrqHandler(int Irq)
+static void DrvYM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
 		ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
@@ -614,9 +614,9 @@ static void DrvYM2151IrqHandler(int Irq)
 	}
 }
 
-static int DrvInit()
+static INT32 DrvInit()
 {
-	int nRet = 0, nLen, RomOffset;
+	INT32 nRet = 0, nLen, RomOffset;
 	
 	RomOffset = 0;
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "wwfwfstb")) RomOffset = 2;
@@ -624,12 +624,12 @@ static int DrvInit()
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (unsigned char *)malloc(0x800000);
+	DrvTempRom = (UINT8 *)malloc(0x800000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -731,7 +731,7 @@ static int DrvInit()
 	return 0;
 }
 
-static int DrvExit()
+static INT32 DrvExit()
 {
 	SekExit();
 	ZetExit();
@@ -763,15 +763,15 @@ static int DrvExit()
 	return 0;
 }
 
-static inline unsigned char pal4bit(unsigned char bits)
+static inline UINT8 pal4bit(UINT8 bits)
 {
 	bits &= 0x0f;
 	return (bits << 4) | bits;
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = pal4bit(nColour >> 0);
 	g = pal4bit(nColour >> 4);
@@ -782,18 +782,18 @@ inline static unsigned int CalcCol(unsigned short nColour)
 
 static void DrvCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)DrvPaletteRam, pd = DrvPalette; i < 0x2000; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)DrvPaletteRam, pd = DrvPalette; i < 0x2000; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 }
 
-static void DrvRenderBg0Layer(int Opaque)
+static void DrvRenderBg0Layer(INT32 Opaque)
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0, xScroll, yScroll, Flip, xFlip, yFlip;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0, xScroll, yScroll, Flip, xFlip, yFlip;
 	
 	UINT16 *VideoRam = (UINT16*)DrvBg0VideoRam;
 	UINT16 *TileBase;
@@ -892,9 +892,9 @@ static void DrvRenderBg0Layer(int Opaque)
 	}
 }
 
-static void DrvRenderBg1Layer(int Opaque)
+static void DrvRenderBg1Layer(INT32 Opaque)
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0, xScroll, yScroll;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0, xScroll, yScroll;
 	
 	UINT16 *VideoRam = (UINT16*)DrvBg1VideoRam;
 	UINT16 *TileBase;
@@ -948,7 +948,7 @@ static void DrvRenderSprites()
 	UINT16 *Finish = (UINT16*)DrvSpriteRamBuff + 0x1000;
 	
 	while (Source < Finish) {
-		int x, y, Colour, xFlip, yFlip, Chain, Enable, Code, Count;
+		INT32 x, y, Colour, xFlip, yFlip, Chain, Enable, Code, Count;
 		
 		Enable = Source[1] & 1;
 		
@@ -968,7 +968,7 @@ static void DrvRenderSprites()
 			Colour = (Source[4] & 0x000f);
 			
 			for (Count = 0; Count < Chain; Count++) {
-				int yPos;
+				INT32 yPos;
 				yPos = y - 16 * Count;
 				if (yFlip) yPos = y - (16 * (Chain - 1)) + (16 * Count);
 				
@@ -994,7 +994,7 @@ static void DrvRenderSprites()
 
 static void DrvRenderCharLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 	
 	UINT16 *VideoRam = (UINT16*)DrvCharVideoRam;
 	UINT16 *TileBase;
@@ -1050,10 +1050,10 @@ static void DrvDraw()
 	BurnTransferCopy(DrvPalette);
 }
 
-static int DrvFrame()
+static INT32 DrvFrame()
 {
-	int nInterleave = 10;
-	int nSoundBufferPos = 0;
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) DrvDoReset();
 
@@ -1068,8 +1068,8 @@ static int DrvFrame()
 	
 	DrvVBlank = 0;
 	
-	for (int i = 0; i < nInterleave; i++) {
-		int nCurrentCPU, nNext;
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext;
 
 		// Run 68000
 		nCurrentCPU = 0;
@@ -1091,8 +1091,8 @@ static int DrvFrame()
 		ZetClose();
 		
 		if (pBurnSoundOut) {
-			int nSegmentLength = nBurnSoundLen / nInterleave;
-			short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
 			MSM6295Render(0, pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
@@ -1105,8 +1105,8 @@ static int DrvFrame()
 	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
-		int nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		short* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 
 		if (nSegmentLength) {
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
@@ -1121,7 +1121,7 @@ static int DrvFrame()
 	return 0;
 }
 
-static int DrvScan(int nAction, int *pnMin)
+static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 {
 	struct BurnArea ba;
 	

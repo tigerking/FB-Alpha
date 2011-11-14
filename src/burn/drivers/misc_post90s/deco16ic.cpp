@@ -13,80 +13,80 @@ TO DO!
 #include "tiles_generic.h"
 #include "bitswap.h"
 
-static int deco16_layer_size[4];
-static int deco16_layer_size_select[4];
+static INT32 deco16_layer_size[4];
+static INT32 deco16_layer_size_select[4];
 
-static int (*deco16_bank_callback[4])(const int bank);
+static INT32 (*deco16_bank_callback[4])(const INT32 bank);
 
-static int deco16_pf_colorbank[4];
-static int deco16_pf_colormask[4];
-static int deco16_pf_transmask[4];
+static INT32 deco16_pf_colorbank[4];
+static INT32 deco16_pf_colormask[4];
+static INT32 deco16_pf_transmask[4];
 
-static int deco16_pf_bank[4];
+static INT32 deco16_pf_bank[4];
 
-static int deco16_pf_gfx_bank[4]; // (1/2) 8x8, 16x16, (2/3) 8x8, 16x16
+static INT32 deco16_pf_gfx_bank[4]; // (1/2) 8x8, 16x16, (2/3) 8x8, 16x16
 
-static unsigned short deco16_scroll_x[4][ 512]; // 512
-static unsigned short deco16_scroll_y[4][1024]; // 1024
+static UINT16 deco16_scroll_x[4][ 512]; // 512
+static UINT16 deco16_scroll_y[4][1024]; // 1024
 
-static int deco16_enable_rowscroll[4];
-static int deco16_enable_colscroll[4];
+static INT32 deco16_enable_rowscroll[4];
+static INT32 deco16_enable_colscroll[4];
 
-static int deco16_global_x_offset = 0;
-static int deco16_global_y_offset = 0;
+static INT32 deco16_global_x_offset = 0;
+static INT32 deco16_global_y_offset = 0;
 
-static int deco16_scroll_offset[4][2][2]; // tmap, size, x, y
+static INT32 deco16_scroll_offset[4][2][2]; // tmap, size, x, y
 
-static unsigned short transmask[4][2];
+static UINT16 transmask[4][2];
 
-int deco16_graphics_mask[3];
+INT32 deco16_graphics_mask[3];
 
-unsigned char *deco16_graphics[3];
+UINT8 *deco16_graphics[3];
 
-unsigned short *deco16_pf_control[2];
-unsigned char *deco16_pf_ram[4] = { NULL, NULL, NULL, NULL };
-unsigned char *deco16_pf_rowscroll[4];//4 or 2?
+UINT16 *deco16_pf_control[2];
+UINT8 *deco16_pf_ram[4] = { NULL, NULL, NULL, NULL };
+UINT8 *deco16_pf_rowscroll[4];//4 or 2?
 
-unsigned short deco16_priority;
+UINT16 deco16_priority;
 
-unsigned char *deco16_prio_map;
-unsigned char *deco16_sprite_prio_map; // boogwing
+UINT8 *deco16_prio_map;
+UINT8 *deco16_sprite_prio_map; // boogwing
 
-int deco16_vblank;
+INT32 deco16_vblank;
 
 void deco16ProtScan();
 void deco16ProtReset();
 
-int deco16_get_tilemap_size(int tmap)
+INT32 deco16_get_tilemap_size(INT32 tmap)
 {
 	return deco16_layer_size_select[tmap];
 }
 
 // painfully unfast.
-void deco16_draw_prio_sprite(unsigned short *dest, unsigned char *gfx, int code, int color, int sx, int sy, int flipx, int flipy, int pri, int spri)
+void deco16_draw_prio_sprite(UINT16 *dest, UINT8 *gfx, INT32 code, INT32 color, INT32 sx, INT32 sy, INT32 flipx, INT32 flipy, INT32 pri, INT32 spri)
 {
 	gfx += code * 0x100;
 
-	int flip = 0;
+	INT32 flip = 0;
 	if (flipx) flip |= 0x0f;
 	if (flipy) flip |= 0xf0;
 
 	sy -= deco16_global_y_offset;
 	sx -= deco16_global_x_offset;
 
-	for (int yy = 0; yy < 16; yy++, sy++) {
+	for (INT32 yy = 0; yy < 16; yy++, sy++) {
 
 		if (sy < 0 || sy >= nScreenHeight) continue;
 
-		for (int xx = 0; xx < 16; xx++, sx++) {
+		for (INT32 xx = 0; xx < 16; xx++, sx++) {
 			if (sx < 0 || sx >= nScreenWidth) continue;
 
-			int pxl = gfx[((yy * 16) + xx) ^ flip];
+			INT32 pxl = gfx[((yy * 16) + xx) ^ flip];
 
 			if (!pxl) continue;
 
 			if (pri != -1) {
-				int bpriority = deco16_prio_map[(sy * 512) + sx];
+				INT32 bpriority = deco16_prio_map[(sy * 512) + sx];
 	
 				if (spri == -1) {
 					if ((pri & (1 << (bpriority & 0x1f))) || (bpriority & 0x80)) continue;
@@ -107,46 +107,46 @@ void deco16_draw_prio_sprite(unsigned short *dest, unsigned char *gfx, int code,
 	}
 }
 
-void deco16_draw_prio_sprite(unsigned short *dest, unsigned char *gfx, int code, int color, int sx, int sy, int flipx, int flipy, int pri)
+void deco16_draw_prio_sprite(UINT16 *dest, UINT8 *gfx, INT32 code, INT32 color, INT32 sx, INT32 sy, INT32 flipx, INT32 flipy, INT32 pri)
 {
 	deco16_draw_prio_sprite(dest, gfx, code, color, sx, sy, flipx, flipy, pri, -1);
 }
 
-static inline unsigned int alpha_blend(unsigned int d, unsigned int s, unsigned int p)
+static inline UINT32 alpha_blend(UINT32 d, UINT32 s, UINT32 p)
 {
-	int a = 256 - p;
+	INT32 a = 256 - p;
 
 	return (((((s & 0xff00ff) * p) + ((d & 0xff00ff) * a)) & 0xff00ff00) |
 		((((s & 0x00ff00) * p) + ((d & 0x00ff00) * a)) & 0x00ff0000)) >> 8;
 }
 
-void deco16_draw_alphaprio_sprite(unsigned int *palette, unsigned char *gfx, int code, int color, int sx, int sy, int flipx, int flipy, int pri, int spri, int alpha)
+void deco16_draw_alphaprio_sprite(UINT32 *palette, UINT8 *gfx, INT32 code, INT32 color, INT32 sx, INT32 sy, INT32 flipx, INT32 flipy, INT32 pri, INT32 spri, INT32 alpha)
 {
 	if (alpha == 0) return;
 
 	gfx += code * 0x100;
 
-	int flip = 0;
+	INT32 flip = 0;
 	if (flipx) flip |= 0x0f;
 	if (flipy) flip |= 0xf0;
 
 	sy -= deco16_global_y_offset;
 	sx -= deco16_global_x_offset;
 
-	unsigned int *dest = (unsigned int*)pBurnDraw;
+	UINT32 *dest = (UINT32*)pBurnDraw;
 
-	for (int yy = 0; yy < 16; yy++, sy++) {
+	for (INT32 yy = 0; yy < 16; yy++, sy++) {
 
 		if (sy < 0 || sy >= nScreenHeight) continue;
 
-		for (int xx = 0; xx < 16; xx++, sx++) {
+		for (INT32 xx = 0; xx < 16; xx++, sx++) {
 			if (sx < 0 || sx >= nScreenWidth) continue;
 
-			int pxl = gfx[((yy * 16) + xx) ^ flip];
+			INT32 pxl = gfx[((yy * 16) + xx) ^ flip];
 
 			if (!pxl) continue;
 
-			int bpriority = deco16_prio_map[(sy * 512) + sx];
+			INT32 bpriority = deco16_prio_map[(sy * 512) + sx];
 
 			if (spri == -1) {
 				if ((pri & (1 << (bpriority & 0x1f))) || (bpriority & 0x80)) continue;
@@ -168,29 +168,29 @@ void deco16_draw_alphaprio_sprite(unsigned int *palette, unsigned char *gfx, int
 	}
 }
 
-void deco16_palette_recalculate(unsigned int *palette, unsigned char *pal)
+void deco16_palette_recalculate(UINT32 *palette, UINT8 *pal)
 {
-	unsigned short *p = (unsigned short*)pal;
+	UINT16 *p = (UINT16*)pal;
 
-	for (int i = 0; i < BurnDrvGetPaletteEntries() * 2; i+=2)
+	for (INT32 i = 0; i < BurnDrvGetPaletteEntries() * 2; i+=2)
 	{
-		int b = (p[i + 0] >> 0) & 0xff;
-		int g = (p[i + 1] >> 8) & 0xff;
-		int r = (p[i + 1] >> 0) & 0xff;
+		INT32 b = (p[i + 0] >> 0) & 0xff;
+		INT32 g = (p[i + 1] >> 8) & 0xff;
+		INT32 r = (p[i + 1] >> 0) & 0xff;
 
 		palette[i/2] = BurnHighCol(r, g, b, 0);
 	}
 }
 
-void deco16_tile_decode(unsigned char *src, unsigned char *dst, int len, int type)
+void deco16_tile_decode(UINT8 *src, UINT8 *dst, INT32 len, INT32 type)
 {
-	int Plane[4]  = { ((len / 2) * 8) + 8, ((len / 2) * 8) + 0, 0x00008, 0x00000 };
-	int XOffs[16] = { 32*8+0, 32*8+1, 32*8+2, 32*8+3, 32*8+4, 32*8+5, 32*8+6, 32*8+7,	0, 1, 2, 3, 4, 5, 6, 7 };
-	int YOffs[16] = { 0*16, 1*16, 2*16, 3*16, 4*16, 5*16, 6*16, 7*16, 8*16, 9*16, 10*16, 11*16, 12*16, 13*16, 14*16, 15*16 };
+	INT32 Plane[4]  = { ((len / 2) * 8) + 8, ((len / 2) * 8) + 0, 0x00008, 0x00000 };
+	INT32 XOffs[16] = { 32*8+0, 32*8+1, 32*8+2, 32*8+3, 32*8+4, 32*8+5, 32*8+6, 32*8+7,	0, 1, 2, 3, 4, 5, 6, 7 };
+	INT32 YOffs[16] = { 0*16, 1*16, 2*16, 3*16, 4*16, 5*16, 6*16, 7*16, 8*16, 9*16, 10*16, 11*16, 12*16, 13*16, 14*16, 15*16 };
 
-	int Plane1[8] = { 0x100000*8+8, 0x100000*8, 0x40000*8+8, 0x40000*8, 0xc0000*8+8, 0xc0000*8, 8, 0 };
+	INT32 Plane1[8] = { 0x100000*8+8, 0x100000*8, 0x40000*8+8, 0x40000*8, 0xc0000*8+8, 0xc0000*8, 8, 0 };
 
-	unsigned char *tmp = (unsigned char*)malloc(len);
+	UINT8 *tmp = (UINT8*)malloc(len);
 	if (tmp == NULL) {
 		return;
 	}
@@ -211,13 +211,13 @@ void deco16_tile_decode(unsigned char *src, unsigned char *dst, int len, int typ
 	}
 }
 
-void deco16_sprite_decode(unsigned char *gfx, int len)
+void deco16_sprite_decode(UINT8 *gfx, INT32 len)
 {
-	int Plane[4] = { 24,8,16,0 };
-	int XOffs[16] = { 512,513,514,515,516,517,518,519, 0, 1, 2, 3, 4, 5, 6, 7 };
-	int YOffs[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,  8*32, 9*32,10*32,11*32,12*32,13*32,14*32,15*32};
+	INT32 Plane[4] = { 24,8,16,0 };
+	INT32 XOffs[16] = { 512,513,514,515,516,517,518,519, 0, 1, 2, 3, 4, 5, 6, 7 };
+	INT32 YOffs[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,  8*32, 9*32,10*32,11*32,12*32,13*32,14*32,15*32};
 
-	unsigned char *tmp = (unsigned char*)malloc(len);
+	UINT8 *tmp = (UINT8*)malloc(len);
 	if (tmp == NULL) {
 		return;
 	}
@@ -232,70 +232,70 @@ void deco16_sprite_decode(unsigned char *gfx, int len)
 	}
 }
 
-void deco16_draw_layer(int tmap, unsigned short *dest, int flags)
+void deco16_draw_layer(INT32 tmap, UINT16 *dest, INT32 flags)
 {
-	int size		= deco16_layer_size_select[tmap];
+	INT32 size		= deco16_layer_size_select[tmap];
 	if (size == -1) return;
 
-	int control		= deco16_pf_control[tmap / 2][6];
+	INT32 control		= deco16_pf_control[tmap / 2][6];
 	if (tmap & 1) control >>= 8; 
 
-//	int control0		= deco16_pf_control[tmap / 2][5];
+//	INT32 control0		= deco16_pf_control[tmap / 2][5];
 //	if (tmap & 1) control0 >>= 8; 
 //	if ((control0 & 0x80) == 0) return; // layer disable bit
 
-	int select = (tmap & 2) + ((tmap < 2) ? size : 0);
+	INT32 select = (tmap & 2) + ((tmap < 2) ? size : 0);
 
 	size = size ? 16 : 8;
 
-	int bpp = (flags & 0x100000) ? 8 : 4;
+	INT32 bpp = (flags & 0x100000) ? 8 : 4;
 	if (flags & 0x200000) bpp = 5;
 
-	unsigned char *gfx = deco16_graphics[select];
-	int gfxmask	= deco16_graphics_mask[select];
+	UINT8 *gfx = deco16_graphics[select];
+	INT32 gfxmask	= deco16_graphics_mask[select];
 
-	unsigned short *vram	= (unsigned short *)deco16_pf_ram[tmap];
+	UINT16 *vram	= (UINT16 *)deco16_pf_ram[tmap];
 
-	int tmask		= transmask[tmap][(flags & 0x00100) >> 8];
+	INT32 tmask		= transmask[tmap][(flags & 0x00100) >> 8];
 	if (flags & 0x10000) tmask = 0; // opaque!
 
-	int priority		= flags & 0x000ff;
+	INT32 priority		= flags & 0x000ff;
 
-	int tilebank		= deco16_pf_bank[tmap];
-	int colmask		= deco16_pf_colormask[tmap];
-	int colbank		= deco16_pf_colorbank[tmap] >> bpp;
+	INT32 tilebank		= deco16_pf_bank[tmap];
+	INT32 colmask		= deco16_pf_colormask[tmap];
+	INT32 colbank		= deco16_pf_colorbank[tmap] >> bpp;
 
-	int hmask = (32 * size) - 1;
-	int wmask		= (deco16_layer_size[tmap] * size) - 1;
-	int shift = (wmask & 0x100) ? 6 : 5;
-	int smask = size - 1;
+	INT32 hmask = (32 * size) - 1;
+	INT32 wmask		= (deco16_layer_size[tmap] * size) - 1;
+	INT32 shift = (wmask & 0x100) ? 6 : 5;
+	INT32 smask = size - 1;
 
-	for (int y = 0; y < nScreenHeight; y++)
+	for (INT32 y = 0; y < nScreenHeight; y++)
 	{
-		int xoff = deco16_scroll_x[tmap][y] & wmask;
+		INT32 xoff = deco16_scroll_x[tmap][y] & wmask;
 
-		for (int x = 0; x < nScreenWidth + size; x+=size)
+		for (INT32 x = 0; x < nScreenWidth + size; x+=size)
 		{
-			int yoff = deco16_scroll_y[tmap][x] & hmask;
+			INT32 yoff = deco16_scroll_y[tmap][x] & hmask;
 
-			int yy = (y + yoff) & hmask;
-			int xx = (x + xoff) & wmask;
+			INT32 yy = (y + yoff) & hmask;
+			INT32 xx = (x + xoff) & wmask;
 
-			int col = xx / size;
-			int row = yy / size;
+			INT32 col = xx / size;
+			INT32 row = yy / size;
 
-			int ofst;
+			INT32 ofst;
 			if (size == 8) {
 				ofst = (row << shift) | (col);
 			} else {
 				ofst = (col & 0x1f) + ((row & 0x1f) << 5) + ((col & 0x20) << 5) + ((row & 0x20) << 6);
 			}
 
-			int code  = vram[ofst];
-			int color = code >> 12;
+			INT32 code  = vram[ofst];
+			INT32 color = code >> 12;
 	
-			int flipx = 0;
-			int flipy = 0;
+			INT32 flipx = 0;
+			INT32 flipy = 0;
 	
 			if ((color & 0x0008) && (control & 0x03)) {
 				flipx = control & 0x01;
@@ -309,19 +309,19 @@ void deco16_draw_layer(int tmap, unsigned short *dest, int flags)
 			{
 				color <<= bpp;
 
-				int sx = x - (xx & smask);
+				INT32 sx = x - (xx & smask);
 
-				int sy = yy & smask;
+				INT32 sy = yy & smask;
 				if (flipy) sy ^= smask;
 
-				unsigned char *src = gfx + (code * size * size) + (sy * size);
+				UINT8 *src = gfx + (code * size * size) + (sy * size);
 
 				if (flipx) flipx = smask;
 
-				for (int xxx = 0; xxx < size; xxx++) {
+				for (INT32 xxx = 0; xxx < size; xxx++) {
 					if ((xxx + sx) < 0 || (xxx + sx) >= nScreenWidth) continue;
 
-					int pxl = src[xxx^flipx];
+					INT32 pxl = src[xxx^flipx];
 
 					if ((tmask & (1 << pxl))) continue;
 
@@ -333,47 +333,47 @@ void deco16_draw_layer(int tmap, unsigned short *dest, int flags)
 	}
 }
 
-void deco16_set_bank_callback(int tmap, int (*callback)(const int bank))
+void deco16_set_bank_callback(INT32 tmap, INT32 (*callback)(const INT32 bank))
 {
 	deco16_bank_callback[tmap] = callback;
 }
 
-void deco16_set_color_base(int tmap, int base)
+void deco16_set_color_base(INT32 tmap, INT32 base)
 {
 	deco16_pf_colorbank[tmap & 3] = base;
 }
 
-void deco16_set_color_mask(int tmap, int mask)
+void deco16_set_color_mask(INT32 tmap, INT32 mask)
 {
 	deco16_pf_colormask[tmap & 3] = mask;
 }
 
-void deco16_set_transparency_mask(int tmap, int mask)
+void deco16_set_transparency_mask(INT32 tmap, INT32 mask)
 {
 	deco16_pf_transmask[tmap & 3] = mask;
 }
 
-void deco16_set_gfxbank(int tmap, int small, int big)
+void deco16_set_gfxbank(INT32 tmap, INT32 small, INT32 big)
 {
 	deco16_pf_gfx_bank[0 + (tmap & 2)] = small;
 	deco16_pf_gfx_bank[1 + (tmap & 2)] = big;
 }
 
-void deco16_set_global_offsets(int x, int y)
+void deco16_set_global_offsets(INT32 x, INT32 y)
 {
 	deco16_global_x_offset = x;
 	deco16_global_y_offset = y;
 }
 
-static void set_transmask(int tmap, int tmask0, int tmask1)
+static void set_transmask(INT32 tmap, INT32 tmask0, INT32 tmask1)
 {
 	transmask[tmap][0] = tmask0;
 	transmask[tmap][1] = tmask1;
 }	
 
-static void set_graphics_mask(int gfx, int len)
+static void set_graphics_mask(INT32 gfx, INT32 len)
 {
-	int b = 1;
+	INT32 b = 1;
 
 	while (b < (len - 1)) {
 		b <<= 1;
@@ -382,14 +382,14 @@ static void set_graphics_mask(int gfx, int len)
 	deco16_graphics_mask[gfx] = b - 1;
 }
 
-void deco16_set_graphics(int num, unsigned char *gfx, int len, int size /*tile size*/)
+void deco16_set_graphics(INT32 num, UINT8 *gfx, INT32 len, INT32 size /*tile size*/)
 {
 	deco16_graphics[num] = gfx;
 
 	set_graphics_mask(num, len / (size * size));
 }
 
-void deco16_set_graphics(unsigned char *gfx0, int len0, unsigned char *gfx1, int len1, unsigned char *gfx2, int len2)
+void deco16_set_graphics(UINT8 *gfx0, INT32 len0, UINT8 *gfx1, INT32 len1, UINT8 *gfx2, INT32 len2)
 {
 	deco16_graphics[0] = gfx0;
 	deco16_graphics[1] = gfx1;
@@ -406,13 +406,13 @@ void deco16_clear_prio_map()
 	memset(deco16_sprite_prio_map, 0, 512 * 256);
 }
 
-void deco16_set_scroll_offs(int tmap, int size, int offsetx, int offsety)
+void deco16_set_scroll_offs(INT32 tmap, INT32 size, INT32 offsetx, INT32 offsety)
 {
 	deco16_scroll_offset[tmap][size][0] = offsetx;
 	deco16_scroll_offset[tmap][size][1] = offsety;
 }
 
-void deco16Init(int no_pf34, int split, int full_width)
+void deco16Init(INT32 no_pf34, INT32 split, INT32 full_width)
 {
 	set_transmask(0, 0x0001, 0xffff);
 	set_transmask(1, 0x0001, 0xffff);
@@ -423,27 +423,27 @@ void deco16Init(int no_pf34, int split, int full_width)
 		set_transmask(1, 0xff01, 0x00ff);
 	}
 
-	memset (deco16_scroll_offset, 0, 4 * 2 * 2 * sizeof(int));
+	memset (deco16_scroll_offset, 0, 4 * 2 * 2 * sizeof(INT32));
 
-	deco16_pf_ram[0] = (unsigned char*)malloc(0x2000); // ok
-	deco16_pf_ram[1] = (unsigned char*)malloc(0x2000);
+	deco16_pf_ram[0] = (UINT8*)malloc(0x2000); // ok
+	deco16_pf_ram[1] = (UINT8*)malloc(0x2000);
 
-	deco16_pf_rowscroll[0] = (unsigned char*)malloc(0x1000);// plenty
-	deco16_pf_rowscroll[1] = (unsigned char*)malloc(0x1000);
+	deco16_pf_rowscroll[0] = (UINT8*)malloc(0x1000);// plenty
+	deco16_pf_rowscroll[1] = (UINT8*)malloc(0x1000);
 
-	deco16_pf_control[0]	= (unsigned short*)malloc(0x10); //1/2
-	deco16_pf_control[1]	= (unsigned short*)malloc(0x10); //3/4
+	deco16_pf_control[0]	= (UINT16*)malloc(0x10); //1/2
+	deco16_pf_control[1]	= (UINT16*)malloc(0x10); //3/4
 
 	if (no_pf34 == 0) {
-		deco16_pf_ram[2] = (unsigned char*)malloc(0x2000); // right?
-		deco16_pf_ram[3] = (unsigned char*)malloc(0x2000);
+		deco16_pf_ram[2] = (UINT8*)malloc(0x2000); // right?
+		deco16_pf_ram[3] = (UINT8*)malloc(0x2000);
 
-		deco16_pf_rowscroll[2] = (unsigned char*)malloc(0x1000); // right?
-		deco16_pf_rowscroll[3] = (unsigned char*)malloc(0x1000);
+		deco16_pf_rowscroll[2] = (UINT8*)malloc(0x1000); // right?
+		deco16_pf_rowscroll[3] = (UINT8*)malloc(0x1000);
 	}
 
-	deco16_prio_map = (unsigned char*)malloc(512 * 256); // priority map
-	deco16_sprite_prio_map = (unsigned char*)malloc(512 * 256);
+	deco16_prio_map = (UINT8*)malloc(512 * 256); // priority map
+	deco16_sprite_prio_map = (UINT8*)malloc(512 * 256);
 
 	deco16_bank_callback[0] = NULL;
 	deco16_bank_callback[1] = NULL;
@@ -527,7 +527,7 @@ void deco16Exit()
 		deco16_sprite_prio_map = NULL;
 	}
 
-	for (int i = 0; i < 4; i++) {
+	for (INT32 i = 0; i < 4; i++) {
 		if (deco16_pf_rowscroll[i] == NULL) continue;
 
 		if (deco16_pf_rowscroll[i]) {
@@ -553,7 +553,7 @@ void deco16Exit()
 	}
 }
 
-static void pf_update(int tmap, int scrollx, int scrolly, unsigned short *rowscroll, int control0, int control1)
+static void pf_update(INT32 tmap, INT32 scrollx, INT32 scrolly, UINT16 *rowscroll, INT32 control0, INT32 control1)
 {
 	if (~tmap & 2) {
 		if (control1 & 0x80) {
@@ -570,13 +570,13 @@ static void pf_update(int tmap, int scrollx, int scrolly, unsigned short *rowscr
 
 	if ((control1 & 0x40) == 0x40) // row scroll
 	{
-		int size = deco16_layer_size_select[tmap] ? 16 : 8;
+		INT32 size = deco16_layer_size_select[tmap] ? 16 : 8;
 
-		int rows = 1;
-		int row_sel = (control0 >> 3) & 0x0f;
+		INT32 rows = 1;
+		INT32 row_sel = (control0 >> 3) & 0x0f;
 		if (row_sel < 9) rows = 0x200 >> row_sel;
 
-		int rownum = 512;
+		INT32 rownum = 512;
 
 		if (size == 8) {
 			rows /= 2;
@@ -586,18 +586,18 @@ static void pf_update(int tmap, int scrollx, int scrolly, unsigned short *rowscr
 
 		if (rows != 1) deco16_enable_rowscroll[tmap] = 1;
 
-		int rsize = rownum / rows;
+		INT32 rsize = rownum / rows;
 
-		int xscroll = scrollx + deco16_global_x_offset + deco16_scroll_offset[tmap][size/16][0];
+		INT32 xscroll = scrollx + deco16_global_x_offset + deco16_scroll_offset[tmap][size/16][0];
 
-		for (int r = 0; r < rows; r++) {
-			for (int p = rsize * r; p < (rsize * r) + rsize; p++) {
+		for (INT32 r = 0; r < rows; r++) {
+			for (INT32 p = rsize * r; p < (rsize * r) + rsize; p++) {
 				deco16_scroll_x[tmap][(p - deco16_global_y_offset) & 0x1ff] = xscroll + rowscroll[r];
 			}
 		}
 
 		if (~control1 & 0x20) {
-			for (int r = 0; r < 1024; r++) {
+			for (INT32 r = 0; r < 1024; r++) {
 				deco16_scroll_y[tmap][r] = scrolly + deco16_global_y_offset;
 			}
 		}
@@ -605,14 +605,14 @@ static void pf_update(int tmap, int scrollx, int scrolly, unsigned short *rowscr
 
 	if ((control1 & 0x20) == 0x20) // column scroll
 	{
-		int size = deco16_layer_size_select[tmap] ? 16 : 8;
+		INT32 size = deco16_layer_size_select[tmap] ? 16 : 8;
 
-		int mask = (0x40 >> (control0 & 0x07)) - 1;
+		INT32 mask = (0x40 >> (control0 & 0x07)) - 1;
 		if (mask < 0) mask = 0;
 
-		int cols = 1024 / (8 << (control0 & 0x07));
+		INT32 cols = 1024 / (8 << (control0 & 0x07));
 
-		int colnum = 1024;
+		INT32 colnum = 1024;
 
 		if (size == 8) {
 			cols /= 2;
@@ -622,18 +622,18 @@ static void pf_update(int tmap, int scrollx, int scrolly, unsigned short *rowscr
 
 		if (cols != 1) deco16_enable_rowscroll[tmap] = 1;
 
-		int rsize = colnum / cols;
+		INT32 rsize = colnum / cols;
 
-		for (int r = 0; r < cols; r++) {
-			for (int p = rsize * r; p < (rsize * r) + rsize; p++) {
+		for (INT32 r = 0; r < cols; r++) {
+			for (INT32 p = rsize * r; p < (rsize * r) + rsize; p++) {
 				deco16_scroll_y[tmap][p] = scrolly + rowscroll[(r & mask) + 0x200] + deco16_global_y_offset;
 			}
 		}
 
 		if (~control1 & 0x40) {
-			int xscroll = scrollx + deco16_global_x_offset + deco16_scroll_offset[tmap][size/16][0];
+			INT32 xscroll = scrollx + deco16_global_x_offset + deco16_scroll_offset[tmap][size/16][0];
 
-			for (int r = 0; r < 512; r++) {
+			for (INT32 r = 0; r < 512; r++) {
 				deco16_scroll_x[tmap][(r - deco16_global_y_offset) & 0x1ff] = xscroll;
 			}
 		}
@@ -641,15 +641,15 @@ static void pf_update(int tmap, int scrollx, int scrolly, unsigned short *rowscr
 
 	if ((control1 & 0x60) == 0x00) // normal scroll
 	{
-		int size = deco16_layer_size_select[tmap] ? 16 : 8;
+		INT32 size = deco16_layer_size_select[tmap] ? 16 : 8;
 
-		for (int r = 0; r < 1024; r++) {
+		for (INT32 r = 0; r < 1024; r++) {
 			deco16_scroll_y[tmap][r] = scrolly + deco16_global_y_offset;
 		}
 
-		int xscroll = scrollx + deco16_global_x_offset + deco16_scroll_offset[tmap][size/16][0];
+		INT32 xscroll = scrollx + deco16_global_x_offset + deco16_scroll_offset[tmap][size/16][0];
 
-		for (int r = 0; r < 512; r++) {
+		for (INT32 r = 0; r < 512; r++) {
 			deco16_scroll_x[tmap][(r - deco16_global_y_offset) & 0x1ff] = xscroll;
 		}
 	}	
@@ -660,8 +660,8 @@ void deco16_pf12_update()
 	if (deco16_bank_callback[0]) deco16_pf_bank[0] = deco16_bank_callback[0](deco16_pf_control[0][7] & 0xff);
 	if (deco16_bank_callback[1]) deco16_pf_bank[1] = deco16_bank_callback[1](deco16_pf_control[0][7] >> 8);
 
-	pf_update(0, deco16_pf_control[0][1], deco16_pf_control[0][2], (unsigned short *)deco16_pf_rowscroll[0], deco16_pf_control[0][5] & 0xff, deco16_pf_control[0][6] & 0xff);
-	pf_update(1, deco16_pf_control[0][3], deco16_pf_control[0][4], (unsigned short *)deco16_pf_rowscroll[1], deco16_pf_control[0][5] >> 8  , deco16_pf_control[0][6] >> 8);
+	pf_update(0, deco16_pf_control[0][1], deco16_pf_control[0][2], (UINT16 *)deco16_pf_rowscroll[0], deco16_pf_control[0][5] & 0xff, deco16_pf_control[0][6] & 0xff);
+	pf_update(1, deco16_pf_control[0][3], deco16_pf_control[0][4], (UINT16 *)deco16_pf_rowscroll[1], deco16_pf_control[0][5] >> 8  , deco16_pf_control[0][6] >> 8);
 }
 
 void deco16_pf34_update()
@@ -669,8 +669,8 @@ void deco16_pf34_update()
 	if (deco16_bank_callback[2]) deco16_pf_bank[2] = deco16_bank_callback[2](deco16_pf_control[1][7] & 0xff);
 	if (deco16_bank_callback[3]) deco16_pf_bank[3] = deco16_bank_callback[3](deco16_pf_control[1][7] >> 8);
 
-	pf_update(2, deco16_pf_control[1][1], deco16_pf_control[1][2], (unsigned short *)deco16_pf_rowscroll[2], deco16_pf_control[1][5] & 0xff, deco16_pf_control[1][6] & 0xff);
-	pf_update(3, deco16_pf_control[1][3], deco16_pf_control[1][4], (unsigned short *)deco16_pf_rowscroll[3], deco16_pf_control[1][5] >> 8  , deco16_pf_control[1][6] >> 8);
+	pf_update(2, deco16_pf_control[1][1], deco16_pf_control[1][2], (UINT16 *)deco16_pf_rowscroll[2], deco16_pf_control[1][5] & 0xff, deco16_pf_control[1][6] & 0xff);
+	pf_update(3, deco16_pf_control[1][3], deco16_pf_control[1][4], (UINT16 *)deco16_pf_rowscroll[3], deco16_pf_control[1][5] >> 8  , deco16_pf_control[1][6] >> 8);
 }
 
 void deco16Scan()
@@ -680,7 +680,7 @@ void deco16Scan()
 	{
 		char name[128];
 
-		for (int i = 0; i < 4; i++) {
+		for (INT32 i = 0; i < 4; i++) {
 			if (deco16_pf_ram[i] == NULL) continue;
 
 		//	memset(&ba, 0, sizeof(ba));
@@ -699,13 +699,13 @@ void deco16Scan()
 		}
 
 		memset(&ba, 0, sizeof(ba));
-		ba.Data	  = (unsigned char*)deco16_pf_control[0];
+		ba.Data	  = (UINT8*)deco16_pf_control[0];
 		ba.nLen	  = 16;
 		ba.szName = "Deco16ic Control 0";
 		BurnAcb(&ba);
 
 		memset(&ba, 0, sizeof(ba));
-		ba.Data	  = (unsigned char*)deco16_pf_control[1];
+		ba.Data	  = (UINT8*)deco16_pf_control[1];
 		ba.nLen	  = 16;
 		ba.szName = "Deco16ic Control 1";
 		BurnAcb(&ba);
@@ -731,12 +731,12 @@ void deco16Scan()
 #include "burn_ym2203.h"
 #include "msm6295.h"
 
-static int deco16_sound_enable[4]; // ym2203, ym2151, msm6295 0, msm6295 1
-static int deco16_sound_cpuclock = 0;
+static INT32 deco16_sound_enable[4]; // ym2203, ym2151, msm6295 0, msm6295 1
+static INT32 deco16_sound_cpuclock = 0;
 
-int deco16_soundlatch;
+INT32 deco16_soundlatch;
 
-static void deco16YM2151IrqHandler(int state)
+static void deco16YM2151IrqHandler(INT32 state)
 {
 #ifdef ENABLE_HUC6280
 	h6280SetIRQLine(1, state ? H6280_IRQSTATUS_ACK : H6280_IRQSTATUS_NONE);
@@ -745,10 +745,10 @@ static void deco16YM2151IrqHandler(int state)
 #endif
 }
 
-static int deco16SynchroniseStream(int nSoundRate)
+static INT32 deco16SynchroniseStream(INT32 nSoundRate)
 {
 #ifdef ENABLE_HUC6280
-	return (long long)h6280TotalCycles() * nSoundRate / deco16_sound_cpuclock;
+	return (INT64)h6280TotalCycles() * nSoundRate / deco16_sound_cpuclock;
 #else
 	return 0 * nSoundRate;
 #endif
@@ -763,7 +763,7 @@ static double deco16GetTime()
 #endif
 }
 
-static void deco16_sound_write(unsigned int address, unsigned char data)
+static void deco16_sound_write(UINT32 address, UINT8 data)
 {
 //bprintf (0, _T("%5.5x, %2.2x\n"), address, data);
 
@@ -809,7 +809,7 @@ static void deco16_sound_write(unsigned int address, unsigned char data)
 	}
 }
 
-static unsigned char deco16_sound_read(unsigned int address)
+static UINT8 deco16_sound_read(UINT32 address)
 {
 //bprintf (0, _T("%5.5x, rb\n"), address);
 
@@ -857,7 +857,7 @@ void deco16SoundReset()
 	deco16_soundlatch = 0;
 }
 
-void deco16SoundInit(unsigned char *rom, unsigned char *ram, int huc_clock, int ym2203, void (ym2151_port)(unsigned int,unsigned int), double ym2151vol, int msmclk0, double msmvol0, int msmclk1, double msmvol1)
+void deco16SoundInit(UINT8 *rom, UINT8 *ram, INT32 huc_clock, INT32 ym2203, void (ym2151_port)(UINT32,UINT32), double ym2151vol, INT32 msmclk0, double msmvol0, INT32 msmclk1, double msmvol1)
 {
 #ifdef ENABLE_HUC6280
 	h6280Init(1);
@@ -918,7 +918,7 @@ void deco16SoundExit()
 	deco16_sound_cpuclock = 0;
 }
 
-void deco16SoundUpdate(short *buf, int len)
+void deco16SoundUpdate(INT16 *buf, INT32 len)
 {
 	if (deco16_sound_enable[0]) BurnYM2151Render(buf, len);
 	if (deco16_sound_enable[1]) BurnYM2203Update(buf, len);
@@ -932,13 +932,13 @@ void deco16SoundUpdate(short *buf, int len)
 //---------------------------------------------------------------------------------------------------------------------------------------------------
 // Data East decryption routines
 
-static const unsigned short xor_masks[16] =
+static const UINT16 xor_masks[16] =
 {
 	0xd556,0x73cb,0x2963,0x4b9a,0xb3bc,0xbc73,0xcbc9,0xaeb5,
 	0x1e6d,0xd5b5,0xe676,0x5cc5,0x395a,0xdaae,0x2629,0xe59e,
 };
 
-static const unsigned char swap_patterns[8][16] =
+static const UINT8 swap_patterns[8][16] =
 {
 	{ 0xf,0x8,0x9,0xc,0xa,0xd,0xb,0xe, 0x2,0x7,0x4,0x3,0x1,0x5,0x6,0x0 },
 	{ 0xc,0xa,0xb,0x9,0x8,0xf,0xe,0xd, 0x6,0x0,0x3,0x5,0x7,0x4,0x2,0x1 },
@@ -950,7 +950,7 @@ static const unsigned char swap_patterns[8][16] =
 	{ 0x9,0x8,0xe,0xa,0xf,0xb,0xd,0xc, 0x6,0x0,0x5,0x2,0x4,0x1,0x3,0x7 },
 };
 
-static const unsigned char deco56_xor_table[0x800] =
+static const UINT8 deco56_xor_table[0x800] =
 {
 	 0, 1, 2, 3, 4, 5, 5, 6, 7, 8, 9,10, 7,11,11, 9,11, 3, 7,10,12,13, 3,14, 0, 0, 9, 0,15, 3, 4,14,
 	 6, 3,14,14, 3,12, 3,13, 9, 5,13, 3, 8, 2, 7,14, 2, 5, 1, 2, 3, 4,14,11, 8, 0, 6, 7,10, 3, 4, 7,
@@ -1018,7 +1018,7 @@ static const unsigned char deco56_xor_table[0x800] =
 	11, 6, 3, 0, 5,11,14,14,14, 4,13, 6,11, 6, 4,12,15, 2, 4, 1, 1, 5, 1,15, 7, 0, 5, 0, 0, 0,12, 1,
 };
 
-static const unsigned short deco56_address_table[0x800] =
+static const UINT16 deco56_address_table[0x800] =
 {
 	0x527,0x1a1,0x2f6,0x523,0x297,0x005,0x141,0x3b4,0x539,0x794,0x6dd,0x498,0x59b,0x119,0x5db,0x631,
 	0x2f1,0x565,0x409,0x158,0x2d6,0x16e,0x571,0x0b9,0x543,0x52b,0x668,0x0c0,0x5fd,0x216,0x5ea,0x24e,
@@ -1150,7 +1150,7 @@ static const unsigned short deco56_address_table[0x800] =
 	0x625,0x4bc,0x335,0x42b,0x5d8,0x07d,0x03f,0x089,0x7e9,0x07c,0x1cf,0x024,0x188,0x53b,0x2bf,0x726,
 };
 
-static const unsigned char deco56_swap_table[0x800] =
+static const UINT8 deco56_swap_table[0x800] =
 {
 	4,0,7,2,0,0,7,2,0,1,6,3,2,2,2,2,0,5,6,3,7,0,0,5,1,1,1,7,1,0,0,0,
 	2,5,6,6,2,0,4,1,5,0,1,7,4,7,0,4,6,2,1,5,3,1,2,4,6,4,2,0,4,3,3,7,
@@ -1218,7 +1218,7 @@ static const unsigned char deco56_swap_table[0x800] =
 	6,5,6,0,1,1,6,0,6,1,7,2,4,5,6,5,0,4,0,3,2,3,7,7,0,3,5,0,4,1,1,1,
 };
 
-static const unsigned char deco74_xor_table[0x800] =
+static const UINT8 deco74_xor_table[0x800] =
 {
 	13,13, 0,10, 8,15,12, 0,10, 8,13,15,12, 3,15, 2,11, 1, 8,10,13, 4,10,12,11, 2, 0, 3, 0,11, 8,11,
 	 5,14,11, 2, 5, 3, 8,11, 8,13,14, 4, 3,13,11,10,14, 6, 9,11,11, 8, 0,15, 2, 4, 5, 7,15, 8,13,11,
@@ -1286,7 +1286,7 @@ static const unsigned char deco74_xor_table[0x800] =
 	 7, 7,12, 5, 3,14, 1, 5, 1,10, 6, 7, 9, 8,15, 7,13,11, 4, 5, 4,10,14,14,12, 1,13,14,15,14,15,10,
 };
 
-static const unsigned short deco74_address_table[0x800] =
+static const UINT16 deco74_address_table[0x800] =
 {
 	0x526,0x684,0x15f,0x1ad,0x736,0x341,0x4c3,0x23c,0x3eb,0x01f,0x18e,0x375,0x029,0x227,0x707,0x506,
 	0x5ce,0x0dc,0x5dc,0x5fd,0x15c,0x013,0x7b9,0x3c1,0x77d,0x1eb,0x53d,0x4a9,0x66e,0x0a9,0x4e2,0x361,
@@ -1418,7 +1418,7 @@ static const unsigned short deco74_address_table[0x800] =
 	0x174,0x060,0x674,0x6ec,0x7bb,0x288,0x6ee,0x737,0x34c,0x617,0x4bc,0x5d5,0x78c,0x465,0x126,0x626,
 };
 
-static const unsigned char deco74_swap_table[0x800] =
+static const UINT8 deco74_swap_table[0x800] =
 {
 	2,7,5,7,1,1,4,4,7,5,6,7,7,3,4,3,0,2,1,3,0,4,7,7,2,5,3,1,4,4,6,7,
 	6,7,4,5,1,3,0,3,7,2,5,0,1,5,2,1,4,0,6,1,1,2,4,2,1,0,6,5,2,6,4,6,
@@ -1486,12 +1486,12 @@ static const unsigned char deco74_swap_table[0x800] =
 	4,7,2,2,1,3,4,4,1,7,0,2,5,4,7,3,7,6,1,5,6,0,7,4,1,1,5,2,2,6,7,2,
 };
 
-static void deco_decrypt(unsigned char *src, int len, const UINT8 *xor_table,const UINT16 *address_table,const UINT8 *swap_table,int remap_only)
+static void deco_decrypt(UINT8 *src, INT32 len, const UINT8 *xor_table,const UINT16 *address_table,const UINT8 *swap_table,INT32 remap_only)
 {
-	unsigned short *rom = (unsigned short*)src;
+	UINT16 *rom = (UINT16*)src;
 	len/=2;
-	unsigned short *buffer = (unsigned short*)malloc(len * sizeof(short));
-	int i;
+	UINT16 *buffer = (UINT16*)malloc(len * sizeof(INT16));
+	INT32 i;
 
 #if 0
 	/* we work on 16-bit words but data is loaded as 8-bit, so swap bytes on LSB machines */
@@ -1508,8 +1508,8 @@ static void deco_decrypt(unsigned char *src, int len, const UINT8 *xor_table,con
 
 	for (i = 0;i < len;i++)
 	{
-		int addr = (i & ~0x7ff) | address_table[i & 0x7ff];
-		int pat = swap_table[i & 0x7ff];
+		INT32 addr = (i & ~0x7ff) | address_table[i & 0x7ff];
+		INT32 pat = swap_table[i & 0x7ff];
 
 		if (remap_only)
 			rom[i] = buffer[addr];
@@ -1550,29 +1550,29 @@ static void deco_decrypt(unsigned char *src, int len, const UINT8 *xor_table,con
 #endif
 }
 
-void deco56_decrypt_gfx(unsigned char *rom, int len)
+void deco56_decrypt_gfx(UINT8 *rom, INT32 len)
 {
 	deco_decrypt(rom,len,deco56_xor_table,deco56_address_table,deco56_swap_table, 0);
 }
 
-void deco74_decrypt_gfx(unsigned char *rom, int len)
+void deco74_decrypt_gfx(UINT8 *rom, INT32 len)
 {
 	deco_decrypt(rom,len,deco74_xor_table,deco74_address_table,deco74_swap_table, 0);
 }
 
-void deco56_remap_gfx(unsigned char *rom, int len)
+void deco56_remap_gfx(UINT8 *rom, INT32 len)
 {
 	// Apply address remap, but not XOR/shift
 	deco_decrypt(rom,len,deco56_xor_table,deco56_address_table,deco56_swap_table, 1);
 }
 
-static unsigned short decrypt(unsigned short data, int address, int select_xor)
+static UINT16 decrypt(UINT16 data, INT32 address, INT32 select_xor)
 {
-	static const unsigned short xors[16] =
+	static const UINT16 xors[16] =
 	{
 		0xb52c,0x2458,0x139a,0xc998,0xce8e,0x5144,0x0429,0xaad4,0xa331,0x3645,0x69a3,0xac64,0x1a53,0x5083,0x4dea,0xd237
 	};
-	static const unsigned char bitswaps[16][16] =
+	static const UINT8 bitswaps[16][16] =
 	{
 		{ 12,8,13,11,14,10,15,9, 3,2,1,0,4,5,6,7 }, { 10,11,14,12,15,13,8,9, 6,7,5,3,0,4,2,1 },
 		{ 14,13,15,9,8,12,11,10, 7,4,1,5,6,0,3,2 }, { 15,14,8,9,10,11,13,12, 1,2,7,3,4,6,0,5 },
@@ -1583,8 +1583,8 @@ static unsigned short decrypt(unsigned short data, int address, int select_xor)
 		{ 12,15,8,13,9,11,14,10, 6,5,4,3,2,1,0,7 }, { 11,12,13,14,15,8,9,10, 4,5,7,1,6,3,2,0 },
 		{ 13,8,12,14,11,15,10,9, 7,6,5,4,3,2,1,0 }, { 15,14,13,12,11,10,9,8, 0,6,7,4,3,2,1,5 }
 	};
-	int j, xorval;
-	const unsigned char *bs;
+	INT32 j, xorval;
+	const UINT8 *bs;
 
 	// calculate bitswap to use
 	j = ((address ^ select_xor) & 0xf0) >> 4;
@@ -1602,20 +1602,20 @@ static unsigned short decrypt(unsigned short data, int address, int select_xor)
 				bs[8],bs[9],bs[10],bs[11],bs[12],bs[13],bs[14],bs[15]);
 }
 
-void deco102_decrypt_cpu(unsigned char *data, unsigned char *ops, int size, int address_xor, int data_select_xor, int opcode_select_xor)
+void deco102_decrypt_cpu(UINT8 *data, UINT8 *ops, INT32 size, INT32 address_xor, INT32 data_select_xor, INT32 opcode_select_xor)
 {
-	unsigned short *rom	= (unsigned short*)data;
-	unsigned short *opcodes = (unsigned short*)ops;
-	unsigned short *buf	= (unsigned short*)malloc(size);
+	UINT16 *rom	= (UINT16*)data;
+	UINT16 *opcodes = (UINT16*)ops;
+	UINT16 *buf	= (UINT16*)malloc(size);
 
 	memcpy(buf, rom, size);
 
 //	memory_set_decrypted_region(space, 0, size - 1, opcodes);
 //	m68k_set_encrypted_opcode_range(devtag_get_device(machine, cputag), 0, size);
 
-	for (int i = 0; i < size / 2; i++)
+	for (INT32 i = 0; i < size / 2; i++)
 	{
-		int src;
+		INT32 src;
 
 		// calculate address of encrypted word in ROM
 		src = i & 0xf0000;
@@ -1648,13 +1648,13 @@ void deco102_decrypt_cpu(unsigned char *data, unsigned char *ops, int size, int 
 }
 
 
-static void decrypt156(UINT32 *src, UINT32 *dst, int length)
+static void decrypt156(UINT32 *src, UINT32 *dst, INT32 length)
 {
-	int a;
+	INT32 a;
 
 	for (a = 0; a < length/4; a++)
 	{
-		int addr, dword;
+		INT32 addr, dword;
 
 		addr = (a & 0xff0000) | 0x92c6;
 
@@ -1735,10 +1735,10 @@ static void decrypt156(UINT32 *src, UINT32 *dst, int length)
 	}
 }
 
-void deco156_decrypt(unsigned char *src, int len)
+void deco156_decrypt(UINT8 *src, INT32 len)
 {
-	unsigned int *rom = (unsigned int*)src;
-	unsigned int *buf = (unsigned int*)malloc(len);
+	UINT32 *rom = (UINT32*)src;
+	UINT32 *buf = (UINT32*)malloc(len);
 
 	memcpy (buf, rom, len);
 
@@ -1756,19 +1756,19 @@ void deco156_decrypt(unsigned char *src, int len)
 // protection code 
 //  should probably be in own file
 
-unsigned short *deco16_prot_ram;
-unsigned short *deco16_prot_inputs;
-unsigned short *deco16_buffer_ram;
+UINT16 *deco16_prot_ram;
+UINT16 *deco16_prot_inputs;
+UINT16 *deco16_buffer_ram;
 
 #define DECO_PORT(p) (prot_ram[p/2])
 
-static int deco16_buffer_ram_selected=0;
-static int deco16_xor=0;
-static int deco16_mask=0xffff;
-static int decoprot_last_write=0;
-static int decoprot_last_write_val=0;
+static INT32 deco16_buffer_ram_selected=0;
+static INT32 deco16_xor=0;
+static INT32 deco16_mask=0xffff;
+static INT32 decoprot_last_write=0;
+static INT32 decoprot_last_write_val=0;
 
-static int mutantf_port_0e_hack=0, mutantf_port_6a_hack=0,mutantf_port_e8_hack=0;
+static INT32 mutantf_port_0e_hack=0, mutantf_port_6a_hack=0,mutantf_port_e8_hack=0;
 
 void deco16ProtReset()
 {
@@ -1796,7 +1796,7 @@ void deco16ProtScan()
 	SCAN_VAR(mutantf_port_e8_hack);
 }
 
-void deco16_66_prot_w(int offset, unsigned short data, int mask) /* Mutant Fighter */
+void deco16_66_prot_w(INT32 offset, UINT16 data, INT32 mask) /* Mutant Fighter */
 {
 	offset = (offset & 0x7ff) / 2;
 
@@ -1834,7 +1834,7 @@ void deco16_66_prot_w(int offset, unsigned short data, int mask) /* Mutant Fight
 		mutantf_port_e8_hack=0x2401;
 }
 
-unsigned short deco16_66_prot_r(int offset) /* Mutant Fighter */
+UINT16 deco16_66_prot_r(INT32 offset) /* Mutant Fighter */
 {
 	offset = (offset & 0x7ff) / 2;
 
@@ -1929,21 +1929,21 @@ unsigned short deco16_66_prot_r(int offset) /* Mutant Fighter */
 
 		case 0xe: /* On real hardware this value only seems to persist for 1 read or write, then reverts to 0800.  Hmm */
 			{
-				int ret=mutantf_port_0e_hack;
+				INT32 ret=mutantf_port_0e_hack;
 				mutantf_port_0e_hack=0x800;
 				return ret;
 			}
 
 		case 0x6a: /* On real hardware this value only seems to persist for 1 read or write, then reverts to 0x2866.  Hmm */
 			{
-				int ret=mutantf_port_6a_hack;
+				INT32 ret=mutantf_port_6a_hack;
 				mutantf_port_6a_hack=0x2866;
 				return ret;
 			}
 
 		case 0xe8: /* On real hardware this value only seems to persist for 1 read or write, then reverts to 0x2401.  Hmm */
 			{
-				int ret=mutantf_port_e8_hack;
+				INT32 ret=mutantf_port_e8_hack;
 				mutantf_port_e8_hack=0x2401;
 				return ret;
 			}
@@ -1970,28 +1970,28 @@ unsigned short deco16_66_prot_r(int offset) /* Mutant Fighter */
 	return 0;
 }
 
-void deco16_60_prot_w(int offset, unsigned short data, int mask)
+void deco16_60_prot_w(INT32 offset, UINT16 data, INT32 mask)
 {
 	deco16_66_prot_w(offset, data, mask);
 }
 
-unsigned short deco16_60_prot_r(int offset) /* Edward Randy */
+UINT16 deco16_60_prot_r(INT32 offset) /* Edward Randy */
 {
 	offset = (offset & 0x7ff)/2;
 
 	switch (offset<<1) {
 		/* Video registers */
-		case 0x32a: /* Moved to 0x140006 on int */
+		case 0x32a: /* Moved to 0x140006 on INT32 */
 			return deco16_prot_ram[0x80/2];
-		case 0x380: /* Moved to 0x140008 on int */
+		case 0x380: /* Moved to 0x140008 on INT32 */
 			return deco16_prot_ram[0x84/2];
-		case 0x63a: /* Moved to 0x150002 on int */
+		case 0x63a: /* Moved to 0x150002 on INT32 */
 			return deco16_prot_ram[0x88/2];
-		case 0x42a: /* Moved to 0x150004 on int */
+		case 0x42a: /* Moved to 0x150004 on INT32 */
 			return deco16_prot_ram[0x8c/2];
-		case 0x030: /* Moved to 0x150006 on int */
+		case 0x030: /* Moved to 0x150006 on INT32 */
 			return deco16_prot_ram[0x90/2];
-		case 0x6b2: /* Moved to 0x150008 on int */
+		case 0x6b2: /* Moved to 0x150008 on INT32 */
 			return deco16_prot_ram[0x94/2];
 
 		case 0x6fa:
@@ -2136,7 +2136,7 @@ unsigned short deco16_60_prot_r(int offset) /* Edward Randy */
 	return 0;
 }
 
-unsigned short deco16_104_cninja_prot_r(int offset)
+UINT16 deco16_104_cninja_prot_r(INT32 offset)
 {
 	switch (offset & 0x3fe) {
 		case 0x80: /* Master level control */
@@ -2152,21 +2152,21 @@ unsigned short deco16_104_cninja_prot_r(int offset)
 			return deco16_prot_ram[3];
 
 		/* Video registers */
-		case 0x5a: /* Moved to 0x140000 on int */
+		case 0x5a: /* Moved to 0x140000 on INT32 */
 			return deco16_prot_ram[8];
-		case 0x84: /* Moved to 0x14000a on int */
+		case 0x84: /* Moved to 0x14000a on INT32 */
 			return deco16_prot_ram[9];
-		case 0x20: /* Moved to 0x14000c on int */
+		case 0x20: /* Moved to 0x14000c on INT32 */
 			return deco16_prot_ram[10];
-		case 0x72: /* Moved to 0x14000e on int */
+		case 0x72: /* Moved to 0x14000e on INT32 */
 			return deco16_prot_ram[11];
-		case 0xdc: /* Moved to 0x150000 on int */
+		case 0xdc: /* Moved to 0x150000 on INT32 */
 			return deco16_prot_ram[12];
-		case 0x6e: /* Moved to 0x15000a on int */
+		case 0x6e: /* Moved to 0x15000a on INT32 */
 			return deco16_prot_ram[13]; /* Not used on bootleg */
-		case 0x6c: /* Moved to 0x15000c on int */
+		case 0x6c: /* Moved to 0x15000c on INT32 */
 			return deco16_prot_ram[14];
-		case 0x08: /* Moved to 0x15000e on int */
+		case 0x08: /* Moved to 0x15000e on INT32 */
 			return deco16_prot_ram[15];
 
 		case 0x36: /* Dip switches */
@@ -2182,7 +2182,7 @@ unsigned short deco16_104_cninja_prot_r(int offset)
 	return ~0;
 }
 
-unsigned short deco16_146_funkyjet_prot_r(int offset)
+UINT16 deco16_146_funkyjet_prot_r(INT32 offset)
 {
 	offset = (offset & 0x7fe) / 2;
 
@@ -2274,7 +2274,7 @@ unsigned short deco16_146_funkyjet_prot_r(int offset)
 
 
 
-void deco16_104_rohga_prot_w(int offset, unsigned short data, int mask)
+void deco16_104_rohga_prot_w(INT32 offset, UINT16 data, INT32 mask)
 {
 	offset = (offset & 0x7ff) / 2;
 
@@ -2303,11 +2303,11 @@ void deco16_104_rohga_prot_w(int offset, unsigned short data, int mask)
 		deco16_mask = data;
 }
 
-unsigned short deco16_104_rohga_prot_r(int offset)
+UINT16 deco16_104_rohga_prot_r(INT32 offset)
 {
 	offset = (offset & 0x7ff) / 2;
 
-	const unsigned short * prot_ram=deco16_buffer_ram_selected ? deco16_buffer_ram : deco16_prot_ram;
+	const UINT16 * prot_ram=deco16_buffer_ram_selected ? deco16_buffer_ram : deco16_prot_ram;
 
 	switch (offset) {
 		case 0x88/2: /* Player 1 & 2 input ports */
@@ -2655,7 +2655,7 @@ unsigned short deco16_104_rohga_prot_r(int offset)
 	return 0;
 }
 
-unsigned short deco16_104_prot_r(int offset) /* Wizard Fire */
+UINT16 deco16_104_prot_r(INT32 offset) /* Wizard Fire */
 {
 	offset = (offset & 0x7ff)/2;
 
@@ -2759,12 +2759,12 @@ unsigned short deco16_104_prot_r(int offset) /* Wizard Fire */
 
 
 
-static void deco16_146_core_prot_w(int offset, int data, int mask)
+static void deco16_146_core_prot_w(INT32 offset, INT32 data, INT32 mask)
 {
-	const int writeport=offset;
-	const int sndport=0x260;
-	const int xorport=0x340;
-	const int maskport=0x6c0;
+	const INT32 writeport=offset;
+	const INT32 sndport=0x260;
+	const INT32 xorport=0x340;
+	const INT32 maskport=0x6c0;
 	if (writeport == sndport)
 	{
 //		soundlatch_w(space, 0, data & 0xff);
@@ -2798,10 +2798,10 @@ static void deco16_146_core_prot_w(int offset, int data, int mask)
 	}
 }
 
-static unsigned short deco16_146_core_prot_r(int offset)
+static UINT16 deco16_146_core_prot_r(INT32 offset)
 {
-	unsigned short val;
-	const unsigned short * prot_ram=deco16_buffer_ram_selected ? deco16_buffer_ram : deco16_prot_ram;
+	UINT16 val;
+	const UINT16 * prot_ram=deco16_buffer_ram_selected ? deco16_buffer_ram : deco16_prot_ram;
 
 	switch (offset)
 	{
@@ -3196,20 +3196,20 @@ static unsigned short deco16_146_core_prot_r(int offset)
 }
 
 
-void deco16_146_nitroball_prot_w(int offset, unsigned short data, int mask)
+void deco16_146_nitroball_prot_w(INT32 offset, UINT16 data, INT32 mask)
 {
 	offset = BITSWAP16((offset & 0x7fe), 0, 0, 0, 0, 0, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 	deco16_146_core_prot_w(offset, data, mask);
 }
 
-unsigned short deco16_146_nitroball_prot_r(int offset)
+UINT16 deco16_146_nitroball_prot_r(INT32 offset)
 {
 	offset = BITSWAP16((offset & 0x7fe), 0, 0, 0, 0, 0, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0);
 	return deco16_146_core_prot_r(offset);
 }
 
 
-void deco16_146_fghthist_prot_w(int offset, unsigned int data, unsigned int mem_mask)
+void deco16_146_fghthist_prot_w(INT32 offset, UINT32 data, UINT32 mem_mask)
 {
 	offset = BITSWAP16(offset << 1, 0, 0, 0, 0, 0, 10, 1, 9, 2, 8, 3, 7, 4, 6, 5, 0);
 
@@ -3219,7 +3219,7 @@ void deco16_146_fghthist_prot_w(int offset, unsigned int data, unsigned int mem_
 	deco16_146_core_prot_w(offset, data >> 16, mem_mask >> 16);
 }
 
-unsigned int deco16_146_fghthist_prot_r(int offset)
+UINT32 deco16_146_fghthist_prot_r(INT32 offset)
 {
 	offset = BITSWAP16(offset << 1, 0, 0, 0, 0, 0, 10, 1, 9, 2, 8, 3, 7, 4, 6, 5, 0);
 

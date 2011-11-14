@@ -4,32 +4,32 @@
 // define this to enable basic unmapped memory reads and writes
 //#define OHMYGODLOG 1
 
-static unsigned char  OhmygodInputPort0[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char  OhmygodInputPort1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-static unsigned char  OhmygodDip[2]         = {0, 0};
-static unsigned short OhmygodInput[2]       = {0x00, 0x00};
-static unsigned char  OhmygodReset          = 0;
+static UINT8  OhmygodInputPort0[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8  OhmygodInputPort1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static UINT8  OhmygodDip[2]         = {0, 0};
+static UINT16 OhmygodInput[2]       = {0x00, 0x00};
+static UINT8  OhmygodReset          = 0;
 
-static unsigned char *Mem                  = NULL;
-static unsigned char *MemEnd               = NULL;
-static unsigned char *RamStart             = NULL;
-static unsigned char *RamEnd               = NULL;
-static unsigned char *OhmygodRom           = NULL;
-static unsigned char *OhmygodRam           = NULL;
-static unsigned char *OhmygodVideoRam      = NULL;
-static unsigned char *OhmygodPaletteRam    = NULL;
-static unsigned char *OhmygodSpriteRam     = NULL;
-static unsigned int  *OhmygodPalette       = NULL;
+static UINT8 *Mem                  = NULL;
+static UINT8 *MemEnd               = NULL;
+static UINT8 *RamStart             = NULL;
+static UINT8 *RamEnd               = NULL;
+static UINT8 *OhmygodRom           = NULL;
+static UINT8 *OhmygodRam           = NULL;
+static UINT8 *OhmygodVideoRam      = NULL;
+static UINT8 *OhmygodPaletteRam    = NULL;
+static UINT8 *OhmygodSpriteRam     = NULL;
+static UINT32  *OhmygodPalette       = NULL;
 
-unsigned char *OhmygodChars;
-unsigned char *OhmygodSprites;
+UINT8 *OhmygodChars;
+UINT8 *OhmygodSprites;
 
-static int AdpcmBankShift;
-static int SndBank;
-static int watch_tick=0;
-static int OhmygodSpriteBank;
-static unsigned int OhmygodScrollx;
-static unsigned int OhmygodScrolly;
+static INT32 AdpcmBankShift;
+static INT32 SndBank;
+static INT32 watch_tick=0;
+static INT32 OhmygodSpriteBank;
+static UINT32 OhmygodScrollx;
+static UINT32 OhmygodScrolly;
 
 static struct BurnInputInfo OhmygodInputList[] =
 {
@@ -59,7 +59,7 @@ static struct BurnInputInfo OhmygodInputList[] =
 
 STDINPUTINFO(Ohmygod)
 
-inline void OhmygodClearOpposites(unsigned short* nJoystickInputs)
+inline void OhmygodClearOpposites(UINT16* nJoystickInputs)
 {
 	if ((*nJoystickInputs & 0x03) == 0x03) {
 		*nJoystickInputs &= ~0x03;
@@ -75,7 +75,7 @@ inline void OhmygodMakeInputs()
 	OhmygodInput[0] = OhmygodInput[1] = 0x00;
 
 	// Compile Digital Inputs
-	for (int i = 0; i < 10; i++) {
+	for (INT32 i = 0; i < 10; i++) {
 		OhmygodInput[0] |= (OhmygodInputPort0[i] & 1) << i;
 		OhmygodInput[1] |= (OhmygodInputPort1[i] & 1) << i;
 	}
@@ -257,7 +257,7 @@ static struct BurnRomInfo NanameRomDesc[] = {
 STD_ROM_PICK(Naname)
 STD_ROM_FN(Naname)
 
-int OhmygodDoReset()
+INT32 OhmygodDoReset()
 {
 	SekOpen(0);
 	SekReset();
@@ -295,7 +295,7 @@ void do_watchtick()
 	}
 }
 
-unsigned short __fastcall OhmygodReadWord(unsigned int a)
+UINT16 __fastcall OhmygodReadWord(UINT32 a)
 {
 	switch (a) {
 		case 0x800000: {
@@ -322,7 +322,7 @@ unsigned short __fastcall OhmygodReadWord(unsigned int a)
 	SEK_DEF_READ_WORD(0, a);
 }
 
-unsigned char __fastcall OhmygodReadByte(unsigned int a)
+UINT8 __fastcall OhmygodReadByte(UINT32 a)
 {
 	switch (a) {
 		case 0xa00000: {
@@ -349,7 +349,7 @@ unsigned char __fastcall OhmygodReadByte(unsigned int a)
 	return 0;
 }
 
-void __fastcall OhmygodWriteWord(unsigned int a, unsigned short d)
+void __fastcall OhmygodWriteWord(UINT32 a, UINT16 d)
 {
 	switch (a) {
 		case 0x400000: {
@@ -383,7 +383,7 @@ void __fastcall OhmygodWriteWord(unsigned int a, unsigned short d)
 #endif
 }
 
-void __fastcall OhmygodWriteByte(unsigned int a, unsigned char d)
+void __fastcall OhmygodWriteByte(UINT32 a, UINT8 d)
 {
 	if (a >= 0x710000 && a <= 0x713fff) {
 		return;
@@ -418,9 +418,9 @@ void __fastcall OhmygodWriteByte(unsigned int a, unsigned char d)
 #endif
 }
 
-static int MemIndex()
+static INT32 MemIndex()
 {
-	unsigned char *Next; Next = Mem;
+	UINT8 *Next; Next = Mem;
 
 	OhmygodRom           = Next; Next += 0x080000;
 	MSM6295ROM           = Next; Next += 0x240000;
@@ -436,27 +436,27 @@ static int MemIndex()
 
 	OhmygodChars            = Next; Next += (16384 * 8 * 8);
 	OhmygodSprites          = Next; Next += (4096 * 16 * 16);
-	OhmygodPalette          = (unsigned int*)Next; Next += 0x000800 * sizeof(unsigned int);
+	OhmygodPalette          = (UINT32*)Next; Next += 0x000800 * sizeof(UINT32);
 	MemEnd = Next;
 
 	return 0;
 }
 
-static int TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
-static int TileXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
-static int TileYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
-static int SpritePlaneOffsets[4] = { 0, 1, 2, 3 };
-static int SpriteXOffsets[16]    = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60 };
-static int SpriteYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
+static INT32 TilePlaneOffsets[4]   = { 0, 1, 2, 3 };
+static INT32 TileXOffsets[8]       = { 0, 4, 8, 12, 16, 20, 24, 28 };
+static INT32 TileYOffsets[8]       = { 0, 32, 64, 96, 128, 160, 192, 224 };
+static INT32 SpritePlaneOffsets[4] = { 0, 1, 2, 3 };
+static INT32 SpriteXOffsets[16]    = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60 };
+static INT32 SpriteYOffsets[16]    = { 0, 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960 };
 
-int OhmygodInit()
+INT32 OhmygodInit()
 {
-	int nRet = 0, nLen;
+	INT32 nRet = 0, nLen;
 	// Allocate and Blank all required memory
 	Mem = NULL;
 	MemIndex();
-	nLen = MemEnd - (unsigned char *)0;
-	if ((Mem = (unsigned char *)malloc(nLen)) == NULL) return 1;
+	nLen = MemEnd - (UINT8 *)0;
+	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -464,7 +464,7 @@ int OhmygodInit()
 	nRet = BurnLoadRom(OhmygodRom, 0x00, 1); if (nRet != 0) return 1;
 
 	// malloc stuff
-	unsigned char *TempGfx=(unsigned char*)malloc (0x80000);
+	UINT8 *TempGfx=(UINT8*)malloc (0x80000);
 	
 	// Load and decode Character Rom
 	nRet = BurnLoadRom(TempGfx, 1, 1); if (nRet != 0) return 1;
@@ -511,7 +511,7 @@ int OhmygodInit()
 	return 0;
 }
 
-int OhmygodExit()
+INT32 OhmygodExit()
 {
 	MSM6295Exit(0);
 	SekExit();
@@ -535,7 +535,7 @@ int OhmygodExit()
 
 void OhmygodRenderCharLayer()
 {
-	int mx, my, Code, Colour, x, y, TileIndex = 0;
+	INT32 mx, my, Code, Colour, x, y, TileIndex = 0;
 
 	for (my = 0; my < 64; my++) {
 		for (mx = 0; mx < 64; mx++) {
@@ -561,10 +561,10 @@ void OhmygodRenderCharLayer()
 
 void OhmygodRenderSpriteLayer()
 {
-	int MemOffset = OhmygodSpriteBank ? 0x2000 : 0x0000;
+	INT32 MemOffset = OhmygodSpriteBank ? 0x2000 : 0x0000;
 
-	for (int Offs = MemOffset; Offs < MemOffset + 0x2000; Offs += 8) {
-		int sx, sy, Code, Colour, Flipx;
+	for (INT32 Offs = MemOffset; Offs < MemOffset + 0x2000; Offs += 8) {
+		INT32 sx, sy, Code, Colour, Flipx;
 
 		Code = ((OhmygodSpriteRam[Offs + 7] << 8) + OhmygodSpriteRam[Offs + 6]) & 0x0fff;
 		Colour = ((OhmygodSpriteRam[Offs + 5] << 8) + OhmygodSpriteRam[Offs + 4]) & 0x000f;
@@ -592,9 +592,9 @@ void OhmygodRenderSpriteLayer()
 	}
 }
 
-inline static unsigned int CalcCol(unsigned short nColour)
+inline static UINT32 CalcCol(UINT16 nColour)
 {
-	int r, g, b;
+	INT32 r, g, b;
 
 	r = (nColour >>  5) & 0x1f;
 	g = (nColour >> 10) & 0x1f;
@@ -607,13 +607,13 @@ inline static unsigned int CalcCol(unsigned short nColour)
 	return BurnHighCol(r, g, b, 0);
 }
 
-int OhmygodCalcPalette()
+INT32 OhmygodCalcPalette()
 {
-	int i;
-	unsigned short* ps;
-	unsigned int* pd;
+	INT32 i;
+	UINT16* ps;
+	UINT32* pd;
 
-	for (i = 0, ps = (unsigned short*)OhmygodPaletteRam, pd = OhmygodPalette; i < 0x800; i++, ps++, pd++) {
+	for (i = 0, ps = (UINT16*)OhmygodPaletteRam, pd = OhmygodPalette; i < 0x800; i++, ps++, pd++) {
 		*pd = CalcCol(*ps);
 	}
 
@@ -628,7 +628,7 @@ void OhmygodDraw()
 	BurnTransferCopy(OhmygodPalette);
 }
 
-int OhmygodFrame()
+INT32 OhmygodFrame()
 {
 	if (OhmygodReset) OhmygodDoReset();
 
@@ -647,7 +647,7 @@ int OhmygodFrame()
 	return 0;
 }
 
-static int OhmygodScan(int nAction,int *pnMin)
+static INT32 OhmygodScan(INT32 nAction,INT32 *pnMin)
 {
 	struct BurnArea ba;
 
