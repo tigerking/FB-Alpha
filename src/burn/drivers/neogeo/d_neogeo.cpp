@@ -12489,7 +12489,7 @@ struct BurnDriver BurnDrvfr2ch = {
 // Choutetsu Brikin'ger - Iron clad (Prototype)
 
 static struct BurnRomInfo ironcladRomDesc[] = {
-	{ "220-p1p.p1",   0x200000, 0xce37e3a0, 1 | BRF_ESS | BRF_PRG }, //  0 68K code
+	{ "220-p1p.p1",   0x200000, 0x62a942c6, 1 | BRF_ESS | BRF_PRG }, //  0 68K code
 
 	{ "220-s1p.s1",   0x020000, 0x372fe217, 2 | BRF_GRA },           //  1 Text layer tiles
 
@@ -12520,7 +12520,7 @@ struct BurnDriver BurnDrvironclad = {
 // Choutetsu Brikin'ger - Iron clad (Prototype, older)
 
 static struct BurnRomInfo ironcladoRomDesc[] = {
-	{ "220-p1po.p1",  0x200000, 0x62a942c6, 1 | BRF_ESS | BRF_PRG }, //  0 68K code
+	{ "220-p1po.p1",  0x200000, 0xce37e3a0, 1 | BRF_ESS | BRF_PRG }, //  0 68K code
 
 	{ "220-s1p.s1",   0x020000, 0x372fe217, 2 | BRF_GRA },           //  1 Text layer tiles
 

@@ -740,7 +740,7 @@ static struct BurnRomInfo fixeighthRomDesc[] = {
 	{ "tp-026-2",		0x040000, 0x85063f1f, BRF_SND },           //  3 MSM6295 ADPCM data
 
 	{ "93c45.u21",		0x000080, 0x40d75df0, BRF_PRG | BRF_ESS }, //  4 EEPROM (dumped)
-	{ "fixeightht.nv",	0x000080, 0x95dec584, BRF_PRG | BRF_ESS }, //  5
+	{ "fixeighth.nv",	0x000080, 0x95dec584, BRF_PRG | BRF_ESS }, //  5
 };
 
 STD_ROM_PICK(fixeighth)
