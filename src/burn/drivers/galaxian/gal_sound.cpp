@@ -189,8 +189,8 @@ void GalSoundInit()
 	}
 	
 	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_KINGBALLDAC || GalSoundType == GAL_SOUND_HARDWARE_TYPE_SFXAY8910DAC) {
-		DACInit(0, 1);
-		DACSetVolShift(2);
+		DACInit(0, 0, 1);
+		DACSetVolShift(0, 2);
 	}
 	
 	if (GalSoundType == GAL_SOUND_HARDWARE_TYPE_HEXPOOLASN76496) {

@@ -425,7 +425,7 @@ static INT32 MemIndex()
 	UINT8 *Next; Next = AllMem;
 
 	DrvZ80ROM0	= Next; Next += 0x040000;
-	DrvZ80ROMDec	= Next; Next += 0x008000;
+	DrvZ80ROMDec	= Next; Next += 0x00c000;
 	DrvZ80ROM1	= Next; Next += 0x010000;
 
 	DrvGfxROM0	= Next; Next += 0x010000;
@@ -433,9 +433,9 @@ static INT32 MemIndex()
 	DrvGfxROM2	= Next; Next += 0x080000;
 	DrvGfxROM3	= Next; Next += 0x080000;
 
-	DrvPalette	= (UINT32*)Next; Next += 0x0100 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0100 * sizeof(UINT32);
 
-	pTempDraw	= (UINT16*)Next; Next += 240 * 256 * sizeof(short);
+	pTempDraw	= (UINT16*)Next; Next += 240 * 256 * sizeof(UINT16);
 
 	AllRam		= Next;
 
@@ -474,7 +474,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs[16] = { 0x00000, 0x00020, 0x00040, 0x00060, 0x00080, 0x000a0, 0x000c0, 0x000e0,
 			  0x00100, 0x00120, 0x00140, 0x00160, 0x00180, 0x001a0, 0x001c0, 0x001e0 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x010000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x010000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -483,10 +483,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x0200, 4, 16, 16, Plane, XOffs, YOffs, 0x200, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	DrvGfxExpand(DrvGfxROM0, 0x08000);
 	DrvGfxExpand(DrvGfxROM2, 0x40000);
@@ -497,7 +494,7 @@ static INT32 DrvGfxDecode()
 
 //-----------------------------------------------------------------------------------------------------
 // space position
-
+/*
 static void sega_decode_2(UINT8 *rom, UINT8 *decrypted,
 		const UINT8 opcode_xor[64],const INT32 opcode_swap_select[64],
 		const UINT8 data_xor[64],const INT32 data_swap_select[64])
@@ -582,7 +579,10 @@ static void sega_decode_317(UINT8 *src, UINT8 *dst, INT32 order, INT32 opcode_sh
 
 	if (order) sega_decode_2(src, dst, xor2_317+opcode_shift, swap2_317+opcode_shift, xor1_317+data_shift, swap1_317+data_shift);
 	else       sega_decode_2(src, dst, xor1_317+opcode_shift, swap1_317+opcode_shift, xor2_317+data_shift, swap2_317+data_shift);
-}
+}*/
+
+// This is used in Sega System 1 (d_sys1.cpp)
+void sega_decode_317(UINT8 *pDest, UINT8 *pDestDec, INT32 order, INT32 opcode_shift, INT32 data_shift);
 
 static void spcpostn_decode()
 {
@@ -596,7 +596,7 @@ static INT32 DrvInit(INT32 game)
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -717,10 +717,7 @@ static INT32 DrvExit()
 
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -822,7 +819,7 @@ static INT32 DrvDraw()
 		UINT16 *source = pTempDraw + 128;
 		UINT16 *dest = pTransDraw + 128;
 		for (INT32 y = 0; y < nScreenHeight; y++) {
-			memcpy (dest, source, 128 * sizeof(INT16));
+			memcpy (dest, source, 128 * sizeof(UINT16));
 			dest += 256, source += 256;
 		}
 	}
@@ -853,7 +850,6 @@ static INT32 DrvFrame()
 
 	INT32 nSegment;
 	INT32 nInterleave = 10;
-	INT32 nSoundBufferPos = 0;
 	INT32 nCyclesTotal[2] = { 8000000 / 60, 4000000 / 60 };
 	INT32 nCyclesDone[2] = { 0, 0 };
 
@@ -868,14 +864,6 @@ static INT32 DrvFrame()
 
 		ZetOpen(1);
 		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
-
-		if (pBurnSoundOut) {
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			nSoundBufferPos += nSegmentLength;
-		}
-
 		ZetClose();
 	}
 
@@ -884,11 +872,7 @@ static INT32 DrvFrame()
 	BurnTimerEndFrame(nCyclesTotal[1]);
 
 	if (pBurnSoundOut) {
-		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-		}
+		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 	}
 
 	ZetClose();

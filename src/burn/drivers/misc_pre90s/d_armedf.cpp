@@ -25,7 +25,7 @@ static UINT8 *DrvSprBuf;
 static UINT8 *DrvBgRAM;
 static UINT8 *DrvFgRAM;
 static UINT8 *DrvTxRAM;
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 
 static UINT16*DrvMcuCmd;
 static UINT16*DrvScroll;
@@ -540,13 +540,11 @@ void __fastcall armedf_write_port(UINT16 port, UINT8 data)
 		return;
 
 		case 0x02:
-			DACWrite((data & 0x7f) << 1);
-		// dac_0_signed_data_w
+			DACWrite(0, data);
 		return;
 
 		case 0x03:
-			DACWrite((data & 0x7f) << 1);
-		//dac_1_signed_data_w
+			DACWrite(1, data);
 		return;
 	}
 }
@@ -570,7 +568,7 @@ UINT8 __fastcall armedf_read_port(UINT16 port)
 
 static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (INT64)ZetTotalCycles() * nSoundRate / 3072000;
+	return (INT64)ZetTotalCycles() * nSoundRate / 4000000;
 }
 
 static INT32 DrvDoReset()
@@ -644,7 +642,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs1[16] = { 0x000, 0x040, 0x080, 0x0c0, 0x100, 0x140, 0x180, 0x1c0,
 			   0x200, 0x240, 0x280, 0x2c0, 0x300, 0x340, 0x380, 0x3c0 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x40000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x40000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -665,10 +663,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x0800, 4, 16, 16, Plane, XOffs1, YOffs0, 0x200, tmp, DrvGfxROM3);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -708,7 +703,7 @@ static INT32 DrvInit(INT32 (*pLoadRoms)(), void (*p68KInit)(), INT32 zLen)
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -741,9 +736,12 @@ static INT32 DrvInit(INT32 (*pLoadRoms)(), void (*p68KInit)(), INT32 zLen)
 	ZetClose();
 
 	BurnYM3812Init(4000000, NULL, &DrvSynchroniseStream, 0);
-	BurnTimerAttachZetYM3812(3072000);
+	BurnTimerAttachZetYM3812(4000000);
 
-	DACInit(0, 1);
+	DACInit(0, 0, 1);
+	DACInit(1, 0, 1);
+	DACSetVolShift(0, 2);
+	DACSetVolShift(1, 2);
 
 	GenericTilesInit();
 
@@ -769,10 +767,7 @@ static INT32 DrvExit()
 	SekExit();
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -987,30 +982,60 @@ static INT32 DrvFrame()
 	AssembleInputs();
 
 	INT32 nSegment;
-	INT32 nInterleave = 128;
-	INT32 nTotalCycles[2] = { 8000000 / 60, 3072000 / 60 };
+	INT32 nInterleave = nBurnSoundLen;
+	INT32 nTotalCycles[2] = { 8000000 / 60, 4000000 / 60 };
 	INT32 nCyclesDone[2] = { 0, 0 };
+	
+	INT32 Z80IRQSlice[9];
+	for (INT32 i = 0; i < 9; i++) {
+		Z80IRQSlice[i] = (INT32)((double)((nInterleave * (i + 1)) / 10));
+	}
+	
+	INT32 nSoundBufferPos = 0;
 
 	SekOpen(0);
 	ZetOpen(0);
 	
-//	memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(short)); 
-
 	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		nSegment = nTotalCycles[0] / nInterleave;
-		nCyclesDone[0] += SekRun(nSegment);
+		INT32 nNext;
+		
+		nNext = (i + 1) * nTotalCycles[0] / nInterleave;
+		nSegment = nNext - nCyclesDone[0];
+		nSegment = SekRun(nSegment);
+		nCyclesDone[0] += nSegment;
 
-		nSegment = nTotalCycles[1] / nInterleave;
-		nCyclesDone[1] += ZetRun(nSegment);
-		ZetRaiseIrq(0);
+		nNext = (i + 1) * nTotalCycles[1] / nInterleave;
+		nSegment = nNext - nCyclesDone[1];
+		nSegment = ZetRun(nSegment);
+		nCyclesDone[1] += nSegment;
+		
+		for (INT32 j = 0; j < 9; j++) {
+			if (i == Z80IRQSlice[j]) {
+				ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+				nCyclesDone[1] += ZetRun(3000);
+				ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+			}
+		}
+
+		if (pBurnSoundOut) {
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM3812Update(pSoundBuf, nSegmentLength);
+			DACUpdate(pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}
 	}
 	
 	if (pBurnSoundOut) {
-		BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
-	//	DACUpdate(pBurnSoundOut, nBurnSoundLen);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		if (nSegmentLength) {
+			BurnYM3812Update(pSoundBuf, nSegmentLength);
+			DACUpdate(pSoundBuf, nSegmentLength);
+		}
 	}
-
+	
 	SekSetIRQLine(irqline, SEK_IRQSTATUS_AUTO);
 
 	ZetClose();
@@ -1349,7 +1374,7 @@ static INT32 KozureInit()
 
 struct BurnDriver BurnDrvKozure = {
 	"kozure", NULL, NULL, NULL, "1987",
-	"Kozure Ookami (Japan)\0", "imperfect graphics", "Nichibutsu", "Miscellaneous",
+	"Kozure Ookami (Japan)\0", "Imperfect Graphics", "Nichibutsu", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
 	NULL, kozureRomInfo, kozureRomName, NULL, NULL, ArmedfInputInfo, KozureDIPInfo,
@@ -1426,7 +1451,7 @@ static INT32 LegionInit()
 
 struct BurnDriver BurnDrvLegion = {
 	"legion", NULL, NULL, NULL, "1987",
-	"Chouji Meikyuu Legion (ver 2.03)\0", "imperfect graphics", "Nichibutsu", "Miscellaneous",
+	"Chouji Meikyuu Legion (ver 2.03)\0", "Imperfect Graphics, No Sound", "Nichibutsu", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, legionRomInfo, legionRomName, NULL, NULL, ArmedfInputInfo, LegionDIPInfo,
@@ -1478,7 +1503,7 @@ static INT32 LegionoInit()
 
 struct BurnDriver BurnDrvLegiono = {
 	"legiono", "legion", NULL, NULL, "1987",
-	"Chouji Meikyuu Legion (ver 1.05)\0", "imperfect graphics", "Nichibutsu", "Miscellaneous",
+	"Chouji Meikyuu Legion (ver 1.05)\0", "Imperfect Graphics, No Sound", "Nichibutsu", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, legionoRomInfo, legionoRomName, NULL, NULL, ArmedfInputInfo, LegionDIPInfo,

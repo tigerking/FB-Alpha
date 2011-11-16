@@ -36,7 +36,7 @@ static UINT8 *DrvBg2Tiles          = NULL;
 static UINT8 *DrvBgTiles           = NULL;
 static UINT8 *DrvSprites           = NULL;
 static UINT8 *DrvTempRom           = NULL;
-static UINT32  *DrvPalette           = NULL;
+static UINT32 *DrvPalette           = NULL;
 
 static UINT8 DrvSoundLatch;
 static UINT8 DrvRomBank;
@@ -808,11 +808,11 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x40000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x40000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -872,10 +872,7 @@ static INT32 DrvInit()
 	nRet = BurnLoadRom(DrvPromSpriteLookup,  33, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvPromSpritePalBank, 34, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the Z80 emulation
 	ZetInit(2);
@@ -936,11 +933,11 @@ static INT32 DrvbInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x40000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x40000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -996,10 +993,7 @@ static INT32 DrvbInit()
 	nRet = BurnLoadRom(DrvPromSpriteLookup,  29, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvPromSpritePalBank, 30, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the Z80 emulation
 	ZetInit(2);
@@ -1071,10 +1065,7 @@ static INT32 DrvExit()
 	DrvSpritesOn = 0;
 	DrvCharsOn = 0;
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 
 	return 0;
 }

@@ -22,8 +22,8 @@ static UINT8 *DrvVidRAM;
 static UINT8 *DrvSprRAM;
 static INT16 *pAY8910Buffer[3];
 
-static UINT32  *DrvPalette;
-static UINT8  DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
 static UINT8 *flipscreen;
 static UINT8 *gfxbank;
@@ -63,13 +63,13 @@ static struct BurnInputInfo DrvInputList[] = {
 	{"P1 start"  ,    BIT_DIGITAL  , DrvJoy1 + 0,	"p1 start" },
 	{"P1 Button 1"  , BIT_DIGITAL  , DrvJoy2 + 0,	"p1 fire 1"},
 
-	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"mouse x-axis"),
+	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"p1 x-axis"),
 
 	{"P2 Coin"      , BIT_DIGITAL  , DrvJoy1 + 5,	"p2 coin"  },
 	{"P2 start"  ,    BIT_DIGITAL  , DrvJoy1 + 1,	"p2 start" },
 	{"P2 Button 1"  , BIT_DIGITAL  , DrvJoy2 + 2,	"p2 fire 1"},
 
-	A("P2 Right / left",	BIT_ANALOG_REL, DrvAxis + 1,	"mouse x-axis"),
+	A("P2 Right / left",	BIT_ANALOG_REL, DrvAxis + 1,	"p1 x-axis"),
 
 	{"Tilt",	  BIT_DIGITAL,   DrvJoy1 + 3,	"tilt"     },
 	{"Service",	  BIT_DIGITAL,   DrvJoy1 + 2,   "diag"     },
@@ -953,7 +953,7 @@ static void DrvPaletteInit()
 
 static void DrvGfxDecode()
 {
-	UINT8 *tmp = (UINT8*)malloc(0x40000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x40000);
 	for (INT32 i = 0; i < 0x40000; i++) {
 		tmp[i]  = ((DrvGfxROM[(i / 8) + 0x00000] >> (i & 7)) & 1) << 0;
 		tmp[i] |= ((DrvGfxROM[(i / 8) + 0x08000] >> (i & 7)) & 1) << 1;
@@ -961,10 +961,7 @@ static void DrvGfxDecode()
 	}
 
 	memcpy (DrvGfxROM, tmp, 0x40000);
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 }
 
 static INT32 GetRoms()
@@ -1070,7 +1067,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1122,10 +1119,7 @@ static INT32 DrvExit()
 
 	AY8910Exit(0);
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	arkanoid_bootleg_id = 0;
 
@@ -1221,7 +1215,6 @@ static INT32 DrvFrame()
 		DrvInputs[3] = (~nAnalogAxis[1] >> 8) & 0xfe;
 	}
 
-	INT32 nSoundBufferPos = 0;
 	INT32 nInterleave = 100;
 	INT32 nCyclesTotal[2] = { 6000000 / 60, 3000000 / 60 };
 	INT32 nCyclesDone[2] = { 0, 0 };
@@ -1246,28 +1239,18 @@ static INT32 DrvFrame()
 
 	if (pBurnSoundOut) {
 		INT32 nSample;
-		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
-			for (INT32 n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n];
-				nSample += pAY8910Buffer[1][n];
-				nSample += pAY8910Buffer[2][n];
+		AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
+		for (INT32 n = 0; n < nBurnSoundLen; n++) {
+			nSample  = pAY8910Buffer[0][n];
+			nSample += pAY8910Buffer[1][n];
+			nSample += pAY8910Buffer[2][n];
 
-				nSample /= 4;
+			nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+			nSample = BURN_SND_CLIP(nSample);
 
-				pSoundBuf[(n << 1) + 0] = nSample;
-				pSoundBuf[(n << 1) + 1] = nSample;
-			}
+			pBurnSoundOut[(n << 1) + 0] = nSample;
+			pBurnSoundOut[(n << 1) + 1] = nSample;
 		}
 	}
 

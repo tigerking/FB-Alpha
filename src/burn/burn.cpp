@@ -1,4 +1,5 @@
 // Burn - Drivers module
+// Burn - Drivers module
 
 #include "version.h"
 #include "burnint.h"
@@ -600,6 +601,7 @@ extern "C" INT32 BurnDrvInit()
 	CheatInit();
 	HiscoreInit();
 	BurnStateInit();	
+	BurnInitMemoryManager();
 
 	nReturnValue = pDriver[nBurnDrvActive]->Init();	// Forward to drivers function
 
@@ -640,6 +642,7 @@ extern "C" INT32 BurnDrvExit()
 	CheatSearchExit();
 	HiscoreExit();
 	BurnStateExit();
+	BurnExitMemoryManager();
 
 	nBurnCPUSpeedAdjust = 0x0100;
 	

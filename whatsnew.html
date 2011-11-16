@@ -118,6 +118,8 @@
 <li>Added support for the new M6502 core to the Karnov driver, adding sound to all games [Barry]</li>
 <li>Updated the Gauntlet, Mole Attack, Mysterious Stones and Scrambled Egg drivers to support the new M6502 core [Barry]</li>
 <li>Added SAA1099 sound core module and added support to the XOR World driver which now has sound [iq_132]</li>
+<li>Added support to the DAC module for up to eight DACs [Barry]</li>
+<li>Added BURN_SND_CLIP macro [Barry]</li>
 <li>Added Neo Geo CD Load Game dialog [CaptainCPS]</li>
 <li>Integrated the Neo Geo CD Load Game dialog with the rest of the application and fixed several x64 issues [Barry]</li>
 <li>Changed the burn, burn/devices, burn/drivers, burn/sound, burner and interface folders to use defined variable types, allowing better control for ports to other architectures [Barry]</li>
@@ -135,6 +137,7 @@
 <li>Added support for the analog paddle in Ghox [Barry]</li>
 <li>Added clone of JJ Squakwers to the Seta drivers [JacKc]</li>
 <li>Added Pipi & Bibis to the Toaplan drivers [iq_132]</li>
+<li>Fixed sound in Armed Formation driver [Barry]</li>
 <li>Fixed crash when exiting CPS-1 drivers [Barry]</li>
 <li>Corrected main and sub CPU clocks in the Double Dragon driver [Barry]</li>
 <li>Fixed music tempo in Double Dragon [Barry]</li>
@@ -145,7 +148,12 @@
 <li>Emulated the custom ADPCM sound in the Renegade driver [Barry]</li>
 <li>Fixed a crash when starting the Neo Geo driver from the command-line [Barry]</li>
 <li>Removed a 64Mb rom limit on Neo Geo sprite ROM size, fixing kof98ae and maybe some others [Barry]</li>
+<li>Fixed an app crash when exiting drivers using the taito_m68705 module [Barry]</li>
 <li>Moved Atari and Kaneko16 into the misc categories and added a category for Irem to the game selection dialog [Barry]</li>
+<li>Tidied some drivers, and updated to use Burn Memory module and BURN_SND_CLIP macro [Barry]</li>
+<li>Moved Kaneko Pandora code to it's own file [Barry]</li>
+<li>Moved Air Buster driver to misc_post90s folder [Barry]</li>
+<li>Changed sega_decode_317 in the System1 driver to support external use and removed the duplicated code in the Angel Kids driver [Barry]</li>
 </ul>
 
 

@@ -114,3 +114,7 @@ void BurnInitMemoryManager();
 UINT8 *BurnMalloc(INT32 size);
 void BurnFree(void *ptr);
 void BurnExitMemoryManager();
+
+// ---------------------------------------------------------------------------
+// Sound clipping macro
+#define BURN_SND_CLIP(A) ((A) < -0x8000 ? -0x8000 : (A) > 0x7fff ? 0x7fff : (A))

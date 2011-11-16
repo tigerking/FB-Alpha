@@ -3152,7 +3152,7 @@ void wmatch_decode(void)
 	sega_decode(convtable);
 }
 
-static void sega_decode_2(const UINT8 opcode_xor[64],const INT32 opcode_swap_select[64],
+static void sega_decode_2(UINT8 *pDest, UINT8 *pDestDec, const UINT8 opcode_xor[64],const INT32 opcode_swap_select[64],
 		const UINT8 data_xor[64],const INT32 data_swap_select[64])
 {
 	INT32 A;
@@ -3167,8 +3167,8 @@ static void sega_decode_2(const UINT8 opcode_xor[64],const INT32 opcode_swap_sel
 	};
 
 
-	UINT8 *rom = System1Rom1;
-	UINT8 *decrypted = System1Fetch1;
+	UINT8 *rom = pDest;
+	UINT8 *decrypted = pDestDec;
 
 	for (A = 0x0000;A < 0x8000;A++)
 	{
@@ -3192,7 +3192,7 @@ static void sega_decode_2(const UINT8 opcode_xor[64],const INT32 opcode_swap_sel
 		rom[A] = BITSWAP08(src,7,tbl[0],5,tbl[1],3,tbl[2],1,tbl[3]) ^ data_xor[row];
 	}
 	
-	memcpy(System1Fetch1 + 0x8000, System1Rom1 + 0x8000, 0x4000);
+	memcpy(pDestDec + 0x8000, pDest + 0x8000, 0x4000);
 }
 
 static void astrofl_decode(void)
@@ -3235,7 +3235,7 @@ static void astrofl_decode(void)
 		15,15,15,16,16,17,17,18,18,18,19,19,20,20,20,21,
 	};
 
-	sega_decode_2(opcode_xor,opcode_swap_select,data_xor,data_swap_select);
+	sega_decode_2(System1Rom1, System1Fetch1, opcode_xor,opcode_swap_select,data_xor,data_swap_select);
 }
 
 void fdwarrio_decode(void)
@@ -3281,7 +3281,7 @@ void fdwarrio_decode(void)
 		12,
 	};
 
-	sega_decode_2(opcode_xor,opcode_swap_select,data_xor,data_swap_select);
+	sega_decode_2(System1Rom1, System1Fetch1, opcode_xor,opcode_swap_select,data_xor,data_swap_select);
 }
 
 static void wboy2_decode(void)
@@ -3344,10 +3344,10 @@ static void wboy2_decode(void)
 		14,10,14,10,
 	};
 
-	sega_decode_2(opcode_xor,opcode_swap_select,data_xor,data_swap_select);
+	sega_decode_2(System1Rom1, System1Fetch1, opcode_xor,opcode_swap_select,data_xor,data_swap_select);
 }
 
-static void sega_decode_317(INT32 order, INT32 opcode_shift, INT32 data_shift)
+void sega_decode_317(UINT8 *pDest, UINT8 *pDestDec, INT32 order, INT32 opcode_shift, INT32 data_shift)
 {
 	static const UINT8 xor1_317[1+64] =
 	{
@@ -3396,19 +3396,19 @@ static void sega_decode_317(INT32 order, INT32 opcode_shift, INT32 data_shift)
 	};
 
 	if (order)
-		sega_decode_2( xor2_317+opcode_shift, swap2_317+opcode_shift, xor1_317+data_shift, swap1_317+data_shift );
+		sega_decode_2( pDest, pDestDec, xor2_317+opcode_shift, swap2_317+opcode_shift, xor1_317+data_shift, swap1_317+data_shift );
 	else
-		sega_decode_2( xor1_317+opcode_shift, swap1_317+opcode_shift, xor2_317+data_shift, swap2_317+data_shift );
+		sega_decode_2( pDest, pDestDec, xor1_317+opcode_shift, swap1_317+opcode_shift, xor2_317+data_shift, swap2_317+data_shift );
 }
 
 static void gardia_decode()
 {
-	sega_decode_317( 1, 1, 1 );
+	sega_decode_317( System1Rom1, System1Fetch1, 1, 1, 1 );
 }
 
 static void gardiab_decode()
 {
-	sega_decode_317( 0, 1, 2 );
+	sega_decode_317( System1Rom1, System1Fetch1, 0, 1, 2 );
 }
 
 static void blockgal_decode()

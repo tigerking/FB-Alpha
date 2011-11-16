@@ -306,7 +306,7 @@ void __fastcall route16_cpu0_write(UINT16 offset, UINT8 data)
 	{
 		case 0x2800:			// stratvox
 			// DAC_0_data_w
-			DACWrite(data >> 1);
+			DACWrite(0, data >> 1);
 		break;
 
 		case 0x4800:
@@ -456,7 +456,7 @@ static INT32 DrvInit()
 	pAY8910Buffer[1] = pFMBuffer + nBurnSoundLen * 1;
 	pAY8910Buffer[2] = pFMBuffer + nBurnSoundLen * 2;
 
-	DACInit(0, 1);
+	DACInit(0, 0, 1);
 
 	AY8910Init(0, 1250000, nBurnSoundRate, NULL, NULL, &stratvox_sn76477_write, NULL);
 

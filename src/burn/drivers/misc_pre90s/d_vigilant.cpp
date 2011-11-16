@@ -1222,7 +1222,7 @@ void __fastcall VigilanteZ80PortWrite2(UINT16 a, UINT8 d)
 		}
 		
 		case 0x82: {
-			DACSignedWrite(d);
+			DACSignedWrite(0, d);
 			DrvSampleAddress = (DrvSampleAddress + 1) & 0xffff;
 			return;
 		}
@@ -1303,7 +1303,7 @@ void __fastcall BuccanrsZ80PortWrite2(UINT16 a, UINT8 d)
 		}
 		
 		case 0x82: {
-			DACSignedWrite(d);
+			DACSignedWrite(0, d);
 			DrvSampleAddress = (DrvSampleAddress + 1) & 0xffff;
 			return;
 		}
@@ -1454,8 +1454,8 @@ static INT32 DrvInit()
 	GenericTilesInit();
 	BurnYM2151Init(3579645, 25.0);
 	BurnYM2151SetIrqHandler(&VigilantYM2151IrqHandler);	
-	DACInit(0, 1);
-	DACSetVolShift(1);
+	DACInit(0, 0, 1);
+	DACSetVolShift(0, 1);
 	
 	DrvDoReset();
 
@@ -1557,8 +1557,8 @@ static INT32 BuccanrsInit()
 	DrvHasYM2203 = 1;
 	BurnYM2203Init(2, 18432000 / 6, &BuccanrsYM2203IRQHandler, BuccanrsSynchroniseStream, BuccanrsGetTime, 0);
 	BurnTimerAttachZet(18432000 / 6);
-	DACInit(0, 1);
-	DACSetVolShift(1);
+	DACInit(0, 0, 1);
+	DACSetVolShift(0, 1);
 	
 	DrvDoReset();
 
@@ -1682,8 +1682,8 @@ static INT32 KikcubicInit()
 	GenericTilesInit();
 	BurnYM2151Init(3579645, 25.0);
 	BurnYM2151SetIrqHandler(&VigilantYM2151IrqHandler);	
-	DACInit(0, 1);
-	DACSetVolShift(1);
+	DACInit(0, 0, 1);
+	DACSetVolShift(0, 1);
 	
 	DrvKikcubicDraw = 1;
 	

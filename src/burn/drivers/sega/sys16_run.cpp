@@ -745,7 +745,7 @@ void __fastcall N7751WriteIo(UINT32 Port, UINT8 Value)
 {
 	switch (Port) {
 		case 0x101: {
-			DACWrite(Value);
+			DACWrite(0, Value);
 			return;
 		}
 		
@@ -1833,7 +1833,7 @@ INT32 System16Init()
 			N7751SetCPUOpReadArgHandler(N7751Read);
 			
 			YM2151SetPortWriteHandler(0, &System16N7751ControlWrite);
-			DACInit(0, 1);
+			DACInit(0, 0, 1);
 		}
 		
 		System16TileBankSize = 0x1000;

@@ -15,8 +15,8 @@ static UINT8 *DrvZ80ROM;
 static UINT8 *DrvGfxROM;
 static UINT8 *DrvZ80RAM;
 static UINT8 *DrvVidRAM;
-static UINT32  *Palette;
-static UINT32  *DrvPalette;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
 
 static INT16 *pAY8910Buffer[3];
 
@@ -197,7 +197,7 @@ static INT32 DrvGfxDecode()
 	INT32 XOffs[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 	INT32 YOffs[8] = { 0, 8, 16, 24, 32, 40, 48, 56 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x6000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x6000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -207,7 +207,7 @@ static INT32 DrvGfxDecode()
 	GfxDecode(0x0400, 3, 8, 8, Plane, XOffs, YOffs, 0x040, tmp, DrvGfxROM);
 
 	if (tmp) {
-		free (tmp);
+		BurnFree (tmp);
 		tmp = NULL;
 	}
 
@@ -219,7 +219,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -264,10 +264,7 @@ static INT32 DrvExit()
 	ZetExit();
 	AY8910Exit(0);
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -337,13 +334,7 @@ static INT32 DrvFrame()
 
 			nSample /= 4;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
+			nSample = BURN_SND_CLIP(nSample);
 
 			pBurnSoundOut[(n << 1) + 0] = nSample;
 			pBurnSoundOut[(n << 1) + 1] = nSample;

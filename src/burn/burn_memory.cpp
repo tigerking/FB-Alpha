@@ -30,7 +30,7 @@ UINT8 *BurnMalloc(INT32 size)
 
 			if (memptr[i] == NULL) {
 				bprintf (0, _T("BurnMalloc failed to allocate %d bytes of memory!\n"), size);
-				return 0;
+				return NULL;
 			}
 
 			memset (memptr[i], 0, size); // set contents to 0
@@ -41,7 +41,7 @@ UINT8 *BurnMalloc(INT32 size)
 
 	bprintf (0, _T("BurnMalloc called too many times!\n"));
 
-	return 0; // Freak out!
+	return NULL; // Freak out!
 }
 
 // call instead of "free"

@@ -818,7 +818,7 @@ static void kabukiz_sound_bankswitch(UINT32, UINT32 data)
 static void kabukiz_dac_write(UINT32, UINT32 data)
 {
 	if (data != 0xff) {
-		DACWrite(data);
+		DACWrite(0, data);
 	}
 }
 
@@ -1313,7 +1313,7 @@ static INT32 Type1Init(INT32 mcutype)
 		BurnYM2203SetPorts(0, &tnzs_ym2203_portA, &tnzs_ym2203_portB, NULL, NULL);
 	}
 
-	DACInit(0, 1); // kabukiz
+	DACInit(0, 0, 1); // kabukiz
 
 	GenericTilesInit();
 
@@ -1420,7 +1420,7 @@ static INT32 Type2Init()
 
 	BurnYM2151Init(3000000, 30.0); // jpopnics
 
-	DACInit(0, 1); // kabukiz
+	DACInit(0, 0, 1); // kabukiz
 
 	GenericTilesInit();
 

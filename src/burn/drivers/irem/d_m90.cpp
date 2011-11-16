@@ -927,7 +927,7 @@ void __fastcall m90_sound_write_port(UINT16 port, UINT8 data)
 		return;
 
 		case 0x82:
-			DACSignedWrite(data);
+			DACSignedWrite(0, data);
 			sample_address = (sample_address + 1) & 0x3ffff;
 		return;
 
@@ -1145,8 +1145,8 @@ static INT32 DrvInit(INT32 codesize, INT32 gfxlen, INT32 samples, INT32 bank, IN
 	BurnYM2151Init(3579545, 15.0);
 	YM2151SetIrqHandler(0, &m72YM2151IRQHandler);
 
-	DACInit(0, 0);
-	DACSetVolShift(4); // 1/16th of max
+	DACInit(0, 0, 0);
+	DACSetVolShift(0, 4); // 1/16th of max
 
 	code_mask[0] = ((gfxlen * 2) - 1) / (8 * 8);
 	code_mask[1] = ((gfxlen * 2) - 1) / (16 * 16);

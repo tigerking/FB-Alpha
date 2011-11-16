@@ -423,7 +423,7 @@ static void suna_palette_write(INT32 offset)
 
 static void write_dac(INT32 data)
 {
-	DACWrite(((data & 0x0f) * 0x11)>>1);
+	DACWrite(0, ((data & 0x0f) * 0x11)>>1);
 	return;
 }
 
@@ -1452,7 +1452,7 @@ static INT32 BestbestInit()
 	
 	AY8910Init(0, 1500000, nBurnSoundRate, NULL, NULL, bestbest_ay8910_write_a, NULL);
 
-	DACInit(0, 1);
+	DACInit(0, 0, 1);
 
 	DrvDoReset();
 
@@ -1512,7 +1512,7 @@ static INT32 SunaqInit()
 
 	BurnYM2151Init(3579545, 25.0);
 
-	DACInit(0, 1);
+	DACInit(0, 0, 1);
 
 	DrvDoReset();
 
@@ -1582,7 +1582,7 @@ static INT32 UballoonInit()
 
 	BurnYM2151Init(3579545, 25.0);
 
-	DACInit(0, 1);
+	DACInit(0, 0, 1);
 
 	GenericTilesInit();
 
@@ -1652,7 +1652,7 @@ static INT32 BssoccerInit()
 
 	BurnYM2151Init(3579545, 25.0);
 
-	DACInit(0, 1);
+	DACInit(0, 0, 1);
 
 	DrvDoReset();
 

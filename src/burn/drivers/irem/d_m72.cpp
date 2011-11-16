@@ -1264,7 +1264,7 @@ void __fastcall m72_sound_write_port(UINT16 port, UINT8 data)
 		return;
 
 		case 0x82:
-			DACSignedWrite(data);
+			DACSignedWrite(0, data);
 			sample_address = (sample_address + 1) & 0x3ffff;
 		return;
 	}
@@ -1761,8 +1761,8 @@ static INT32 DrvInit(void (*pCPUMapCallback)(), void (*pSNDMapCallback)(), INT32
 	BurnYM2151Init(3579545, 100.0);
 	YM2151SetIrqHandler(0, &m72YM2151IRQHandler);
 
-	DACInit(0, 0);
-	DACSetVolShift(2); // 25% of max
+	DACInit(0, 0, 0);
+	DACSetVolShift(0, 2); // 25% of max
 
 	DrvDoReset();
 
@@ -2162,7 +2162,7 @@ memset (pBurnSoundOut, 0, nBurnSoundLen * sizeof(INT16));
 			if (i & 1) {
 				if (z80_nmi_enable == Z80_FAKE_NMI) {
 					if (DrvSndROM[sample_address]) {
-						DACSignedWrite(DrvSndROM[sample_address]);
+						DACSignedWrite(0, DrvSndROM[sample_address]);
 						sample_address = (sample_address + 1) & 0x3ffff;
 					}
 				} else if (z80_nmi_enable == Z80_REAL_NMI) {

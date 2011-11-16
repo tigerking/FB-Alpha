@@ -33,7 +33,7 @@ static UINT8 *DrvChars            = NULL;
 static UINT8 *DrvTiles            = NULL;
 static UINT8 *DrvSprites          = NULL;
 static UINT8 *DrvTempRom          = NULL;
-static UINT32  *DrvPalette          = NULL;
+static UINT32 *DrvPalette          = NULL;
 static INT16* pFMBuffer;
 static INT16* pAY8910Buffer[6];
 
@@ -603,11 +603,11 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x10000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x10000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -649,10 +649,7 @@ static INT32 DrvInit()
 	nRet = BurnLoadRom(DrvPromTileLookup,   21, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvPromSpriteLookup, 22, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	MachineInit();
 	
@@ -667,11 +664,11 @@ static INT32 DrvablInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x18000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x18000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -710,10 +707,7 @@ static INT32 DrvablInit()
 	nRet = BurnLoadRom(DrvPromTileLookup,   14, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvPromSpriteLookup, 15, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	MachineInit();
 	
@@ -737,10 +731,7 @@ static INT32 DrvExit()
 	DrvSoundLatch = 0;
 	DrvRomBank = 0;
 
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 
 	return 0;
 }
@@ -1000,13 +991,7 @@ static INT32 DrvFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;

@@ -132,7 +132,20 @@ void m67805_taito_init(UINT8 *rom, UINT8 *ram, m68705_interface *interface)
 
 void m67805_taito_exit()
 {
-	m67805_taito_reset();
+	portA_in = 0;
+	portA_out = 0;
+	ddrA = 0;
+	portB_in = 0;
+	portB_out = 0;
+	ddrB = 0;
+	portC_in = 0;
+	portC_out = 0;
+	ddrC = 0;
+
+	from_main = 0;
+	from_mcu = 0;
+	mcu_sent = 0;
+	main_sent = 0;
 
 	ptr = NULL;
 

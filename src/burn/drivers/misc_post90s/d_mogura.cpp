@@ -112,7 +112,7 @@ void __fastcall mogura_write_port(UINT16 port, UINT8 data)
 	switch (port & 0xff)
 	{
 		case 0x14:
-			DACWrite((data & 0xf0) | ((data & 0x0f) << 4));
+			DACWrite(0, (data & 0xf0) | ((data & 0x0f) << 4));
 		return;
 	}
 }
@@ -240,7 +240,7 @@ static INT32 DrvInit()
 	ZetMemEnd();
 	ZetClose();
 
-	DACInit(0, 0);
+	DACInit(0, 0, 0);
 
 	GenericTilesInit();
 

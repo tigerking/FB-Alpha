@@ -653,7 +653,7 @@ void __fastcall flstory_sound_write(UINT16 address, UINT8 data)
 		return;
 
 		case 0xde00:
-			DACSignedWrite(data);
+			DACSignedWrite(0, data);
 		return;
 	}
 }
@@ -873,7 +873,7 @@ static INT32 DrvInit()
 
 	AY8910Init(0, 2000000, nBurnSoundRate, NULL, NULL, NULL, NULL);
 
-	DACInit(0, 1);
+	DACInit(1, 0, 1);
 
 	GenericTilesInit();
 
