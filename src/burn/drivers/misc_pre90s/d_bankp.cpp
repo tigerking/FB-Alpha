@@ -271,7 +271,7 @@ static INT32 bankp_palette_init()
 
 static INT32 bankp_gfx_decode()
 {
-	UINT8 *tmp = (UINT8*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -294,17 +294,14 @@ static INT32 bankp_gfx_decode()
 		Gfx1[i] |= 0x80;
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8*)malloc(0x10000 + 0x10000 + 0x20000 + 0x300 + 0x800);
+	Mem = (UINT8*)BurnMalloc(0x10000 + 0x10000 + 0x20000 + 0x300 + 0x800);
 	if (Mem == NULL) {
 		return 1;
 	}
@@ -362,10 +359,7 @@ static INT32 DrvExit()
 	
 	SN76496Exit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	scroll_x = priority = flipscreen = interrupt_enable = 0;
 

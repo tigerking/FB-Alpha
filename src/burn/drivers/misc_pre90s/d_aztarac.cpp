@@ -21,7 +21,7 @@ static UINT8 *DrvZ80RAM;
 static UINT8 *DrvVecRAM;
 static UINT8 *DrvNVRAM;
 
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 static UINT8 DrvRecalc;
 
 static UINT8 *soundlatch;
@@ -292,7 +292,7 @@ static INT32 DrvDoReset(INT32 reset_ram)
 static void sound_init() // Changed refresh rate causes crashes
 {
 	for (INT32 i = 0; i < 12; i++) {
-		pFMBuffer[i] = (INT16*)malloc(nBurnSoundLen * sizeof(INT16));
+		pFMBuffer[i] = (INT16*)BurnMalloc(nBurnSoundLen * sizeof(INT16));
 	}
 
 	sound_initialized = 1;
@@ -355,7 +355,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -433,13 +433,11 @@ static INT32 DrvExit()
 	AY8910Exit(2);
 	AY8910Exit(3);
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	sound_initialized = 0;
 	for (INT32 i = 0; i < 12; i++) {
-		free (pFMBuffer[i]);
-		pFMBuffer[i] = NULL;
+		BurnFree (pFMBuffer[i]);
 	}
 
 	return 0;
@@ -543,15 +541,7 @@ static INT32 DrvFrame()
 			nSample += pFMBuffer[10][n] / 2;
 			nSample += pFMBuffer[11][n] / 2;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
-
-			nSample /= 4; // ?
+			nSample = BURN_SND_CLIP(nSample);
 
 			pBurnSoundOut[(n << 1) + 0] = nSample;
 			pBurnSoundOut[(n << 1) + 1] = nSample;
