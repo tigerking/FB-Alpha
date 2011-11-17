@@ -14,6 +14,8 @@
  #include "vid_softfx.h"
 #endif
 
+#include "ddraw_core.h"
+
 static IDirectDraw7* BlitFXDD = NULL;				// DirectDraw interface
 static IDirectDrawSurface7* BlitFXPrim = NULL;		// Primary surface
 static IDirectDrawSurface7* BlitFXBack = NULL;		// Back buffer surface
@@ -259,7 +261,7 @@ static int Init()
 	nUseBlitter = nVidBlitterOpt[nVidSelect] & 0xFF;
 
 	// Get pointer to DirectDraw device
-	DirectDrawCreateEx(NULL, (void**)&BlitFXDD, IID_IDirectDraw7, NULL);
+	_DirectDrawCreateEx(NULL, (void**)&BlitFXDD, IID_IDirectDraw7, NULL);
 
 	VidSInit(BlitFXDD);
 

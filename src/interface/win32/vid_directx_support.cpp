@@ -12,6 +12,8 @@
  #include "vid_directx_support.h"
 #endif
 
+#include "ddraw_core.h"
+
 // ---------------------------------------------------------------------------
 // General
 
@@ -91,7 +93,7 @@ int VidSClipperInit(IDirectDrawSurface7* pSurf)
 
 	IDirectDrawClipper *pClipper = NULL;
 
-	if (SUCCEEDED(DirectDrawCreateClipper(0, &pClipper, NULL))) {
+	if (SUCCEEDED(_DirectDrawCreateClipper(0, &pClipper, NULL))) {
 		if (SUCCEEDED(pClipper->SetHWnd(0, hVidWnd))) {
 			pSurf->SetClipper(pClipper);
 			RELEASE(pClipper);

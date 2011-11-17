@@ -13,6 +13,8 @@
  #include "vid_directx_support.h" 
 #endif
 
+#include "ddraw_core.h"
+
 static IDirectDraw7* DtoDD = NULL;				// DirectDraw interface
 static IDirectDrawSurface7* DtoPrim = NULL;		// Primary surface
 static IDirectDrawSurface7* DtoBack = NULL;		// Back buffer surface
@@ -287,11 +289,11 @@ static int vidInit()
 	dprintf(_T("  * Enumerating available drivers:\n"));
 	nWantDriver = 0;
 	nCurrentDriver = 0;
-	DirectDrawEnumerateEx(MyEnumDisplayDrivers, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES | DDENUM_NONDISPLAYDEVICES);
+	_DirectDrawEnumerateEx(MyEnumDisplayDrivers, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES | DDENUM_NONDISPLAYDEVICES);
 #endif
 
 	// Get pointer to DirectDraw device
-	DirectDrawCreateEx(nWantDriver ? &MyGuid : NULL, (void**)&DtoDD, IID_IDirectDraw7, NULL);
+	_DirectDrawCreateEx(nWantDriver ? &MyGuid : NULL, (void**)&DtoDD, IID_IDirectDraw7, NULL);
 
 	VidSInit(DtoDD);
 

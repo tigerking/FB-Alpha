@@ -18,6 +18,8 @@
 
 #include "rgb_pattern.h"
 
+#include "ddraw_core.h"
+
 const float PI = 3.14159265358979323846f;
 
 typedef struct _D3DTLVERTEX2 {
@@ -1218,11 +1220,11 @@ static int vidInit()
 	nCurrentDriver = 0;
 	memset(&MyGuid, 0, sizeof(GUID));
 	dprintf(_T(" ** Enumerating available DirectDraw drivers:\n"));
-	DirectDrawEnumerateEx(MyEnumDisplayDrivers, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES | DDENUM_NONDISPLAYDEVICES);
+	_DirectDrawEnumerateEx(MyEnumDisplayDrivers, NULL, DDENUM_ATTACHEDSECONDARYDEVICES | DDENUM_DETACHEDSECONDARYDEVICES | DDENUM_NONDISPLAYDEVICES);
 #endif
 
 	// Get pointer to DirectDraw device
-	DirectDrawCreateEx(nWantDriver ? &MyGuid : NULL, (void**)&pDD, IID_IDirectDraw7, NULL);
+	_DirectDrawCreateEx(nWantDriver ? &MyGuid : NULL, (void**)&pDD, IID_IDirectDraw7, NULL);
 
 	VidSInit(pDD);
 

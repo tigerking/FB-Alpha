@@ -37,6 +37,11 @@
 #include "png.h"
 #include "dwmapi_core.h"
 
+INT32 DSCore_Init();
+INT32 DICore_Init();
+INT32 DDCore_Init();
+INT32 Dx9Core_Init();
+
 // ---------------------------------------------------------------------------
 // OS independent functionality
 

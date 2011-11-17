@@ -2,9 +2,9 @@
 #include "burner.h"
 #include "vid_directx_support.h"
 
-#ifdef _MSC_VER
-#pragma comment(lib, "d3d9")
-#pragma comment(lib, "d3dx9")
+//#ifdef _MSC_VER
+//#pragma comment(lib, "d3d9")
+//#pragma comment(lib, "d3dx9")
 
 
 // #define ENABLE_PROFILING FBA_DEBUG
@@ -15,6 +15,8 @@
 #define D3D_OVERLOADS
 #include <d3d9.h>
 #include <d3dx9effect.h>
+
+#include "directx9_core.h"
 
 const float PI = 3.14159265358979323846f;
 
@@ -67,7 +69,7 @@ static int nIntermediateTextureWidth, nIntermediateTextureHeight;
 static ID3DXEffect* pEffect = NULL;
 static ID3DXTextureShader* pEffectShader = NULL;
 static D3DXHANDLE hTechnique = NULL;
-static D3DXHANDLE hScanIntensity = NULL;
+//static D3DXHANDLE hScanIntensity = NULL;
 static IDirect3DTexture9* pEffectTexture = NULL;
 
 static ID3DXFont* pFont = NULL;							// OSD font
@@ -81,7 +83,7 @@ static int nGameWidth = 0, nGameHeight = 0;				// Game screen size
 static int nGameImageWidth, nGameImageHeight;
 
 static int nRotateGame;
-static int nImageWidth, nImageHeight, nImageZoom;
+static int nImageWidth, nImageHeight/*, nImageZoom*/;
 
 static RECT Dest;
 
@@ -102,6 +104,8 @@ static TCHAR* TextureFormatString(D3DFORMAT nFormat)
 			return _T("64-bit ARGB 16161616fp");
 		case D3DFMT_A32B32G32R32F:
 			return _T("128-bit ARGB 32323232fp");
+		default:
+			return _T("unknown format");
 	}
 
 	return _T("unknown format");
@@ -120,6 +124,7 @@ static int GetTextureSize(int nSize)
 	return nTextureSize;
 }
 
+/*
 static void PutPixel(unsigned char** ppSurface, unsigned int nColour)
 {
 	switch (nVidScrnDepth) {
@@ -143,11 +148,12 @@ static void PutPixel(unsigned char** ppSurface, unsigned int nColour)
 			break;
 	}
 }
+*/
 
 // Select optimal full-screen resolution
 int dx9SelectFullscreenMode(VidSDisplayScoreInfo* pScoreInfo)
 {
-	int nWidth, nHeight;
+	//int nWidth, nHeight;
 
 	if (bVidArcaderes) {
 		if (!VidSGetArcaderes((int*)&(pScoreInfo->nBestWidth), (int*)&(pScoreInfo->nBestHeight))) {
@@ -220,7 +226,7 @@ static void FillEffectTexture()
 		pEffectShader->SetFloat("B", B);
 		pEffectShader->SetFloat("C", C);
 
-		D3DXFillTextureTX(pEffectTexture, pEffectShader);
+		_D3DXFillTextureTX(pEffectTexture, pEffectShader);
 	}
 
 	pEffect->SetFloat("B", B);
@@ -265,7 +271,7 @@ static int dx9Exit()
 
 static int dx9SurfaceInit()
 {
-	D3DFORMAT nFormat;
+	D3DFORMAT nFormat = D3DFMT_UNKNOWN;
 
 	if (nRotateGame & 1) {
 		nVidImageWidth = nGameHeight;
@@ -452,7 +458,7 @@ static int dx9EffectSurfaceInit()
 #endif
 		}
 
-		if (FAILED(D3DXLoadSurfaceFromMemory(pSurf, NULL, &rect, scandata[i], D3DFMT_X8R8G8B8, nSize * sizeof(int), NULL, &rect, D3DX_FILTER_NONE, 0))) {
+		if (FAILED(_D3DXLoadSurfaceFromMemory(pSurf, NULL, &rect, scandata[i], D3DFMT_X8R8G8B8, nSize * sizeof(int), NULL, &rect, D3DX_FILTER_NONE, 0))) {
 #ifdef PRINT_DEBUG_INFO
 			dprintf(_T("  * Error: D3DXLoadSurfaceFromMemory failed.\n"));
 #endif
@@ -620,7 +626,8 @@ int dx9EffectInit()
 //	char szC[MAX_PATH] = "(0.0)";
 //	D3DXMACRO d3dxm[] = {{ "USE_BC_MACRO", "1", }, { "B", szB, }, { "C", szC, }, { NULL, NULL, }};
 
-	char* pszTechnique;
+	char* pszTechniqueOpt[] = { "ScanBilinear", "Bilinear", "ScanPoint", "Point" };
+	char* pszTechnique = NULL;
 
 	ID3DXBuffer* pErrorBuffer = NULL;
 	FLOAT pFloatArray[2];
@@ -628,12 +635,12 @@ int dx9EffectInit()
 	pEffect = NULL;
 	pEffectShader = NULL;
 
-	D3DXCreateBuffer(0x10000, &pErrorBuffer);
+	_D3DXCreateBuffer(0x10000, &pErrorBuffer);
 
 #ifdef LOAD_EFFECT_FROM_FILE
-	if (FAILED(D3DXCreateEffectFromFile(pD3DDevice, _T("bicubic.fx"), NULL /* d3dxm */, NULL, D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY, NULL, &pEffect, &pErrorBuffer))) {
+	if (FAILED(_D3DXCreateEffectFromFile(pD3DDevice, _T("bicubic.fx"), NULL /* d3dxm */, NULL, D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY, NULL, &pEffect, &pErrorBuffer))) {
 #else
-	if (FAILED(D3DXCreateEffectFromResource(pD3DDevice, NULL, MAKEINTRESOURCE(ID_DX9EFFECT), NULL /* d3dxm */, NULL, D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY, NULL, &pEffect, &pErrorBuffer))) {
+	if (FAILED(_D3DXCreateEffectFromResource(pD3DDevice, NULL, MAKEINTRESOURCE(ID_DX9EFFECT), NULL /* d3dxm */, NULL, D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY, NULL, &pEffect, &pErrorBuffer))) {
 #endif
 #ifdef PRINT_DEBUG_INFO
 		dprintf(_T("  * Error: Couldn't compile effect.\n"));
@@ -654,7 +661,7 @@ int dx9EffectInit()
 
 	switch (DX9_FILTER) {
 		case 1: {
-			pszTechnique = bVidScanlines ? "ScanBilinear" : "Bilinear";
+			pszTechnique = bVidScanlines ? pszTechniqueOpt[0] : pszTechniqueOpt[1];
 			break;
 		}
 		case 2: {
@@ -668,7 +675,7 @@ int dx9EffectInit()
 			break;
 		}
 		default: {
-			pszTechnique = bVidScanlines ? "ScanPoint" : "Point";
+			pszTechnique = bVidScanlines ? pszTechniqueOpt[2] : pszTechniqueOpt[3];
 			break;
 		}
 	}
@@ -704,12 +711,12 @@ int dx9EffectInit()
 
 	{
 		ID3DXBuffer* pEffectShaderBuffer = NULL;
-		D3DXCreateBuffer(0x10000, &pEffectShaderBuffer);
+		_D3DXCreateBuffer(0x10000, &pEffectShaderBuffer);
 
 #ifdef LOAD_EFFECT_FROM_FILE
-		if (FAILED(D3DXCompileShaderFromFile(_T("bicubic.fx"), NULL, NULL, (DX9_SHADERPRECISION < 4 && !bUsePS14) ? "genWeightTex20" : "genWeightTex14", "tx_1_0", 0, &pEffectShaderBuffer, &pErrorBuffer, NULL))) {
+		if (FAILED(_D3DXCompileShaderFromFile(_T("bicubic.fx"), NULL, NULL, (DX9_SHADERPRECISION < 4 && !bUsePS14) ? "genWeightTex20" : "genWeightTex14", "tx_1_0", 0, &pEffectShaderBuffer, &pErrorBuffer, NULL))) {
 #else
-		if (FAILED(D3DXCompileShaderFromResource(NULL, MAKEINTRESOURCE(ID_DX9EFFECT), NULL, NULL, (DX9_SHADERPRECISION < 4 && !bUsePS14) ? "genWeightTex20" : "genWeightTex14", "tx_1_0", 0, &pEffectShaderBuffer, &pErrorBuffer, NULL))) {
+		if (FAILED(_D3DXCompileShaderFromResource(NULL, MAKEINTRESOURCE(ID_DX9EFFECT), NULL, NULL, (DX9_SHADERPRECISION < 4 && !bUsePS14) ? "genWeightTex20" : "genWeightTex14", "tx_1_0", 0, &pEffectShaderBuffer, &pErrorBuffer, NULL))) {
 #endif
 #ifdef PRINT_DEBUG_INFO
 			dprintf(_T("  * Error: Couldn't compile shader.\n"));
@@ -718,7 +725,7 @@ int dx9EffectInit()
 			goto HANDLE_ERROR;
 		}
 
-		if (FAILED(D3DXCreateTextureShader((DWORD*)(pEffectShaderBuffer->GetBufferPointer()), &pEffectShader))) {
+		if (FAILED(_D3DXCreateTextureShader((DWORD*)(pEffectShaderBuffer->GetBufferPointer()), &pEffectShader))) {
 #ifdef PRINT_DEBUG_INFO
 			dprintf(_T("  * Error: Couldn't create texture shader.\n"));
 #endif
@@ -750,7 +757,7 @@ static int dx9CreateFont()
 		return 0;
 	}
 
-	HRESULT hr = D3DXCreateFont(pD3DDevice, d3dpp.BackBufferHeight / 18,
+	HRESULT hr = _D3DXCreateFont(pD3DDevice, d3dpp.BackBufferHeight / 18,
 		0, FW_DEMIBOLD, 1, FALSE,
 		DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, ANTIALIASED_QUALITY,
 		DEFAULT_PITCH || FF_DONTCARE,
@@ -807,7 +814,7 @@ static int dx9Init()
 	hVidWnd = nVidFullscreen ? hScrnWnd : hVideoWindow;								// Use Screen window for video
 
 	// Get pointer to Direct3D
-	if ((pD3D = Direct3DCreate9(D3D_SDK_VERSION)) == NULL) {
+	if ((pD3D = _Direct3DCreate9(D3D_SDK_VERSION)) == NULL) {
 #ifdef PRINT_DEBUG_INFO
 		dprintf(_T("  * Error: Couldn't initialise Direct3D.\n"));
 #endif
@@ -1443,6 +1450,6 @@ static int dx9GetSettings(InterfaceInfo* pInfo)
 
 // The Video Output plugin:
 struct VidOut VidOutDX9 = { dx9Init, dx9Exit, dx9Frame, dx9Paint, dx9Scale, dx9GetSettings, _T("DirectX9 Experimental video output") };
-#else
-struct VidOut VidOutDX9 = { NULL, NULL, NULL, NULL, NULL, NULL, _T("DirectX9 Experimental video output") };
-#endif
+//#else
+//struct VidOut VidOutDX9 = { NULL, NULL, NULL, NULL, NULL, NULL, _T("DirectX9 Experimental video output") };
+//#endif

@@ -741,6 +741,11 @@ int ProcessCmdLine()
 // Main program entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd)
 {
+	DSCore_Init();
+	DICore_Init();
+	DDCore_Init();
+	Dx9Core_Init();
+
 	// Try to initiate DWMAPI.DLL on Windows 7
 	if(IsWindows7()) {
 		InitDWMAPI();

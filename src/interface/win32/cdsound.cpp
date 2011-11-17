@@ -1,5 +1,4 @@
 #include "burner.h"
-#include <dsound.h>
 #include "cdsound.h"
 
 WavClass::WavClass()
@@ -58,7 +57,7 @@ bool WavClass::InitializeDirectSound(HWND hwnd)
 	WAVEFORMATEX waveFormat;
 
 	// Initialize the direct sound interface pointer for the default sound device.
-	result = DirectSoundCreate8(NULL, &m_DirectSound, NULL);
+	result = _DirectSoundCreate(NULL, &m_DirectSound, NULL);
 	if(FAILED(result))
 	{
 		return false;

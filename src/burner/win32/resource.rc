@@ -34,9 +34,9 @@ CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "resource/manifest.xml"
 ID_LICENSE 256 "license.rtf"
 
 // DirectX 9 blitter effects/shaders
-#ifdef _MSC_VER
+//#ifdef _MSC_VER
 ID_DX9EFFECT RCDATA	"resource/bicubic.fx"
-#endif
+//#endif
 
 // GUI strings
 #include "string.rc"

@@ -84,13 +84,13 @@ srcdir	= src/
 include makefile.rules
 
 ifdef GCC345
-incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)depend/generated -I$(srcdir)depend/mingw/include -I-
+incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)depend/generated -I$(srcdir)depend/mingw/include -I- -I$(srcdir)depend/mingw/include/directx9 -I$(srcdir)depend/mingw/include/xaudio2 
 endif
 ifdef GCC452
-incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)depend/generated -I$(srcdir)depend/mingw/include 
+incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)depend/generated -I$(srcdir)depend/mingw/include -I$(srcdir)depend/mingw/include/directx9 -I$(srcdir)depend/mingw/include/xaudio2
 endif
 ifdef GCC461
-incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)depend/generated -I$(srcdir)depend/mingw/include 
+incdir	= $(foreach dir,$(alldir),-I$(srcdir)$(dir)) -I$(objdir)depend/generated -I$(srcdir)depend/mingw/include -I$(srcdir)depend/mingw/include/directx9 -I$(srcdir)depend/mingw/include/xaudio2
 endif
 
 ifdef UNICODE
@@ -99,7 +99,7 @@ endif
 
 # lib	+=	`sdl-config --libs`
 lib	+=	-luser32 -lgdi32 -lcomdlg32 -lcomctl32 -lshell32 -lwinmm -lshlwapi \
-		-ladvapi32 -lsetupapi -lddraw -ldsound -ldinput8
+		-ladvapi32 -lsetupapi -lole32 -luuid
 		
 
 depobj	+=	resource.o \
@@ -176,7 +176,8 @@ CXXFLAGS = -pipe \
 	   -mno-cygwin -mwindows \
 	   -fforce-mem -fforce-addr -finline-limit=1200 -fthread-jumps \
 	   -freduce-all-givs -fmove-all-movables -fexpensive-optimizations \
-	   -Wall -W -pedantic -Wshadow -Wno-long-long \
+	   -fcheck-new \
+	   -Wall -W -pedantic -Wno-long-long \
 	   -Wunknown-pragmas -Wundef -Wconversion -Wno-missing-braces \
 	   -Wuninitialized -Wpointer-arith -Winline -Wno-multichar \
 	   $(DEF) $(incdir) # `sdl-config --cflags`
@@ -195,7 +196,7 @@ CXXFLAGS = -pipe \
 	   -march=$(CPUTYPE) -O1 \
 	   -mno-cygwin -mwindows \
 	   -fforce-addr -finline-limit=1200 -fthread-jumps \
-	   -fexpensive-optimizations \
+	   -fexpensive-optimizations -fcheck-new \
 	   -Wall -W -pedantic -Wshadow -Wno-long-long -Wno-write-strings \
 	   -Wunknown-pragmas -Wundef -Wno-conversion -Wno-missing-braces -Wno-multichar \
 	   -Wuninitialized -Wpointer-arith -Wno-inline -Wno-address  -Wno-unused-value \
@@ -216,7 +217,7 @@ CXXFLAGS = -pipe \
 	   -O1 \
 	   -mwindows \
 	   -fforce-addr -finline-limit=1200 -fthread-jumps \
-	   -fexpensive-optimizations \
+	   -fexpensive-optimizations -fcheck-new \
 	   -Wall -W -pedantic -Wshadow -Wno-long-long -Wno-write-strings \
 	   -Wunknown-pragmas -Wundef -Wno-conversion -Wno-missing-braces -Wno-multichar \
 	   -Wuninitialized -Wpointer-arith -Wno-inline -Wno-address  -Wno-unused-value \

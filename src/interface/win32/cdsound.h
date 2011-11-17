@@ -1,7 +1,8 @@
 #ifndef _WavClass_H_
 #define _WavClass_H_
 
-#include <dsound.h>
+//#include <dsound.h>
+#include "dsound_core.h"
 
 class WavClass
 {
@@ -39,12 +40,12 @@ public:
 
 	bool PlayWaveFile();	
 
-	IDirectSound8*			GetDirectSound()		{ return m_DirectSound; }
+	IDirectSound*			GetDirectSound()		{ return m_DirectSound; }
 	IDirectSoundBuffer*		GetPrimaryBuffer()		{ return m_primaryBuffer; }
 	IDirectSoundBuffer*	GetSecondaryBuffer()	{ return m_secondaryBuffer1; }
 
 private:
-	IDirectSound8*			m_DirectSound;
+	IDirectSound*			m_DirectSound;
 	IDirectSoundBuffer*		m_primaryBuffer;
 	IDirectSoundBuffer*	m_secondaryBuffer1;
 };

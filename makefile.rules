@@ -101,8 +101,8 @@ depobj	:= 	about.o bzip.o cona.o debugger.o drv.o dwmapi_core.o dynhuff.o fba_ka
 			\
 			2xpm.o 2xsai.o epx.o hq2xs.o hq2xs_16.o \
 			\
-			aud_dsound3.o aud_xaudio2.o cd_isowav.o cdsound.o inp_dinput.o prf_performance_counter.o vid_d3d.o vid_ddraw.o \
-			vid_ddrawfx.o vid_directx9.o vid_directx_support.o \
+			aud_dsound3.o aud_xaudio2.o cd_isowav.o cdsound.o ddraw_core.o dinput_core.o directx9_core.o dsound_core.o \
+			inp_dinput.o prf_performance_counter.o vid_d3d.o vid_ddraw.o vid_ddrawfx.o vid_directx9.o vid_directx_support.o \
 			\
 			cave.o cave_palette.o cave_sprite.o cave_tile.o \
 			\

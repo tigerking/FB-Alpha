@@ -7,6 +7,8 @@
 #define DIRECTSOUND_VERSION  0x0300			// Only need version from DirectX 3
 #include <dsound.h>
 
+#include "dsound_core.h"
+
 // Sound is split into a series of 'segs', one seg for each frame
 // The Loop buffer is a multiple of this seg length.
 
@@ -187,7 +189,7 @@ static int DxSoundInit()
 	wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
 
 	// Create the DirectSound interface
-	if (FAILED(DirectSoundCreate(NULL, &pDS, NULL))) {
+	if (FAILED(_DirectSoundCreate(NULL, &pDS, NULL))) {
 		return 1;
 	}
 

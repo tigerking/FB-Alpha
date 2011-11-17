@@ -9,10 +9,12 @@
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 
-#ifdef _MSC_VER
-#pragma comment(lib, "dinput8")
-#pragma comment(lib, "dxguid")
-#endif
+//#ifdef _MSC_VER
+//#pragma comment(lib, "dinput8")
+//#pragma comment(lib, "dxguid")
+//#endif
+
+#include "dinput_core.h"
 
 #define MAX_KEYBOARD	(1)
 #define MAX_GAMEPAD		(8)
@@ -275,7 +277,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 		memset(&gamepadProperties, 0, sizeof(gamepadProperties));
 		memset(&mouseProperties, 0, sizeof(mouseProperties));
 
-		if (FAILED(DirectInput8Create(hAppInst, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&pDI, NULL))) {
+		if (FAILED(_DirectInput8Create(hAppInst, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&pDI, NULL))) {
 			return 1;
 		}
 
