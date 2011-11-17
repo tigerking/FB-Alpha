@@ -11,6 +11,7 @@
 	extern struct VidOut VidOutD3D;
 	extern struct VidOut VidOutDDrawFX;
 	extern struct VidOut VidOutDX9;
+	extern struct VidOut VidOutDX9Alt;
 #elif defined (BUILD_SDL)
 	extern struct VidOut VidOutSDLOpenGL;
 	extern struct VidOut VidOutSDLFX;
@@ -22,6 +23,7 @@ static struct VidOut *pVidOut[] = {
 	&VidOutD3D,
 	&VidOutDDrawFX,
 	&VidOutDX9,
+	&VidOutDX9Alt,
 #elif defined (BUILD_SDL)
 	&VidOutSDLOpenGL,
 	&VidOutSDLFX,
@@ -75,6 +77,10 @@ float fVidScreenAngle = 0.174533f;				// The angle at which to tilt the screen b
 float fVidScreenCurvature = 0.698132f;			// The angle of the maximum screen curvature (in radians, D3D blitter)
 double dVidCubicB = 0.0;						// Paremeters for the cubic filter (default is the CAtmull-Rom spline, DX9 blitter)
 double dVidCubicC = 0.5;						//
+
+INT32 bVidDX9Bilinear = 1;							// 1 = enable bi-linear filtering (D3D9 Alt blitter)
+INT32 bVidHardwareVertex = 0;			// 1 = use hardware vertex processing
+INT32 bVidMotionBlur = 0;				// 1 = motion blur
 
 #ifdef BUILD_WIN32
  HWND hVidWnd = NULL;							// Actual window used for video

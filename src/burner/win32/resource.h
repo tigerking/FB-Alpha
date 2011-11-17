@@ -53,6 +53,7 @@
 #define IDR_MENU_BLITTER_2					111
 #define IDR_MENU_BLITTER_3					112
 #define IDR_MENU_BLITTER_4					113
+#define IDR_MENU_BLITTER_5					114
 #define IDR_MENU_AUD_PLUGIN_1				130
 #define IDR_MENU_AUD_PLUGIN_2				131
 #define IDR_ACCELERATOR                 	150
@@ -519,6 +520,10 @@
 #define MENU_DOUBLESIZESCREEN_VERTICAL		10707
 #define MENU_TRIPLESIZESCREEN_VERTICAL		10708
 #define MENU_QUADSIZESCREEN_VERTICAL		10709
+#define MENU_CDIMAGE                    	10710
+#define MENU_START_NEOGEO_MVS				10711
+#define MENU_START_NEOGEO_CD				10712
+#define MENU_LOAD_NEOCD						10713
 
 #define MENU_NORMAL                	    	11001
 #define MENU_SCAN                   	    11002
@@ -555,10 +560,6 @@
 #define MENU_EFFECT_10						11147
 #define MENU_FORCE_16BIT					11141
 #define MENU_TEXTUREMANAGE					11142
-#define MENU_CDIMAGE                    	11143
-#define MENU_START_NEOGEO_MVS				11144
-#define MENU_START_NEOGEO_CD				11145
-#define MENU_LOAD_NEOCD						11146
 
 #define MENU_SOFT_STRETCH					11201
 #define MENU_SOFT_SCALE2X					11202
@@ -608,6 +609,11 @@
 #define MENU_DX9_CUBIC2						11324
 #define MENU_DX9_CUBIC3						11325
 #define MENU_DX9_CUBIC4						11326
+
+#define MENU_DX9_ALT_POINT					11401
+#define MENU_DX9_ALT_LINEAR					11402
+#define MENU_DX9_ALT_HARDWAREVERTEX			11403
+#define MENU_DX9_ALT_MOTIONBLUR				11404
 
 // Next default values for new objects
 //

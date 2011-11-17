@@ -930,3 +930,15 @@ int VidSoftFXApplyEffectSDL(SDL_Surface* pSurf)
 }
 
 #endif
+
+int VidFilterApplyEffect(unsigned char* pd, int pitch)
+{
+	if (!pd) {
+		return 1;
+	}
+
+	VidSoftFXRotate();
+	VidSoftFXApplyEffect(pSoftFXImage, pd, pitch);
+
+	return 0;
+}

@@ -122,6 +122,7 @@ int ConfigAppLoad()
 		VAR64(nVidBlitterOpt[1]);
 		VAR(nVidBlitterOpt[2]);
 		VAR(nVidBlitterOpt[3]);
+		VAR(nVidBlitterOpt[4]);
 
 		// DirectDraw blitter
 		VAR(bVidScanHalf);
@@ -141,6 +142,11 @@ int ConfigAppLoad()
 		// DirectX Graphics blitter
 		FLT(dVidCubicB);
 		FLT(dVidCubicC);
+		
+		// DirectX Graphics 9 Alt blitter
+		VAR(bVidDX9Bilinear);
+		VAR(bVidHardwareVertex);
+		VAR(bVidMotionBlur);
 
 		// Sound
 		VAR(nAudSelect);
@@ -363,6 +369,7 @@ int ConfigAppSave()
 	VAR64(nVidBlitterOpt[1]);
 	VAR(nVidBlitterOpt[2]);
 	VAR(nVidBlitterOpt[3]);
+	VAR(nVidBlitterOpt[4]);
 	_ftprintf(h, _T("\n// If non-zero, attempt to auto-detect the monitor aspect ratio\n"));
 	VAR(bMonitorAutoCheck);
 	_ftprintf(h, _T("\n// The aspect ratio of the monitor\n"));
@@ -400,6 +407,14 @@ int ConfigAppSave()
 	_ftprintf(h, _T("\n// The filter parameters for the cubic filter\n"));
 	FLT(dVidCubicB);
 	FLT(dVidCubicC);
+	_ftprintf(h, _T("\n"));
+	_ftprintf(h, _T("// --- DirectX Graphics 9 Alt blitter module settings -------------------------\n"));
+	_ftprintf(h, _T("\n// If non-zero, use bi-linear filtering to display the image\n"));
+	VAR(bVidDX9Bilinear);
+	_ftprintf(h, _T("\n// If non-zero, use hardware vertex to display the image\n"));
+	VAR(bVidHardwareVertex);
+	_ftprintf(h, _T("\n// If non-zero, use motion blur to display the image\n"));
+	VAR(bVidMotionBlur);
 
 	_ftprintf(h, _T("\n\n\n"));
 	_ftprintf(h, _T("// --- Sound ------------------------------------------------------------------\n"));

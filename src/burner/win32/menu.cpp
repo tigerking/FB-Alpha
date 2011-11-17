@@ -335,13 +335,11 @@ int MenuCreate()
 		hBlitterMenu[0] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_BLITTER_1));	// DirectDraw Standard blitter
 		hBlitterMenu[1] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_BLITTER_2));	// Direct3D
 		hBlitterMenu[2] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_BLITTER_3));	// Software effects blitter
-//#ifdef _MSC_VER
 		hBlitterMenu[3] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_BLITTER_4));	// DirectX 9
-//#endif
+		hBlitterMenu[4] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_BLITTER_5));	// DirectX 9 Alt
+
 		hAudioPluginMenu[0] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_AUD_PLUGIN_1));
-//#ifdef _MSC_VER
 		hAudioPluginMenu[1] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_AUD_PLUGIN_2));
-//#endif
 	}
 	
 	if (hMenuPopup == NULL) {
@@ -452,7 +450,7 @@ void MenuDestroy()
 			SetMenuItemInfo(GetSubMenu(hMenuPopup, 1), 1, TRUE, &myMenuItemInfo);
 		}
 
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 5; i++) {
 			if (hBlitterMenu[i]) {
 				DestroyMenu(hBlitterMenu[i]);
 				hBlitterMenu[i] = 0;
@@ -747,6 +745,14 @@ void MenuUpdate()
 				var = ((nVidBlitterOpt[nVidSelect] >> 28) & 0x07) + MENU_DX9_CUBIC0;
 			}
 			CheckMenuRadioItem(hMenu, MENU_DX9_CUBIC0, MENU_DX9_CUBIC0 + 8, var, MF_BYCOMMAND);
+			break;
+		case 4:
+			var = (nVidBlitterOpt[nVidSelect] & 0xFF) + MENU_SOFT_STRETCH;
+			CheckMenuRadioItem(hMenu, MENU_SOFT_STRETCH, MENU_SOFT_STRETCH + 25, var, MF_BYCOMMAND);
+			CheckMenuItem(hMenu, MENU_SOFT_AUTOSIZE, (nVidBlitterOpt[nVidSelect] & 0x0100) ? MF_CHECKED : MF_UNCHECKED);
+			CheckMenuRadioItem(hMenu, MENU_DX9_ALT_POINT, MENU_DX9_ALT_POINT + 1, MENU_DX9_ALT_POINT + bVidDX9Bilinear, MF_BYCOMMAND);
+			CheckMenuItem(hMenu, MENU_DX9_ALT_HARDWAREVERTEX, (bVidHardwareVertex) ? MF_CHECKED : MF_UNCHECKED);
+			CheckMenuItem(hMenu, MENU_DX9_ALT_MOTIONBLUR, (bVidMotionBlur) ? MF_CHECKED : MF_UNCHECKED);
 			break;
 	}
 
@@ -1129,7 +1135,6 @@ void MenuEnableItems()
 	}
 #endif
 
-//#if 1 && defined _MSC_VER
 	if (nVidSelect == 3 && (!(nVidBlitterOpt[3] & (1 <<  9)) || (nVidBlitterOpt[nVidSelect] & (7 << 28)) == (4 << 28))) {
 		EnableMenuItem(hMenu, MENU_DX9_CUBIC_BSPLINE,	MF_GRAYED  | MF_BYCOMMAND);
 		EnableMenuItem(hMenu, MENU_DX9_CUBIC_NOTCH,		MF_GRAYED  | MF_BYCOMMAND);
@@ -1142,23 +1147,15 @@ void MenuEnableItems()
 	if (nVidSelect == 3) {
 		EnableMenuItem(hMenu, MENU_24,	                MF_GRAYED  | MF_BYCOMMAND);
 	}
-//#else
-//	EnableMenuItem(hMenu, MENU_BLITTER_4,				MF_GRAYED  | MF_BYCOMMAND);
-//#endif
 
 	EnableMenuItem(hMenu, MENU_MODELESS,	                MF_ENABLED  | MF_BYCOMMAND);
 
 #if defined _MSC_VER && defined BUILD_X86_ASM
 	EnableMenuItem(hBlitterMenu[1], MENU_SOFT_HQ3XS_VBA, MF_ENABLED | MF_BYCOMMAND);
 	EnableMenuItem(hBlitterMenu[2], MENU_SOFT_HQ3XS_VBA, MF_ENABLED | MF_BYCOMMAND);
+	EnableMenuItem(hBlitterMenu[4], MENU_SOFT_HQ3XS_VBA, MF_ENABLED | MF_BYCOMMAND);
 #endif
 
-//#ifdef _MSC_VER
-
-//#else
-//	EnableMenuItem(hMenu, MENU_AUD_PLUGIN_2, MF_GRAYED  | MF_BYCOMMAND);
-//#endif
-	
 	if (bDrvOkay) {
 		EnableMenuItem(hMenu, MENU_QUIT,				MF_ENABLED | MF_BYCOMMAND);
 		EnableMenuItem(hMenu, MENU_INPUT,				MF_ENABLED | MF_BYCOMMAND);
@@ -1184,9 +1181,7 @@ void MenuEnableItems()
 		EnableMenuItem(hMenu, MENU_CDIMAGE,				MF_GRAYED | MF_BYCOMMAND);
 		
 		EnableMenuItem(hMenu, MENU_AUD_PLUGIN_1, MF_GRAYED  | MF_BYCOMMAND);
-//#ifdef _MSC_VER
 		EnableMenuItem(hMenu, MENU_AUD_PLUGIN_2, MF_GRAYED  | MF_BYCOMMAND);
-//#endif
 
 		BurnDIPInfo bdi;
 		if (BurnDrvGetDIPInfo(&bdi, 0) == 0) {
@@ -1341,8 +1336,6 @@ void MenuEnableItems()
 		EnableMenuItem(hMenu, MENU_CDIMAGE,				MF_ENABLED | MF_BYCOMMAND);
 		
 		EnableMenuItem(hMenu, MENU_AUD_PLUGIN_1, 		MF_ENABLED  | MF_BYCOMMAND);
-//#ifdef _MSC_VER
 		EnableMenuItem(hMenu, MENU_AUD_PLUGIN_2,		 MF_ENABLED  | MF_BYCOMMAND);
-//#endif
 	}
 }

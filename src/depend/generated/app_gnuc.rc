@@ -773,6 +773,7 @@ BEGIN
             MENUITEM "SoftFX\t(DirectDraw 7)",				MENU_BLITTER_3
             MENUITEM "Enhanced\t(Direct3D 7)",				MENU_BLITTER_2
             MENUITEM "Experimental\t(DirectX Graphics 9)",	MENU_BLITTER_4
+			MENUITEM "DirectX9 Alt\t(DirectX Graphics 9)",	MENU_BLITTER_5
         END
         MENUITEM "&Blitter options",					MENU_BLITTEROPTIONS, GRAYED
         POPUP "&Stretch"
@@ -1017,30 +1018,30 @@ BEGIN
                 POPUP "SoftFX algorithm"
                 BEGIN
                         MENUITEM "Double pixels (3D hardware)",         MENU_SOFT_STRETCH
-			MENUITEM "AdvanceMAME Scale2x",			MENU_SOFT_SCALE2X
-			MENUITEM "AdvanceMAME Scale3x",			MENU_SOFT_SCALE3X
-			MENUITEM "2xPM LQ",				MENU_SOFT_2XPM_LQ
-			MENUITEM "2xPM HQ",				MENU_SOFT_2XPM_HQ
-			MENUITEM "Eagle Graphics",			MENU_SOFT_EAGLE
-			MENUITEM "Super Eagle",				MENU_SOFT_SUPEREAGLE
-			MENUITEM "2xSaI",				MENU_SOFT_2XSAI
-			MENUITEM "Super 2xSaI",				MENU_SOFT_SUPER2XSAI
-			MENUITEM "Super Eagle (VBA)",			MENU_SOFT_SUPEREAGLE_VBA
-			MENUITEM "2xSaI (VBA)",				MENU_SOFT_2XSAI_VBA
-			MENUITEM "Super 2xSaI (VBA)",			MENU_SOFT_SUPER2XSAI_VBA
-			MENUITEM "SuperScale",				MENU_SOFT_SUPERSCALE
-			MENUITEM "SuperScale (75% Scanlines)",		MENU_SOFT_SUPERSCALE75
-			MENUITEM "hq2x Filter",				MENU_SOFT_HQ2X
-			MENUITEM "hq3x Filter",				MENU_SOFT_HQ3X
-			MENUITEM "hq4x Filter",				MENU_SOFT_HQ4X
-			MENUITEM "hq2xS (VBA) Filter",			MENU_SOFT_HQ2XS_VBA
-			MENUITEM "hq3xS (VBA) Filter",			MENU_SOFT_HQ3XS_VBA, GRAYED
-			MENUITEM "hq2xS (SNES9X) Filter",		MENU_SOFT_HQ2XS_SNES9X
-			MENUITEM "hq3xS (SNEX9X) Filter",		MENU_SOFT_HQ3XS_SNES9X
-			MENUITEM "hq2xBold Filter",			MENU_SOFT_HQ2XBOLD
-			MENUITEM "hq3xBold Filter",			MENU_SOFT_HQ3XBOLD
-			MENUITEM "EPXB Filter",				MENU_SOFT_EPXB
-			MENUITEM "EPXC Filter",				MENU_SOFT_EPXC
+						MENUITEM "AdvanceMAME Scale2x",			MENU_SOFT_SCALE2X
+						MENUITEM "AdvanceMAME Scale3x",			MENU_SOFT_SCALE3X
+						MENUITEM "2xPM LQ",				MENU_SOFT_2XPM_LQ
+						MENUITEM "2xPM HQ",				MENU_SOFT_2XPM_HQ
+						MENUITEM "Eagle Graphics",			MENU_SOFT_EAGLE
+						MENUITEM "Super Eagle",				MENU_SOFT_SUPEREAGLE
+						MENUITEM "2xSaI",				MENU_SOFT_2XSAI
+						MENUITEM "Super 2xSaI",				MENU_SOFT_SUPER2XSAI
+						MENUITEM "Super Eagle (VBA)",			MENU_SOFT_SUPEREAGLE_VBA
+						MENUITEM "2xSaI (VBA)",				MENU_SOFT_2XSAI_VBA
+						MENUITEM "Super 2xSaI (VBA)",			MENU_SOFT_SUPER2XSAI_VBA
+						MENUITEM "SuperScale",				MENU_SOFT_SUPERSCALE
+						MENUITEM "SuperScale (75% Scanlines)",		MENU_SOFT_SUPERSCALE75
+						MENUITEM "hq2x Filter",				MENU_SOFT_HQ2X
+						MENUITEM "hq3x Filter",				MENU_SOFT_HQ3X
+						MENUITEM "hq4x Filter",				MENU_SOFT_HQ4X
+						MENUITEM "hq2xS (VBA) Filter",			MENU_SOFT_HQ2XS_VBA
+						MENUITEM "hq3xS (VBA) Filter",			MENU_SOFT_HQ3XS_VBA, GRAYED
+						MENUITEM "hq2xS (SNES9X) Filter",		MENU_SOFT_HQ2XS_SNES9X
+						MENUITEM "hq3xS (SNEX9X) Filter",		MENU_SOFT_HQ3XS_SNES9X
+						MENUITEM "hq2xBold Filter",			MENU_SOFT_HQ2XBOLD
+						MENUITEM "hq3xBold Filter",			MENU_SOFT_HQ3XBOLD
+						MENUITEM "EPXB Filter",				MENU_SOFT_EPXB
+						MENUITEM "EPXC Filter",				MENU_SOFT_EPXC
                         MENUITEM SEPARATOR
                         MENUITEM "Force image to SoftFX size",          MENU_SOFT_AUTOSIZE
                 END
@@ -1163,6 +1164,52 @@ BEGIN
 						MENUITEM "Use floating-point textures",						MENU_DX9_FPTERXTURES, GRAYED
                 END
         END
+END
+
+IDR_MENU_BLITTER_5 MENU
+BEGIN
+	POPUP "DirectX9 Alt\t(DirectX 9)"
+	BEGIN
+		MENUITEM "Point filtering",                             MENU_DX9_ALT_POINT
+		MENUITEM "Linear filtering",                            MENU_DX9_ALT_LINEAR
+		MENUITEM SEPARATOR
+		POPUP "SoftFX algorithm"
+		BEGIN
+			MENUITEM "Double pixels (3D hardware)",				MENU_SOFT_STRETCH
+			MENUITEM "AdvanceMAME Scale2x",						MENU_SOFT_SCALE2X
+			MENUITEM "AdvanceMAME Scale3x",						MENU_SOFT_SCALE3X
+			MENUITEM "2xPM LQ",									MENU_SOFT_2XPM_LQ
+			MENUITEM "2xPM HQ",									MENU_SOFT_2XPM_HQ
+			MENUITEM "Eagle Graphics",							MENU_SOFT_EAGLE
+			MENUITEM "Super Eagle",								MENU_SOFT_SUPEREAGLE
+			MENUITEM "2xSaI",									MENU_SOFT_2XSAI
+			MENUITEM "Super 2xSaI",								MENU_SOFT_SUPER2XSAI
+			MENUITEM "Super Eagle (VBA)",						MENU_SOFT_SUPEREAGLE_VBA
+			MENUITEM "2xSaI (VBA)",								MENU_SOFT_2XSAI_VBA
+			MENUITEM "Super 2xSaI (VBA)",						MENU_SOFT_SUPER2XSAI_VBA
+			MENUITEM "SuperScale",								MENU_SOFT_SUPERSCALE
+			MENUITEM "SuperScale (75% Scanlines)",				MENU_SOFT_SUPERSCALE75
+			MENUITEM "hq2x Filter",								MENU_SOFT_HQ2X
+			MENUITEM "hq3x Filter",								MENU_SOFT_HQ3X
+			MENUITEM "hq4x Filter",								MENU_SOFT_HQ4X
+			MENUITEM "hq2xS (VBA) Filter",						MENU_SOFT_HQ2XS_VBA
+			MENUITEM "hq3xS (VBA) Filter",						MENU_SOFT_HQ3XS_VBA, GRAYED
+			MENUITEM "hq2xS (SNES9X) Filter",					MENU_SOFT_HQ2XS_SNES9X
+			MENUITEM "hq3xS (SNEX9X) Filter",					MENU_SOFT_HQ3XS_SNES9X
+			MENUITEM "hq2xBold Filter",							MENU_SOFT_HQ2XBOLD
+			MENUITEM "hq3xBold Filter",							MENU_SOFT_HQ3XBOLD
+			MENUITEM "EPXB Filter",								MENU_SOFT_EPXB
+			MENUITEM "EPXC Filter",								MENU_SOFT_EPXC
+			MENUITEM SEPARATOR
+			MENUITEM "Force image to SoftFX size",          	MENU_SOFT_AUTOSIZE
+        END
+		MENUITEM SEPARATOR
+		POPUP "Advanced settings"
+		BEGIN
+			MENUITEM "Hardware vertex processing",              MENU_DX9_ALT_HARDWAREVERTEX
+			MENUITEM "Motion blur",                             MENU_DX9_ALT_MOTIONBLUR
+		END
+	END
 END
 
 IDR_MENU_AUD_PLUGIN_1 MENU

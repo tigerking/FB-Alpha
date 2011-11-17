@@ -1114,12 +1114,12 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			VidSelect(3);
 			POST_INITIALISE_MESSAGE;
 			break;
-#if 0
 		case MENU_BLITTER_5:
 			VidSelect(4);
 			POST_INITIALISE_MESSAGE;
 			break;
-		case MENU_BLITTER_6:
+#if 0
+			case MENU_BLITTER_6:
 			VidSelect(5);
 			POST_INITIALISE_MESSAGE;
 			break;
@@ -2429,6 +2429,65 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 					POST_INITIALISE_MESSAGE;
 					break;
 
+			}
+			break;
+		case 4:
+			switch (id) {
+				// Options for the DirectX Graphics 9 Alternate blitter
+				case MENU_DX9_ALT_POINT:
+					bVidDX9Bilinear = 0;
+					POST_INITIALISE_MESSAGE;
+					break;
+					
+				case MENU_DX9_ALT_LINEAR:
+					bVidDX9Bilinear = 1;
+					POST_INITIALISE_MESSAGE;
+					break;
+					
+				case MENU_SOFT_STRETCH:
+				case MENU_SOFT_SCALE2X:
+				case MENU_SOFT_SCALE3X:
+				case MENU_SOFT_2XPM_LQ:
+				case MENU_SOFT_2XPM_HQ:
+				case MENU_SOFT_EAGLE:
+				case MENU_SOFT_SUPEREAGLE:
+				case MENU_SOFT_2XSAI:
+				case MENU_SOFT_SUPER2XSAI:
+				case MENU_SOFT_SUPEREAGLE_VBA:
+				case MENU_SOFT_2XSAI_VBA:
+				case MENU_SOFT_SUPER2XSAI_VBA:
+				case MENU_SOFT_SUPERSCALE:
+				case MENU_SOFT_SUPERSCALE75:
+				case MENU_SOFT_HQ2X:
+				case MENU_SOFT_HQ3X:
+				case MENU_SOFT_HQ4X:
+				case MENU_SOFT_HQ2XS_VBA:
+				case MENU_SOFT_HQ3XS_VBA:
+				case MENU_SOFT_HQ2XS_SNES9X:
+				case MENU_SOFT_HQ3XS_SNES9X:
+				case MENU_SOFT_HQ2XBOLD:
+				case MENU_SOFT_HQ3XBOLD:
+				case MENU_SOFT_EPXB:
+				case MENU_SOFT_EPXC:
+					nVidBlitterOpt[nVidSelect] &= ~0xFF;
+					nVidBlitterOpt[nVidSelect] |= id - MENU_SOFT_STRETCH;
+					POST_INITIALISE_MESSAGE;
+					break;
+
+				case MENU_SOFT_AUTOSIZE:
+					nVidBlitterOpt[nVidSelect] ^= 0x0100;
+					POST_INITIALISE_MESSAGE;
+					break;
+					
+				case MENU_DX9_ALT_HARDWAREVERTEX:
+					bVidHardwareVertex = !bVidHardwareVertex;
+					POST_INITIALISE_MESSAGE;
+					break;
+
+				case MENU_DX9_ALT_MOTIONBLUR:
+					bVidMotionBlur = !bVidMotionBlur;
+					POST_INITIALISE_MESSAGE;
+					break;
 			}
 			break;
 	}

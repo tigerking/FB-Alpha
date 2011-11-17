@@ -202,6 +202,9 @@ extern INT32 bVidTripleBuffer;
 extern INT32 bVidVSync;
 extern double dVidCubicB;
 extern double dVidCubicC;
+extern INT32 bVidDX9Bilinear;
+extern INT32 bVidHardwareVertex;
+extern INT32 bVidMotionBlur;
 extern INT32 nVidScrnWidth, nVidScrnHeight;
 extern INT32 nVidScrnDepth;
 
