@@ -1510,7 +1510,7 @@ static INT32 DrvMemInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 	
@@ -1551,7 +1551,7 @@ static INT32 DrvLoadRoms()
 {
 	INT32 nRet = 0;
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load HD6309 Program Roms
 	nRet = BurnLoadRom(DrvHD6309Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1593,10 +1593,7 @@ static INT32 DrvLoadRoms()
 	nRet = BurnLoadRom(DrvMSM5205Rom + 0x00000, 19, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvMSM5205Rom + 0x10000, 20, 1); if (nRet != 0) return 1;
 
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	return 0;
 }
@@ -1605,7 +1602,7 @@ static INT32 DrvbaLoadRoms()
 {
 	INT32 nRet = 0;
 	
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load HD6309 Program Roms
 	nRet = BurnLoadRom(DrvHD6309Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1647,10 +1644,7 @@ static INT32 DrvbaLoadRoms()
 	nRet = BurnLoadRom(DrvMSM5205Rom + 0x00000, 18, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvMSM5205Rom + 0x10000, 19, 1); if (nRet != 0) return 1;
 
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	return 0;
 }
@@ -1659,7 +1653,7 @@ static INT32 Drv2LoadRoms()
 {
 	INT32 nRet = 0;
 
-	DrvTempRom = (UINT8 *)malloc(0xc0000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0xc0000);
 
 	// Load HD6309 Program Roms
 	nRet = BurnLoadRom(DrvHD6309Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1697,10 +1691,7 @@ static INT32 Drv2LoadRoms()
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 15, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(MSM6295ROM + 0x20000, 16, 1); if (nRet != 0) return 1;
 
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	return 0;
 }
@@ -1709,7 +1700,7 @@ static INT32 DdungeonLoadRoms()
 {
 	INT32 nRet = 0;
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load HD6309 Program Roms
 	nRet = BurnLoadRom(DrvHD6309Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1744,10 +1735,7 @@ static INT32 DdungeonLoadRoms()
 	nRet = BurnLoadRom(DrvMSM5205Rom + 0x00000, 10, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvMSM5205Rom + 0x10000, 11, 1); if (nRet != 0) return 1;
 
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	return 0;
 }
@@ -1756,7 +1744,7 @@ static INT32 DarktowrLoadRoms()
 {
 	INT32 nRet = 0;
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load HD6309 Program Roms
 	nRet = BurnLoadRom(DrvHD6309Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -1800,10 +1788,7 @@ static INT32 DarktowrLoadRoms()
 	nRet = BurnLoadRom(DrvMSM5205Rom + 0x00000, 19, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvMSM5205Rom + 0x10000, 20, 1); if (nRet != 0) return 1;
 
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	return 0;
 }
@@ -1931,7 +1916,7 @@ static INT32 Drv2MachineInit()
 	BurnYM2151Init(3579545, 25.0);
 	BurnYM2151SetIrqHandler(&Ddragon2YM2151IrqHandler);
 	
-	MSM6295Init(0, 1056000 / 132, 10.0, 1);
+	MSM6295Init(0, 1056000 / 132, 50.0, 1);
 	
 	BurnSetRefreshRate(57.444853);
 	
@@ -2039,10 +2024,7 @@ static INT32 DrvExit()
 	
 	GenericTilesExit();
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 	
 	DrvRomBank = 0;
 	DrvVBlank = 0;
@@ -2598,7 +2580,7 @@ struct BurnDriverD BurnDrvDdungeon = {
 	"ddungeon", NULL, NULL, NULL, "1992",
 	"Dangerous Dungeons\0", NULL, "Game Room", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
+	0, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
 	NULL, DdungeonRomInfo, DdungeonRomName, NULL, NULL, DrvInputInfo, DdungeonDIPInfo,
 	DdungeonInit, DrvExit, DrvFrame, NULL, DrvScan,
 	NULL, 0x180, 256, 240, 4, 3

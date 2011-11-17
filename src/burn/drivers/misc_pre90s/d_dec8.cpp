@@ -38,8 +38,8 @@ static UINT8 *DrvSprBuf;
 static UINT8 *DrvM6502RAM;
 static UINT8 *DrvPalRAM;
 
-static UINT32  *Palette;
-static UINT32  *DrvPalette;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
 static UINT8  DrvRecalc;
 
 static UINT8 *soundlatch;
@@ -1212,7 +1212,7 @@ static INT32 DrvGfxDecode()
 	INT32 XOffs2[16]= {7,6,5,4,3,2,1,0,7+(16*8), 6+(16*8), 5+(16*8), 4+(16*8), 3+(16*8), 2+(16*8), 1+(16*8), 0+(16*8) };
 	INT32 YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -1229,10 +1229,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x0800, 4, 16, 16, Plane2, XOffs2, YOffs0, 0x100, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -1248,7 +1245,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1364,10 +1361,7 @@ static INT32 DrvExit()
 	BurnYM3812Exit();
 	BurnYM2203Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -1885,7 +1879,7 @@ struct BurnDriver BurnDrvMeikyuha = {
 static void m6809_bankswitch(INT32 data)
 {
 	INT32 bank = (data & 0x0f) * 0x4000;
-
+	
 	M6809MapMemory(DrvMainROM + 0x10000 + bank, 0x4000, 0x7fff, M6809_ROM); // bank
 }
 
@@ -1978,7 +1972,7 @@ static INT32 CobraGfxDecode()
 	INT32 XOffs1[16]= { 16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
 	INT32 YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -1999,10 +1993,7 @@ static INT32 CobraGfxDecode()
 
 	GfxDecode(0x1000, 4, 16, 16, Plane1, XOffs1, YOffs0, 0x100, tmp, DrvGfxROM3);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -2012,7 +2003,7 @@ static INT32 CobraInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -2468,7 +2459,7 @@ static INT32 SrdarwinGfxDecode()
 
 	INT32 YOffs[16]  = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -2486,10 +2477,7 @@ static INT32 SrdarwinGfxDecode()
 		GfxDecode(0x0100, 4, 16, 16, Plane2, XOffs2, YOffs, 0x100, tmp, DrvGfxROM2 + i * 0x10000);
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -2500,7 +2488,7 @@ static INT32 SrdarwinInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -3018,9 +3006,9 @@ UINT8 gondo_main_read(UINT16 address)
 		case 0x380b:
 			return DrvInputs[2]; // garyoret
 
-	//	case 0x380a:
-	//	case 0x380b:
-	//		return 0xff; // gondo_player_1_r
+//		case 0x380a:
+//		case 0x380b:
+//			return 0xff; // gondo_player_1_r
 
 		case 0x380c:
 		case 0x380d:
@@ -3083,7 +3071,7 @@ static INT32 GondoGfxDecode()
 	INT32 XOffs1[16]= {16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
 	INT32 YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -3100,10 +3088,7 @@ static INT32 GondoGfxDecode()
 
 	GfxDecode(0x1000, 4, 16, 16, Plane1, XOffs1, YOffs0, 0x100, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -3113,7 +3098,7 @@ static INT32 GondoInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -3248,10 +3233,7 @@ static INT32 GondoExit()
 	BurnYM3526Exit();
 	BurnYM2203Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -3480,11 +3462,11 @@ static struct BurnRomInfo gondoRomDesc[] = {
 STD_ROM_PICK(gondo)
 STD_ROM_FN(gondo)
 
-struct BurnDriver BurnDrvGondo = {
+struct BurnDriverD BurnDrvGondo = {
 	"gondo", NULL, NULL, NULL, "1987",
-	"Gondomania (US)\0", NULL, "Data East USA", "hardware",
+	"Gondomania (US)\0", "Broken inputs", "Data East USA", "hardware",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, gondoRomInfo, gondoRomName, NULL, NULL, GondoInputInfo, GondoDIPInfo,
 	GondoInit, GondoExit, GondoFrame, GondoDraw, NULL, &DrvRecalc, 0x400,
 	240, 256, 3, 4
@@ -3533,11 +3515,11 @@ static struct BurnRomInfo makyosenRomDesc[] = {
 STD_ROM_PICK(makyosen)
 STD_ROM_FN(makyosen)
 
-struct BurnDriver BurnDrvMakyosen = {
+struct BurnDriverD BurnDrvMakyosen = {
 	"makyosen", "gondo", NULL, NULL, "1987",
-	"Makyou Senshi (Japan)\0", NULL, "Data East Corporation", "hardware",
+	"Makyou Senshi (Japan)\0", "Broken inputs", "Data East Corporation", "hardware",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, makyosenRomInfo, makyosenRomName, NULL, NULL, GondoInputInfo, GondoDIPInfo,
 	GondoInit, GondoExit, GondoFrame, GondoDraw, NULL, &DrvRecalc, 0x400,
 	240, 256, 3, 4
@@ -3582,11 +3564,11 @@ static struct BurnRomInfo garyoretRomDesc[] = {
 STD_ROM_PICK(garyoret)
 STD_ROM_FN(garyoret)
 
-struct BurnDriver BurnDrvGaryoret = {
+struct BurnDriverD BurnDrvGaryoret = {
 	"garyoret", NULL, NULL, NULL, "1987",
-	"Garyo Retsuden (Japan)\0", NULL, "Data East Corporation", "hardware",
+	"Garyo Retsuden (Japan)\0", "Broken inputs", "Data East Corporation", "hardware",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	0, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, garyoretRomInfo, garyoretRomName, NULL, NULL, GaryoretInputInfo, GaryoretDIPInfo,
 	GondoInit, GondoExit, GondoFrame, GaryoretDraw, NULL, &DrvRecalc, 0x400,
 	256, 240, 4, 3
@@ -3737,7 +3719,7 @@ static INT32 OscarGfxDecode()
 	INT32 XOffs1[16]= {16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
 	INT32 YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -3754,10 +3736,7 @@ static INT32 OscarGfxDecode()
 
 	GfxDecode(0x1000, 4, 16, 16, Plane1, XOffs1, YOffs0, 0x100, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -3767,7 +3746,7 @@ static INT32 OscarInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -4351,7 +4330,7 @@ static INT32 LastmissGfxDecode()
 	INT32 XOffs1[16]= {16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8),0,1,2,3,4,5,6,7 };
 	INT32 YOffs0[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -4368,10 +4347,7 @@ static INT32 LastmissGfxDecode()
 
 	GfxDecode(0x1000, 4, 16, 16, Plane1, XOffs1, YOffs0, 0x100, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -4381,7 +4357,7 @@ static INT32 LastmissInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -4471,8 +4447,7 @@ static INT32 LastmissInit()
 	M6502Init(0, TYPE_M6502);
 	M6502Open(0);
 	M6502MapMemory(DrvM6502RAM,          0x0000, 0x05ff, M6502_RAM);
-	M6502MapMemory(DrvM6502ROM + 0x8000, 0x8000, 0xffff, M6502_READ);
-	M6502MapMemory(DrvM6502OPS + 0x8000, 0x8000, 0xffff, M6502_FETCH);
+	M6502MapMemory(DrvM6502ROM + 0x8000, 0x8000, 0xffff, M6502_ROM);
 	M6502SetReadByteHandler(ghostb_sound_read);
 	M6502SetWriteByteHandler(gondo_sound_write);
 	M6502Close();
@@ -4483,6 +4458,7 @@ static INT32 LastmissInit()
 	BurnTimerAttachM6502YM3526(1500000);
 	
 	BurnYM2203Init(1, 1500000, NULL, DrvYM2203M6809SynchroniseStream, DrvYM2203M6809GetTime, 1);
+	BurnYM2203SetVolumeShift(1);
 	BurnTimerAttachM6809(2000000);
 
 	GenericTilesInit();
@@ -4501,10 +4477,7 @@ static INT32 LastmissExit()
 	BurnYM3526Exit();
 	BurnYM2203Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	nLastMiss = 0;
 
@@ -4733,7 +4706,7 @@ struct BurnDriver BurnDrvLastmisn = {
 	"lastmisn", NULL, NULL, NULL, "1986",
 	"Last Mission (US revision 6)\0", NULL, "Data East USA", "hardware",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, lastmisnRomInfo, lastmisnRomName, NULL, NULL, LastmisnInputInfo, LastmisnDIPInfo,
 	LastmissInit, LastmissExit, LastmissFrame, LastmissDraw, NULL, &DrvRecalc, 0x400,
 	240, 256, 3, 4
@@ -4774,7 +4747,7 @@ struct BurnDriver BurnDrvLastmsno = {
 	"lastmisno", "lastmisn", NULL, NULL, "1986",
 	"Last Mission (US revision 5)\0", NULL, "Data East USA", "hardware",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, lastmsnoRomInfo, lastmsnoRomName, NULL, NULL, LastmisnInputInfo, LastmisnDIPInfo,
 	LastmissInit, LastmissExit, LastmissFrame, LastmissDraw, NULL, &DrvRecalc, 0x400,
 	240, 256, 3, 4
@@ -4815,7 +4788,7 @@ struct BurnDriver BurnDrvLastmsnj = {
 	"lastmisnj", "lastmisn", NULL, NULL, "1986",
 	"Last Mission (Japan)\0", NULL, "Data East Corporation", "hardware",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, lastmsnjRomInfo, lastmsnjRomName, NULL, NULL, LastmisnInputInfo, LastmsnjDIPInfo,
 	LastmissInit, LastmissExit, LastmissFrame, LastmissDraw, NULL, &DrvRecalc, 0x400,
 	240, 256, 3, 4
@@ -4857,11 +4830,11 @@ static struct BurnRomInfo shackledRomDesc[] = {
 STD_ROM_PICK(shackled)
 STD_ROM_FN(shackled)
 
-struct BurnDriver BurnDrvShackled = {
+struct BurnDriverD BurnDrvShackled = {
 	"shackled", NULL, NULL, NULL, "1986",
 	"Shackled (US)\0", NULL, "Data East USA", "hardware",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	0, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, shackledRomInfo, shackledRomName, NULL, NULL, ShackledInputInfo, ShackledDIPInfo,
 	LastmissInit, LastmissExit, LastmissFrame, ShackledDraw, NULL, &DrvRecalc, 0x400,
 	240, 256, 3, 4
@@ -4903,11 +4876,11 @@ static struct BurnRomInfo breywoodRomDesc[] = {
 STD_ROM_PICK(breywood)
 STD_ROM_FN(breywood)
 
-struct BurnDriver BurnDrvBreywood = {
+struct BurnDriverD BurnDrvBreywood = {
 	"breywood", "shackled", NULL, NULL, "1986",
 	"Breywood (Japan revision 2)\0", NULL, "Data East Corporation", "hardware",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, breywoodRomInfo, breywoodRomName, NULL, NULL, ShackledInputInfo, ShackledDIPInfo,
 	LastmissInit, LastmissExit, LastmissFrame, ShackledDraw, NULL, &DrvRecalc, 0x400,
 	240, 256, 3, 4
@@ -5087,7 +5060,7 @@ static INT32 CsilverInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 

@@ -1,4 +1,4 @@
-// FB Alpha Blue PrINT32 driver module
+// FB Alpha Blue Print driver module
 // Based on MAME driver by Nicola Salmoria
 
 #include "tiles_generic.h"
@@ -288,7 +288,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,
 			8*8, 9*8, 10*8, 11*8, 12*8, 13*8, 14*8, 15*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x03000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x03000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -301,10 +301,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x0100, 3,  8, 16, Plane + 0, XOffs, YOffs, 0x080, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -376,7 +373,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -389,7 +386,7 @@ static INT32 DrvInit()
 		if (BurnLoadRom(DrvZ80ROM0 + 0x3000,	3, 1)) return 1;
 		if (BurnLoadRom(DrvZ80ROM0 + 0x4000,	4, 1)) return 1;
 
-		if (!strcmp(BurnDrvGetTextA(DRV_NAME), "saturn")) {
+		if (!strcmp(BurnDrvGetTextA(DRV_NAME), "saturnzi")) {
 			if (BurnLoadRom(DrvZ80ROM0 + 0x5000,	5, 1)) return 1;
 			lofst = 1;
 		}
@@ -464,10 +461,7 @@ static INT32 DrvExit()
 	AY8910Exit(0);
 	AY8910Exit(1);
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -614,13 +608,7 @@ static INT32 DrvFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -659,7 +647,7 @@ static INT32 DrvScan(INT32 nAction,INT32 *pnMin)
 }
 
 
-// Blue PrINT32 (Midway)
+// Blue Print (Midway)
 
 static struct BurnRomInfo blueprntRomDesc[] = {
 	{ "bp-1.1m",	0x1000, 0xb20069a6, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
@@ -684,7 +672,7 @@ STD_ROM_FN(blueprnt)
 
 struct BurnDriver BurnDrvBlueprnt = {
 	"blueprnt", NULL, NULL, NULL, "1982",
-	"Blue PrINT32 (Midway)\0", NULL, "[Zilec Electronics] Bally Midway", "hardware",
+	"Blue Print (Midway)\0", NULL, "[Zilec Electronics] Bally Midway", "hardware",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, blueprntRomInfo, blueprntRomName, NULL, NULL, BlueprntInputInfo, BlueprntDIPInfo,
@@ -693,7 +681,7 @@ struct BurnDriver BurnDrvBlueprnt = {
 };
 
 
-// Blue PrINT32 (Jaleco)
+// Blue Print (Jaleco)
 
 static struct BurnRomInfo blueprnjRomDesc[] = {
 	{ "bp-1j.1m",	0x1000, 0x2e746693, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
@@ -718,7 +706,7 @@ STD_ROM_FN(blueprnj)
 
 struct BurnDriver BurnDrvBlueprnj = {
 	"blueprntj", "blueprnt", NULL, NULL, "1982",
-	"Blue PrINT32 (Jaleco)\0", NULL, "[Zilec Electronics] Jaleco", "hardware",
+	"Blue Print (Jaleco)\0", NULL, "[Zilec Electronics] Jaleco", "hardware",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, blueprnjRomInfo, blueprnjRomName, NULL, NULL, BlueprntInputInfo, BlueprntDIPInfo,

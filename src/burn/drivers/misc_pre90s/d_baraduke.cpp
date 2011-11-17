@@ -646,6 +646,7 @@ static void draw_sprites(INT32 prio)
 				for (INT32 x = 0;x <= sizex;x++)
 				{
 					INT32 code = sprite + (y ^ (sizey * flipy)) * 2 + (x ^ (sizex * flipx));
+					code &= 0x1ff;
 
 					if (flipy) {
 						if(flipx) {

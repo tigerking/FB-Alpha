@@ -47,7 +47,7 @@ static UINT8 *DrvTiles1             = NULL;
 static UINT8 *DrvTiles2             = NULL;
 static UINT8 *DrvSprites            = NULL;
 static UINT8 *DrvTempRom            = NULL;
-static UINT32  *DrvPalette            = NULL;
+static UINT32 *DrvPalette            = NULL;
 static UINT16 *pCharLayerDraw       = NULL;
 static UINT16 *pTile1LayerDraw      = NULL;
 static UINT16 *pTile2LayerDraw      = NULL;
@@ -71,7 +71,6 @@ static void HbarrelDraw();
 static void RobocopDraw();
 
 static INT32 nCyclesDone[3], nCyclesTotal[3];
-//static INT32 nCyclesSegment;
 
 static INT32 Dec0Game = 0;
 
@@ -1215,11 +1214,11 @@ static INT32 Dec0MachineInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1320,10 +1319,7 @@ static INT32 BaddudesInit()
 	// Load the samples
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 21, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	Dec0DrawFunction = BaddudesDraw;
 	Dec0Game = DEC0_GAME_BADDUDES;
@@ -1391,10 +1387,7 @@ static INT32 HbarrelInit()
 	// Load the samples
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 29, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	Dec0DrawFunction = HbarrelDraw;
 	Dec0Game = DEC0_GAME_HBARREL;
@@ -1461,10 +1454,7 @@ static INT32 HippodrmInit()
 	// Load the samples
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 24, 1); if (nRet != 0) return 1;
 
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	Dec0DrawFunction = RobocopDraw;
 	
@@ -1547,10 +1537,7 @@ static INT32 RobocopInit()
 	// Load the samples
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 24, 1); if (nRet != 0) return 1;
 
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	Dec0DrawFunction = RobocopDraw;
 	
@@ -1630,10 +1617,7 @@ static INT32 RobocopbInit()
 	// Load the samples
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 23, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	Dec0DrawFunction = RobocopDraw;
 
@@ -1671,10 +1655,7 @@ static INT32 DrvExit()
 	
 	Dec0Game = 0;
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 
 	return 0;
 }
