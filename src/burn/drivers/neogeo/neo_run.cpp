@@ -401,11 +401,11 @@ static INT32 NeoLoad68KBIOS(INT32 nNewBIOS)
 	}
 	
 	if ((BurnDrvGetHardwareCode() & HARDWARE_SNK_CONTROLMASK) == HARDWARE_SNK_TRACKBALL) {
-		nNewBIOS = 24;
+		nNewBIOS = 25;
 	}
 
 	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_DEDICATED_PCB) {
-		nNewBIOS = 25;
+		nNewBIOS = 26;
 	}
 
 	// The most recent MVS models doesn't have a Z80 BIOS
@@ -3550,6 +3550,7 @@ static INT32 neogeoReset()
 				case 0x15: { bprintf(PRINT_IMPORTANT, _T("Emulating using Universe BIOS ver. 1.2 (alt) BIOS\n")); break; }
 				case 0x16: { bprintf(PRINT_IMPORTANT, _T("Emulating using Universe BIOS ver. 1.1 BIOS\n")); break; }
 				case 0x17: { bprintf(PRINT_IMPORTANT, _T("Emulating using Universe BIOS ver. 1.0 BIOS\n")); break; }		
+				case 0x18: { bprintf(PRINT_IMPORTANT, _T("Emulating using NeoOpen BIOS v0.1 beta BIOS\n")); break; }		
 			}
 		}
 	
@@ -4070,25 +4071,25 @@ INT32 NeoInit()
 	}
 
 	if (nNeoSystemType & NEO_SYS_PCB) {
-		BurnLoadRom(Neo68KBIOS, 0x00080 +     25, 1);
+		BurnLoadRom(Neo68KBIOS, 0x00080 +     26, 1);
 	}
 
 	if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_MVS) {
-		BurnLoadRom(NeoZ80BIOS,		0x00000 + 26, 1);
-		BurnLoadRom(NeoTextROMBIOS,	0x00000 + 27, 1);
-		BurnLoadRom(NeoZoomROM,		0x00000 + 28, 1);
+		BurnLoadRom(NeoZ80BIOS,		0x00000 + 27, 1);
+		BurnLoadRom(NeoTextROMBIOS,	0x00000 + 28, 1);
+		BurnLoadRom(NeoZoomROM,		0x00000 + 29, 1);
 	} else {
 
 		// Still load the Z80 BIOS & text layer data for AES systems, since it might be switched to MVS later
 
 		if (nNeoSystemType & NEO_SYS_PCB) {
 			bZ80BIOS = false;
-			BurnLoadRom(NeoTextROMBIOS,	0x00080 + 27, 1);
-			BurnLoadRom(NeoZoomROM,		0x00080 + 28, 1);
+			BurnLoadRom(NeoTextROMBIOS,	0x00080 + 28, 1);
+			BurnLoadRom(NeoZoomROM,		0x00080 + 29, 1);
 		} else {
-			BurnLoadRom(NeoZ80BIOS,		0x00080 + 26, 1);
-			BurnLoadRom(NeoTextROMBIOS,	0x00080 + 27, 1);
-			BurnLoadRom(NeoZoomROM,		0x00080 + 28, 1);
+			BurnLoadRom(NeoZ80BIOS,		0x00080 + 27, 1);
+			BurnLoadRom(NeoTextROMBIOS,	0x00080 + 28, 1);
+			BurnLoadRom(NeoZoomROM,		0x00080 + 29, 1);
 		}
 	}
 	BurnUpdateProgress(0.0, _T("Preprocessing text layer graphics...")/*, BST_PROCESS_TXT*/, 0);
