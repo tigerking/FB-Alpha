@@ -455,7 +455,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -501,7 +501,7 @@ static INT32 DealerInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -554,8 +554,7 @@ static INT32 DrvExit()
 		ppi8255_exit();
 	}
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree(AllMem);
 
 	return 0;
 }
@@ -620,13 +619,7 @@ static INT32 DrvFrame()
 
 			nSample /= 4;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
+			nSample = BURN_SND_CLIP(nSample);
 
 			pBurnSoundOut[(n << 1) + 0] = nSample;
 			pBurnSoundOut[(n << 1) + 1] = nSample;
@@ -915,7 +908,7 @@ static struct BurnRomInfo revengerRomDesc[] = {
 STD_ROM_PICK(revenger)
 STD_ROM_FN(revenger)
 
-struct BurnDriver BurnDrvRevenger = {
+struct BurnDriverD BurnDrvRevenger = {
 	"revenger", NULL, NULL, NULL, "1984",
 	"Revenger\0", "Bad dump", "Epos Corporation", "EPOS Tristar",
 	NULL, NULL, NULL, NULL,

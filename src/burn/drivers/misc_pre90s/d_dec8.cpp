@@ -1,9 +1,6 @@
  
 // To do:
-//	Sound
-//	gondo needs rotary inputs hooked up
-//	shacked freezes in-game (why??)
-//	csilver is missing msm5205 sound - (and the IRQ it causes)
+//	gondo needs rotary inputs hooked up and doesn't read the i8751 value at all - so coins don't work
 
 #include "tiles_generic.h"
 #include "m6502_intf.h"
@@ -12,6 +9,7 @@
 #include "m6809_intf.h"
 #include "burn_ym3812.h"
 #include "burn_ym3526.h"
+#include "msm5205.h"
 
 static UINT8 *AllMem;
 static UINT8 *MemEnd;
@@ -1097,10 +1095,13 @@ static double DrvYM2203M6809GetTime1500000()
 	return (double)M6809TotalCycles() / 1500000;
 }
 
+inline static INT32 CsilverMSM5205SynchroniseStream(INT32 nSoundRate)
+{
+	return (INT64)(M6809TotalCycles() * nSoundRate / 1500000);
+}
+
 static void DrvYM3812FMIRQHandler(INT32, INT32 nStatus)
 {
-	bprintf(PRINT_NORMAL, _T("%x\n"), nStatus);
-	
 	if (nStatus) {
 		M6502SetIRQ(M6502_IRQ_LINE, M6502_IRQSTATUS_ACK);
 	} else {
@@ -2867,13 +2868,13 @@ struct BurnDriver BurnDrvSrdarwnj = {
 
 
 
-static void gondo_i8751_write(INT32 offset, INT32 data)
+static void gondo_i8751_write(INT32 offset, UINT8 data)
 {
 	static INT32 coin1, coin2, latch,snd;
 	i8751_return = 0;
 
-	INT32 coin = DrvInputs[4] ^ 3;
-
+	UINT8 coin = ~DrvInputs[4] ^ 3;
+	
 	switch (offset)
 	{
 		case 0:
@@ -2888,8 +2889,8 @@ static void gondo_i8751_write(INT32 offset, INT32 data)
 
 	/* Coins are controlled by the i8751 */
  	if ((coin & 3) == 3) latch = 1;
- 	if ((coin & 1) != 1 && latch) {coin1++; snd = 1; latch = 0;}
- 	if ((coin & 2) != 2 && latch) {coin2++; snd = 1; latch = 0;}
+ 	if ((coin & 1) != 1 && latch) {coin1++; snd = 1; latch = 0; }
+ 	if ((coin & 2) != 2 && latch) {coin2++; snd = 1; latch = 0; }
 
 	if (i8751_value == 0x0000) {i8751_return = 0x000; coin1 = coin2 = snd = 0;}
 	if (i8751_value == 0x038a)  i8751_return = 0x375; /* Makyou Senshi ID */
@@ -2903,12 +2904,12 @@ static void gondo_i8751_write(INT32 offset, INT32 data)
 	if ((i8751_value >> 8) == 0x0a) {i8751_return = 0xa00 | snd; if (snd) snd = 0; }
 }
 
-static void garyoret_i8751_write(INT32 offset, INT32 data)
+static void garyoret_i8751_write(INT32 offset, UINT8 data)
 {
 	static INT32 coin1, coin2, latch;
 	i8751_return = 0;
 
-	INT32 coin = DrvInputs[4] ^ 3;
+	UINT8 coin = ~DrvInputs[4] ^ 3;
 
 	switch (offset)
 	{
@@ -2986,33 +2987,53 @@ UINT8 gondo_main_read(UINT16 address)
 		case 0x3801:
 			return DrvDips[1];
 
+		case 0x380a: return 0xff;
+		case 0x380b: return 0x7f;
+//			return 0xff; // gondo_player_1_r
+
+		case 0x380c: return 0xff;
+		case 0x380d: return 0x7f;
+//			return 0xff; // gondo_player_2_r
+
 		case 0x380e:
 			return (DrvInputs[3] & 0x7f) | vblank;
 
 		case 0x380f:
 			return DrvInputs[2];
 
-		case 0x3838: // gondo
-		case 0x383a: // garyoret
+		case 0x3838:
+			bprintf(PRINT_NORMAL, _T("3838\n")); // doesn't read these - so coins don't work
 			return i8751_return >> 8;
 
-		case 0x3839: // gondo
-		case 0x383b: // garyoret
+		case 0x3839:
+			bprintf(PRINT_NORMAL, _T("3839\n")); // doesn't read these - so coins don't work
 			return i8751_return & 0xff;
+	}
 
-		case 0x380a: // garyoret
+	return 0;
+}
+
+UINT8 garyoret_main_read(UINT16 address)
+{
+	switch (address)
+	{
+		case 0x3800:
+			return DrvDips[0];
+
+		case 0x3801:
+			return DrvDips[1];
+
+		case 0x380a:
 			return (DrvInputs[1] & 0x7f) | vblank;
 
 		case 0x380b:
-			return DrvInputs[2]; // garyoret
+			return DrvInputs[0];
 
-//		case 0x380a:
-//		case 0x380b:
-//			return 0xff; // gondo_player_1_r
+		case 0x383a:
+			return i8751_return >> 8;
 
-		case 0x380c:
-		case 0x380d:
-			return 0xff; // gondo_player_2_r
+		case 0x383b:
+			return i8751_return & 0xff;
 	}
 
 	return 0;
@@ -3197,14 +3218,17 @@ static INT32 GondoInit()
 	HD6309MapMemory(DrvMainROM + 0x10000, 0x4000, 0x7fff, HD6309_ROM); // bank
 	HD6309MapMemory(DrvMainROM + 0x08000, 0x8000, 0xffff, HD6309_ROM);
 	HD6309SetWriteByteHandler(gondo_main_write);
-	HD6309SetReadByteHandler(gondo_main_read);
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "garyoret")) {
+		HD6309SetReadByteHandler(garyoret_main_read);
+	} else {
+		HD6309SetReadByteHandler(gondo_main_read);
+	}
 	HD6309Close();
-
+	
 	M6502Init(0, TYPE_M6502);
 	M6502Open(0);
 	M6502MapMemory(DrvM6502RAM,          0x0000, 0x05ff, M6502_RAM);
-	M6502MapMemory(DrvM6502ROM + 0x8000, 0x8000, 0xffff, M6502_READ);
-	M6502MapMemory(DrvM6502OPS + 0x8000, 0x8000, 0xffff, M6502_FETCH);
+	M6502MapMemory(DrvM6502ROM + 0x8000, 0x8000, 0xffff, M6502_ROM);
 	M6502SetReadByteHandler(ghostb_sound_read);
 	M6502SetWriteByteHandler(gondo_sound_write);
 	M6502Close();
@@ -3251,7 +3275,7 @@ static void gondo_draw_txt_layer()
 		INT32 code = DrvVidRAM[offs * 2 + 1] | (DrvVidRAM[offs * 2 + 0] << 8);
 		INT32 color = (code >> 12) & 7;
 
-		Render8x8Tile_Mask(pTransDraw, code & 0xfff, sx, sy, color, 3, 0, 0, DrvGfxROM0);
+		Render8x8Tile_Mask_Clip(pTransDraw, code & 0xfff, sx, sy, color, 3, 0, 0, DrvGfxROM0);
 	}
 }
 
@@ -3398,7 +3422,7 @@ static INT32 GondoFrame()
 			vblank = 0x80;
 			if (*nmi_enable) HD6309SetIRQ(0x20, HD6309_IRQSTATUS_AUTO);
 		}
-
+		
 		BurnTimerUpdate(i * (nCyclesTotal[0] / nInterleave));
 		BurnTimerUpdateYM3526(i * (nCyclesTotal[1] / nInterleave));
 	}
@@ -3564,11 +3588,11 @@ static struct BurnRomInfo garyoretRomDesc[] = {
 STD_ROM_PICK(garyoret)
 STD_ROM_FN(garyoret)
 
-struct BurnDriverD BurnDrvGaryoret = {
+struct BurnDriver BurnDrvGaryoret = {
 	"garyoret", NULL, NULL, NULL, "1987",
-	"Garyo Retsuden (Japan)\0", "Broken inputs", "Data East Corporation", "hardware",
+	"Garyo Retsuden (Japan)\0", NULL, "Data East Corporation", "hardware",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, garyoretRomInfo, garyoretRomName, NULL, NULL, GaryoretInputInfo, GaryoretDIPInfo,
 	GondoInit, GondoExit, GondoFrame, GaryoretDraw, NULL, &DrvRecalc, 0x400,
 	256, 240, 4, 3
@@ -3810,6 +3834,7 @@ static INT32 OscarInit()
 	BurnTimerAttachM6502YM3526(1500000);
 	
 	BurnYM2203Init(1, 1500000, NULL, DrvYM2203SynchroniseStream6000000, DrvYM2203GetTime6000000, 1);
+	BurnYM2203SetVolumeShift(2);
 	BurnTimerAttachHD6309(6000000);
 
 	GenericTilesInit();
@@ -4458,7 +4483,7 @@ static INT32 LastmissInit()
 	BurnTimerAttachM6502YM3526(1500000);
 	
 	BurnYM2203Init(1, 1500000, NULL, DrvYM2203M6809SynchroniseStream, DrvYM2203M6809GetTime, 1);
-	BurnYM2203SetVolumeShift(1);
+	BurnYM2203SetVolumeShift(2);
 	BurnTimerAttachM6809(2000000);
 
 	GenericTilesInit();
@@ -4623,7 +4648,7 @@ static INT32 LastmissFrame()
 		}
 	}
 
-	INT32 nInterleave = 256*2;
+	INT32 nInterleave = 256 * 10; // shackled needs very tight sync
 	INT32 nCyclesTotal[3] = { 2000000 / 58, 2000000 / 58, 1500000 / 58 };
 	INT32 nCyclesDone[3] = { 0, 0, 0 };
 
@@ -4633,8 +4658,8 @@ static INT32 LastmissFrame()
 
 	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		if (i == 8*2) vblank = 0x80;
-		if (i == 248*2) vblank = 0;
+		if (i == 8 * 10) vblank = 0x80;
+		if (i == 248 * 10) vblank = 0;
 
 		M6809Open(0);
 		BurnTimerUpdate(i * (nCyclesTotal[0] / nInterleave));
@@ -4830,11 +4855,11 @@ static struct BurnRomInfo shackledRomDesc[] = {
 STD_ROM_PICK(shackled)
 STD_ROM_FN(shackled)
 
-struct BurnDriverD BurnDrvShackled = {
+struct BurnDriver BurnDrvShackled = {
 	"shackled", NULL, NULL, NULL, "1986",
 	"Shackled (US)\0", NULL, "Data East USA", "hardware",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, shackledRomInfo, shackledRomName, NULL, NULL, ShackledInputInfo, ShackledDIPInfo,
 	LastmissInit, LastmissExit, LastmissFrame, ShackledDraw, NULL, &DrvRecalc, 0x400,
 	240, 256, 3, 4
@@ -4876,11 +4901,11 @@ static struct BurnRomInfo breywoodRomDesc[] = {
 STD_ROM_PICK(breywood)
 STD_ROM_FN(breywood)
 
-struct BurnDriverD BurnDrvBreywood = {
+struct BurnDriver BurnDrvBreywood = {
 	"breywood", "shackled", NULL, NULL, "1986",
 	"Breywood (Japan revision 2)\0", NULL, "Data East Corporation", "hardware",
 	NULL, NULL, NULL, NULL,
-	BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, breywoodRomInfo, breywoodRomName, NULL, NULL, ShackledInputInfo, ShackledDIPInfo,
 	LastmissInit, LastmissExit, LastmissFrame, ShackledDraw, NULL, &DrvRecalc, 0x400,
 	240, 256, 3, 4
@@ -4889,15 +4914,16 @@ struct BurnDriverD BurnDrvBreywood = {
 
 
 
+static INT32 MSM5205Next = 0;
+static INT32 Toggle = 0;
 
-
-static void csilver_i8751_write(INT32 offset, INT32 data)
+static void csilver_i8751_write(INT32 offset, UINT8 data)
 {
 	static INT32 coin, latch = 0, snd;
 	i8751_return = 0;
 
-	INT32 coininp = DrvInputs[2];
-
+	UINT8 coininp = DrvInputs[2];
+	
 	switch (offset)
 	{
 	case 0: /* High byte */
@@ -5014,7 +5040,7 @@ UINT8 csilver_main_read(UINT16 address)
 
 static void csilver_sound_bank(INT32 data)
 {
-	M6502MapMemory(DrvM6502ROM + 0x10000 + (data & 8) * 0x2000, 0x4000, 0x7fff, M6502_ROM);
+	M6502MapMemory(DrvM6502ROM + 0x10000 + ((data & 8) >> 3) * 0x4000, 0x4000, 0x7fff, M6502_ROM);
 }
 
 void csilver_sound_write(UINT16 address, UINT8 data)
@@ -5032,7 +5058,7 @@ void csilver_sound_write(UINT16 address, UINT8 data)
 		return;
 
 		case 0x1800:
-			// adpcm_data_w
+			MSM5205Next = data;
 		return;
 
 		case 0x2000:
@@ -5049,10 +5075,29 @@ UINT8 csilver_sound_read(UINT16 address)
 			return *soundlatch;
 
 		case 0x3400:
-			return 0; // adpcm_reset
+			MSM5205ResetWrite(0, 0);
+			return 0;
 	}
 
 	return 0;
+}
+
+static void CsilverADPCMInt()
+{
+	Toggle ^= 1;
+	if (Toggle)	M6502SetIRQ(M6502_IRQ_LINE, M6502_IRQSTATUS_AUTO);
+
+	MSM5205DataWrite(0, MSM5205Next >> 4);
+	MSM5205Next <<= 4;
+}
+
+static INT32 CsilverDoReset()
+{
+	INT32 nRet = LastmissDoReset();
+	
+	MSM5205Reset();
+	
+	return nRet;
 }
 
 static INT32 CsilverInit()
@@ -5120,8 +5165,7 @@ static INT32 CsilverInit()
 	M6502Open(0);
 	M6502MapMemory(DrvM6502RAM,          0x0000, 0x07ff, M6502_RAM);
 	M6502MapMemory(DrvM6502ROM + 0x4000, 0x4000, 0x7fff, M6502_ROM);
-	M6502MapMemory(DrvM6502ROM + 0x8000, 0x8000, 0xffff, M6502_READ);
-	M6502MapMemory(DrvM6502OPS + 0x8000, 0x8000, 0xffff, M6502_FETCH);
+	M6502MapMemory(DrvM6502ROM + 0x8000, 0x8000, 0xffff, M6502_ROM);
 	M6502SetReadByteHandler(csilver_sound_read);
 	M6502SetWriteByteHandler(csilver_sound_write);
 	M6502Close();
@@ -5132,11 +5176,14 @@ static INT32 CsilverInit()
 	BurnTimerAttachM6502YM3526(1500000);
 	
 	BurnYM2203Init(1, 1500000, NULL, DrvYM2203M6809SynchroniseStream1500000, DrvYM2203M6809GetTime1500000, 1);
+	BurnYM2203SetVolumeShift(2);
 	BurnTimerAttachM6809(1500000);
+	
+	MSM5205Init(0, CsilverMSM5205SynchroniseStream, 384000, CsilverADPCMInt, MSM5205_S48_4B, 80, 1);
 
 	GenericTilesInit();
 
-	LastmissDoReset();
+	CsilverDoReset();
 
 	return 0;
 }
@@ -5147,9 +5194,9 @@ static INT32 CsilverInit()
 static INT32 CsilverFrame()
 {
 	if (DrvReset) {
-		LastmissDoReset();
+		CsilverDoReset();
 	}
-
+	
 	M6809NewFrame();
 	M6502NewFrame();
 
@@ -5164,17 +5211,21 @@ static INT32 CsilverFrame()
 		}
 	}
 
-	INT32 nInterleave = 256;
+	INT32 nInterleave = MSM5205CalcInterleave(0, 1500000);
 	INT32 nCyclesTotal[3] = { 1500000 / 58, 1500000 / 58, 1500000 / 58 };
 	INT32 nCyclesDone[3] = { 0, 0, 0 };
 
 	M6502Open(0);
 
 	vblank = 0x80;
+	
+	INT32 DrvVBlankSlices[2];
+	DrvVBlankSlices[0] = (INT32)((double)nInterleave * 0.03);
+	DrvVBlankSlices[1] = (INT32)((double)nInterleave * 0.97);
 
 	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		if (i == 8) vblank = 0x80;
+		if (i == DrvVBlankSlices[0]) vblank = 0x80;
 
 		M6809Open(0);
 		BurnTimerUpdate(i * (nCyclesTotal[0] / nInterleave));
@@ -5183,10 +5234,11 @@ static INT32 CsilverFrame()
 		M6809Open(1);
 		INT32 nSegment = (nCyclesTotal[1] / nInterleave) * (i + 1);
 		nCyclesDone[1] += M6809Run(nSegment - nCyclesDone[1]);
-		if (i == 247) {
+		if (i == DrvVBlankSlices[1]) {
 			vblank = 0;
 			M6809SetIRQ(0x20, M6809_IRQSTATUS_AUTO);
 		}
+		MSM5205Update();
 		M6809Close();
 		
 		BurnTimerUpdateYM3526(i * (nCyclesTotal[2] / nInterleave));
@@ -5199,6 +5251,7 @@ static INT32 CsilverFrame()
 	if (pBurnSoundOut) {
 		BurnYM3526Update(pBurnSoundOut, nBurnSoundLen);	
 		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+		MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
 	}
 
 	M6502Close();

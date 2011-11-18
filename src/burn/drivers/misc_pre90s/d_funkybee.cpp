@@ -315,7 +315,7 @@ static INT32 DrvDoReset()
 
 static void funkybee_gfx_decode()
 {
-	UINT8 *tmp = (UINT8*)malloc(0x4000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x4000);
 	if (tmp == NULL) {
 		return;
 	}
@@ -336,10 +336,7 @@ static void funkybee_gfx_decode()
 	GfxDecode(0x400, 2, 8,  8, PlaneOffsets, XOffsets, YOffsets, 0x080, tmp, Gfx + 0x00000);
 	GfxDecode(0x100, 2, 8, 32, PlaneOffsets, XOffsets, YOffsets, 0x200, tmp, Gfx + 0x10000);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 }
 
 static void funkybee_palette_init()
@@ -392,7 +389,7 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -454,10 +451,7 @@ static INT32 DrvExit()
 	AY8910Exit(0);
 	GenericTilesExit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	Palette = DrvPal = NULL;
 
@@ -593,13 +587,7 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;

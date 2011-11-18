@@ -739,7 +739,7 @@ static INT32 DrvGfxDecode() // 0, 0x100
 	INT32 XOffs[16] = { 3, 2, 1, 0, 8+3, 8+2, 8+1, 8+0, 16*8+3, 16*8+2, 16*8+1, 16*8+0, 16*8+8+3, 16*8+8+2, 16*8+8+1, 16*8+8+0 };
 	INT32 YOffs[16] = { 0*16, 1*16, 2*16, 3*16, 4*16, 5*16, 6*16, 7*16, 16*16, 17*16, 18*16, 19*16, 20*16, 21*16, 22*16, 23*16 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x20000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x20000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -749,10 +749,7 @@ static INT32 DrvGfxDecode() // 0, 0x100
 	GfxDecode(0x1000, 4,  8,  8, Plane, XOffs, YOffs, 0x080, tmp, DrvGfxROM0);
 	GfxDecode(0x0400, 4, 16, 16, Plane, XOffs, YOffs, 0x200, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -762,7 +759,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -873,7 +870,8 @@ static INT32 DrvInit()
 
 	AY8910Init(0, 2000000, nBurnSoundRate, NULL, NULL, NULL, NULL);
 
-	DACInit(1, 0, 1);
+	DACInit(0, 0, 1);
+	DACSetVolShift(0, 4);
 
 	GenericTilesInit();
 
@@ -892,10 +890,7 @@ static INT32 DrvExit()
 	AY8910Exit(0);
 	DACExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -1184,13 +1179,7 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -1215,20 +1204,14 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
 			}
+			
+			DACUpdate(pSoundBuf, nSegmentLength);
 		}
-
-		DACUpdate(pSoundBuf, nSegmentLength);
 	}
 
 	if (pBurnDraw) {
@@ -1442,11 +1425,11 @@ static INT32 victnineInit()
 	return DrvInit();
 }
 
-struct BurnDriver BurnDrvVictnine = {
+struct BurnDriverD BurnDrvVictnine = {
 	"victnine", NULL, NULL, NULL, "1984",
 	"Victorious Nine\0", NULL, "Taito", "hardware",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	0, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, victnineRomInfo, victnineRomName, NULL, NULL, VictnineInputInfo, VictnineDIPInfo,
 	victnineInit, DrvExit, DrvFrame, victnineDraw, NULL, &DrvRecalc, 0x200,
 	256, 224, 4, 3

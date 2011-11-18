@@ -27,8 +27,8 @@ static UINT8 *DrvSprRAM;
 static UINT8 *DrvSprBuf;
 static UINT8 *DrvPalRAM;
 
-static UINT32  *DrvPalette;
-static UINT8  DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
 static UINT8 *bg_bankbase;
 static UINT8 *fg_bankbase;
@@ -320,7 +320,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs0[16] = { 0*16, 1*16, 2*16, 3*16, 4*16, 5*16, 6*16, 7*16, 8*16,9*16,10*16,11*16,12*16,13*16,14*16,15*16 };
 	INT32 YOffs2[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32, 8*32, 9*32, 10*32, 11*32, 12*32, 13*32, 14*32, 15*32 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x200000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x200000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -341,10 +341,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x4000, 4, 16, 16, Plane2, XOffs2, YOffs2, 0x400, tmp, DrvGfxROM3);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -367,7 +364,7 @@ static INT32 MemIndex()
 	MSM6295ROM		= Next;
 	DrvSndROM		= Next; Next += 0x020000;
 
-	DrvPalette		= (UINT32*)Next; Next += 0x0800 * sizeof(int);
+	DrvPalette		= (UINT32*)Next; Next += 0x0800 * sizeof(UINT32);
 
 	AllRam			= Next;
 
@@ -407,7 +404,7 @@ static INT32 DrvInit(void (*pV30MapCallback)())
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -496,10 +493,7 @@ static INT32 DrvExit()
 
 	seibu_sound_exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }

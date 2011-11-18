@@ -284,7 +284,7 @@ static INT32 MemIndex()
 
 static INT32 PaletteInit()
 {
-	UINT32 *tmp = (UINT32*)malloc(0x100 * sizeof(UINT32));
+	UINT32 *tmp = (UINT32*)BurnMalloc(0x100 * sizeof(UINT32));
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -317,10 +317,7 @@ static INT32 PaletteInit()
 		Palette[i] = tmp[entry];
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -340,7 +337,7 @@ static INT32 GraphicsDecode()
 				     0x100, 0x110, 0x120, 0x130, 0x140, 0x150, 0x160, 0x170, 
 				     0x180, 0x190, 0x1a0, 0x1b0, 0x1c0, 0x1d0, 0x1e0, 0x1f0 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x8000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x8000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -365,10 +362,7 @@ static INT32 GraphicsDecode()
 		if (Gfx2[i]) fg_tile_transp[i>>8] = 1;
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -380,7 +374,7 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -457,10 +451,7 @@ static INT32 DrvExit()
 	ZetExit();
 	GenericTilesExit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	Mem = MemEnd = Rom0 = Rom1 = NULL;
 	Gfx0 = Gfx1 = Gfx2 = Gfx3 = Gfx4 = Prom = NULL;
@@ -568,7 +559,7 @@ static INT32 DrvDraw()
 			}
 		}
 	} else {
-		memset(pTransDraw, 0, nScreenWidth * nScreenHeight * sizeof (INT16));
+		memset(pTransDraw, 0, nScreenWidth * nScreenHeight * sizeof (UINT16));
 	}
 
 	draw_sprites(0x40);
@@ -634,29 +625,36 @@ static INT32 DrvFrame()
 
 	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		INT32 nCycleSegment;
-
-		ZetOpen(0);
-		nCycleSegment = (nCyclesTotal[0] - nCyclesDone[0]) / (nInterleave - i);
-		nCyclesDone[0] += ZetRun(nCycleSegment);
-		if (i == ((nInterleave / 2) - 1)) {
-//			ZetRaiseIrq(0xd7);
-			ZetSetVector(0xd7);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
-		}
-		if (i == ( nInterleave      - 1)) {
-//			ZetRaiseIrq(0xcf);
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
+		
+		nCurrentCPU = 0;
+		ZetOpen(nCurrentCPU);
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesSegment = ZetRun(nCyclesSegment);
+		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+		if (i == 0) {
 			ZetSetVector(0xcf);
-			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			nCyclesDone[nCurrentCPU] += ZetRun(100);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
+		}
+		if (i == ( nInterleave - 2)) {
+			ZetSetVector(0xd7);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			nCyclesDone[nCurrentCPU] += ZetRun(100);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_NONE);
 		}
 		ZetClose();
-
-		ZetOpen(1);
-		nCycleSegment = (nCyclesTotal[1] - nCyclesDone[1]) / (nInterleave - i);
-		nCyclesDone[1] += ZetRun(nCycleSegment);
+		
+		nCurrentCPU = 1;
+		ZetOpen(nCurrentCPU);
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesSegment = ZetRun(nCyclesSegment);
+		nCyclesDone[nCurrentCPU] += nCyclesSegment;
 		if ((i & 3) == 3) {
-			ZetRaiseIrq(0);
-			nCyclesDone[1] += ZetRun(100);
+			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
 		}
 		ZetClose();
 	}
@@ -665,7 +663,7 @@ static INT32 DrvFrame()
 		SN76496Update(0, pBurnSoundOut, nBurnSoundLen);
 		SN76496Update(1, pBurnSoundOut, nBurnSoundLen);
 
-		INT32 nSample;
+		INT32 nSample, nSample0, nSample1;
 		if (nBurnSoundLen) {
 			AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
 			for (INT32 n = 0; n < nBurnSoundLen; n++) {
@@ -675,16 +673,16 @@ static INT32 DrvFrame()
 
 				nSample >>= 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
+				
+				nSample0 = pBurnSoundOut[(n << 1) + 0] >> 2;
+				nSample1 = pBurnSoundOut[(n << 1) + 1] >> 2;
+				
+				nSample0 = BURN_SND_CLIP(nSample0 + nSample);
+				nSample1 = BURN_SND_CLIP(nSample1 + nSample);
 
-				pBurnSoundOut[(n << 1) | 0] |= nSample;
-				pBurnSoundOut[(n << 1) | 1] |= nSample;
+				pBurnSoundOut[(n << 1) + 0] = nSample0;
+				pBurnSoundOut[(n << 1) + 1] = nSample1;
  			}
 		}
 	}
