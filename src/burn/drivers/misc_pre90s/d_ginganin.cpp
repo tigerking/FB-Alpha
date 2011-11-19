@@ -1,8 +1,6 @@
 // FB Alpha Ginga NinkyouDen driver module
 // Based on MAME driver by Luca Elia and Takahiro Nogi
 
-// To do: missing Y8950 sound
-
 #include "tiles_generic.h"
 #include "m6809_intf.h"
 #include "burn_y8950.h"
@@ -30,8 +28,8 @@ static UINT8 *DrvFgRAM;
 static UINT8 *DrvTxtRAM;
 static UINT8 *DrvSprRAM;
 
-static UINT32  *DrvPalette;
-static UINT8  DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
 static INT16 *pAY8910Buffer[3];
 
@@ -343,7 +341,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -423,10 +421,7 @@ static INT32 DrvExit()
 	BurnY8950Exit();
 	AY8910Exit(0);
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -636,13 +631,7 @@ static INT32 DrvFrame()
 
 			nSample /= 4;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
+			nSample = BURN_SND_CLIP(nSample);
 
 			pBurnSoundOut[(n << 1) + 0] = nSample;
 			pBurnSoundOut[(n << 1) + 1] = nSample;

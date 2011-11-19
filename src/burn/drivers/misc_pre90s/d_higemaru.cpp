@@ -252,7 +252,7 @@ static void DrvPaletteInit()
 
 static INT32 DrvGfxDecode()
 {
-	UINT8 *tmp = (UINT8*)malloc(0x4000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x4000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -271,10 +271,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x080, 4, 16, 16, Planes,     XOffs, YOffs, 0x200, tmp, Gfx1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -286,7 +283,7 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -341,10 +338,7 @@ static INT32 DrvExit()
 	AY8910Exit(1);
 	GenericTilesExit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	Mem = MemEnd = Rom = Gfx0 = Gfx1 = Prom = NULL;
 	DrvPalette = Palette = NULL;
@@ -465,13 +459,7 @@ static INT32 DrvFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;

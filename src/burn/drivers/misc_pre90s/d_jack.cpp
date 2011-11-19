@@ -602,7 +602,7 @@ STDDIPINFO(Loverboy)
 static struct BurnDIPInfo StrivDIPList[]=
 {
 	// Default Values
-	{0x0A, 0xff, 0xff, 0x80, NULL},
+	{0x0A, 0xff, 0xff, 0xfd, NULL},
 
 	// DSW1
 	{0   , 0xfe, 0   , 2   , "Monitor"},
@@ -935,7 +935,7 @@ static INT32 GetRoms()
 
 static void gfx_decode()
 {
-	UINT8* tmp = (UINT8*)malloc( 0x2000 * 3 );
+	UINT8* tmp = (UINT8*)BurnMalloc( 0x2000 * 3 );
 	if (!tmp) return;
 
 	memcpy (tmp, Gfx, 0x6000);
@@ -946,15 +946,12 @@ static void gfx_decode()
 
 	GfxDecode(1024, 3, 8, 8, Planes, XOffs, YOffs, 64, tmp, Gfx);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 }
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8 *)malloc (0x100000);
+	Mem = (UINT8 *)BurnMalloc (0x100000);
 	if (Mem == NULL) {
 		return 1;
 	}
@@ -1049,14 +1046,8 @@ static INT32 DrvExit()
 	AY8910Exit(0);
 	GenericTilesExit();
 
-	if (pFMBuffer) {
-		free (pFMBuffer);
-		pFMBuffer = NULL;
-	}
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (pFMBuffer);
+	BurnFree (Mem);
 
 	DrvPal = Palette = NULL;
 	pFMBuffer = NULL;
@@ -1196,6 +1187,7 @@ static INT32 DrvFrame()
 				if (!DrvJoy3[7]) ZetNmi();
 			} else if (loverb) {				// loverboy
 				ZetNmi();
+
 			} else {					// other
 				ZetRaiseIrq(0);
 			}
@@ -1215,7 +1207,7 @@ static INT32 DrvFrame()
 		// Render Sound Segment
 		if (pBurnSoundOut && !suprtriv) {	// disable sound for suprtriv
 			INT32 nSample;
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			for (INT32 n = 0; n < nSegmentLength; n++) {
@@ -1225,13 +1217,7 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -1254,13 +1240,7 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -1861,7 +1841,7 @@ static INT32 loverboyInit()
 
 struct BurnDriver BurnDrvloverboy = {
 	"loverboy", NULL, NULL, NULL, "1983",
-	"Lover Boy\0", NULL, "G.T Enterprise Inc", "Jack the Giantkiller",
+	"Lover Boy\0", "No sound", "G.T Enterprise Inc", "Jack the Giantkiller",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, loverboyRomInfo, loverboyRomName, NULL, NULL, LoverboyInputInfo, LoverboyDIPInfo,

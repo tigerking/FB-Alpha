@@ -400,7 +400,7 @@ void atarigen_slapstic_init(INT32 base, INT32 chipnum)
 		SekSetWriteWordHandler(1, atarigen_slapstic_w_word);
 		SekClose();
 		
-		atarigen_slapstic = (UINT8*)malloc(0x8000);
+		atarigen_slapstic = (UINT8*)BurnMalloc(0x8000);
 		memcpy(atarigen_slapstic, Drv68KRom + 0x38000, 0x8000);
 	}
 }
@@ -419,6 +419,10 @@ void atarigen_eeprom_init()
 	memset(DrvEEPROM, 0xff, 0x1000);
 }
 
+void atarigen_slapstic_exit()
+{
+	BurnFree(atarigen_slapstic);
+}
 
 
 
@@ -494,7 +498,7 @@ static INT32 atarigen_init_display_list (struct atarigen_modesc *_modesc)
 {
 	modesc = _modesc;
 
-	displaylist = (UINT16*)malloc (modesc->maxmo * 10 * (/*Machine->drv->screen_height*/ 240 / 8) * sizeof(UINT16));
+	displaylist = (UINT16*)BurnMalloc (modesc->maxmo * 10 * (/*Machine->drv->screen_height*/ 240 / 8) * sizeof(UINT16));
 	if (!displaylist)
 		return 1;
 
@@ -709,7 +713,10 @@ static void atarigen_render_display_list (/*struct osd_bitmap *bitmap, atarigen_
 	}
 }
 
-
+void atarigen_exit()
+{
+	BurnFree(displaylist);
+}
 
 
 
@@ -1956,11 +1963,11 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(/*0x40000*/0x60000);
+	DrvTempRom = (UINT8 *)BurnMalloc(/*0x40000*/0x60000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2005,10 +2012,7 @@ static INT32 DrvInit()
 	for (UINT32 i = 0; i < /*0x40000*/0x60000; i++) DrvTempRom[i] ^= 0xff;
 	GfxDecode(/*0x2000*/12288, 4, 8, 8, MOPlaneOffsets, MOXOffsets, MOYOffsets, 0x40, DrvTempRom, DrvMotionObjectTiles);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}		
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68010);
@@ -2069,11 +2073,11 @@ static INT32 Gaunt2pInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(/*0x40000*/0x60000);
+	DrvTempRom = (UINT8 *)BurnMalloc(/*0x40000*/0x60000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2118,10 +2122,7 @@ static INT32 Gaunt2pInit()
 	for (UINT32 i = 0; i < /*0x40000*/0x60000; i++) DrvTempRom[i] ^= 0xff;
 	GfxDecode(/*0x2000*/12288, 4, 8, 8, MOPlaneOffsets, MOXOffsets, MOYOffsets, 0x40, DrvTempRom, DrvMotionObjectTiles);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68010);
@@ -2182,11 +2183,11 @@ static INT32 Gaunt2Init()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(/*0x40000*/0x60000);
+	DrvTempRom = (UINT8 *)BurnMalloc(/*0x40000*/0x60000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2241,10 +2242,7 @@ static INT32 Gaunt2Init()
 	for (UINT32 i = 0; i < /*0x40000*/0x60000; i++) DrvTempRom[i] ^= 0xff;
 	GfxDecode(/*0x2000*/12288, 4, 8, 8, MOPlaneOffsets, MOXOffsets, MOYOffsets, 0x40, DrvTempRom, DrvMotionObjectTiles);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68010);
@@ -2304,10 +2302,10 @@ static INT32 DrvExit()
 	
 	GenericTilesExit();
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	atarigen_exit();
+	atarigen_slapstic_exit();
+	
+	BurnFree(Mem);
 
 	DrvVBlank = 0;
 	DrvSoundResetVal = 0;

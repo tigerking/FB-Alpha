@@ -23,8 +23,8 @@ static UINT8 *DrvVidRAM;
 static UINT8 *DrvSprRAM;
 static UINT8 *DrvSprBuf;
 
-static UINT32  *Palette;
-static UINT32  *DrvPalette;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
 static UINT8  DrvRecalc;
 
 static UINT16 *DrvScroll;
@@ -797,7 +797,7 @@ static INT32 DrvGfxDecode()
 	INT32 XOffs[16] = { 16*8, 1+(16*8), 2+(16*8), 3+(16*8), 4+(16*8), 5+(16*8), 6+(16*8), 7+(16*8), 0,1,2,3,4,5,6,7 };
 	INT32 YOffs[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8 ,8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x80000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -814,10 +814,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x1000, 4, 16, 16, Plane1, XOffs + 0, YOffs, 0x100, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -827,7 +824,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -926,10 +923,7 @@ static INT32 DrvExit()
 	BurnYM3526Exit();
 	BurnYM2203Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	if (bUseAsm68KCoreOldValue) {
 		bBurnUseASMCPUEmulation = true;

@@ -328,7 +328,7 @@ static INT32 gunsmoke_palette_init()
 
 static INT32 gunsmoke_gfx_decode()
 {
-	UINT8 *tmp = (UINT8*)malloc(0x80000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x80000);
 	if (!tmp) return 1;
 
 	static INT32 Planes[4]     = { 0x100004, 0x100000, 4, 0 };
@@ -358,10 +358,7 @@ static INT32 gunsmoke_gfx_decode()
 	memcpy (tmp, Gfx2, 0x40000);
 	GfxDecode(0x800, 4, 16, 16, Planes + 0, SpriXOffs, TileYOffs, 0x200, tmp, Gfx2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	{
 		memset (SprTrnsp, 1, 0x800);
@@ -414,7 +411,7 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -471,6 +468,7 @@ static INT32 DrvInit()
 	GenericTilesInit();
 
 	BurnYM2203Init(2, 1500000, NULL, gunsmokeSynchroniseStream, gunsmokeGetTime, 0);
+	BurnYM2203SetVolumeShift(2);
 	BurnTimerAttachZet(3000000);
 
 	DrvDoReset();
@@ -485,10 +483,7 @@ static INT32 DrvExit()
 	ZetExit();
 	BurnYM2203Exit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	Mem = MemEnd = Rom0 = Rom1 = Ram = NULL;
 	Gfx0 = Gfx1 = Gfx2 = Gfx3 = Prom = NULL;
@@ -724,6 +719,10 @@ static INT32 DrvFrame()
 		}
 
 	}
+	
+	ZetOpen(1);
+	BurnTimerEndFrame(nCyclesTotal[1]);
+	ZetClose();
 
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
@@ -735,10 +734,6 @@ static INT32 DrvFrame()
 			ZetClose();
 		}
 	}
-	
-	ZetOpen(1);
-	BurnTimerEndFrame(nCyclesTotal[1] - nCyclesDone[1]);
-	ZetClose();
 	
 	if (pBurnDraw) {
 		DrvDraw();

@@ -73,7 +73,7 @@ static struct BurnDIPInfo DrvDIPList[]=
 	{0x10, 0x01, 0x80, 0x80, "On"    		  },
 
 	// Default Values
-	{0x11, 0xff, 0xff, 0x18, NULL                     },
+	{0x11, 0xff, 0xff, 0x00, NULL                     },
 
 	// Dip 2
 	{0   , 0xfe, 0   , 2   , "Lives"                  },
@@ -84,10 +84,11 @@ static struct BurnDIPInfo DrvDIPList[]=
 	{0x11, 0x01, 0x02, 0x00, "Easy"       		  },
 	{0x11, 0x01, 0x02, 0x02, "Hard"       		  },
 
-	{0   , 0xfe, 0   , 3   , "Bonus Life"             },
+	{0   , 0xfe, 0   , 4   , "Bonus Life"             },
 	{0x11, 0x01, 0x0c, 0x08, "10000 30000"       	  },
 	{0x11, 0x01, 0x0c, 0x0c, "20000 40000"       	  },
-	{0x11, 0x01, 0x0c, 0x04, "None"			  },
+	{0x11, 0x01, 0x0c, 0x04, "10000"             	  },
+	{0x11, 0x01, 0x0c, 0x00, "None"			  },
 
 	{0   , 0xfe, 0   , 0x10, "Coinage"		  },
 	{0x11, 0x01, 0xf0, 0x10,  "2C_1C"		  },
@@ -362,7 +363,7 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -438,10 +439,7 @@ static INT32 DrvInit()
 
 static INT32 DrvExit()
 {
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	GenericTilesExit();
 	ZetExit();
@@ -531,13 +529,35 @@ INT32 DrvFrame()
 
 	INT32 nSoundBufferPos = 0;
 	INT32 nInterleave = 10;
-	INT32 nCyclesDone[2] = { 2500000 / 60, 1250000 / 60 };
+	INT32 nCyclesTotal[2] = { 2500000 / 60, 1250000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
+		
+		nCurrentCPU = 0;
+		ZetOpen(nCurrentCPU);
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesSegment = ZetRun(nCyclesSegment);
+		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+		if (i == (nInterleave - 1)) {
+			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+		}
+		ZetClose();
+		
+		nCurrentCPU = 1;
+		ZetOpen(nCurrentCPU);
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesSegment = ZetRun(nCyclesSegment);
+		nCyclesDone[nCurrentCPU] += nCyclesSegment;
+		if (i == (nInterleave - 1)) {
+			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+		}
+		ZetClose();
 
-		// Run Z80 #0
-
-		ZetOpen(0);
+/*		ZetOpen(0);
 		nCyclesDone[0] -= ZetRun(nCyclesDone[0] / (nInterleave - i));
 		if (i == (nInterleave - 1)) ZetRaiseIrq(0);
 		ZetClose();
@@ -546,12 +566,12 @@ INT32 DrvFrame()
 		ZetOpen(1);
 		nCyclesDone[1] -= ZetRun(nCyclesDone[1] / (nInterleave - i));
 		if (i == (nInterleave - 1)) ZetRaiseIrq(0);
-		ZetClose();
+		ZetClose();*/
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
 			INT32 nSample;
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			for (INT32 n = 0; n < nSegmentLength; n++) {
@@ -559,15 +579,9 @@ INT32 DrvFrame()
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
 
-				nSample /= 4;
+				nSample /= 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -588,15 +602,9 @@ INT32 DrvFrame()
 				nSample += pAY8910Buffer[1][n];
 				nSample += pAY8910Buffer[2][n];
 
-				nSample /= 4;
+				nSample /= 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;

@@ -18,10 +18,10 @@ static UINT8 *DrvZ80RAM0;
 static UINT8 *DrvShareRAM;
 static UINT8 *DrvSprRAM;
 static UINT8 *DrvVidRAM;
-static UINT32  *DrvPalette;
-static UINT32  *Palette;
+static UINT32 *DrvPalette;
+static UINT32 *Palette;
 static UINT8 *DrvTransMask;
-static UINT8  DrvRecalc;
+static UINT8 DrvRecalc;
 
 static UINT8 DrvReset;
 static UINT8 DrvJoy1[8];
@@ -192,7 +192,7 @@ static INT32 DrvDoReset()
 
 static void DrvPaletteInit()
 {
-	UINT32 *tmp = (UINT32*)malloc(0x100 * sizeof(UINT32));
+	UINT32 *tmp = (UINT32*)BurnMalloc(0x100 * sizeof(UINT32));
 
 	for (INT32 i = 0; i < 0x100; i++)
 	{
@@ -222,6 +222,8 @@ static void DrvPaletteInit()
 	for (INT32 i = 0x200; i < 0x400; i++) {
 		Palette[i] = tmp[DrvColPROM[i]];
 	}
+	
+	BurnFree(tmp);
 }
 
 static INT32 DrvGfxDecode()
@@ -231,7 +233,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs[32] = { 8*0, 8*1, 8*2, 8*3, 8*4, 8*5, 8*6, 8*7, 8*8,8*9,8*10,8*11,8*12,8*13,8*14,8*15,
 		8*32,8*33,8*34,8*35,8*36,8*37,8*38,8*39, 8*40,8*41,8*42,8*43,8*44,8*45,8*46,8*47 };
 
-	UINT8 *tmp = (UINT8*)malloc(0xc000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0xc000);
 
 	if (tmp == NULL) {
 		return 1;
@@ -245,10 +247,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x100, 3, 16, 32, Plane, XOffs, YOffs, 0x200, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -294,7 +293,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -372,10 +371,7 @@ static INT32 DrvExit()
 	SN76496Exit();
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -504,7 +500,7 @@ static INT32 DrvFrame()
 	}
 
 	{
-		memset (DrvInputs, 0x00, 3*sizeof(INT16));
+		memset (DrvInputs, 0x00, 3);
 		for (INT32 i = 0; i < 8; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;

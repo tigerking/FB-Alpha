@@ -553,7 +553,7 @@ static void DrvCreatePalette()
 
 static void Graphics_Decode(INT32 *CharPlanes, INT32 *CharXOffs, INT32 *CharYOffs, INT32 *SprPlanes, INT32 *SprXOffs, INT32 *SprYOffs, INT32 SprMod)
 {
-	UINT8 *tmp = (UINT8*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x10000);
 	if (tmp == NULL) {
 		return;
 	}
@@ -566,10 +566,7 @@ static void Graphics_Decode(INT32 *CharPlanes, INT32 *CharXOffs, INT32 *CharYOff
 
 	GfxDecode(0x200, 4, 16, 16, SprPlanes, SprXOffs, SprYOffs, SprMod, tmp, Gfx1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 }
 
 static void DrvGfxDecode()
@@ -650,7 +647,7 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -705,10 +702,7 @@ static INT32 DrvExit()
 
 	ZetExit();
 
-	if (Rom) {
-		free (Rom);
-		Rom = NULL;
-	}
+	BurnFree (Rom);
 
 	game_type = 0;
 

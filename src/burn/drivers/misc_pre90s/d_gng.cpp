@@ -27,7 +27,7 @@ static UINT8 *DrvChars            = NULL;
 static UINT8 *DrvTiles            = NULL;
 static UINT8 *DrvSprites          = NULL;
 static UINT8 *DrvTempRom          = NULL;
-static UINT32  *DrvPalette          = NULL;
+static UINT32 *DrvPalette          = NULL;
 
 static UINT8 DrvRomBank;
 static UINT8 DrvBgScrollX[2];
@@ -829,11 +829,11 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x20000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x20000);
 
 	// Load M6809 Program Roms
 	if (RomLoadOffset == 2) {
@@ -875,10 +875,7 @@ static INT32 DrvInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x18000, 16 + RomLoadOffset, 1); if (nRet != 0) return 1;
 	GfxDecode(0x400, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the M6809 emulation
 	M6809Init(1);
@@ -909,6 +906,7 @@ static INT32 DrvInit()
 	ZetClose();	
 	
 	BurnYM2203Init(2, 1500000, NULL, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(4);
 	BurnTimerAttachZet(3000000);
 
 	GenericTilesInit();
@@ -929,11 +927,11 @@ static INT32 DiamondInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x20000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x20000);
 
 	// Load M6809 Program Roms
 	nRet = BurnLoadRom(DrvM6809Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
@@ -964,10 +962,7 @@ static INT32 DiamondInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x10000, 13 + RomLoadOffset, 1); if (nRet != 0) return 1;
 	GfxDecode(0x400, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the M6809 emulation
 	M6809Init(1);
@@ -998,6 +993,7 @@ static INT32 DiamondInit()
 	ZetClose();	
 	
 	BurnYM2203Init(2, 1500000, NULL, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(4);
 	BurnTimerAttachZet(3000000);
 
 	GenericTilesInit();
@@ -1026,10 +1022,7 @@ static INT32 DrvExit()
 	
 	GenericTilesExit();
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 	
 	DrvRomBank = 0;
 	DrvBgScrollX[0] = DrvBgScrollX[1] = 0;
@@ -1329,6 +1322,10 @@ static INT32 DrvFrame()
 		}
 	}
 	
+	ZetOpen(0);
+	BurnTimerEndFrame(nCyclesTotal[1]);
+	ZetClose();
+	
 	// Make sure the buffer is entirely filled.
 	if (pBurnSoundOut) {
 		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
@@ -1339,10 +1336,6 @@ static INT32 DrvFrame()
 			ZetClose();
 		}
 	}
-	
-	ZetOpen(0);
-	BurnTimerEndFrame(nCyclesTotal[1]);
-	ZetClose();
 	
 	if (pBurnDraw) DrvDraw();
 	
