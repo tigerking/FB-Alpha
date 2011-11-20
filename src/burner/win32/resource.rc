@@ -38,7 +38,7 @@ ID_LICENSE 256 "license.rtf"
 
 // DirectX 9 blitter effects/shaders
 //#ifdef _MSC_VER
-ID_DX9EFFECT RCDATA	"resource/bicubic.fx"
+ID_DX9EFFECT RCDATA	"../interface/win32/resource/bicubic.fx"
 //#endif
 
 // GUI strings
