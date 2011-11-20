@@ -538,6 +538,13 @@
     <ClCompile Include="src\interface\win32\dinput_core.cpp" />
     <ClCompile Include="src\interface\win32\directx9_core.cpp" />
     <ClCompile Include="src\interface\win32\dsound_core.cpp" />
+    <ClCompile Include="src\burn\drivers\toaplan\d_fixeight.cpp" />
+    <ClCompile Include="src\burn\drivers\toaplan\d_ghox.cpp" />
+    <ClCompile Include="src\burn\drivers\toaplan\d_pipibibs.cpp" />
+    <ClCompile Include="src\burn\drivers\misc_pre90s\d_gauntlet.cpp" />
+    <ClCompile Include="src\cpu\nec\v25.cpp" />
+    <ClCompile Include="src\burn\sound\saa1099.cpp" />
+    <ClCompile Include="src\burn\devices\pandora.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\burn\devices\8255ppi.h" />
@@ -721,6 +728,8 @@
     <ClInclude Include="src\interface\win32\ddraw_core.h" />
     <ClInclude Include="src\interface\win32\dinput_core.h" />
     <ClInclude Include="src\interface\win32\directx9_core.h" />
+    <ClInclude Include="src\burn\sound\saa1099.h" />
+    <ClInclude Include="src\burn\devices\pandora.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\burn\burn_sound_a.asm" />
@@ -736,7 +745,6 @@
     <ResourceCompile Include="src\burner\win32\resource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="src\depend\dx7\lib\x86\ddraw.lib" />
     <Library Include="src\depend\vs2010\lib\x86\ddraw.lib" />
   </ItemGroup>
 </Project>

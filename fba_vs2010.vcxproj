@@ -198,6 +198,7 @@
     <ClCompile Include="src\burn\cheat.cpp" />
     <ClCompile Include="src\burn\devices\8255ppi.cpp" />
     <ClCompile Include="src\burn\devices\eeprom.cpp" />
+    <ClCompile Include="src\burn\devices\pandora.cpp" />
     <ClCompile Include="src\burn\devices\seibusnd.cpp" />
     <ClCompile Include="src\burn\devices\timekpr.cpp" />
     <ClCompile Include="src\burn\drivers\capcom\cps.cpp" />
@@ -391,6 +392,7 @@
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_flstory.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_funkybee.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_galaga.cpp" />
+    <ClCompile Include="src\burn\drivers\misc_pre90s\d_gauntlet.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_gberet.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_ginganin.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_gng.cpp" />
@@ -515,11 +517,14 @@
     <ClCompile Include="src\burn\drivers\toaplan\d_bbakraid.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_demonwld.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_dogyuun.cpp" />
+    <ClCompile Include="src\burn\drivers\toaplan\d_fixeight.cpp" />
+    <ClCompile Include="src\burn\drivers\toaplan\d_ghox.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_hellfire.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_kbash.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_kbash2.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_mahoudai.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_outzone.cpp" />
+    <ClCompile Include="src\burn\drivers\toaplan\d_pipibibs.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_rallybik.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_samesame.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_shippumd.cpp" />
@@ -573,6 +578,7 @@
     <ClCompile Include="src\burn\sound\msm6295.cpp" />
     <ClCompile Include="src\burn\sound\namco_snd.cpp" />
     <ClCompile Include="src\burn\sound\rf5c68.cpp" />
+    <ClCompile Include="src\burn\sound\saa1099.cpp" />
     <ClCompile Include="src\burn\sound\samples.cpp" />
     <ClCompile Include="src\burn\sound\segapcm.cpp" />
     <ClCompile Include="src\burn\sound\sn76496.cpp" />
@@ -622,6 +628,7 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="src\cpu\nec\v25.cpp" />
     <ClCompile Include="src\depend\generated\m68kopac.c" />
     <ClCompile Include="src\depend\generated\m68kopdm.c" />
     <ClCompile Include="src\depend\generated\m68kopnz.c" />
@@ -809,6 +816,7 @@
     <ClInclude Include="src\burn\cheat.h" />
     <ClInclude Include="src\burn\devices\8255ppi.h" />
     <ClInclude Include="src\burn\devices\eeprom.h" />
+    <ClInclude Include="src\burn\devices\pandora.h" />
     <ClInclude Include="src\burn\devices\seibusnd.h" />
     <ClInclude Include="src\burn\devices\timekpr.h" />
     <ClInclude Include="src\burn\driver.h" />
@@ -872,6 +880,7 @@
     <ClInclude Include="src\burn\sound\msm6295.h" />
     <ClInclude Include="src\burn\sound\namco_snd.h" />
     <ClInclude Include="src\burn\sound\rf5c68.h" />
+    <ClInclude Include="src\burn\sound\saa1099.h" />
     <ClInclude Include="src\burn\sound\samples.h" />
     <ClInclude Include="src\burn\sound\segapcm.h" />
     <ClInclude Include="src\burn\sound\sn76496.h" />
