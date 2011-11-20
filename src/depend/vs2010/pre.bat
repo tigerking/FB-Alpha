@@ -4,6 +4,7 @@ mkdir generated
 cd scripts
 echo running perl scripts
 perl cave_sprite_func.pl -o ../generated/cave_sprite_func.h
+perl license2rtf.pl -o ../generated/license.rtf ../../license.txt
 perl cave_tile_func.pl -o ../generated/cave_tile_func.h
 perl neo_sprite_func.pl -o ../generated/neo_sprite_func.h
 perl psikyo_tile_func.pl -o ../generated/psikyo_tile_func.h
