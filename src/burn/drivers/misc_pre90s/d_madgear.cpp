@@ -28,7 +28,7 @@ static UINT8 *DrvBgTiles          = NULL;
 static UINT8 *DrvFgTiles          = NULL;
 static UINT8 *DrvSprites          = NULL;
 static UINT8 *DrvTempRom          = NULL;
-static UINT32 *DrvPalette          = NULL;
+static UINT32 *DrvPalette         = NULL;
 
 static UINT16 DrvFgScrollX;
 static UINT16 DrvFgScrollY;
@@ -900,11 +900,11 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -945,10 +945,7 @@ static INT32 DrvInit()
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 16, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(MSM6295ROM + 0x20000, 17, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -984,6 +981,7 @@ static INT32 DrvInit()
 	DrvSpriteFlipYMask = 0x80;
 	
 	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(3);
 	BurnTimerAttachZet(3579545);
 	
 	MSM6295Init(0, 7575, 98, 1);
@@ -1002,11 +1000,11 @@ static INT32 Ledstrm2Init()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -1041,10 +1039,7 @@ static INT32 Ledstrm2Init()
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 10, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(MSM6295ROM + 0x20000, 11, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1080,6 +1075,7 @@ static INT32 Ledstrm2Init()
 	DrvSpriteFlipYMask = 0x80;
 	
 	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(3);
 	BurnTimerAttachZet(3579545);
 	
 	MSM6295Init(0, 7575, 98, 1);
@@ -1098,11 +1094,11 @@ static INT32 LastduelInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -1136,10 +1132,7 @@ static INT32 LastduelInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x60000, 12, 1); if (nRet != 0) return 1;
 	GfxDecode(0x1000, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1174,6 +1167,7 @@ static INT32 LastduelInit()
 	DrvSpriteFlipYMask = 0x40;
 	
 	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(3);
 	BurnTimerAttachZet(3579545);
 	
 	// Reset the driver
@@ -1190,11 +1184,11 @@ static INT32 LastduelbInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -1243,10 +1237,7 @@ static INT32 LastduelbInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x70000, 27, 1); if (nRet != 0) return 1;
 	GfxDecode(0x1000, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1281,6 +1272,7 @@ static INT32 LastduelbInit()
 	DrvSpriteFlipYMask = 0x40;
 	
 	BurnYM2203Init(2, 3579545, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(3);
 	BurnTimerAttachZet(3579545);
 	
 	// Reset the driver
@@ -1295,7 +1287,6 @@ static INT32 DrvExit()
 	ZetExit();
 	
 	BurnYM2203Exit();
-	MSM6295Exit(0);
 	
 	GenericTilesExit();
 	
@@ -1308,10 +1299,7 @@ static INT32 DrvExit()
 	DrvZ80RomBank = 0;
 	DrvSoundLatch = 0;
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 
 	return 0;
 }
@@ -1319,9 +1307,7 @@ static INT32 DrvExit()
 static INT32 MadgearExit()
 {
 	MSM6295Exit(0);
-	DrvExit();
-
-	return 0;
+	return DrvExit();
 }
 
 inline static UINT32 CalcCol(UINT16 nColour)
@@ -1717,7 +1703,6 @@ static void LastduelDraw()
 static INT32 DrvFrame()
 {
 	INT32 nInterleave = 100;
-	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) MadgearDoReset();
 
@@ -1745,32 +1730,12 @@ static INT32 DrvFrame()
 		ZetOpen(0);
 		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
 		ZetClose();
-		
-		if (pBurnSoundOut) {
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			ZetOpen(0);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-			nSoundBufferPos += nSegmentLength;
-		}
 	}
 	
 	ZetOpen(0);
 	BurnTimerEndFrame(nCyclesTotal[1]);
+	if (pBurnSoundOut) BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 	ZetClose();
-	
-	if (pBurnSoundOut) {
-		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			ZetOpen(0);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-		}
-	}
 	
 	if (pBurnDraw) DrvDraw();
 	
@@ -1786,7 +1751,6 @@ static INT32 DrvFrame()
 static INT32 LastduelFrame()
 {
 	INT32 nInterleave = 100;
-	INT32 nSoundBufferPos = 0;
 
 	if (DrvReset) DrvDoReset();
 
@@ -1814,30 +1778,12 @@ static INT32 LastduelFrame()
 		ZetOpen(0);
 		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
 		ZetClose();
-		
-		if (pBurnSoundOut) {
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			ZetOpen(0);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-			nSoundBufferPos += nSegmentLength;
-		}
 	}
 	
 	ZetOpen(0);
 	BurnTimerEndFrame(nCyclesTotal[1]);
+	if (pBurnSoundOut) BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 	ZetClose();
-	
-	if (pBurnSoundOut) {
-		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			ZetOpen(0);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-		}
-	}
 	
 	if (pBurnDraw) LastduelDraw();
 	

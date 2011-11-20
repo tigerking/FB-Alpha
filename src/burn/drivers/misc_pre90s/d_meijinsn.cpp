@@ -43,7 +43,7 @@ STDINPUTINFO(Drv)
 static struct BurnDIPInfo DrvDIPList[] =
 {
 	// Defaults
-	{0x12, 0xFF, 0xFF, 0x00, NULL},
+	{0x12, 0xFF, 0xFF, 0x08, NULL},
 
 	{0,    0xFE, 0,	   8,	 "Game time (actual game)"},
 	{0x12, 0x01, 0x07, 0x07, "01:00"},
@@ -291,7 +291,7 @@ static void Pallete_Init()
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8 *)malloc(0x210060);
+	Mem = (UINT8 *)BurnMalloc(0x210060);
 	if (Mem == NULL) {
 		return 1;
 	}
@@ -361,15 +361,9 @@ static INT32 DrvExit()
 	SekExit();
 	ZetExit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 	Palette = NULL;
-	if (pFMBuffer) {
-		free (pFMBuffer);
-		pFMBuffer = NULL;
-	}
+	BurnFree (pFMBuffer);
 	Mem = M68KRom = Z80Rom = Prom = NULL;
 	pFMBuffer = NULL;
 	pAY8910Buffer[0] = pAY8910Buffer[1] = pAY8910Buffer[2] = NULL;
@@ -455,13 +449,7 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -487,13 +475,7 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;

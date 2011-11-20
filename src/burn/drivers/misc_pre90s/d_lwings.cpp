@@ -1,13 +1,9 @@
 // FB Alpha "Legendary Wings" driver module
 // Based on MAME driver by Paul Leaman
 
-// To Do:
-// Missing emulation of CPU 3 && MSM5205 sound
-
 #include "tiles_generic.h"
 #include "burn_ym2203.h"
-
-//#define EMULATE_ADPCM
+#include "msm5205.h"
 
 static UINT8 *AllMem;
 static UINT8 *MemEnd;
@@ -15,17 +11,15 @@ static UINT8 *AllRam;
 static UINT8 *RamEnd;
 static UINT8 *DrvZ80ROM0;
 static UINT8 *DrvZ80ROM1;
-#ifdef EMULATE_ADPCM
 static UINT8 *DrvZ80ROM2;
-#endif
 static UINT8 *DrvGfxROM0;
 static UINT8 *DrvGfxROM1;
 static UINT8 *DrvGfxROM2;
 static UINT8 *DrvGfxROM3;
 static UINT8 *DrvTileMap;
 static UINT8 *DrvGfxMask;
-static UINT32  *DrvPalette;
-static UINT32  *Palette;
+static UINT32 *DrvPalette;
+static UINT32 *Palette;
 static UINT8 *DrvZ80RAM0;
 static UINT8 *DrvZ80RAM1;
 static UINT8 *DrvPalRAM;
@@ -46,19 +40,22 @@ static UINT8 DrvInp[3];
 
 static UINT8 interrupt_enable;
 static UINT8 soundlatch;
+static UINT8 soundlatch2;
 static UINT8 flipscreen;
 static UINT8 DrvZ80Bank;
 
 static UINT8 avengers_param[4];
-static UINT32  avengers_palette_pen;
+static UINT32 avengers_palette_pen;
 static UINT8 avengers_soundlatch2;
 static UINT8 avengers_soundstate;
-static UINT8 avengers_adpcm;
 
 static UINT8 trojan_bg2_scrollx;
 static UINT8 trojan_bg2_image;
 
 static INT32 avengers = 0;
+static INT32 MSM5205InUse = 0;
+
+static INT32 nCyclesTotal[3];
 
 static struct BurnInputInfo DrvInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 6,	"p1 coin"	},
@@ -435,9 +432,7 @@ static INT32 MemIndex()
 
 	DrvZ80ROM0	= Next; Next += 0x020000;
 	DrvZ80ROM1	= Next; Next += 0x008000;
-#ifdef EMULATE_ADPCM
 	DrvZ80ROM2	= Next; Next += 0x010000;
-#endif
 
 	DrvTileMap	= Next; Next += 0x008000;
 
@@ -597,7 +592,7 @@ static UINT8 avengers_protection_r()
 		return avengers_fetch_paldata();
 	}
 
-	//  PoINT32 to Angle Function
+	//  int to Angle Function
 	//
         //	Input: two cartesian points
         //	Output: direction code (north,northeast,east,...)
@@ -704,7 +699,7 @@ void __fastcall lwings_main_write(UINT16 address, UINT8 data)
 		return;
 
 		case 0xf80d:
-			// watchdog
+			soundlatch2 = data;
 		return;
 
 		case (0xf80e + 0x10):
@@ -725,7 +720,7 @@ void __fastcall lwings_main_write(UINT16 address, UINT8 data)
 		return;
 
 		case (0xf80d + 0x10):
-			avengers_adpcm = data;
+			soundlatch2 = data;
 		return;
 	}
 }
@@ -755,23 +750,22 @@ UINT8 __fastcall lwings_sound_read(UINT16 address)
 			return soundlatch;
 
 		case 0xe006:
-			return avengers_soundlatch2;
+			UINT8 Data = avengers_soundlatch2 | avengers_soundstate;
+			avengers_soundstate = 0;
+			return Data;
 	}
 
 	return 0;
 }
 
-#ifdef EMULATE_ADPCM
-void __fastcall trojan_adpcm_out(UINT16 /*port*/, UINT8 /*data*/)
+void __fastcall trojan_adpcm_out(UINT16 port, UINT8 data)
 {
-#if 0
 	if ((port & 0xff) == 0x01) {
-		msm5205_reset_w(offset,(data>>7)&1);
-		msm5205_data_w(offset,data);
-		msm5205_vclk_w(offset,1);
-		msm5205_vclk_w(offset,0);
+		MSM5205ResetWrite(0, (data >> 7) & 1);
+		MSM5205DataWrite(0, data);
+		MSM5205VCLKWrite(0, 1);
+		MSM5205VCLKWrite(0, 0);
 	}
-#endif
 }
 
 UINT8 __fastcall trojan_adpcm_in(UINT16 port)
@@ -781,17 +775,11 @@ UINT8 __fastcall trojan_adpcm_in(UINT16 port)
 	UINT8 ret = 0;
 
 	if (port == 0x00) {
-		if (avengers) {
-			ret = avengers_soundlatch2 | avengers_soundstate;
-			avengers_soundstate = 0;
-		} else {
-			ret = soundlatch;
-		}
+			ret = soundlatch2;
 	}
 
 	return ret;
 }
-#endif
 
 static INT32 DrvDoReset()
 {
@@ -799,14 +787,22 @@ static INT32 DrvDoReset()
 
 	memset (AllRam, 0, RamEnd - AllRam);
 
-	for (INT32 i = 0; i < 3; i++) {
+	for (INT32 i = 0; i < 2; i++) {
 		ZetOpen(i);
 		ZetReset();
 		if (i == 0) lwings_bankswitch_w(0);
 		ZetClose();
 	}
+	
+	if (MSM5205InUse) {
+		ZetOpen(2);
+		ZetReset();
+		ZetClose();
+	}
 
 	BurnYM2203Reset();
+
+	if (MSM5205InUse) MSM5205Reset();
 
 	trojan_bg2_scrollx = 0;
 	trojan_bg2_image = 0;
@@ -816,12 +812,12 @@ static INT32 DrvDoReset()
 
 	avengers_soundlatch2 = 0;
 	avengers_soundstate = 0;
-	avengers_adpcm = 0;
 
 	DrvZ80Bank = 0;
 	flipscreen = 0;
 	interrupt_enable = 0;
 	soundlatch = 0;
+	soundlatch2 = 0;
 
 	return 0;
 }
@@ -842,7 +838,7 @@ static INT32 DrvGfxDecode()
 	INT32 XOffs1[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
 	INT32 YOffs1[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x40000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x40000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -867,22 +863,24 @@ static INT32 DrvGfxDecode()
 		GfxDecode(0x0400, 4, 16, 16, Plane1, XOffs0, YOffs0, 0x200, tmp, DrvGfxROM2);
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
 
 inline static INT32 DrvSynchroniseStream(INT32 nSoundRate)
 {
-	return (INT64)(ZetTotalCycles() * nSoundRate / 4000000);
+	return (INT64)(ZetTotalCycles() * nSoundRate / 3000000);
+}
+
+inline static INT32 DrvMSM5205SynchroniseStream(INT32 nSoundRate)
+{
+	return (INT64)(ZetTotalCycles() * nSoundRate / (nCyclesTotal[0] * 60));
 }
 
 inline static double DrvGetTime()
 {
-	return (double)ZetTotalCycles() / 4000000;
+	return (double)ZetTotalCycles() / 3000000;
 }
 
 static void lwings_main_cpu_init()
@@ -930,7 +928,8 @@ static void lwings_sound_init()
 	ZetClose();
 
 	BurnYM2203Init(2, 1500000, NULL, DrvSynchroniseStream, DrvGetTime, 0);
-	BurnTimerAttachZet(4000000);
+	BurnYM2203SetVolumeShift(4);
+	BurnTimerAttachZet(3000000);
 }
 
 static INT32 DrvInit()
@@ -938,7 +937,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -965,11 +964,15 @@ static INT32 DrvInit()
 		DrvGfxDecode();
 	}
 
-	ZetInit(3);
+	ZetInit(2);
 	lwings_main_cpu_init();
 	lwings_sound_init();
 
 	GenericTilesInit();
+	
+	nCyclesTotal[0] = 6000000 / 60;
+	nCyclesTotal[1] = 3000000 / 60;
+	nCyclesTotal[2] = 0;
 
 	DrvDoReset();
 
@@ -981,7 +984,7 @@ static INT32 TrojanInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -992,9 +995,7 @@ static INT32 TrojanInit()
 
 		if (BurnLoadRom(DrvZ80ROM1 + 0x00000, 3, 1)) return 1;
 
-#ifdef EMULATE_ADPCM
 		if (BurnLoadRom(DrvZ80ROM2 + 0x00000, 4, 1)) return 1;
-#endif
 
 		if (BurnLoadRom(DrvGfxROM0 + 0x00000, 5, 1)) return 1;
 
@@ -1021,7 +1022,6 @@ static INT32 TrojanInit()
 	lwings_main_cpu_init();
 	lwings_sound_init();
 
-#ifdef EMULATE_ADPCM
 	ZetOpen(2);
 	ZetMapArea(0x0000, 0xffff, 0, DrvZ80ROM2);
 	ZetMapArea(0x0000, 0xffff, 2, DrvZ80ROM2);
@@ -1029,9 +1029,15 @@ static INT32 TrojanInit()
 	ZetSetOutHandler(trojan_adpcm_out);
 	ZetMemEnd();
 	ZetClose();
-#endif
+	
+	MSM5205Init(0, DrvMSM5205SynchroniseStream, 455000, NULL, MSM5205_SEX_4B, 50, 1);
+	MSM5205InUse = 1;
 
 	GenericTilesInit();
+	
+	nCyclesTotal[0] = 3000000 / 60;
+	nCyclesTotal[1] = 3000000 / 60;
+	nCyclesTotal[2] = 3000000 / 60;
 
 	DrvDoReset();
 
@@ -1043,13 +1049,13 @@ static INT32 DrvExit()
 	GenericTilesExit();
 
 	ZetExit();
+	BurnYM2203Exit();
+	MSM5205Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	avengers = 0;
+	MSM5205InUse = 0;
 
 	return 0;
 }
@@ -1456,64 +1462,71 @@ static INT32 DrvFrame()
 		if ((DrvInp[2] & 0x0c) == 0) DrvInp[2] |= 0x0c;
 	}
 
-	INT32 nInterleave = 16;
-	INT32 nSoundBufferPos = 0;
-	INT32 nCyclesTotal[3] = { 6000000 / 60, 4000000 / 60, 4000000 / 60 };
+	INT32 nInterleave;
+	INT32 MSMIRQSlice[67];
+	
+	if (MSM5205InUse) {
+		nInterleave = MSM5205CalcInterleave(0, 6000000);
+	
+		for (INT32 i = 0; i < 67; i++) {
+			MSMIRQSlice[i] = (INT32)((double)((nInterleave * (i + 1)) / 68));
+		}
+	} else {
+		nInterleave = 16;
+	}
+
+	INT32 nCyclesDone[3] = { 0, 0, 0 };
+	
+	ZetNewFrame();
 
 	for (INT32 i = 0; i < nInterleave; i++)
 	{
-		INT32 nSegment;
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
 
-		ZetOpen(0);
-		nSegment = nCyclesTotal[0] / (nInterleave - i);
-		nCyclesTotal[0] -= ZetRun(nSegment);
+		nCurrentCPU = 0;
+		ZetOpen(nCurrentCPU);
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
 		if (interrupt_enable && i == (nInterleave - 1)) {
 			if (avengers & 1) {
 				ZetNmi();
 			} else {
-//				ZetRaiseIrq(0xd7);
 				ZetSetVector(0xd7);
-				ZetRaiseIrq(0);
+				ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
 			}
 		}
+		if (MSM5205InUse) MSM5205Update();
+		ZetClose();
+		
+		nCurrentCPU = 1;
+		ZetOpen(nCurrentCPU);
+		BurnTimerUpdate(i * (nCyclesTotal[nCurrentCPU] / nInterleave));
+		if ((i % (nInterleave / 4)) == ((nInterleave / 4) - 1)) ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
 		ZetClose();
 
-		ZetOpen(1);
-		nSegment = nCyclesTotal[1] / (nInterleave - i);
-		nCyclesTotal[1] -= ZetRun(nSegment);
-		if ((i % (nInterleave / 4)) == ((nInterleave / 4)-1)) ZetRaiseIrq(0);
-		ZetClose();
-
-#ifdef EMULATE_ADPCM
-		ZetOpen(2);
-		nSegment = nCyclesTotal[2] / (nInterleave - 1);
-		nCyclesTotal[2] -= ZetRun(nSegment);
-		ZetRaiseIrq(0); // should be every 4000
-		ZetClose();
-#endif
-
-		if (pBurnSoundOut) {
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			ZetOpen(1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-			nSoundBufferPos += nSegmentLength;
-		}
-	}
-
-	if (pBurnSoundOut) {
-		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			ZetOpen(1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
+		if (MSM5205InUse) {
+			nCurrentCPU = 2;
+			ZetOpen(nCurrentCPU);
+			nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+			nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+			nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
+			for (INT32 j = 0; j < 67; j++) {
+				if (i == MSMIRQSlice[j]) {
+					ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+					nCyclesDone[nCurrentCPU] += ZetRun(1000);
+				}
+			}
 			ZetClose();
 		}
 	}
-
+	
 	ZetOpen(1);
 	BurnTimerEndFrame(nCyclesTotal[1]);
+	if (pBurnSoundOut) {
+		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+		if (MSM5205InUse) MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
+	}
 	ZetClose();
 
 	if (pBurnDraw) {
@@ -1545,9 +1558,11 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 		ZetScan(nAction);
 
 		BurnYM2203Scan(nAction, pnMin);
+		if (MSM5205InUse) MSM5205Scan(nAction, pnMin);
 
 		SCAN_VAR(interrupt_enable);
 		SCAN_VAR(soundlatch);
+		SCAN_VAR(soundlatch2);
 		SCAN_VAR(flipscreen);
 		SCAN_VAR(DrvZ80Bank);
 
@@ -1555,7 +1570,6 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 		SCAN_VAR(avengers_palette_pen);
 		SCAN_VAR(avengers_soundlatch2);
 		SCAN_VAR(avengers_soundstate);
-		SCAN_VAR(avengers_adpcm);
 		SCAN_VAR(trojan_bg2_scrollx);
 		SCAN_VAR(trojan_bg2_image);
 	}

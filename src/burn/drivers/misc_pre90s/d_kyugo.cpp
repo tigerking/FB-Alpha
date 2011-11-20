@@ -33,7 +33,7 @@ static UINT8 *KyugoChars            = NULL;
 static UINT8 *KyugoTiles            = NULL;
 static UINT8 *KyugoSprites          = NULL;
 static UINT8 *KyugoTempRom          = NULL;
-static UINT32  *KyugoPalette          = NULL;
+static UINT32 *KyugoPalette         = NULL;
 static INT16* pFMBuffer;
 static INT16* pAY8910Buffer[6];
 
@@ -1638,14 +1638,18 @@ static INT32 KyugoInit()
 		 KyugoSizeZ80Rom2 = 0x8000;
 		 KyugoSizeSpriteRom = 0x8000;
 	}
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodine") || !strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodinec") || !strcmp(BurnDrvGetTextA(DRV_NAME), "buzzard")) KyugoNumZ80Rom2 = 1;
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodine") || !strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodinet") || !strcmp(BurnDrvGetTextA(DRV_NAME), "buzzard")) {
+		KyugoNumZ80Rom2 = 1;
+	}
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "legend")) {
 		 KyugoNumZ80Rom1 = 2;
 		 KyugoNumZ80Rom2 = 4;
 		 KyugoSizeZ80Rom1 = 0x4000;
 		 KyugoSizeZ80Rom2 = 0x2000;
 	}
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "sonofphx") || !strcmp(BurnDrvGetTextA(DRV_NAME), "repulse") || !strcmp(BurnDrvGetTextA(DRV_NAME), "99lstwar") || !strcmp(BurnDrvGetTextA(DRV_NAME), "99lstwara") || !strcmp(BurnDrvGetTextA(DRV_NAME), "99lstwark")) KyugoNumZ80Rom1 = 3;
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "sonofphx") || !strcmp(BurnDrvGetTextA(DRV_NAME), "repulse") || !strcmp(BurnDrvGetTextA(DRV_NAME), "99lstwar") || !strcmp(BurnDrvGetTextA(DRV_NAME), "99lstwara") || !strcmp(BurnDrvGetTextA(DRV_NAME), "99lstwark")) {
+		KyugoNumZ80Rom1 = 3;
+	}
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "skywolf") || !strcmp(BurnDrvGetTextA(DRV_NAME), "srdmissn") || !strcmp(BurnDrvGetTextA(DRV_NAME), "fx")) {
 		 KyugoNumZ80Rom1 = 2;
 		 KyugoNumZ80Rom2 = 2;
@@ -1664,11 +1668,11 @@ static INT32 KyugoInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	KyugoTempRom = (UINT8 *)malloc(0x18000);
+	KyugoTempRom = (UINT8 *)BurnMalloc(0x18000);
 
 	// Load Z80 #1 Program Roms
 	for (i = 0; i < KyugoNumZ80Rom1; i++) {
@@ -1697,7 +1701,7 @@ static INT32 KyugoInit()
 		nRet = BurnLoadRom(KyugoTempRom + (KyugoSizeSpriteRom * (i - KyugoNumZ80Rom2 - KyugoNumZ80Rom1 - 4)),  i, 1); if (nRet != 0) return 1;
 	}
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "airwolf") || !strcmp(BurnDrvGetTextA(DRV_NAME), "airwolfa")) {
-		UINT8 *Temp = (UINT8*)malloc(0x18000);
+		UINT8 *Temp = (UINT8*)BurnMalloc(0x18000);
 		memcpy(Temp, KyugoTempRom, 0x18000);
 		memcpy(KyugoTempRom + 0x00000, Temp + 0x00000, 0x2000);
 		memcpy(KyugoTempRom + 0x04000, Temp + 0x02000, 0x2000);
@@ -1711,10 +1715,7 @@ static INT32 KyugoInit()
 		memcpy(KyugoTempRom + 0x14000, Temp + 0x12000, 0x2000);
 		memcpy(KyugoTempRom + 0x12000, Temp + 0x14000, 0x2000);
 		memcpy(KyugoTempRom + 0x16000, Temp + 0x16000, 0x2000);
-		if (Temp) {
-			free(Temp);
-			Temp = NULL;
-		}
+		BurnFree(Temp);
 	}
 	GfxDecode(0x400, 3, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, KyugoTempRom, KyugoSprites);
 	
@@ -1722,14 +1723,11 @@ static INT32 KyugoInit()
 	nRet = BurnLoadRom(KyugoPromRed,          KyugoNumSpriteRom + KyugoNumZ80Rom2 + KyugoNumZ80Rom1 + 4, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(KyugoPromGreen,        KyugoNumSpriteRom + KyugoNumZ80Rom2 + KyugoNumZ80Rom1 + 5, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(KyugoPromBlue,         KyugoNumSpriteRom + KyugoNumZ80Rom2 + KyugoNumZ80Rom1 + 6, 1); if (nRet != 0) return 1;
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "flashgal") || !strcmp(BurnDrvGetTextA(DRV_NAME), "flashgala") || !strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodine") || !strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodinec") || !strcmp(BurnDrvGetTextA(DRV_NAME), "buzzard") || !strcmp(BurnDrvGetTextA(DRV_NAME), "legend") || !strcmp(BurnDrvGetTextA(DRV_NAME), "srdmissn") || !strcmp(BurnDrvGetTextA(DRV_NAME), "fx")) {
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "flashgal") || !strcmp(BurnDrvGetTextA(DRV_NAME), "flashgala") || !strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodine") || !strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodinet") || !strcmp(BurnDrvGetTextA(DRV_NAME), "buzzard") || !strcmp(BurnDrvGetTextA(DRV_NAME), "legend") || !strcmp(BurnDrvGetTextA(DRV_NAME), "srdmissn") || !strcmp(BurnDrvGetTextA(DRV_NAME), "fx")) {
 		nRet = BurnLoadRom(KyugoPromCharLookup,   KyugoNumSpriteRom + KyugoNumZ80Rom2 + KyugoNumZ80Rom1 + 7, 1); if (nRet != 0) return 1;
 	}
 	
-	if (KyugoTempRom) {
-		free(KyugoTempRom);
-		KyugoTempRom = NULL;
-	}
+	BurnFree(KyugoTempRom);
 	
 	// Setup the Z80 emulation
 	ZetInit(2);
@@ -1761,7 +1759,7 @@ static INT32 KyugoInit()
 	ZetOpen(1);
 	ZetSetWriteHandler(KyugoWrite2);
 	ZetSetInHandler(KyugoPortRead2);
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodine") || !strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodinec") || !strcmp(BurnDrvGetTextA(DRV_NAME), "buzzard")) {
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodine") || !strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodinet") || !strcmp(BurnDrvGetTextA(DRV_NAME), "buzzard")) {
 		ZetMapArea(0x0000, 0x1fff, 0, KyugoZ80Rom2             );
 		ZetMapArea(0x0000, 0x1fff, 2, KyugoZ80Rom2             );
 	} else {
@@ -1818,7 +1816,7 @@ static INT32 KyugoInit()
 		ZetClose();
 	}
 	
-	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodine") || !strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodinec") || !strcmp(BurnDrvGetTextA(DRV_NAME), "buzzard")) {
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodine") || !strcmp(BurnDrvGetTextA(DRV_NAME), "gyrodinet") || !strcmp(BurnDrvGetTextA(DRV_NAME), "buzzard")) {
 		ZetOpen(0);
 		ZetSetOutHandler(GyrodinePortWrite1);
 		ZetClose();
@@ -1892,7 +1890,6 @@ static INT32 KyugoInit()
 	AY8910Init(0, 18432000 / 12, nBurnSoundRate, &KyugoDip0Read, &KyugoDip1Read, NULL, NULL);
 	AY8910Init(1, 18432000 / 12, nBurnSoundRate, NULL, NULL, NULL, NULL);
 
-	
 	GenericTilesInit();
 
 	// Reset the driver
@@ -1909,12 +1906,12 @@ static INT32 Skywolf3Init()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	KyugoTempRom = (UINT8 *)malloc(0x18000);
-	UINT8 *pTemp = (UINT8*)malloc(0x8000);
+	KyugoTempRom = (UINT8 *)BurnMalloc(0x18000);
+	UINT8 *pTemp = (UINT8*)BurnMalloc(0x8000);
 	
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(pTemp, 0, 1); if (nRet != 0) return 1;
@@ -1955,14 +1952,8 @@ static INT32 Skywolf3Init()
 	nRet = BurnLoadRom(KyugoPromGreen, 12, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(KyugoPromBlue,  13, 1); if (nRet != 0) return 1;
 	
-	if (KyugoTempRom) {
-		free(KyugoTempRom);
-		KyugoTempRom = NULL;
-	}
-	if (pTemp) {
-		free(pTemp);
-		pTemp = NULL;
-	}
+	BurnFree(KyugoTempRom);
+	BurnFree(pTemp);
 	
 	// Setup the Z80 emulation
 	ZetInit(2);
@@ -2024,7 +2015,6 @@ static INT32 Skywolf3Init()
 
 	AY8910Init(0, 18432000 / 12, nBurnSoundRate, &KyugoDip0Read, &KyugoDip1Read, NULL, NULL);
 	AY8910Init(1, 18432000 / 12, nBurnSoundRate, NULL, NULL, NULL, NULL);
-
 	
 	GenericTilesInit();
 
@@ -2060,10 +2050,7 @@ static INT32 KyugoExit()
 	KyugoSizeZ80Rom2 = 0;
 	KyugoSizeSpriteRom = 0;
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 
 	return 0;
 }
@@ -2364,13 +2351,7 @@ static INT32 KyugoFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -2396,13 +2377,7 @@ static INT32 KyugoFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -2410,7 +2385,6 @@ static INT32 KyugoFrame()
 		}
 	}
 
-	
 	if (pBurnDraw) KyugoDraw();
 
 	return 0;
