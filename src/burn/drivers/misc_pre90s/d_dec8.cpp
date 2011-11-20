@@ -2339,6 +2339,45 @@ struct BurnDriver BurnDrvCobracmj = {
 };
 
 
+// Cobra-Command (Japan?, set 2)
+
+static struct BurnRomInfo cobracmjaRomDesc[] = {
+	{ "el-11.rom",	0x08000, 0xc6a102e3, 1 }, //  0 maincpu
+	{ "el-12.rom",	0x10000, 0x72b2dab4, 1 }, //  1
+	{ "el-13.rom",	0x10000, 0x04505acb, 1 }, //  2
+
+	{ "el-10.rom",	0x08000, 0x62ca5e89, 2 }, //  3 audiocpu
+
+	{ "el-14.rom",	0x08000, 0x47246177, 3 }, //  4 gfx1
+
+	{ "eh-00.rom",	0x10000, 0xd96b6797, 4 }, //  5 gfx2
+	{ "eh-01.rom",	0x10000, 0x3fef9c02, 4 }, //  6
+	{ "eh-02.rom",	0x10000, 0xbfae6c34, 4 }, //  7
+	{ "eh-03.rom",	0x10000, 0xd56790f8, 4 }, //  8
+
+	{ "el-08.rom",	0x10000, 0xcb0dcf4c, 5 }, //  9 gfx4
+	{ "el-09.rom",	0x10000, 0x1fae5be7, 5 }, // 10
+
+	{ "el-05.rom",	0x10000, 0x1c4f6033, 6 }, // 11 gfx3
+	{ "el-06.rom",	0x10000, 0xd24ba794, 6 }, // 12
+	{ "el-04.rom",	0x10000, 0xd80a49ce, 6 }, // 13
+	{ "el-07.rom",	0x10000, 0x6d771fc3, 6 }, // 14
+};
+
+STD_ROM_PICK(cobracmja)
+STD_ROM_FN(cobracmja)
+
+struct BurnDriver BurnDrvCobracmja = {
+	"cobracomja", "cobracom", NULL, NULL, "1988",
+	"Cobra-Command (Japan?, set 2)\0", NULL, "Data East Corporation", "hardware",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
+	NULL, cobracmjaRomInfo, cobracmjaRomName, NULL, NULL, CobracomInputInfo, CobracomDIPInfo,
+	CobraInit, DrvExit, CobraFrame, CobraDraw, NULL, &DrvRecalc, 0x100,
+	256, 240, 4, 3
+};
+
+
 
 
 
