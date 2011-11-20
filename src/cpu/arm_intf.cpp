@@ -1,8 +1,6 @@
 #include "burnint.h"
 #include "arm_intf.h"
 
-//#define DEBUG_LOG
-
 #define MAX_MEMORY	0x04000000 // max
 #define MAX_MASK	0x03ffffff // max-1
 #define PAGE_SIZE	0x00001000 // 400 would be better...

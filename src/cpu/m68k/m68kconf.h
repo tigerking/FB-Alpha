@@ -172,7 +172,7 @@
  * NOTE: not enabling inline functions will SEVERELY slow down emulation.
  */
 #ifndef INLINE
-#define INLINE static __inline__
+#define INLINE __inline static
 #endif /* INLINE */
 
 /* --------------------------- FB Alpha handlers -------------------------- */

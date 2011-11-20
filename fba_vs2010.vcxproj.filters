@@ -5,7 +5,6 @@
     <ClCompile Include="src\burn\devices\eeprom.cpp" />
     <ClCompile Include="src\burn\devices\seibusnd.cpp" />
     <ClCompile Include="src\burn\devices\timekpr.cpp" />
-    <ClCompile Include="src\burn\drivers\atari\d_gauntlet.cpp" />
     <ClCompile Include="src\burn\drivers\capcom\cps.cpp" />
     <ClCompile Include="src\burn\drivers\capcom\cps2_crpt.cpp" />
     <ClCompile Include="src\burn\drivers\capcom\cps_config.cpp" />
@@ -124,8 +123,6 @@
     <ClCompile Include="src\burn\drivers\misc_post90s\d_hyperpac.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_kaneko16.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_lordgun.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_post90s\d_m90.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_post90s\d_m92.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_mcatadv.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_midas.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_mogura.cpp" />
@@ -167,7 +164,6 @@
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_1942.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_1943.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_4enraya.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_pre90s\d_airbustr.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_ambush.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_angelkds.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_arabian.cpp" />
@@ -207,9 +203,6 @@
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_ladybug.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_lkage.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_lwings.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_pre90s\d_m62.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_pre90s\d_m63.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_pre90s\d_m72.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_madgear.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_marineb.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_markham.cpp" />
@@ -529,11 +522,17 @@
     <ClCompile Include="src\depend\libs\zlib\inffast.c" />
     <ClCompile Include="src\depend\libs\zlib\inflate.c" />
     <ClCompile Include="src\cpu\m68k\m68kcpu.c" />
-    <ClCompile Include="src\cpu\m68k\m68kops.c" />
-    <ClCompile Include="src\cpu\m68k\m68kopnz.c" />
-    <ClCompile Include="src\cpu\m68k\m68kopdm.c" />
-    <ClCompile Include="src\cpu\m68k\m68kopac.c" />
     <ClCompile Include="src\depend\kaillera\client\net.cpp" />
+    <ClCompile Include="src\burn\drivers\misc_post90s\d_airbustr.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\d_m62.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\d_m92.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\d_m63.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\d_m72.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\d_m90.cpp" />
+    <ClCompile Include="src\depend\generated\m68kopac.c" />
+    <ClCompile Include="src\depend\generated\m68kopdm.c" />
+    <ClCompile Include="src\depend\generated\m68kopnz.c" />
+    <ClCompile Include="src\depend\generated\m68kops.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\burn\devices\8255ppi.h" />

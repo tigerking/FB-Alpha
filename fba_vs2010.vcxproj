@@ -62,7 +62,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>src\depend\dx7\include;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
+    <IncludePath>src\depend\vs2010\include;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
+    <IntDir>$(SolutionDir)$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>src\depend\dx7\include;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
@@ -82,6 +83,9 @@
       <AdditionalDependencies>user32.lib;gdi32.lib;comdlg32.lib;comctl32.lib;shell32.lib;winmm.lib;ole32.lib;shlwapi.lib;advapi32.lib;setupapi.lib;d3d9.lib;d3dx9.lib;dsound.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
+    <PreBuildEvent>
+      <Command>$(MSBuildProjectDirectory)/src/depend/vs2010/pre.bat "$(VCInstallDir)</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -195,7 +199,6 @@
     <ClCompile Include="src\burn\devices\eeprom.cpp" />
     <ClCompile Include="src\burn\devices\seibusnd.cpp" />
     <ClCompile Include="src\burn\devices\timekpr.cpp" />
-    <ClCompile Include="src\burn\drivers\atari\d_gauntlet.cpp" />
     <ClCompile Include="src\burn\drivers\capcom\cps.cpp" />
     <ClCompile Include="src\burn\drivers\capcom\cps2_crpt.cpp" />
     <ClCompile Include="src\burn\drivers\capcom\cpsr.cpp" />
@@ -246,6 +249,11 @@
     <ClCompile Include="src\burn\drivers\galaxian\gal_run.cpp" />
     <ClCompile Include="src\burn\drivers\galaxian\gal_sound.cpp" />
     <ClCompile Include="src\burn\drivers\galaxian\gal_stars.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\d_m62.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\d_m63.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\d_m72.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\d_m90.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\d_m92.cpp" />
     <ClCompile Include="src\burn\drivers\konami\d_88games.cpp" />
     <ClCompile Include="src\burn\drivers\konami\d_ajax.cpp" />
     <ClCompile Include="src\burn\drivers\konami\d_aliens.cpp" />
@@ -284,6 +292,7 @@
     <ClCompile Include="src\burn\drivers\misc_post90s\deco16ic.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_1945kiii.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_aerofgt.cpp" />
+    <ClCompile Include="src\burn\drivers\misc_post90s\d_airbustr.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_aquarium.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_ashnojoe.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_backfire.cpp" />
@@ -316,8 +325,6 @@
     <ClCompile Include="src\burn\drivers\misc_post90s\d_hyperpac.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_kaneko16.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_lordgun.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_post90s\d_m90.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_post90s\d_m92.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_mcatadv.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_midas.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_mogura.cpp" />
@@ -358,7 +365,6 @@
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_1942.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_1943.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_4enraya.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_pre90s\d_airbustr.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_ambush.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_angelkds.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_arabian.cpp" />
@@ -398,9 +404,6 @@
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_ladybug.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_lkage.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_lwings.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_pre90s\d_m62.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_pre90s\d_m63.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_pre90s\d_m72.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_madgear.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_marineb.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_markham.cpp" />
@@ -616,11 +619,12 @@
     <ClCompile Include="src\cpu\m68k\m68kcpu.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="src\cpu\m68k\m68kopac.c" />
-    <ClCompile Include="src\cpu\m68k\m68kopdm.c" />
-    <ClCompile Include="src\cpu\m68k\m68kopnz.c" />
-    <ClCompile Include="src\cpu\m68k\m68kops.c" />
+    <ClCompile Include="src\depend\generated\m68kopac.c" />
+    <ClCompile Include="src\depend\generated\m68kopdm.c" />
+    <ClCompile Include="src\depend\generated\m68kopnz.c" />
+    <ClCompile Include="src\depend\generated\m68kops.c" />
     <ClCompile Include="src\cpu\nec\nec.cpp" />
     <ClCompile Include="src\cpu\s2650\s2650.cpp" />
     <ClCompile Include="src\cpu\s2650_intf.cpp" />

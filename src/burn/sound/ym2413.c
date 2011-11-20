@@ -29,7 +29,7 @@ to do:
 #include "driver.h"
 #include "ym2413.h"
 
-#define MAME_INLINE static inline
+#define MAME_INLINE INLINE
 
 #ifndef PI
 #define PI 3.14159265358979323846
