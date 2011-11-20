@@ -33,6 +33,9 @@ INT32 Dx9Core_Init();
 // Additions to the Cygwin/MinGW win32 headers
 #ifdef __GNUC__
  #include "mingw_win32.h"
+#else
+
+
 #endif
 
 #include "resource.h"

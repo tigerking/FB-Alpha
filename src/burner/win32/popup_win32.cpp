@@ -33,23 +33,25 @@ static int FBAPopupLog()
 	}
 
 	dprintf(_T("*** %s message:\n"), pszTypeEnglish);
+	if (pszBufferEnglish!=NULL)
+	{
+		for (TCHAR* szText = pszBufferEnglish; ; ) {
+			int nLen;
 
-	for (TCHAR* szText = pszBufferEnglish; ; ) {
-		int nLen;
+			for (nLen = 0; szText[nLen] && szText[nLen] != _T('\n'); nLen++) { }
 
-		for (nLen = 0; szText[nLen] && szText[nLen] != _T('\n'); nLen++) { }
+			if (nLen) {
+				TCHAR szFormat[16];
+				_stprintf(szFormat, _T("    %%.%is\n"), nLen);
+				dprintf(szFormat, szText);
+			}
 
-		if (nLen) {
-			TCHAR szFormat[16];
-			_stprintf(szFormat, _T("    %%.%is\n"), nLen);
-			dprintf(szFormat, szText);
+			if (!szText[nLen]) {
+				break;
+			}
+
+			szText += nLen + 1;
 		}
-
-		if (!szText[nLen]) {
-			break;
-		}
-
-		szText += nLen + 1;
 	}
 
 	return 0;
@@ -255,7 +257,7 @@ static INT_PTR CALLBACK FBAPopupProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM 
 
 int FBAPopupAddText(int nFlags, TCHAR* pszFormat, ...)
 {
-	TCHAR szString[1024] = _T("");
+/*	TCHAR szString[1024] = _T("");
 	TCHAR* pszStringEnglish;
 
 	va_list vaEnglish;
@@ -312,7 +314,7 @@ int FBAPopupAddText(int nFlags, TCHAR* pszFormat, ...)
 		}
 	}
 
-	va_end(vaEnglish);
+	va_end(vaEnglish);*/
 
 	return 0;
 }

@@ -14,6 +14,14 @@
 #include "burner.h"
 
 #ifdef _MSC_VER
+#ifdef _DEBUG
+	#define MEMORY_LEAK_CHECK
+	#ifdef MEMORY_LEAK_CHECK
+		#include "MemLeakDetect.h"
+		static CMemLeakDetect memLeakDetect;
+	#endif
+#endif
+
 //  #include <winable.h>
  #ifdef _DEBUG
   #include <crtdbg.h>
