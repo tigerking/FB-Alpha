@@ -8,7 +8,10 @@
 #ifdef __GNUC__
  #define _WIN32_WINDOWS 0x410
  #define _WIN32_IE 0x0500
+#else
+	#include <richedit.h>
 #endif
+
 
 // For version macros
 #include "version.h"
