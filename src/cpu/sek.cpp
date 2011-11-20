@@ -531,13 +531,16 @@ extern "C" {
 #ifdef EMU_A68K
  UINT8* OP_ROM = NULL;
  UINT8* OP_RAM = NULL;
-
-#ifndef EMU_M68K
+ #ifndef EMU_M68K
  INT32 m68k_ICount = 0;
 #endif
 
+
  UINT32 mem_amask = 0xFFFFFF;			// 24-bit bus
+#else
+ INT32 m68k_ICount = 0;
 #endif
+
 
  UINT32 mame_debug = 0, cur_mrhard = 0, m68k_illegal_opcode = 0, illegal_op = 0, illegal_pc = 0, opcode_entry = 0;
 
