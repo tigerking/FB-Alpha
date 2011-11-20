@@ -545,6 +545,8 @@
     <ClCompile Include="src\cpu\nec\v25.cpp" />
     <ClCompile Include="src\burn\sound\saa1099.cpp" />
     <ClCompile Include="src\burn\devices\pandora.cpp" />
+    <ClCompile Include="src\burner\win32\MemLeakDetect.cpp" />
+    <ClCompile Include="src\cpu\m68k\m68kdasm.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\burn\devices\8255ppi.h" />
@@ -730,6 +732,7 @@
     <ClInclude Include="src\interface\win32\directx9_core.h" />
     <ClInclude Include="src\burn\sound\saa1099.h" />
     <ClInclude Include="src\burn\devices\pandora.h" />
+    <ClInclude Include="src\burner\win32\memleakdetect.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\burn\burn_sound_a.asm" />

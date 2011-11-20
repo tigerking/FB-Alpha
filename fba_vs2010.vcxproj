@@ -72,9 +72,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>E:\fbagit\FB-Alpha\src\burner\win32\resource;src\burn\drivers\taito;src\burn\drivers\misc_post90s;src\burn\devices;src\depend\generated;src\interface\scalers;src\interface\win32\resource;src\interface\win32;src\interface;src\burner\win32\resource;src\burner\win32;src\depend\libs\zlib;src\depend\libs\libpng;src\depend\libs;src\depend\kaillera\client;src\depend\kaillera;src\burn\sound;src\cpu;src\burner;src\burn;src\cpu\z80;src\cpu\sh2;src\cpu\s2650;src\cpu\nec;src\cpu\m6809;src\cpu\m6805;src\cpu\m6800;src\cpu\m6502;src\cpu\m68k;src\cpu\i8039;src\cpu\konami;src\cpu\hd6309;src\cpu\h6280;src\cpu\arm7;src\cpu\arm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\burner\win32\resource;src\burn\drivers\taito;src\burn\drivers\misc_post90s;src\burn\devices;src\depend\generated;src\interface\scalers;src\interface\win32\resource;src\interface\win32;src\interface;src\burner\win32;src\depend\libs\zlib;src\depend\libs\libpng;src\depend\libs;src\depend\kaillera\client;src\depend\kaillera;src\burn\sound;src\cpu;src\burner;src\burn;src\cpu\z80;src\cpu\sh2;src\cpu\s2650;src\cpu\nec;src\cpu\m6809;src\cpu\m6805;src\cpu\m6800;src\cpu\m6502;src\cpu\m68k;src\cpu\i8039;src\cpu\konami;src\cpu\hd6309;src\cpu\h6280;src\cpu\arm7;src\cpu\arm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
-      <PreprocessorDefinitions>BUILD_WIN32;FASTCALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BUILD_WIN32;FASTCALL;_DEBUG;FBA_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -167,6 +167,7 @@
     <ClCompile Include="src\burner\win32\mdi.cpp" />
     <ClCompile Include="src\burner\win32\media.cpp" />
     <ClCompile Include="src\burner\win32\memcard.cpp" />
+    <ClCompile Include="src\burner\win32\MemLeakDetect.cpp" />
     <ClCompile Include="src\burner\win32\menu.cpp" />
     <ClCompile Include="src\burner\win32\misc_win32.cpp" />
     <ClCompile Include="src\burner\win32\neocdlist.cpp" />
@@ -628,6 +629,7 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
+    <ClCompile Include="src\cpu\m68k\m68kdasm.c" />
     <ClCompile Include="src\cpu\nec\v25.cpp" />
     <ClCompile Include="src\depend\generated\m68kopac.c" />
     <ClCompile Include="src\depend\generated\m68kopdm.c" />
@@ -804,6 +806,7 @@
     <ClInclude Include="src\burner\win32\burner_win32.h" />
     <ClInclude Include="src\burner\win32\dwmapi_core.h" />
     <ClInclude Include="src\burner\win32\dynhuff.h" />
+    <ClInclude Include="src\burner\win32\memleakdetect.h" />
     <ClInclude Include="src\burner\win32\neocdlist.h" />
     <ClInclude Include="src\burner\win32\resource.h" />
     <ClInclude Include="src\burner\win32\resource_string.h" />
