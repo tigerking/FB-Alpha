@@ -291,7 +291,7 @@ static void Pallete_Init()
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8 *)BurnMalloc(0x210060);
+	Mem = (UINT8 *)BurnMalloc(0x210020 + (0x10 * sizeof(UINT32)));
 	if (Mem == NULL) {
 		return 1;
 	}

@@ -239,7 +239,7 @@ static void mrdo_gfx_decode()
 	static INT32 SpriXOffs[16] = { 3, 2, 1, 0, 11, 10, 9, 8, 19, 18, 17, 16, 27, 26, 25, 24 };
 	static INT32 SpriYOffs[16] = { 0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x2000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x2000);
 	if (!tmp) return;
 
 	memcpy (tmp, Gfx0, 0x2000);
@@ -254,15 +254,12 @@ static void mrdo_gfx_decode()
 
 	GfxDecode(0x080, 2, 16, 16, SpriPlane, SpriXOffs, SpriYOffs, 0x200, tmp, Gfx2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 }
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8*)malloc(0x10000 + 0x8000 + 0x8000 + 0x8000 + 0x80 + 0x500);
+	Mem = (UINT8*)BurnMalloc(0x10000 + 0x8000 + 0x8000 + 0x8000 + 0x80 + 0x500);
 	if (!Mem) return 1;
 
 	Rom  = Mem + 0x00000;
@@ -319,10 +316,7 @@ static INT32 DrvExit()
 	
 	SN76496Exit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	Mem = Rom = Gfx0 = Gfx1 = Gfx2 = Prom = NULL;
 	Palette = NULL;
@@ -473,8 +467,10 @@ static INT32 DrvFrame()
 		DrvDraw();
 	}
 	
-	SN76496Update(0, pBurnSoundOut, nBurnSoundLen);
-	SN76496Update(1, pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		SN76496Update(0, pBurnSoundOut, nBurnSoundLen);
+		SN76496Update(1, pBurnSoundOut, nBurnSoundLen);
+	}
 
 	return 0;
 }
