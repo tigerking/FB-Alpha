@@ -72,7 +72,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src\burn\drivers\taito;src\burn\drivers\misc_post90s;src\burn\devices;src\depend\generated;src\interface\scalers;src\interface\win32\resource;src\interface\win32;src\interface;src\burner\win32\resource;src\burner\win32;src\depend\libs\zlib;src\depend\libs\libpng;src\depend\libs;src\depend\kaillera\client;src\depend\kaillera;src\burn\sound;src\cpu;src\burner;src\burn;src\cpu\z80;src\cpu\sh2;src\cpu\s2650;src\cpu\nec;src\cpu\m6809;src\cpu\m6805;src\cpu\m6800;src\cpu\m6502;src\cpu\m68k;src\cpu\i8039;src\cpu\konami;src\cpu\hd6309;src\cpu\h6280;src\cpu\arm7;src\cpu\arm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>E:\fbagit\FB-Alpha\src\burner\win32\resource;src\burn\drivers\taito;src\burn\drivers\misc_post90s;src\burn\devices;src\depend\generated;src\interface\scalers;src\interface\win32\resource;src\interface\win32;src\interface;src\burner\win32\resource;src\burner\win32;src\depend\libs\zlib;src\depend\libs\libpng;src\depend\libs;src\depend\kaillera\client;src\depend\kaillera;src\burn\sound;src\cpu;src\burner;src\burn;src\cpu\z80;src\cpu\sh2;src\cpu\s2650;src\cpu\nec;src\cpu\m6809;src\cpu\m6805;src\cpu\m6800;src\cpu\m6502;src\cpu\m68k;src\cpu\i8039;src\cpu\konami;src\cpu\hd6309;src\cpu\h6280;src\cpu\arm7;src\cpu\arm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <PreprocessorDefinitions>BUILD_WIN32;FASTCALL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -170,6 +170,7 @@
     <ClCompile Include="src\burner\win32\menu.cpp" />
     <ClCompile Include="src\burner\win32\misc_win32.cpp" />
     <ClCompile Include="src\burner\win32\neocdlist.cpp" />
+    <ClCompile Include="src\burner\win32\neocdsel.cpp" />
     <ClCompile Include="src\burner\win32\numdial.cpp" />
     <ClCompile Include="src\burner\win32\numpluscommas.cpp" />
     <ClCompile Include="src\burner\win32\paletteviewer.cpp" />
@@ -776,6 +777,10 @@
     <ClCompile Include="src\interface\win32\aud_xaudio2.cpp" />
     <ClCompile Include="src\interface\win32\cdsound.cpp" />
     <ClCompile Include="src\interface\win32\cd_isowav.cpp" />
+    <ClCompile Include="src\interface\win32\ddraw_core.cpp" />
+    <ClCompile Include="src\interface\win32\dinput_core.cpp" />
+    <ClCompile Include="src\interface\win32\directx9_core.cpp" />
+    <ClCompile Include="src\interface\win32\dsound_core.cpp" />
     <ClCompile Include="src\interface\win32\inp_dinput.cpp" />
     <ClCompile Include="src\interface\win32\prf_performance_counter.cpp" />
     <ClCompile Include="src\interface\win32\vid_d3d.cpp" />
@@ -960,6 +965,10 @@
     <ClInclude Include="src\interface\vid_softfx.h" />
     <ClInclude Include="src\interface\vid_support.h" />
     <ClInclude Include="src\interface\win32\cdsound.h" />
+    <ClInclude Include="src\interface\win32\ddraw_core.h" />
+    <ClInclude Include="src\interface\win32\dinput_core.h" />
+    <ClInclude Include="src\interface\win32\directx9_core.h" />
+    <ClInclude Include="src\interface\win32\dsound_core.h" />
     <ClInclude Include="src\interface\win32\rgb_pattern.h" />
     <ClInclude Include="src\interface\win32\vid_directx_support.h" />
   </ItemGroup>
@@ -980,7 +989,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="src\depend\dx7\lib\x86\ddraw.lib" />
     <Library Include="src\depend\vs2010\lib\x86\ddraw.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

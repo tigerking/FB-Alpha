@@ -533,6 +533,11 @@
     <ClCompile Include="src\depend\generated\m68kopdm.c" />
     <ClCompile Include="src\depend\generated\m68kopnz.c" />
     <ClCompile Include="src\depend\generated\m68kops.c" />
+    <ClCompile Include="src\burner\win32\neocdsel.cpp" />
+    <ClCompile Include="src\interface\win32\ddraw_core.cpp" />
+    <ClCompile Include="src\interface\win32\dinput_core.cpp" />
+    <ClCompile Include="src\interface\win32\directx9_core.cpp" />
+    <ClCompile Include="src\interface\win32\dsound_core.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\burn\devices\8255ppi.h" />
@@ -712,6 +717,10 @@
     <ClInclude Include="src\depend\vs2010\include\d3d.h" />
     <ClInclude Include="src\depend\vs2010\include\d3dcaps.h" />
     <ClInclude Include="src\depend\vs2010\include\d3dtypes.h" />
+    <ClInclude Include="src\interface\win32\dsound_core.h" />
+    <ClInclude Include="src\interface\win32\ddraw_core.h" />
+    <ClInclude Include="src\interface\win32\dinput_core.h" />
+    <ClInclude Include="src\interface\win32\directx9_core.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\burn\burn_sound_a.asm" />
