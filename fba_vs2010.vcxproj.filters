@@ -550,7 +550,6 @@
     <ClCompile Include="src\burn\drivers\snes\spc700.cpp" />
     <ClCompile Include="src\burn\drivers\snes\65816.cpp" />
     <ClCompile Include="src\burn\drivers\snes\d_snes.cpp" />
-    <ClCompile Include="src\burn\drivers\snes\dsp.cpp" />
     <ClCompile Include="src\burn\drivers\snes\io.cpp" />
     <ClCompile Include="src\burn\drivers\snes\mem.cpp" />
     <ClCompile Include="src\burn\drivers\snes\ppu.cpp" />
