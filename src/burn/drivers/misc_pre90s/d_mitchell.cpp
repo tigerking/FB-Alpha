@@ -38,7 +38,7 @@ static UINT8 *DrvSpriteRam        = NULL;
 static UINT8 *DrvChars            = NULL;
 static UINT8 *DrvSprites          = NULL;
 static UINT8 *DrvTempRom          = NULL;
-static UINT32  *DrvPalette          = NULL;
+static UINT32 *DrvPalette          = NULL;
 static INT32 nCyclesDone[2], nCyclesTotal[2];
 static INT32 nCyclesSegment;
 
@@ -760,7 +760,7 @@ static struct BurnRomInfo SpangRomDesc[] = {
 	
 	{ "spe_01.rom",    0x20000, 0x2d19c133, BRF_SND },	     //  9	Samples
 	
-	{ "eeprom-spang.bin", 0x80, 0xdeae1291, BRF_OPT },
+	{ "eeprom-spang.bin", 0x80, 0xdeae1291, BRF_PRG },
 };
 
 STD_ROM_PICK(Spang)
@@ -781,7 +781,7 @@ static struct BurnRomInfo SpangjRomDesc[] = {
 	
 	{ "01.d1",         0x20000, 0xb96ea126, BRF_SND },	     //  9	Samples
 	
-	{ "eeprom-spangj.bin",0x80, 0x237c00eb, BRF_OPT },
+	{ "eeprom-spangj.bin",0x80, 0x237c00eb, BRF_PRG },
 };
 
 STD_ROM_PICK(Spangj)
@@ -802,7 +802,7 @@ static struct BurnRomInfo SbbrosRomDesc[] = {
 	
 	{ "01.d1",         0x20000, 0xb96ea126, BRF_SND },	     //  9	Samples
 	
-	{ "eeprom-sbbros.bin",0x80, 0xed69d3cd, BRF_OPT },
+	{ "eeprom-sbbros.bin",0x80, 0xed69d3cd, BRF_PRG },
 };
 
 STD_ROM_PICK(Sbbros)
@@ -1571,39 +1571,6 @@ static INT32 MstworldSpritePlaneOffsets[4] = { 4, 0, 0x100004, 0x100000 };
 static INT32 MstworldSpriteXOffsets[16]    = { 0, 1, 2, 3, 8, 9, 10, 11, 256, 257, 258, 259, 264, 265, 266, 267 };
 static INT32 MstworldSpriteYOffsets[16]    = { 0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240 };
 
-static const UINT8 spang_default_eeprom[128] = {
-	0x00, 0x02, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x01,
-	0xCD, 0x81, 0x0E, 0x10, 0xFD, 0x78, 0x88, 0x81, 0x4D, 0x2E, 0x53, 0xC9, 0xC9, 0xC9, 0xC9, 0xC9,
-	0x20, 0x4D, 0x41, 0x44, 0x45, 0x20, 0x49, 0x4E, 0x20, 0x4A, 0x41, 0x50, 0x41, 0x4E, 0x2E, 0x20,
-	0x20, 0x20, 0x53, 0x55, 0x50, 0x45, 0x52, 0x20, 0x50, 0x41, 0x4E, 0x47, 0x20, 0x45, 0x31, 0x20,
-	0x20, 0x20, 0x43, 0x41, 0x50, 0x43, 0x4F, 0x4D, 0x20, 0x31, 0x39, 0x39, 0x30, 0x2E, 0x20, 0x20,
-	0x20, 0x50, 0x72, 0x6F, 0x67, 0x72, 0x61, 0x6D, 0x65, 0x64, 0x20, 0x42, 0x79, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x4D, 0x61, 0x73, 0x61, 0x74, 0x73, 0x75, 0x67, 0x75, 0x20, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x20, 0x53, 0x68, 0x69, 0x6E, 0x6F, 0x68, 0x61, 0x72, 0x61, 0x2E, 0x20, 0x20
-};
-
-static const UINT8 spangj_default_eeprom[128] = {
-	0x00, 0x02, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x04, 0x01,
-	0xCD, 0x81, 0x0E, 0x10, 0xFD, 0x30, 0x88, 0x81, 0x4D, 0x2E, 0x53, 0xC9, 0xC9, 0xC9, 0xC9, 0xC9,
-	0x20, 0x4D, 0x41, 0x44, 0x45, 0x20, 0x49, 0x4E, 0x20, 0x4A, 0x41, 0x50, 0x41, 0x4E, 0x2E, 0x20,
-	0x20, 0x20, 0x53, 0x55, 0x50, 0x45, 0x52, 0x20, 0x50, 0x41, 0x4E, 0x47, 0x20, 0x4A, 0x32, 0x20,
-	0x20, 0x20, 0x43, 0x41, 0x50, 0x43, 0x4F, 0x4D, 0x20, 0x31, 0x39, 0x39, 0x30, 0x2E, 0x20, 0x20,
-	0x20, 0x50, 0x72, 0x6F, 0x67, 0x72, 0x61, 0x6D, 0x65, 0x64, 0x20, 0x42, 0x79, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x4D, 0x61, 0x73, 0x61, 0x74, 0x73, 0x75, 0x67, 0x75, 0x20, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x20, 0x53, 0x68, 0x69, 0x6E, 0x6F, 0x68, 0x61, 0x72, 0x61, 0x2E, 0x20, 0x20
-};
-
-static const UINT8 sbbros_default_eeprom[128] = {
-	0x00, 0x02, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x01,
-	0xCD, 0x81, 0x0E, 0x10, 0xFD, 0x44, 0x88, 0x81, 0x4D, 0x2E, 0x53, 0xC9, 0xC9, 0xC9, 0xC9, 0xC9,
-	0x20, 0x4D, 0x41, 0x44, 0x45, 0x20, 0x49, 0x4E, 0x20, 0x4A, 0x41, 0x50, 0x41, 0x4E, 0x2E, 0x20,
-	0x20, 0x20, 0x53, 0x55, 0x50, 0x45, 0x52, 0x20, 0x50, 0x41, 0x4E, 0x47, 0x20, 0x55, 0x31, 0x20,
-	0x20, 0x20, 0x43, 0x41, 0x50, 0x43, 0x4F, 0x4D, 0x20, 0x31, 0x39, 0x39, 0x30, 0x2E, 0x20, 0x20,
-	0x20, 0x50, 0x72, 0x6F, 0x67, 0x72, 0x61, 0x6D, 0x65, 0x64, 0x20, 0x42, 0x79, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x4D, 0x61, 0x73, 0x61, 0x74, 0x73, 0x75, 0x67, 0x75, 0x20, 0x20, 0x20, 0x20,
-	0x20, 0x20, 0x20, 0x20, 0x53, 0x68, 0x69, 0x6E, 0x6F, 0x68, 0x61, 0x72, 0x61, 0x2E, 0x20, 0x20
-};
-
 static void MitchellMachineInit()
 {
 	ZetInit(1);
@@ -1681,11 +1648,11 @@ static INT32 MgakuenInit()
 	Mem = NULL;
 	MgakuenMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MgakuenMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x200000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x200000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x000000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x010000,  1, 1); if (nRet != 0) return 1;
@@ -1702,10 +1669,7 @@ static INT32 MgakuenInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x020000,  7, 1); if (nRet != 0) return 1;
 	GfxDecode(0x00800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x000000, 8, 1); if (nRet != 0) return 1;
 	
@@ -1760,11 +1724,11 @@ static INT32 Mgakuen2Init()
 	Mem = NULL;
 	MahjongMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MahjongMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x200000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x200000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x000000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x010000,  1, 1); if (nRet != 0) return 1;
@@ -1782,10 +1746,7 @@ static INT32 Mgakuen2Init()
 	nRet = BurnLoadRom(DrvTempRom + 0x020000,  8, 1); if (nRet != 0) return 1;
 	GfxDecode(0x00800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x000000, 9, 1); if (nRet != 0) return 1;
 	
@@ -1809,11 +1770,11 @@ static INT32 PkladiesInit()
 	Mem = NULL;
 	MahjongMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MahjongMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x200000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x200000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x000000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x010000,  1, 1); if (nRet != 0) return 1;
@@ -1830,10 +1791,7 @@ static INT32 PkladiesInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x020000,  7, 1); if (nRet != 0) return 1;
 	GfxDecode(0x00800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x000000, 8, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvSoundRom + 0x020000, 9, 1); if (nRet != 0) return 1;
@@ -1856,11 +1814,11 @@ static INT32 DokabenInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -1878,10 +1836,7 @@ static INT32 DokabenInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000,  8, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000,  9, 1); if (nRet != 0) return 1;
 	
@@ -1901,11 +1856,11 @@ static INT32 PangInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -1922,10 +1877,7 @@ static INT32 PangInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000,  7, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000,  8, 1); if (nRet != 0) return 1;
 	
@@ -1945,11 +1897,11 @@ static INT32 PangbInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 	
 	nRet = BurnLoadRom(DrvZ80Code + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Code + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -1969,10 +1921,7 @@ static INT32 PangbInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000,  8, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000,  9, 1); if (nRet != 0) return 1;
 	
@@ -1990,11 +1939,11 @@ static INT32 PangboldInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 	
 	nRet = BurnLoadRom(DrvZ80Code + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Code + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -2016,10 +1965,7 @@ static INT32 PangboldInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x30000, 10, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000, 11, 1); if (nRet != 0) return 1;
 	
@@ -2037,11 +1983,11 @@ static INT32 CworldInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -2063,10 +2009,7 @@ static INT32 CworldInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000, 12, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000, 13, 1); if (nRet != 0) return 1;
 	
@@ -2086,11 +2029,11 @@ static INT32 HatenaInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -2112,10 +2055,7 @@ static INT32 HatenaInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000, 12, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000, 13, 1); if (nRet != 0) return 1;
 	
@@ -2135,11 +2075,11 @@ static INT32 SpangInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -2157,18 +2097,17 @@ static INT32 SpangInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000,  8, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
-	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000,  9, 1); if (nRet != 0) return 1;
+	
+	nRet = BurnLoadRom(DrvTempRom + 0x00000, 10, 1); if (nRet != 0) return 1;
 	
 	spang_decode();
 	
 	MitchellMachineInit();
 	
-	if (!EEPROMAvailable()) EEPROMFill(spang_default_eeprom, 0, 128);
+	if (!EEPROMAvailable()) EEPROMFill(DrvTempRom, 0, 128);
+	
+	BurnFree(DrvTempRom);
 	
 	DrvNVRamSize = 0x0080;
 	DrvNVRamAddress = 0x0000;
@@ -2185,11 +2124,11 @@ static INT32 SpangjInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -2207,18 +2146,17 @@ static INT32 SpangjInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000,  8, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
-	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000,  9, 1); if (nRet != 0) return 1;
+	
+	nRet = BurnLoadRom(DrvTempRom + 0x00000, 10, 1); if (nRet != 0) return 1;
 	
 	spangj_decode();
 	
 	MitchellMachineInit();
 	
-	if (!EEPROMAvailable()) EEPROMFill(spangj_default_eeprom, 0, 128);
+	if (!EEPROMAvailable()) EEPROMFill(DrvTempRom, 0, 128);
+
+	BurnFree(DrvTempRom);
 	
 	DrvNVRamSize = 0x0080;
 	DrvNVRamAddress = 0x0000;
@@ -2235,11 +2173,11 @@ static INT32 SbbrosInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -2257,18 +2195,17 @@ static INT32 SbbrosInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000,  8, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
-	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000,  9, 1); if (nRet != 0) return 1;
+	
+	nRet = BurnLoadRom(DrvTempRom + 0x00000, 10, 1); if (nRet != 0) return 1;
 	
 	sbbros_decode();
 	
 	MitchellMachineInit();
 	
-	if (!EEPROMAvailable()) EEPROMFill(sbbros_default_eeprom, 0, 128);
+	if (!EEPROMAvailable()) EEPROMFill(DrvTempRom, 0, 128);
+
+	BurnFree(DrvTempRom);
 	
 	DrvNVRamSize = 0x0080;
 	DrvNVRamAddress = 0x0000;
@@ -2285,11 +2222,11 @@ static INT32 MstworldInit()
 	Mem = NULL;
 	MstworldMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MstworldMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	
@@ -2350,10 +2287,7 @@ static INT32 MstworldInit()
 		}
 	}
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	ZetInit(2);
 	ZetOpen(0);
@@ -2407,11 +2341,11 @@ static INT32 MarukinInit()
 	Mem = NULL;
 	MahjongMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MahjongMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x200000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x200000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x000000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x010000,  1, 1); if (nRet != 0) return 1;
@@ -2428,10 +2362,7 @@ static INT32 MarukinInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x020000,  7, 1); if (nRet != 0) return 1;
 	GfxDecode(0x00800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x000000,  8, 1); if (nRet != 0) return 1;
 	
@@ -2453,11 +2384,11 @@ static INT32 Qtono1Init()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -2479,10 +2410,7 @@ static INT32 Qtono1Init()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000, 12, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000, 13, 1); if (nRet != 0) return 1;
 	
@@ -2502,11 +2430,11 @@ static INT32 QsangokuInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -2528,10 +2456,7 @@ static INT32 QsangokuInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000, 12, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000, 13, 1); if (nRet != 0) return 1;
 	
@@ -2551,11 +2476,11 @@ static INT32 BlockInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -2573,10 +2498,7 @@ static INT32 BlockInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000,  8, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000,  9, 1); if (nRet != 0) return 1;
 	
@@ -2601,11 +2523,11 @@ static INT32 BlockjoyInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Rom  + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -2623,10 +2545,7 @@ static INT32 BlockjoyInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000,  8, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000, 9, 1); if (nRet != 0) return 1;
 	
@@ -2646,11 +2565,11 @@ static INT32 BlockblInit()
 	Mem = NULL;
 	PangMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	PangMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x100000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x100000);
 	
 	nRet = BurnLoadRom(DrvZ80Code + 0x00000,  0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvZ80Code + 0x10000,  1, 1); if (nRet != 0) return 1;
@@ -2674,10 +2593,7 @@ static INT32 BlockblInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x30000, 10, 1); if (nRet != 0) return 1;
 	GfxDecode(0x0800, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, DrvTempRom, DrvSprites);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	nRet = BurnLoadRom(DrvSoundRom + 0x00000, 11, 1); if (nRet != 0) return 1;
 	
@@ -2702,10 +2618,7 @@ static INT32 DrvExit()
 	
 	GenericTilesExit();
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 	
 	DrvRomBank = 0;
 	DrvPaletteRamBank = 0;

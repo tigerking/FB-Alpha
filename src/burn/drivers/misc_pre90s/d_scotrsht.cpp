@@ -323,7 +323,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
 			  0x200, 0x220, 0x240, 0x260, 0x280, 0x2a0, 0x2c0, 0x2e0 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -336,10 +336,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x0200, 4, 16, 16, Plane, XOffs, YOffs, 0x400, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -349,7 +346,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -399,6 +396,7 @@ static INT32 DrvInit()
 	ZetClose();
 
 	BurnYM2203Init(1, 3072000, NULL, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(2);
 	BurnTimerAttachZet(3072000);
 
 	DrvDoReset();
@@ -417,10 +415,7 @@ static INT32 DrvExit()
 
 	BurnYM2203Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -559,12 +554,11 @@ static INT32 DrvFrame()
 		// Clear opposites
 		if ((DrvInputs[1] & 0x03) == 0) DrvInputs[1] |= 0x03;
 		if ((DrvInputs[1] & 0x0c) == 0) DrvInputs[1] |= 0x0c;
-		if ((DrvInputs[2] & 0x03) == 0) DrvInputs[1] |= 0x03;
-		if ((DrvInputs[2] & 0x0c) == 0) DrvInputs[1] |= 0x0c;
+		if ((DrvInputs[2] & 0x03) == 0) DrvInputs[2] |= 0x03;
+		if ((DrvInputs[2] & 0x0c) == 0) DrvInputs[2] |= 0x0c;
 	}
 
 	INT32 nInterleave = 100;
-	INT32 nSoundBufferPos = 0;
 	INT32 nCyclesTotal[2] =  { 3072000 / 60, 3072000 / 60 };
 
 	M6809Open(0);
@@ -575,13 +569,6 @@ static INT32 DrvFrame()
 		M6809Run(nCyclesTotal[0] / nInterleave);
 
 		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
-
-		if (pBurnSoundOut) {
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			nSoundBufferPos += nSegmentLength;
-		}
 	}
 
 	BurnTimerEndFrame(nCyclesTotal[1]);
@@ -589,11 +576,7 @@ static INT32 DrvFrame()
 	if (*irq_enable) M6809SetIRQ(0, M6809_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
-		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-		}
+		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 	}
 
 	ZetClose();

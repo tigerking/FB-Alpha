@@ -301,7 +301,7 @@ static INT32 bankp_gfx_decode()
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8*)BurnMalloc(0x10000 + 0x10000 + 0x20000 + 0x300 + 0x800);
+	Mem = (UINT8*)BurnMalloc(0x10000 + 0x10000 + 0x20000 + 0x200 + (0x100 * sizeof(INT32)));
 	if (Mem == NULL) {
 		return 1;
 	}

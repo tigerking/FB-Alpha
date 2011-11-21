@@ -26,8 +26,8 @@ static UINT8 *DrvMcuRAM;
 
 static UINT16 *DrvTileOfst;
 static UINT8  *DrvColTable;
-static UINT32   *Palette;
-static UINT32   *DrvPalette;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
 static UINT8   DrvRecalc;
 
 static UINT8 *coinlockout;
@@ -387,7 +387,7 @@ static INT32 MemIndex()
 	Palette			= (UINT32*)Next; Next += 0x0a00 * sizeof(UINT32);
 	DrvPalette		= (UINT32*)Next; Next += 0x0a00 * sizeof(UINT32);
 
-	DrvTileOfst		= (UINT16*)Next; Next += 0x0400 * sizeof(INT16);
+	DrvTileOfst		= (UINT16*)Next; Next += 0x0400 * sizeof(UINT16);
 
 	MemEnd			= Next;
 
@@ -404,7 +404,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs[16]  = { 0x000, 0x008, 0x010, 0x018, 0x020, 0x028, 0x030, 0x038,
 			   0x100, 0x108, 0x110, 0x118, 0x120, 0x128, 0x130, 0x138 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x8000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x8000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -421,11 +421,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x0200, 4,  8,  8, Plane1, XOffs1, YOffs, 0x080, tmp, DrvGfxROM2);
 
-
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -496,7 +492,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -606,10 +602,7 @@ static INT32 DrvExit()
 
 	SN76496Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -823,8 +816,10 @@ static INT32 DrvFrame()
 		}
 	}
 	
-	SN76496Update(0, pBurnSoundOut, nBurnSoundLen);
-	SN76496Update(1, pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		SN76496Update(0, pBurnSoundOut, nBurnSoundLen);
+		SN76496Update(1, pBurnSoundOut, nBurnSoundLen);
+	}
 
 	if (pBurnDraw) {
 		DrvDraw();

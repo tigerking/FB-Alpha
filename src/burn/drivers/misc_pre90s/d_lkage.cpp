@@ -24,9 +24,9 @@ static UINT8 *DrvSprRAM;
 static UINT8 *DrvUnkRAM;
 static UINT8 *lkage_scroll;
 static UINT8 *DrvVidReg;
-static UINT32  *DrvPalette;
-static UINT32  *Palette;
-static UINT8  DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT32 *Palette;
+static UINT8 DrvRecalc;
 
 static UINT8 DrvJoy1[8];
 static UINT8 DrvJoy2[8];
@@ -43,6 +43,8 @@ static INT32 DrvNmiEnable;
 static INT32 pending_nmi;
 
 static INT32 use_mcu;
+static INT32 Lkageb;
+static INT32 FakeMCUVal;
 
 static struct BurnInputInfo LkageInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	DrvJoy1 + 4,	"p1 coin"	},
@@ -224,9 +226,14 @@ void __fastcall lkage_main_write(UINT16 address, UINT8 data)
 		case 0xf0e1:
 		return;
 
-		case 0xf062:
-			standard_taito_mcu_write(data);
-		return;
+		case 0xf062: {
+			if (Lkageb) {
+				FakeMCUVal = data;
+			} else {
+				standard_taito_mcu_write(data);
+			}
+			return;
+		}
 
 		case 0xf0a0:
 		case 0xf0a1:
@@ -256,8 +263,20 @@ UINT8 __fastcall lkage_main_read(UINT16 address)
 		case 0xf003:
 			return DrvVidReg[address & 3];
 
-		case 0xf062:
-			return standard_taito_mcu_read();
+		case 0xf062: {
+			if (Lkageb) {
+				switch (FakeMCUVal) {
+					case 0x01: return FakeMCUVal - 0x01;
+					case 0x90: return FakeMCUVal + 0x43;
+					case 0xa6: return FakeMCUVal + 0x27;
+					case 0x34: return FakeMCUVal + 0x7f;
+					case 0x48: return FakeMCUVal + 0xb7;
+					default: return FakeMCUVal;
+				}
+			} else {
+				return standard_taito_mcu_read();
+			}
+		}
 
 		case 0xf080:
 		case 0xf081:
@@ -271,12 +290,15 @@ UINT8 __fastcall lkage_main_read(UINT16 address)
 		case 0xf085:
 			return DrvInps[address - 0xf083];
 
-		case 0xf087:
-		{
-			INT32 res = 0;
-			if (!main_sent) res |= 0x01;
-			if (mcu_sent) res |= 0x02;
-			return res;
+		case 0xf087: {
+			if (Lkageb) {
+				return 0x03;
+			} else {
+				INT32 res = 0;
+				if (!main_sent) res |= 0x01;
+				if (mcu_sent) res |= 0x02;
+				return res;
+			}
 		}
 
 		case 0xf0a0:
@@ -454,7 +476,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,
 			128+0*8, 128+1*8, 128+2*8, 128+3*8, 128+4*8, 128+5*8, 128+6*8, 128+7*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -464,10 +486,7 @@ static INT32 DrvGfxDecode()
 	GfxDecode(0x800, 4,  8,  8, Plane, XOffs, YOffs, 0x040, tmp, DrvGfxROM0);
 	GfxDecode(0x200, 4, 16, 16, Plane, XOffs, YOffs, 0x100, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -477,9 +496,11 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
+	
+	use_mcu = ~BurnDrvGetFlags() & BDF_BOOTLEG;
 
 	{
 		if (BurnLoadRom(DrvZ80ROM0 + 0x0000, 0, 1)) return 1;
@@ -494,7 +515,9 @@ static INT32 DrvInit()
 		if (BurnLoadRom(DrvGfxROM0 + 0x8000, 6, 1)) return 1;
 		if (BurnLoadRom(DrvGfxROM0 + 0xc000, 7, 1)) return 1;
 
-		if (BurnLoadRom(DrvMcuROM  + 0x0000, 9, 1)) return 1;
+		if (use_mcu) {
+			if (BurnLoadRom(DrvMcuROM  + 0x0000, 9, 1)) return 1;
+		}
 
 		DrvGfxDecode();
 	}
@@ -535,9 +558,9 @@ static INT32 DrvInit()
 	ZetClose();
 
 	m67805_taito_init(DrvMcuROM, DrvMcuRAM, &standard_m68705_interface);
-	use_mcu = ~BurnDrvGetFlags() & BDF_BOOTLEG;
-
+	
 	BurnYM2203Init(2, 4000000, &DrvYM2203IRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
+	BurnYM2203SetVolumeShift(1);
 	BurnTimerAttachZet(6000000);
 
 	DrvDoReset();
@@ -556,10 +579,10 @@ static INT32 DrvExit()
 
 	BurnYM2203Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
+	
+	Lkageb = 0;
+	FakeMCUVal = 0;
 
 	return 0;
 }
@@ -759,7 +782,6 @@ static INT32 DrvFrame()
 	}
 
 	INT32 nInterleave = 100;
-	INT32 nSoundBufferPos = 0;
 	INT32 nCyclesTotal[3] =  { 6000000 / 60, 6000000 / 60, 4000000 / 60 };
 	INT32 nCyclesDone[3] = { 0, 0, 0 };
 
@@ -787,32 +809,12 @@ static INT32 DrvFrame()
 			nCyclesDone[2] += m6805Run(nCyclesSegment);
 			m6805Close();
 		}
-
-		// Render Sound Segment
-		if (pBurnSoundOut) {
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			ZetOpen(1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-			nSoundBufferPos += nSegmentLength;
-		}
 	}
 	
 	ZetOpen(1);
 	BurnTimerEndFrame(nCyclesTotal[1]);
+	BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 	ZetClose();
-	
-	// Make sure the buffer is entirely filled.
-	if (pBurnSoundOut) {
-		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			ZetOpen(1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			ZetClose();
-		}
-	}
 
 	if (pBurnDraw) {
 		DrvDraw();
@@ -987,13 +989,20 @@ static struct BurnRomInfo lkagebRomDesc[] = {
 STD_ROM_PICK(lkageb)
 STD_ROM_FN(lkageb)
 
+static INT32 LkagebInit()
+{
+	Lkageb = 1;
+	
+	return DrvInit();
+}
+
 struct BurnDriver BurnDrvLkageb = {
 	"lkageb", "lkage", NULL, NULL, "1984",
 	"The Legend of Kage (bootleg set 1)\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
 	NULL, lkagebRomInfo, lkagebRomName, NULL, NULL, LkageInputInfo, LkageDIPInfo,
-	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
+	LkagebInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	240, 224, 4, 3
 };
 
@@ -1023,7 +1032,7 @@ struct BurnDriver BurnDrvLkageb2 = {
 	"lkageb2", "lkage", NULL, NULL, "1984",
 	"The Legend of Kage (bootleg set 2)\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
 	NULL, lkageb2RomInfo, lkageb2RomName, NULL, NULL, LkageInputInfo, LkageDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	240, 224, 4, 3
@@ -1055,7 +1064,7 @@ struct BurnDriver BurnDrvLkageb3 = {
 	"lkageb3", "lkage", NULL, NULL, "1984",
 	"The Legend of Kage (bootleg set 3)\0", NULL, "bootleg", "hardware",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
 	NULL, lkageb3RomInfo, lkageb3RomName, NULL, NULL, LkageInputInfo, LkageDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x400,
 	240, 224, 4, 3

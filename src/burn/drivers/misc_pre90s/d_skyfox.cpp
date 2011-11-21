@@ -200,7 +200,7 @@ static INT32 MemIndex()
 
 static void DrvGfxDecode()
 {
-	UINT8 *tmp = (UINT8*)malloc(0x60000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x60000);
 
 	for (INT32 i = 0; i < 0x60000; i++) {
 		tmp[i] = DrvGfxROM0[(i&~0x3ff) | (i&7) | (((i>>3)&7)<<5) | (((i>>6)&3)<<3) | (i&0x300)];
@@ -208,10 +208,7 @@ static void DrvGfxDecode()
 
 	memcpy (DrvGfxROM0, tmp, 0x60000);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 }
 
 static void DrvPaletteInit()
@@ -279,7 +276,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -349,10 +346,7 @@ static INT32 DrvExit()
 	GenericTilesExit();
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -519,12 +513,14 @@ static INT32 DrvFrame()
 		nCycleSegment = nCyclesTotal[1] / nInterleave;
 
 		ZetOpen(1);
-		nCyclesDone[1] += ZetRun(nCycleSegment);
+		//nCyclesDone[1] += ZetRun(nCycleSegment);
+		BurnTimerUpdate(i * nCycleSegment);
 		ZetClose();
 	}
 
 	ZetOpen(1);
-	BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+	BurnTimerEndFrame(nCyclesTotal[1]);
+	if (pBurnSoundOut) BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
 	ZetClose();
 
 	if (pBurnDraw) {

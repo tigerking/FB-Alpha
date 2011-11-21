@@ -14,8 +14,8 @@ static UINT8 *AllMem;
 static UINT8 *MemEnd;
 static UINT8 *RamStart;
 static UINT8 *RamEnd;
-static UINT32  *TempPalette;
-static UINT32  *DrvPalette;
+static UINT32 *TempPalette;
+static UINT32 *DrvPalette;
 static UINT8 DrvRecalcPalette;
 
 static UINT8 DrvInputPort0[8];
@@ -278,7 +278,7 @@ static INT32 MarinebLoadRoms()
 		if (BurnLoadRom(DrvZ80ROM + (i * 0x1000), i, 1)) return 1;			
 	}			
 
-	UINT8 *tmp = (UINT8*)malloc(0x4000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x4000);
 	if (tmp == NULL) return 1;
 		
 	// Chars
@@ -296,10 +296,8 @@ static INT32 MarinebLoadRoms()
 		
 	// Big Sprites
 	GfxDecode(0x40, 2, 32, 32, MarinebBigSpriteCharPlane, MarinebBigSpriteXOffs, MarinebBigSpriteYOffs, 0x400, tmp, DrvGfxROM2);				
-	if (tmp) {
-		free(tmp);
-		tmp = NULL;
-	}
+
+	BurnFree(tmp);
 		
 	// ColorRoms
 	if (BurnLoadRom(DrvColPROM, 8, 1)) return 1;
@@ -317,7 +315,7 @@ static INT32 SpringerLoadRoms()
 		if (BurnLoadRom(DrvZ80ROM + (i * 0x1000), i, 1)) return 1;			
 	}			
 
-	UINT8 *tmp = (UINT8*)malloc(0x4000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x4000);
 	if (tmp == NULL) return 1;
 		
 	// Chars
@@ -335,10 +333,8 @@ static INT32 SpringerLoadRoms()
 	GfxDecode(0x40, 2, 16, 16, MarinebSmallSpriteCharPlane, MarinebSmallSpriteXOffs, MarinebSmallSpriteYOffs, 0x100, tmp, DrvGfxROM1);		
 	// Big Sprites
 	GfxDecode(0x40, 2, 32, 32, MarinebBigSpriteCharPlane, MarinebBigSpriteXOffs, MarinebBigSpriteYOffs, 0x400, tmp, DrvGfxROM2);				
-	if (tmp) {
-		free(tmp);
-		tmp = NULL;
-	}
+
+	BurnFree(tmp);
 		
 	// ColorRoms
 	if (BurnLoadRom(DrvColPROM, 9, 1)) return 1;
@@ -352,7 +348,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 	
@@ -411,10 +407,7 @@ static INT32 DrvExit()
 	ZetExit();	
 	AY8910Exit(0);
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 	
 	CleanAndInitStuff();
 	
@@ -728,19 +721,13 @@ static INT32 DrvFrame()
 		INT32 nSample;
 		AY8910Update(0, &pAY8910Buffer[0], nBurnSoundLen);
 		for (INT32 n = 0; n < nBurnSoundLen; n++) {
-			nSample  = pAY8910Buffer[0][n];
-			nSample += pAY8910Buffer[1][n];
-			nSample += pAY8910Buffer[2][n];
+			nSample  = pAY8910Buffer[0][n] >> 2;
+			nSample += pAY8910Buffer[1][n] >> 2;
+			nSample += pAY8910Buffer[2][n] >> 2;
 
 			nSample /= 4;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
+			nSample = BURN_SND_CLIP(nSample);
 
 			pBurnSoundOut[(n << 1) + 0] = nSample;
 			pBurnSoundOut[(n << 1) + 1] = nSample;

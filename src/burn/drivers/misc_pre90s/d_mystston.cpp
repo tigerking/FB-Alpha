@@ -250,7 +250,7 @@ static INT32 mystston_gfx_convert()
 	static INT32 XOffsets[16]      = { 128, 129, 130, 131, 132, 133, 134, 135, 0, 1, 2, 3, 4, 5, 6, 7 };
 	static INT32 YOffsets[16]      = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -264,23 +264,20 @@ static INT32 mystston_gfx_convert()
 
 	GfxDecode(0x200, 3, 16, 16, PlaneOffsets, XOffsets + 0, YOffsets, 0x100, tmp, Gfx1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8*)malloc(0x10000 + 0x20000 + 0x20000 + 0x20000 + 0x20 + 0x38 * sizeof(INT32));
+	Mem = (UINT8*)BurnMalloc(0x10000 + 0x20000 + 0x20000 + 0x20000 + 0x20 + (0x38 * sizeof(INT32)));
 	if (Mem == NULL) {
 		return 1;
 	}
 	memset (Mem, 0, 0x70000 + 0x20);
 
-	pFMBuffer = (INT16 *)malloc (nBurnSoundLen * 6 * sizeof(INT16));
+	pFMBuffer = (INT16 *)BurnMalloc (nBurnSoundLen * 6 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -337,14 +334,8 @@ static INT32 DrvExit()
 	AY8910Exit(0);
 	AY8910Exit(1);
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
-	if (pFMBuffer) {
-		free (pFMBuffer);
-		pFMBuffer = NULL;
-	}
+	BurnFree (Mem);
+	BurnFree (pFMBuffer);
 
 	pFMBuffer = NULL;
 	Palette = NULL;
@@ -536,13 +527,7 @@ static INT32 DrvFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;

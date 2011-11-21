@@ -268,7 +268,7 @@ static INT32 DrvDoReset()
 
 static INT32 convert_gfx()
 {
-	UINT8 *tmp = (UINT8*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -291,10 +291,7 @@ static INT32 convert_gfx()
 		Gfx1[i + 1] = (tmp[i>>1] >> 0) & 0x0f;
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -302,12 +299,12 @@ static INT32 convert_gfx()
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8*)malloc(0x70000 + 128);
+	Mem = (UINT8*)BurnMalloc(0x70000 + (128 * sizeof(INT32)));
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (INT16*)malloc(nBurnSoundLen * 9 * sizeof(INT16));
+	pFMBuffer = (INT16*)BurnMalloc(nBurnSoundLen * 9 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -380,15 +377,12 @@ static INT32 DrvInit()
 static INT32 DrvExit()
 {
 	ZetExit();
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
-
-	if (pFMBuffer) {
-		free (pFMBuffer);
-		pFMBuffer = NULL;
-	}
+	AY8910Exit(0);
+	AY8910Exit(1);
+	AY8910Exit(2);
+	
+	BurnFree (Mem);
+	BurnFree (pFMBuffer);
 
 	Rom0 = Rom1 = Ram = Gfx0 = Gfx1 = NULL;
 
@@ -502,25 +496,19 @@ static INT32 DrvFrame()
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
 			for (INT32 n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n];
-				nSample += pAY8910Buffer[1][n];
-				nSample += pAY8910Buffer[2][n];
-				nSample += pAY8910Buffer[3][n];
-				nSample += pAY8910Buffer[4][n];
-				nSample += pAY8910Buffer[5][n];
-				nSample += pAY8910Buffer[6][n];
-				nSample += pAY8910Buffer[7][n];
-				nSample += pAY8910Buffer[8][n];
+				nSample  = pAY8910Buffer[0][n] >> 2;
+				nSample += pAY8910Buffer[1][n] >> 2;
+				nSample += pAY8910Buffer[2][n] >> 2;
+				nSample += pAY8910Buffer[3][n] >> 2;
+				nSample += pAY8910Buffer[4][n] >> 2;
+				nSample += pAY8910Buffer[5][n] >> 2;
+				nSample += pAY8910Buffer[6][n] >> 2;
+				nSample += pAY8910Buffer[7][n] >> 2;
+				nSample += pAY8910Buffer[8][n] >> 2;
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -539,25 +527,19 @@ static INT32 DrvFrame()
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
 			AY8910Update(2, &pAY8910Buffer[6], nSegmentLength);
 			for (INT32 n = 0; n < nSegmentLength; n++) {
-				nSample  = pAY8910Buffer[0][n];
-				nSample += pAY8910Buffer[1][n];
-				nSample += pAY8910Buffer[2][n];
-				nSample += pAY8910Buffer[3][n];
-				nSample += pAY8910Buffer[4][n];
-				nSample += pAY8910Buffer[5][n];
-				nSample += pAY8910Buffer[6][n];
-				nSample += pAY8910Buffer[7][n];
-				nSample += pAY8910Buffer[8][n];
+				nSample  = pAY8910Buffer[0][n] >> 2;
+				nSample += pAY8910Buffer[1][n] >> 2;
+				nSample += pAY8910Buffer[2][n] >> 2;
+				nSample += pAY8910Buffer[3][n] >> 2;
+				nSample += pAY8910Buffer[4][n] >> 2;
+				nSample += pAY8910Buffer[5][n] >> 2;
+				nSample += pAY8910Buffer[6][n] >> 2;
+				nSample += pAY8910Buffer[7][n] >> 2;
+				nSample += pAY8910Buffer[8][n] >> 2;
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;

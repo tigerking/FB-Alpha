@@ -249,7 +249,7 @@ static void mole_palette_init()
 static INT32 mole_gfx_convert()
 {
 	UINT8 a, b, c;
-	UINT8 *tmp = (UINT8*)malloc(0x6000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x6000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -271,22 +271,19 @@ static INT32 mole_gfx_convert()
 		Gfx[0x8007 ^ i] = (a << 2) | (b << 1) | c;
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 	
 	return 0;
 }
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8*)malloc(0x10000 + 0x10000 + 0x400 + 0x20);
+	Mem = (UINT8*)BurnMalloc(0x10000 + 0x10000 + 0x400 + (0x20 * sizeof(INT32)));
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (INT16 *)malloc (nBurnSoundLen * 3 * sizeof(INT16));
+	pFMBuffer = (INT16 *)BurnMalloc(nBurnSoundLen * 3 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -340,18 +337,11 @@ static INT32 DrvInit()
 
 static INT32 DrvExit()
 {
-//	m6502Exit();
 	M6502Exit();
 	AY8910Exit(0);
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
-	if (pFMBuffer) {
-		free (pFMBuffer);
-		pFMBuffer = NULL;
-	}
+	BurnFree (Mem);
+	BurnFree (pFMBuffer);
 
 	return 0;
 }
@@ -418,13 +408,7 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;

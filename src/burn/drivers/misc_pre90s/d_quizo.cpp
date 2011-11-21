@@ -209,12 +209,12 @@ static INT32 DrvDoReset()
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8*)malloc(0x30000 + 0x20 + 0x40 + 0x3e800);
+	Mem = (UINT8*)BurnMalloc(0x30000 + 0x20 + (0x10 * sizeof(INT32)) + 0x3e800);
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (INT16 *)malloc (nBurnSoundLen * 3 * sizeof(INT16));
+	pFMBuffer = (INT16 *)BurnMalloc (nBurnSoundLen * 3 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -285,13 +285,7 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -312,15 +306,9 @@ static INT32 DrvExit()
 	pFMBuffer = NULL;
 	AY8910Exit(0);
 	ZetExit();
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
-	
-	if (pFMBuffer) {
-		free (pFMBuffer);
-		pFMBuffer = NULL;
-	}
+
+	BurnFree (Mem);
+	BurnFree (pFMBuffer);
 
 	return 0;
 }

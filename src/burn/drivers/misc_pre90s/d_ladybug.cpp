@@ -24,9 +24,9 @@ static UINT8 *DrvVidRAM;
 static UINT8 *DrvSprRAM;
 static UINT8 *DrvGridRAM;
 
-static UINT32  *Palette;
-static UINT32  *DrvPalette;
-static UINT8  DrvRecalc;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
 static UINT8 *flipscreen;
 static UINT8 *soundlatch;
@@ -582,7 +582,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs1[16] = { 0x170, 0x160, 0x150, 0x140, 0x130, 0x120, 0x110, 0x100,
 			   0x070, 0x060, 0x050, 0x040, 0x030, 0x020, 0x010, 0x000 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x2000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x2000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -600,10 +600,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x200, 1,  8,  8, Plane0, XOffs0, YOffs0 + 0, 0x040, tmp, DrvGfxROM3);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -680,7 +677,7 @@ static INT32 DrvInit(INT32 game_select)
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -790,7 +787,7 @@ static INT32 SraiderInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -874,10 +871,7 @@ static INT32 DrvExit()
 	ZetExit();
 	SN76496Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	ladybug = 0;
 
@@ -1270,7 +1264,7 @@ struct BurnDriver BurnDrvLadybug = {
 	"ladybug", NULL, NULL, NULL, "1981",
 	"Lady Bug\0", NULL, "Universal", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, ladybugRomInfo, ladybugRomName, NULL, NULL, LadybugInputInfo, LadybugDIPInfo,
 	LadybugInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x60,
 	196, 240, 3, 4
@@ -1305,7 +1299,7 @@ struct BurnDriver BurnDrvLadybugb = {
 	"ladybugb", "ladybug", NULL, NULL, "1981",
 	"Lady Bug (bootleg set 1)\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, ladybugbRomInfo, ladybugbRomName, NULL, NULL, LadybugInputInfo, LadybugDIPInfo,
 	LadybugInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x60,
 	196, 240, 3, 4
@@ -1340,7 +1334,7 @@ struct BurnDriver BurnDrvLadybgb2 = {
 	"ladybgb2", "ladybug", NULL, NULL, "1981",
 	"Lady Bug (bootleg set 2)\0", NULL, "bootleg", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, ladybgb2RomInfo, ladybgb2RomName, NULL, NULL, LadybugInputInfo, LadybugDIPInfo,
 	LadybugInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x60,
 	196, 240, 3, 4
@@ -1454,7 +1448,7 @@ struct BurnDriver BurnDrvDorodon = {
 	"dorodon", NULL, NULL, NULL, "1982",
 	"Dorodon (set 1)\0", NULL, "Falcon", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, dorodonRomInfo, dorodonRomName, NULL, NULL, LadybugInputInfo, DorodonDIPInfo,
 	DorodonInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x60,
 	196, 240, 3, 4
@@ -1489,7 +1483,7 @@ struct BurnDriver BurnDrvDorodon2 = {
 	"dorodon2", "dorodon", NULL, NULL, "1982",
 	"Dorodon (set 2)\0", NULL, "Falcon", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, dorodon2RomInfo, dorodon2RomName, NULL, NULL, LadybugInputInfo, DorodonDIPInfo,
 	DorodonInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x60,
 	196, 240, 3, 4
@@ -1527,7 +1521,7 @@ struct BurnDriver BurnDrvSraider = {
 	"sraider", NULL, NULL, NULL, "1982",
 	"Space Raider\0", NULL, "Universal", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
 	NULL, sraiderRomInfo, sraiderRomName, NULL, NULL, SraiderInputInfo, SraiderDIPInfo,
 	SraiderInit, DrvExit, SraiderFrame, SraiderDraw, DrvScan, &DrvRecalc, 0x82,
 	196, 240, 3, 4
