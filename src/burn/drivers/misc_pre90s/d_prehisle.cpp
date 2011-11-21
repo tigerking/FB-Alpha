@@ -25,7 +25,7 @@ static UINT8 *PrehisleSpriteRam    = NULL;
 static UINT8 *PrehisleVideo2Ram    = NULL;
 static UINT8 *PrehislePaletteRam   = NULL;
 static UINT8 *PrehisleZ80Ram       = NULL;
-static UINT32  *PrehislePalette      = NULL;
+static UINT32 *PrehislePalette     = NULL;
 static UINT8 *PrehisleTextTiles    = NULL;
 static UINT8 *PrehisleSprites      = NULL;
 static UINT8 *PrehisleBack1Tiles   = NULL;
@@ -474,11 +474,11 @@ INT32 PrehisleInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	PrehisleTempGfx = (UINT8*)malloc(0xa0000);
+	PrehisleTempGfx = (UINT8*)BurnMalloc(0xa0000);
 
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(PrehisleRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -505,10 +505,7 @@ INT32 PrehisleInit()
 	nRet = BurnLoadRom(PrehisleTempGfx + 0x80000, 6, 1); if (nRet != 0) return 1;
 	GfxDecode(5120, 4, 16, 16, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x400, PrehisleTempGfx, PrehisleSprites);
 
-	if (PrehisleTempGfx) {
-		free(PrehisleTempGfx);
-		PrehisleTempGfx = NULL;
-	}
+	BurnFree(PrehisleTempGfx);
 
 	// Load Background2 Tilemap rom
 	nRet = BurnLoadRom(PrehisleTileMapRom, 7, 1); if (nRet != 0) return 1;
@@ -569,10 +566,7 @@ INT32 PrehisleExit()
 
 	GenericTilesExit();
 
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 
 	return 0;
 }
@@ -802,8 +796,10 @@ INT32 PrehisleFrame()
 	}
 	
 	BurnTimerEndFrameYM3812(nCyclesTotal[1]);
-	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
-	UPD7759Update(0, pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+		UPD7759Update(0, pBurnSoundOut, nBurnSoundLen);
+	}
 
 	ZetClose();
 	SekClose();

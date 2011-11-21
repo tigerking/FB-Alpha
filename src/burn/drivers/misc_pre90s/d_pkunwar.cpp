@@ -233,7 +233,7 @@ static void pkunwar_gfx_decode(UINT8 *Gfx)
 
 static INT32 LoadRoms()
 {
-	UINT8 *tmp = (UINT8*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -258,22 +258,19 @@ static INT32 LoadRoms()
 
 	pkunwar_palette_init(tmp);
 
-	if (tmp) {
-		free(tmp);
-		tmp = NULL;
-	}
+	BurnFree(tmp);
 
 	return 0;
 }
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8*)malloc(0x10000 + 0x20000 * 2 + 0x200 * sizeof(INT32));
+	Mem = (UINT8*)BurnMalloc(0x10000 + (0x20000 * 2) + (0x200 * sizeof(INT32)));
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (INT16 *)malloc (nBurnSoundLen * 6 * sizeof(INT16));
+	pFMBuffer = (INT16 *)BurnMalloc (nBurnSoundLen * 6 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -323,14 +320,8 @@ static INT32 DrvExit()
 	AY8910Exit(0);
 	AY8910Exit(1);
 
-	if (pFMBuffer) {
-		free (pFMBuffer);
-		pFMBuffer = NULL;
-	}
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (pFMBuffer);
+	BurnFree (Mem);
 
 	Rom = Gfx0 = Gfx1 = Mem = NULL;
 	Palette = NULL;
@@ -518,17 +509,11 @@ static INT32 DrvFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
-    			}
+    		}
 		}
 	}
 

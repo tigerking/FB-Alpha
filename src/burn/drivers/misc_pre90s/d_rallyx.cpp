@@ -27,7 +27,7 @@ static UINT8 *DrvChars            = NULL;
 static UINT8 *DrvSprites          = NULL;
 static UINT8 *DrvDots             = NULL;
 static UINT8 *DrvTempRom          = NULL;
-static UINT32 *DrvPalette          = NULL;
+static UINT32 *DrvPalette         = NULL;
 
 static UINT8 DrvCPUFireIRQ;
 static UINT8 DrvCPUIRQVector;
@@ -742,11 +742,11 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x01000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x01000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -771,10 +771,7 @@ static INT32 DrvInit()
 	nRet = BurnLoadRom(DrvPromVidTiming,      9, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(NamcoSoundProm,       10, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	MachineInit();
 
@@ -789,11 +786,11 @@ static INT32 DrvaInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x01000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x01000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -823,10 +820,7 @@ static INT32 DrvaInit()
 	nRet = BurnLoadRom(DrvPromVidTiming,     14, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(NamcoSoundProm,       15, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	MachineInit();
 
@@ -841,11 +835,11 @@ static INT32 NrallyxInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x01000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x01000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(DrvTempRom, 0, 1); if (nRet != 0) return 1;
@@ -880,10 +874,7 @@ static INT32 NrallyxInit()
 	nRet = BurnLoadRom(DrvPromVidTiming,    10, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(NamcoSoundProm,      11, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	MachineInit();
 
@@ -898,11 +889,11 @@ static INT32 JunglerInit()
 	Mem = NULL;
 	JunglerMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	JunglerMemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x01000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x01000);
 
 	// Load Z80 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -930,10 +921,7 @@ static INT32 JunglerInit()
 	nRet = BurnLoadRom(DrvPromVidLayout,     10, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvPromVidTiming,     11, 1); if (nRet != 0) return 1;
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	JunglerMachineInit();
 
@@ -947,10 +935,7 @@ static INT32 DrvExit()
 	BurnSampleExit();
 	ZetExit();
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 	
 	DrvCPUFireIRQ = 0;
 	DrvCPUIRQVector = 0;
@@ -1496,7 +1481,7 @@ static INT32 DrvScan(INT32 nAction, INT32 *pnMin)
 	return 0;
 }
 
-struct BurnDriverD BurnDrvRallyx = {
+struct BurnDriver BurnDrvRallyx = {
 	"rallyx", NULL, NULL, "rallyx", "1980",
 	"Rally X (32k Ver.?))\0", NULL, "Namco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
@@ -1506,7 +1491,7 @@ struct BurnDriverD BurnDrvRallyx = {
 	NULL, 260, 288, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvRallyxa = {
+struct BurnDriver BurnDrvRallyxa = {
 	"rallyxa", "rallyx", NULL, "rallyx", "1980",
 	"Rally X\0", NULL, "Namco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
@@ -1516,7 +1501,7 @@ struct BurnDriverD BurnDrvRallyxa = {
 	NULL, 260, 288, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvRallyxm = {
+struct BurnDriver BurnDrvRallyxm = {
 	"rallyxm", "rallyx", NULL, "rallyx", "1980",
 	"Rally X (Midway)\0", NULL, "Namco (Midway License)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
@@ -1526,7 +1511,7 @@ struct BurnDriverD BurnDrvRallyxm = {
 	NULL, 260, 288, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvNrallyx = {
+struct BurnDriver BurnDrvNrallyx = {
 	"nrallyx", NULL, NULL, "rallyx", "1981",
 	"New Rally X\0", NULL, "Namco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
@@ -1542,7 +1527,7 @@ struct BurnDriverD BurnDrvJungler = {
 	"jungler", NULL, NULL, NULL, "1981",
 	"Jungler\0", NULL, "Konami", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
+	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, JunglerRomInfo, JunglerRomName, NULL, NULL, JunglerInputInfo, JunglerDIPInfo,
 	JunglerInit, DrvExit, JunglerFrame, NULL, DrvScan,
 	NULL, 324, 224, 288, 3, 4

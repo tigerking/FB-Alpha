@@ -31,7 +31,7 @@ static UINT8 *DrvChars            = NULL;
 static UINT8 *DrvTiles            = NULL;
 static UINT8 *DrvSprites          = NULL;
 static UINT8 *DrvTempRom          = NULL;
-static UINT32  *DrvPalette          = NULL;
+static UINT32 *DrvPalette         = NULL;
 
 static UINT8 DrvRomBank;
 static UINT8 DrvVBlank;
@@ -915,11 +915,11 @@ static INT32 DrvInit(INT32 nMcuType)
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x60000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x60000);
 
 	nRet = BurnLoadRom(DrvM6502Rom + 0x00000, 0, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvM6502Rom + 0x08000, 1, 1); if (nRet != 0) return 1;
@@ -979,10 +979,7 @@ static INT32 DrvInit(INT32 nMcuType)
 	nRet = BurnLoadRom(DrvADPCMRom + 0x10000, 23, 1); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(DrvADPCMRom + 0x18000, 24, 1); if (nRet != 0) return 1;
 		
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	M6502Init(0, TYPE_M6502);
 	M6502Open(0);
@@ -1068,10 +1065,7 @@ static INT32 DrvExit()
 	
 	GenericTilesExit();
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 	
 	mcu_type = 0;
 	mcu_encrypt_table = NULL;
@@ -1290,7 +1284,6 @@ INT16 clock_adpcm(struct adpcm_state *state, UINT8 nibble)
 	return state->signal;
 }
 
-#define CLIP(A) ((A) < -0x8000 ? -0x8000 : (A) > 0x7fff ? 0x7fff : (A))
 static void RenderADPCMSample(INT16 *pSoundBuf, INT32 nLength)
 {
 	while (renegade_adpcm.playing && nLength > 0) {
@@ -1306,8 +1299,8 @@ static void RenderADPCMSample(INT16 *pSoundBuf, INT32 nLength)
 		INT32 Left = pSoundBuf[0] + Sample;
 		INT32 Right = pSoundBuf[1] + Sample;
 
-		pSoundBuf[0] = CLIP(Left);
-		pSoundBuf[1] = CLIP(Right);
+		pSoundBuf[0] = BURN_SND_CLIP(Left);
+		pSoundBuf[1] = BURN_SND_CLIP(Right);
 		pSoundBuf += 2;
 		nLength--;
 	}

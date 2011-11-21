@@ -478,7 +478,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs0[16]= { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8, 32*8, 33*8, 34*8, 35*8, 36*8, 37*8, 38*8, 39*8 };
 	INT32 YOffs1[8] = { 0*8, 2*8, 4*8, 6*8, 8*8, 10*8, 12*8, 14*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x10000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x10000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -495,10 +495,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x0200, 3, 16, 16, Planes + 0, XOffs2, YOffs0, 0x200, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -560,7 +557,7 @@ static INT32 MemIndex()
 	coin_lockout		= Next; Next += 0x000001;
 	ip_select		= Next; Next += 0x000001;
 
-	scroll			= (UINT16*)Next; Next += 0x0002 * sizeof(INT16);
+	scroll			= (UINT16*)Next; Next += 0x0002 * sizeof(UINT16);
 
 	RamEnd			= Next;
 
@@ -574,7 +571,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -644,10 +641,7 @@ static INT32 DrvExit()
 	M6809Exit();
 	HD63701Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	NamcoSoundProm = NULL;
 
@@ -815,6 +809,7 @@ static INT32 DrvFrame()
 	HD63701NewFrame();
 
 	INT32 nInterleave = 100;
+	INT32 nSoundBufferPos = 0;
 	INT32 nCyclesTotal[2] = { 1536000 / 60, 6144000 / 60 };
 	nCyclesDone[0] = nCyclesDone[1] = 0;
 
@@ -840,12 +835,23 @@ static INT32 DrvFrame()
 		} else {
 			sync_HD63701(0);
 		}
-
-	//	HD63701Close();
+		//	HD63701Close();
+		
+		if (pBurnSoundOut) {
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			NamcoSoundUpdate(pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}
 	}
 
 	if (pBurnSoundOut) {
-		NamcoSoundUpdate(pBurnSoundOut, nBurnSoundLen);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+
+		if (nSegmentLength) {
+			NamcoSoundUpdate(pSoundBuf, nSegmentLength);
+		}
 	}
 
 	if (pBurnDraw) {
@@ -1072,7 +1078,7 @@ STD_ROM_FN(drgnbstr)
 
 struct BurnDriver BurnDrvDrgnbstr = {
 	"drgnbstr", NULL, NULL, NULL, "1984",
-	"Dragon Buster\0", NULL, "Namco", "Miscellaneous",
+	"Dragon Buster\0", "Missing sounds", "Namco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
 	NULL, drgnbstrRomInfo, drgnbstrRomName, NULL, NULL, SkykidInputInfo, DrgnbstrDIPInfo,

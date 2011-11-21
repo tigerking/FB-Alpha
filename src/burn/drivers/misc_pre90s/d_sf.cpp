@@ -638,7 +638,7 @@ static INT32 DrvGfxDecode()
 	static INT32 GfxYOffsets[16] = { 0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70,
 				       0x80, 0x90, 0xa0, 0xb0, 0xc0, 0xd0, 0xe0, 0xf0 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x1C0000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x1C0000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -669,10 +669,7 @@ static INT32 DrvGfxDecode()
 		if (Gfx3[i] != 3) Gfx3Trans[i/0x40] = 0;
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -762,7 +759,7 @@ static INT32 DrvInit(INT32 initver)
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -884,10 +881,7 @@ static INT32 DrvExit()
 
 	GenericTilesExit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	sf_fg_scroll_x = 0;
 	sf_bg_scroll_x = 0;
@@ -1165,7 +1159,7 @@ static INT32 DrvDraw()
 			memset (pTransDraw, 0, nScreenWidth * nScreenHeight * sizeof(INT16));
 	} else {
 		for (INT32 i = 0; i < nScreenWidth * nScreenHeight; i++)
-			pTransDraw[i] = 0x0400; // poINT32 to magenta
+			pTransDraw[i] = 0x0400; // point to magenta
 	}
 
 	if (sf_active & 0x40 && nBurnLayer & 4)
@@ -1261,6 +1255,8 @@ static INT32 DrvFrame()
 			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			
+			nSoundBufferPos += nSegmentLength;
 		}
 
 		ZetClose();

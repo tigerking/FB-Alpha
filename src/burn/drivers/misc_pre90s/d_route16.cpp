@@ -305,8 +305,7 @@ void __fastcall route16_cpu0_write(UINT16 offset, UINT8 data)
 	switch (offset)
 	{
 		case 0x2800:			// stratvox
-			// DAC_0_data_w
-			DACWrite(0, data >> 1);
+			DACWrite(0, data);
 		break;
 
 		case 0x4800:
@@ -412,12 +411,12 @@ void stratvox_sn76477_write(UINT32, UINT32)
 
 static INT32 DrvInit()
 {
-	Mem = (UINT8*)malloc(0x10000 + 0x10000 + 0x200);
+	Mem = (UINT8*)BurnMalloc(0x10000 + 0x10000 + 0x200);
 	if (Mem == NULL) {
 		return 1;
 	}
 
-	pFMBuffer = (INT16 *)malloc (nBurnSoundLen * 3 * sizeof(INT16));
+	pFMBuffer = (INT16 *)BurnMalloc (nBurnSoundLen * 3 * sizeof(INT16));
 	if (pFMBuffer == NULL) {
 		return 1;
 	}
@@ -456,9 +455,10 @@ static INT32 DrvInit()
 	pAY8910Buffer[1] = pFMBuffer + nBurnSoundLen * 1;
 	pAY8910Buffer[2] = pFMBuffer + nBurnSoundLen * 2;
 
-	DACInit(0, 0, 1);
-
 	AY8910Init(0, 1250000, nBurnSoundRate, NULL, NULL, &stratvox_sn76477_write, NULL);
+	
+	DACInit(0, 0, 1);
+	DACSetVolShift(0, 2);
 
 	DrvDoReset();
 
@@ -472,14 +472,8 @@ static INT32 DrvExit()
 	ZetExit();
 	AY8910Exit(0);
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
-	if (pFMBuffer) {
-		free (pFMBuffer);
-		pFMBuffer = NULL;
-	}
+	BurnFree (Mem);
+	BurnFree (pFMBuffer);
 
 	draw_type = 0;
 
@@ -573,6 +567,11 @@ static INT32 DrvFrame()
 
 	INT32 nSoundBufferPos = 0;
 	INT32 nInterleave = nBurnSoundLen;
+	
+	INT32 DACIRQFireSlice[48];
+	for (INT32 i = 0; i < 48; i++) {
+		DACIRQFireSlice[i] = (INT32)((double)((nInterleave * (i + 1)) / 49));
+	}
 
 	INT32 nCyclesSegment;
 	INT32 nCyclesDone[2], nCyclesTotal[2];
@@ -600,13 +599,19 @@ static INT32 DrvFrame()
 		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
 		nCyclesSegment = ZetRun(nCyclesSegment);
 		nCyclesDone[nCurrentCPU] += nCyclesSegment;
-		if (i == 9 && draw_type == 3) ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO); // space echo
+		if (draw_type == 3) { // space echo
+			for (INT32 j = 0; j < 48; j++) {
+				if (i == DACIRQFireSlice[j]) {
+					ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+				}
+			}
+		}
 		ZetClose();
 
 		// Render Sound Segment
 		if (pBurnSoundOut) {
 			INT32 nSample;
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			for (INT32 n = 0; n < nSegmentLength; n++) {
@@ -616,13 +621,7 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -648,13 +647,7 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
