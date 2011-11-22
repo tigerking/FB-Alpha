@@ -4,6 +4,7 @@
 
 #include "tiles_generic.h"
 #include "burn_ym2203.h"
+#include "msm5205.h"
 
 static UINT8 *AllMem;
 static UINT8 *MemEnd;
@@ -23,7 +24,7 @@ static UINT8 *DrvSprRAM;
 static UINT8 *DrvSprBuf;
 static UINT8 *DrvVidRAM;
 static UINT8 *DrvScrollRAM;
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 static UINT8 *DrvTransMask;
 
 static UINT8 DrvRecalc;
@@ -504,12 +505,15 @@ UINT8 __fastcall tigeroad_sound_read(UINT16 address)
 	return 0;
 }
 
-void __fastcall tigeroad_sample_out(UINT16 port, UINT8 /*data*/)
+void __fastcall tigeroad_sample_out(UINT16 port, UINT8 data)
 {
 	switch (port & 0xff)
 	{
 		case 0x01:
-			// msm5205_w
+			MSM5205ResetWrite(0, (data >> 7) & 1);
+			MSM5205DataWrite(0, data);
+			MSM5205VCLKWrite(0, 1);
+			MSM5205VCLKWrite(0, 0);
 		return;
 	}
 }
@@ -544,6 +548,11 @@ static double TigeroadGetTime()
 	return (double)ZetTotalCycles() / 3579545;
 }
 
+inline static INT32 DrvMSM5205SynchroniseStream(INT32 nSoundRate)
+{
+	return (INT64)(SekTotalCycles() * nSoundRate / 10000000);
+}
+
 static INT32 DrvDoReset()
 {
 	DrvReset = 0;
@@ -558,11 +567,15 @@ static INT32 DrvDoReset()
 	ZetReset();
 	ZetClose();
 
-	ZetOpen(1);
-	ZetReset();
-	ZetClose();
-
 	BurnYM2203Reset();
+	
+	if (toramich) {
+		ZetOpen(1);
+		ZetReset();
+		ZetClose();
+		
+		MSM5205Reset();
+	}
 
 	if (pBurnSoundOut) { // fix ym2203 junk..
 		memset (pBurnSoundOut, 0, nBurnSoundLen);
@@ -584,7 +597,7 @@ static INT32 MemIndex()
 	DrvGfxROM2	= Next; Next += 0x100000;
 	DrvGfxROM3	= Next; Next += 0x008000;
 
-	DrvPalette	= (UINT32*)Next; Next += 0x0240 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0240 * sizeof(UINT32);
 
 	DrvTransMask	= Next; Next += 0x000010;
 
@@ -632,7 +645,7 @@ static INT32 DrvGfxDecode()
 			8*8, 9*8, 10*8, 11*8, 12*8, 13*8, 14*8, 15*8 };
 
 
-	UINT8 *tmp = (UINT8*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -653,10 +666,7 @@ static INT32 DrvGfxDecode()
 		DrvTransMask[i] = (0xfe00 >> i) & 1;
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -666,7 +676,7 @@ static INT32 DrvInit(INT32 (*pInitCallback)())
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -689,7 +699,11 @@ static INT32 DrvInit(INT32 (*pInitCallback)())
 	SekSetReadWordHandler(0,	tigeroad_read_word);
 	SekClose();
 
-	ZetInit(2);
+	if (toramich) {
+		ZetInit(2);
+	} else {
+		ZetInit(1);
+	}
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
@@ -702,16 +716,21 @@ static INT32 DrvInit(INT32 (*pInitCallback)())
 	ZetMemEnd();
 	ZetClose();
 
-	ZetOpen(1);
-	ZetMapArea(0x0000, 0xffff, 0, DrvSndROM);
-	ZetMapArea(0x0000, 0xffff, 2, DrvSndROM);
-	ZetSetOutHandler(tigeroad_sample_out);
-	ZetSetInHandler(tigeroad_sample_in);
-	ZetMemEnd();
-	ZetClose();
+	if (toramich) {
+		ZetOpen(1);
+		ZetMapArea(0x0000, 0xffff, 0, DrvSndROM);
+		ZetMapArea(0x0000, 0xffff, 2, DrvSndROM);
+		ZetSetOutHandler(tigeroad_sample_out);
+		ZetSetInHandler(tigeroad_sample_in);
+		ZetMemEnd();
+		ZetClose();
+	}
 
 	BurnYM2203Init(2, 3579545, &TigeroadIRQHandler, TigeroadSynchroniseStream, TigeroadGetTime, 0);
+	BurnYM2203SetVolumeShift(2);
 	BurnTimerAttachZet(3579545);
+	
+	if (toramich) MSM5205Init(0, DrvMSM5205SynchroniseStream, 384000, NULL, MSM5205_SEX_4B, 100, 1);
 
 	GenericTilesInit();
 
@@ -723,16 +742,14 @@ static INT32 DrvInit(INT32 (*pInitCallback)())
 static INT32 DrvExit()
 {
 	BurnYM2203Exit();
+	MSM5205Exit();
 
 	GenericTilesExit();
 
 	SekExit();
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	nF1dream = 0;
 	toramich = 0;
@@ -967,28 +984,62 @@ static INT32 DrvFrame()
 		DrvInputs[1] |= *coin_lockout << 8;
 	}
 
-	INT32 nTotalCycles[3] = { 10000000 / 60, 3579545 / 60, 3579545 / 60 };
+	INT32 nCyclesTotal[3] = { 10000000 / 60, 3579545 / 60, 3579545 / 60 };
+	INT32 nCyclesDone[3] = { 0, 0, 0 };
 
 	SekNewFrame();
 	ZetNewFrame();
+	
+	INT32 nInterleave = 10;
+	INT32 MSMIRQSlice[67];
+	
+	if (toramich) {
+		nInterleave = MSM5205CalcInterleave(0, 10000000);
+	
+		for (INT32 i = 0; i < 67; i++) {
+			MSMIRQSlice[i] = (INT32)((double)((nInterleave * (i + 1)) / 68));
+		}
+	}
+	
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
 
-	SekOpen(0);
-	SekRun(nTotalCycles[0]);
-	SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
-	SekClose();
-
+		nCurrentCPU = 0;
+		SekOpen(0);
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+		if (i == (nInterleave - 1)) SekSetIRQLine(2, SEK_IRQSTATUS_AUTO);
+		MSM5205Update();
+		SekClose();
+		
+		ZetOpen(0);
+		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
+		ZetClose();
+		
+		if (toramich) {
+			nCurrentCPU = 2;
+			ZetOpen(1);
+			nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+			nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+			nCyclesDone[nCurrentCPU] += ZetRun(nCyclesSegment);
+			for (INT32 j = 0; j < 67; j++) {
+				if (i == MSMIRQSlice[j]) {
+					ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
+					nCyclesDone[nCurrentCPU] += ZetRun(1000);
+				}
+			}
+			ZetClose();
+		}
+	}
+	
 	ZetOpen(0);
-	BurnTimerEndFrame(nTotalCycles[1]);
+	BurnTimerEndFrame(nCyclesTotal[1]);
 	if (pBurnSoundOut) {
 		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+		if (toramich) MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
 	}
-	ZetClose();
-
-	if (toramich) {
-		ZetOpen(1);
-		ZetRun(nTotalCycles[2]);
-		ZetClose();
-	}
+	ZetClose();	
 
 	if (pBurnDraw) {
 		DrvDraw();

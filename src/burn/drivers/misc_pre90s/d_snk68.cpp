@@ -1,4 +1,3 @@
-
 #include "tiles_generic.h"
 #include "burn_ym3812.h"
 #include "upd7759.h"
@@ -96,7 +95,7 @@ static struct BurnInputInfo IkariInputList[] = {
 	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy1 + 5,	"p1 fire 2"},
 	{"P1 Button 3"  , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 fire 3"},
 
-	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"mouse x-axis"),
+	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"p1 z-axis"),
 
 	{"P2 Start"  ,    BIT_DIGITAL  , DrvJoy2 + 7,	"p2 start" },
 	{"P2 Up",	  BIT_DIGITAL,   DrvJoy2 + 0,   "p2 up",   },
@@ -723,7 +722,7 @@ static INT32 DrvGfxDecode(INT32 *spriPlanes, INT32 *spriXOffs, INT32 *spriYOffs,
 	static INT32 tileXOffs[8]  = { 0x43, 0x42, 0x41, 0x40, 0x03, 0x02, 0x01, 0x00 };
 	static INT32 tileYOffs[8]  = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x300000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x300000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -736,10 +735,7 @@ static INT32 DrvGfxDecode(INT32 *spriPlanes, INT32 *spriXOffs, INT32 *spriYOffs,
 
 	GfxDecode(0x6000, 4, 16, 16, spriPlanes, spriXOffs, spriYOffs, modulo, tmp, DrvGfx1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	memset (DrvGfx0Trans, 1, 0x800);
 	for (INT32 i = 0; i < 0x20000; i++) {
@@ -912,7 +908,7 @@ static INT32 DrvInit(INT32 game)
 	Mem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -976,10 +972,7 @@ static INT32 DrvExit()
 	SekExit();
 	ZetExit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	game_select = 0;
 
@@ -1307,8 +1300,10 @@ static INT32 DrvFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 
 	BurnTimerEndFrameYM3812(nTotalCycles[1]);
-	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
-	UPD7759Update(0, pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+		UPD7759Update(0, pBurnSoundOut, nBurnSoundLen);
+	}
 
 	ZetClose();
 	SekClose();

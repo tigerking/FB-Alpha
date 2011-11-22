@@ -2,6 +2,7 @@
 
 #include "burnint.h"
 #include "taito_m68705.h"
+#include "bitswap.h"
 #include "driver.h"
 extern "C" {
  #include "ay8910.h"
@@ -15,6 +16,9 @@ static bool bSoundNMIEnable;
 
 static INT32 nStatusIndex;
 static INT32 nProtectIndex;
+
+static UINT8 getstar_e803_r();
+static void getstar_e803_w();
 
 // ---------------------------------------------------------------------------
 // Inputs
@@ -52,7 +56,7 @@ static struct BurnInputInfo tigerhInputList[] = {
 
 STDINPUTINFO(tigerh)
 
-static struct BurnInputInfo gtstarbaInputList[] = {
+static struct BurnInputInfo getstarInputList[] = {
 	{"P1 Coin",		BIT_DIGITAL,	tigerhInpMisc + 6,	"p1 coin"},
 	{"P1 Start",	BIT_DIGITAL,	tigerhInpMisc + 4,	"p1 start"},
 	{"P1 Up",		BIT_DIGITAL,	tigerhInpJoy1 + 0,	"p1 up"},
@@ -77,7 +81,7 @@ static struct BurnInputInfo gtstarbaInputList[] = {
 	{"Dip B",		BIT_DIPSWITCH,	tigerhInput + 3,	"dip"},
 };
 
-STDINPUTINFO(gtstarba)
+STDINPUTINFO(getstar)
 
 static struct BurnDIPInfo tigerhDIPList[] = {
 	// Defaults
@@ -133,9 +137,6 @@ static struct BurnDIPInfo getstarDIPList[] = {
 	{0x11,	0xFF, 0xFF,	0x10, NULL},
 
 	// DIP A
-	{0,		0xFE, 0,	2,	  "Hero speed"}, // really work?
-	{0x11,	0x01, 0x80,	0x00, "Normal"},
-	{0x11,	0x01, 0x80,	0x80, "Fast"},
 	{0,		0xFE, 0,	2,	  NULL},
 	{0x11,	0x01, 0x40,	0x00, "Normal game"},
 	{0x11,	0x01, 0x40,	0x40, "DIP switch test"},
@@ -172,19 +173,6 @@ static struct BurnDIPInfo getstarDIPList[] = {
 static struct BurnDIPInfo getstarHeroesDIPList[] =
 {
 	// Defaults
-	{0x12,	0xFF, 0xFF,	0x01, NULL},
-
-	// DIP B
-	{0,		0xFE, 0,	4,	  "Number of heroes"},
-	{0x12,	0x01, 0x03,	0x01, "3"},
-	{0x12,	0x01, 0x03,	0x02, "4"},
-	{0x12,	0x01, 0x03,	0x03, "5"},
-	{0x12,	0x01, 0x03,	0x00, "240 (cheat)"},
-};
-
-static struct BurnDIPInfo gtstarbaHeroesDIPList[] =
-{
-	// Defaults
 	{0x12,	0xFF, 0xFF,	0x00, NULL},
 
 	// DIP B
@@ -195,8 +183,21 @@ static struct BurnDIPInfo gtstarbaHeroesDIPList[] =
 	{0x12,	0x01, 0x03,	0x01, "5"},
 };
 
+static struct BurnDIPInfo getstarb2HeroesDIPList[] =
+{
+	// Defaults
+	{0x12,	0xFF, 0xFF,	0x01, NULL},
+
+	// DIP B
+	{0,		0xFE, 0,	4,	  "Number of heroes"},
+	{0x12,	0x01, 0x03,	0x01, "3"},
+	{0x12,	0x01, 0x03,	0x02, "4"},
+	{0x12,	0x01, 0x03,	0x03, "5"},
+	{0x12,	0x01, 0x03,	0x00, "240 (cheat)"},
+};
+
 STDDIPINFOEXT(getstar, getstar, getstarHeroes)
-STDDIPINFOEXT(gtstarba, getstar, gtstarbaHeroes)
+STDDIPINFOEXT(getstarb2, getstar, getstarb2Heroes)
 
 static struct BurnDIPInfo slapfighDIPList[] = {
 	// Defaults
@@ -349,15 +350,12 @@ static UINT8* TigerHeliTextAttrib = NULL;
 
 static void TigerHeliTextExit()
 {
-	if (TigerHeliTextAttrib) {
-		free(TigerHeliTextAttrib);
-		TigerHeliTextAttrib = NULL;
-	}
+	BurnFree(TigerHeliTextAttrib);
 }
 
 static INT32 TigerHeliTextInit()
 {
-	if ((TigerHeliTextAttrib = (UINT8*)malloc(0x0400)) == NULL) {
+	if ((TigerHeliTextAttrib = (UINT8*)BurnMalloc(0x0400)) == NULL) {
 		return 1;
 	}
 
@@ -729,6 +727,8 @@ UINT8 __fastcall tigerhReadCPU0(UINT16 a)
 				sync_mcu();
 				return standard_taito_mcu_read();
 			}
+			
+			if (nWhichGame == 1) return getstar_e803_r();
 
 			UINT8 nProtectSequence[3] = { 0, 1, (0 + 5) ^ 0x56 };
 
@@ -786,9 +786,10 @@ void __fastcall tigerhWriteCPU0(UINT16 a, UINT8 d)
 				sync_mcu();
 				from_main = d;
 				main_sent = 1;
-				mcu_sent = 0;
+				if (nWhichGame == 0) mcu_sent = 0;
 				m68705SetIrqLine(0, 1 /*ASSERT_LINE*/);
 			}
+			if (nWhichGame == 1) getstar_e803_w();
 			break;
 
 //		default:
@@ -1000,7 +1001,7 @@ UINT8 __fastcall tigerhInCPU1(UINT16 /* a */)
 
 void __fastcall tigerhOutCPU1(UINT16 /* a */, UINT8 /* d */)
 {
-//	bprintf(PRINT_NORMAL, "Attempt by CPU1 to write port %02X -> %02X.\n", a, d);
+//	bprintf(PRINT_NORMAL, _T("Attempt by CPU1 to write port %02X -> %02X.\n"), a, d);
 }
 
 static UINT8 tigerhReadPort0(UINT32)
@@ -1021,6 +1022,7 @@ static UINT8 tigerhReadPort3(UINT32)
 }
 
 //----------------------------------------------------------------------------
+// MCU Handling
 
 void tigerh_m68705_portA_write(UINT8 *data)
 {
@@ -1040,6 +1042,627 @@ static m68705_interface tigerh_m68705_interface = {
 	NULL, NULL, NULL,
 	NULL, NULL, tigerh_m68705_portC_read
 };
+
+void slapfigh_m68705_portA_write(UINT8 *data)
+{
+	from_mcu = *data;
+}
+
+void slapfigh_m68705_portB_out(UINT8 *data)
+{
+	if ((ddrB & 0x02) && (~*data & 0x02) && (portB_out & 0x02))
+	{
+		portA_in = from_main;
+		if (main_sent)
+			m68705SetIrqLine(0, 0 /*CLEAR_LINE*/);
+		main_sent = 0;
+	}
+	if ((ddrB & 0x04) && (*data & 0x04) && (~portB_out & 0x04))
+	{
+		from_mcu = portA_out;
+		mcu_sent = 1;
+	}
+	
+	if ((ddrB & 0x08) && (~*data & 0x08) && (portB_out & 0x08))
+	{
+		nTigerHeliTileXPosLo = portA_out;
+	}
+	if ((ddrB & 0x10) && (~*data & 0x10) && (portB_out & 0x10))
+	{
+		nTigerHeliTileXPosHi = portA_out;
+	}
+}
+
+void slapfigh_m68705_portC_read()
+{
+	portC_in = 0;
+	if (main_sent) portC_in |= 0x01;
+	if (!mcu_sent) portC_in |= 0x02;
+}
+
+static m68705_interface slapfigh_m68705_interface = {
+	slapfigh_m68705_portA_write, slapfigh_m68705_portB_out, NULL,
+	NULL, NULL, NULL,
+	NULL, NULL, slapfigh_m68705_portC_read
+};
+
+//----------------------------------------------------------------------------
+// Get Star MCU Simulation
+
+#define GETSTAR		1
+#define GETSTARJ	2
+#define GETSTARB1	3
+#define GETSTARB2	4
+
+static UINT8 GetStarType = 0;
+
+static UINT8 GSa = 0;
+static UINT8 GSd = 0;
+static UINT8 GSe = 0;
+static UINT8 GSCommand = 0;
+
+#define GS_SAVE_REGS		GSa = ZetBc(-1) >> 0; \
+							GSd = ZetDe(-1) >> 8; \
+							GSe = ZetDe(-1) >> 0;
+							
+#define GS_RESET_REGS		GSa = 0; \
+							GSd = 0; \
+							GSe = 0;
+							
+static UINT8 getstar_e803_r()
+{
+	UINT16 tmp = 0;  /* needed for values computed on 16 bits */
+	UINT8 getstar_val = 0;
+	UINT8 phase_lookup_table[] = {0x00, 0x01, 0x03, 0xff, 0xff, 0x02, 0x05, 0xff, 0xff, 0x05}; /* table at 0x0e05 in 'gtstarb1' */
+	UINT8 lives_lookup_table[] = {0x03, 0x05, 0x01, 0x02};                                     /* table at 0x0e62 in 'gtstarb1' */
+	UINT8 lgsb2_lookup_table[] = {0x00, 0x03, 0x04, 0x05};                                     /* fake tanle for "test mode" in 'gtstarb2' */
+
+	switch (GetStarType) {
+		case GETSTAR:
+		case GETSTARJ: {
+			switch (GSCommand) {
+				case 0x20:  /* continue play */
+					getstar_val = ((GSa & 0x30) == 0x30) ? 0x20 : 0x80;
+					break;
+				case 0x21:  /* lose life */
+					getstar_val = (GSa << 1) | (GSa >> 7);
+					break;
+				case 0x22:  /* starting difficulty */
+					getstar_val = ((GSa & 0x0c) >> 2) + 1;
+					break;
+					case 0x23:  /* starting lives */
+					getstar_val = lives_lookup_table[GSa];
+					break;
+				case 0x24:  /* game phase */
+					getstar_val = phase_lookup_table[((GSa & 0x18) >> 1) | (GSa & 0x03)];
+					break;
+				case 0x25:  /* players inputs */
+					getstar_val = BITSWAP08(GSa, 3, 2, 1, 0, 7, 5, 6, 4);
+					break;
+				case 0x26:  /* background (1st read) */
+					tmp = 0x8800 + (0x001f * GSa);
+					getstar_val = (tmp & 0x00ff) >> 0;
+					GSCommand |= 0x80;     /* to allow a second consecutive read */
+					break;
+				case 0xa6:  /* background (2nd read) */
+					tmp = 0x8800 + (0x001f * GSa);
+					getstar_val = (tmp & 0xff00) >> 8;
+					break;
+				case 0x29:  /* unknown effect */
+					getstar_val = 0x00;
+					break;
+				case 0x2a:  /* change player (if 2 players game) */
+					getstar_val = (GSa ^ 0x40);
+					break;
+				case 0x37:  /* foreground (1st read) */
+					tmp = ((0xd0 + ((GSe >> 2) & 0x0f)) << 8) | (0x40 * (GSe & 03) + GSd);
+					getstar_val = (tmp & 0x00ff) >> 0;
+					GSCommand |= 0x80;     /* to allow a second consecutive read */
+					break;
+				case 0xb7:  /* foreground (2nd read) */
+					tmp = ((0xd0 + ((GSe >> 2) & 0x0f)) << 8) | (0x40 * (GSe & 03) + GSd);
+					getstar_val = (tmp & 0xff00) >> 8;
+					break;
+				case 0x38:  /* laser position (1st read) */
+					tmp = 0xf740 - (((GSe >> 4) << 8) | ((GSe & 0x08) ? 0x80 : 0x00)) + (0x02 + (GSd >> 2));
+					getstar_val = (tmp & 0x00ff) >> 0;
+					GSCommand |= 0x80;     /* to allow a second consecutive read */
+					break;
+				case 0xb8:  /* laser position (2nd read) */
+					tmp = 0xf740 - (((GSe >> 4) << 8) | ((GSe & 0x08) ? 0x80 : 0x00)) + (0x02 + (GSd >> 2));
+					getstar_val = (tmp & 0xff00) >> 8;
+					break;
+				case 0x73:  /* avoid "BAD HW" message */
+					getstar_val = 0x76;
+					break;
+			}
+		}
+		
+		case GETSTARB1: {
+			/* value isn't computed by the bootleg but we want to please the "test mode" */
+			if (ZetPc(-1) == 0x6b04) return (lives_lookup_table[GSa]);
+			break;
+		}
+			
+		case GETSTARB2: {
+			/*
+            056B: 21 03 E8      ld   hl,$E803
+            056E: 7E            ld   a,(hl)
+            056F: BE            cp   (hl)
+            0570: 28 FD         jr   z,$056F
+            0572: C6 05         add  a,$05
+            0574: EE 56         xor  $56
+            0576: BE            cp   (hl)
+            0577: C2 6E 05      jp   nz,$056E
+            */
+			if (ZetPc(-1) == 0x056e) return (getstar_val);
+			if (ZetPc(-1) == 0x0570) return (getstar_val+1);
+			if (ZetPc(-1) == 0x0577) return ((getstar_val+0x05) ^ 0x56);
+			/* value isn't computed by the bootleg but we want to please the "test mode" */
+			if (ZetPc(-1) == 0x6b04) return (lgsb2_lookup_table[GSa]);
+			break;
+		}
+	}
+	
+	return getstar_val;
+}
+
+static void getstar_e803_w()
+{
+	switch (GetStarType) {
+		case GETSTAR: {
+			/* unknown effect - not read back */
+			if (ZetPc(-1) == 0x00bf)
+			{
+				GSCommand = 0x00;
+				GS_RESET_REGS
+			}
+			/* players inputs */
+			if (ZetPc(-1) == 0x0560)
+			{
+				GSCommand = 0x25;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x056d)
+			{
+				GSCommand = 0x25;
+				GS_SAVE_REGS
+			}
+			/* lose life */
+			if (ZetPc(-1) == 0x0a0a)
+			{
+				GSCommand = 0x21;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0a17)
+			{
+				GSCommand = 0x21;
+				GS_SAVE_REGS
+			}
+			/* unknown effect */
+			if (ZetPc(-1) == 0x0a51)
+			{
+				GSCommand = 0x29;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0a6e)
+			{
+				GSCommand = 0x29;
+				GS_SAVE_REGS
+			}
+			/* continue play */
+			if (ZetPc(-1) == 0x0ae3)
+			{
+				GSCommand = 0x20;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0af0)
+			{
+				GSCommand = 0x20;
+				GS_SAVE_REGS
+			}
+			/* unknown effect - not read back */
+			if (ZetPc(-1) == 0x0b62)
+			{
+				GSCommand = 0x00;     /* 0x1f */
+				GS_RESET_REGS
+			}
+			/* change player (if 2 players game) */
+			if (ZetPc(-1) == 0x0bab)
+			{
+				GSCommand = 0x2a;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0bb8)
+			{
+				GSCommand = 0x2a;
+				GS_SAVE_REGS
+			}
+			/* game phase */
+			if (ZetPc(-1) == 0x0d37)
+			{
+				GSCommand = 0x24;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0d44)
+			{
+				GSCommand = 0x24;
+				GS_SAVE_REGS
+			}
+			/* starting lives */
+			if (ZetPc(-1) == 0x0d79)
+			{
+				GSCommand = 0x23;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0d8a)
+			{
+				GSCommand = 0x23;
+				GS_SAVE_REGS
+			}
+			/* starting difficulty */
+			if (ZetPc(-1) == 0x0dc1)
+			{
+				GSCommand = 0x22;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0dd0)
+			{
+				GSCommand = 0x22;
+				GS_SAVE_REGS
+			}
+			/* starting lives (again) */
+			if (ZetPc(-1) == 0x1011)
+			{
+				GSCommand = 0x23;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x101e)
+			{
+				GSCommand = 0x23;
+				GS_SAVE_REGS
+			}
+			/* hardware test */
+			if (ZetPc(-1) == 0x107a)
+			{
+				GSCommand = 0x73;
+				GS_RESET_REGS
+			}
+			/* game phase (again) */
+			if (ZetPc(-1) == 0x10c6)
+			{
+				GSCommand = 0x24;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x10d3)
+			{
+				GSCommand = 0x24;
+				GS_SAVE_REGS
+			}
+			/* background */
+			if (ZetPc(-1) == 0x1910)
+			{
+				GSCommand = 0x26;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x191d)
+			{
+				GSCommand = 0x26;
+				GS_SAVE_REGS
+			}
+			/* foreground */
+			if (ZetPc(-1) == 0x19d5)
+			{
+				GSCommand = 0x37;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x19e4)
+			{
+				GSCommand = 0x37;
+				GS_SAVE_REGS
+			}
+			if (ZetPc(-1) == 0x19f1)
+			{
+				GSCommand = 0x37;
+				/* do NOT update the registers because there are 2 writes before 2 reads ! */
+			}
+			/* laser position */
+			if (ZetPc(-1) == 0x26af)
+			{
+				GSCommand = 0x38;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x26be)
+			{
+				GSCommand = 0x38;
+				GS_SAVE_REGS
+			}
+			if (ZetPc(-1) == 0x26cb)
+			{
+				GSCommand = 0x38;
+				/* do NOT update the registers because there are 2 writes before 2 reads ! */
+			}
+			/* starting lives (for "test mode") */
+			if (ZetPc(-1) == 0x6a27)
+			{
+				GSCommand = 0x23;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x6a38)
+			{
+				GSCommand = 0x23;
+				GS_SAVE_REGS
+			}
+			break;
+		}
+		
+		case GETSTARJ: {
+			/* unknown effect - not read back */
+			if (ZetPc(-1) == 0x00bf)
+			{
+				GSCommand = 0x00;
+				GS_RESET_REGS
+			}
+			/* players inputs */
+			if (ZetPc(-1) == 0x0560)
+			{
+				GSCommand = 0x25;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x056d)
+			{
+				GSCommand = 0x25;
+				GS_SAVE_REGS
+			}
+			/* lose life */
+			if (ZetPc(-1) == 0x0ad5)
+			{
+				GSCommand = 0x21;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0ae2)
+			{
+				GSCommand = 0x21;
+				GS_SAVE_REGS
+			}
+			/* unknown effect */
+			if (ZetPc(-1) == 0x0b1c)
+			{
+				GSCommand = 0x29;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0b29)
+			{
+				GSCommand = 0x29;
+				GS_SAVE_REGS
+			}
+			/* continue play */
+			if (ZetPc(-1) == 0x0bae)
+			{
+				GSCommand = 0x20;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0bbb)
+			{
+				GSCommand = 0x20;
+				GS_SAVE_REGS
+			}
+			/* unknown effect - not read back */
+			if (ZetPc(-1) == 0x0c2d)
+			{
+				GSCommand = 0x00;     /* 0x1f */
+				GS_RESET_REGS
+			}
+			/* change player (if 2 players game) */
+			if (ZetPc(-1) == 0x0c76)
+			{
+				GSCommand = 0x2a;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0c83)
+			{
+				GSCommand = 0x2a;
+				GS_SAVE_REGS
+			}
+			/* game phase */
+			if (ZetPc(-1) == 0x0e02)
+			{
+				GSCommand = 0x24;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0e0f)
+			{
+				GSCommand = 0x24;
+				GS_SAVE_REGS
+			}
+			/* starting lives */
+			if (ZetPc(-1) == 0x0e44)
+			{
+				GSCommand = 0x23;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0e55)
+			{
+				GSCommand = 0x23;
+				GS_SAVE_REGS
+			}
+			/* starting difficulty */
+			if (ZetPc(-1) == 0x0e8c)
+			{
+				GSCommand = 0x22;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x0e9b)
+			{
+				GSCommand = 0x22;
+				GS_SAVE_REGS
+			}
+			/* starting lives (again) */
+			if (ZetPc(-1) == 0x10d6)
+			{
+				GSCommand = 0x23;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x10e3)
+			{
+				GSCommand = 0x23;
+				GS_SAVE_REGS
+			}
+			/* hardware test */
+			if (ZetPc(-1) == 0x113f)
+			{
+				GSCommand = 0x73;
+				GS_RESET_REGS
+			}
+			/* game phase (again) */
+			if (ZetPc(-1) == 0x118b)
+			{
+				GSCommand = 0x24;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x1198)
+			{
+				GSCommand = 0x24;
+				GS_SAVE_REGS
+			}
+			/* background */
+			if (ZetPc(-1) == 0x19f8)
+			{
+				GSCommand = 0x26;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x1a05)
+			{
+				GSCommand = 0x26;
+				GS_SAVE_REGS
+			}
+			/* foreground */
+			if (ZetPc(-1) == 0x1abd)
+			{
+				GSCommand = 0x37;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x1acc)
+			{
+				GSCommand = 0x37;
+				GS_SAVE_REGS
+			}
+			if (ZetPc(-1) == 0x1ad9)
+			{
+				GSCommand = 0x37;
+				/* do NOT update the registers because there are 2 writes before 2 reads ! */
+			}
+			/* laser position */
+			if (ZetPc(-1) == 0x2792)
+			{
+				GSCommand = 0x38;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x27a1)
+			{
+				GSCommand = 0x38;
+				GS_SAVE_REGS
+			}
+			if (ZetPc(-1) == 0x27ae)
+			{
+				GSCommand = 0x38;
+				/* do NOT update the registers because there are 2 writes before 2 reads ! */
+			}
+			/* starting lives (for "test mode") */
+			if (ZetPc(-1) == 0x6ae2)
+			{
+				GSCommand = 0x23;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x6af3)
+			{
+				GSCommand = 0x23;
+				GS_SAVE_REGS
+			}
+			break;
+		}
+		
+		case GETSTARB1: {
+			/* "Test mode" doesn't compute the lives value :
+                6ADA: 3E 23         ld   a,$23
+                6ADC: CD 52 11      call $1152
+                6ADF: 32 03 E8      ld   ($E803),a
+                6AE2: DB 00         in   a,($00)
+                6AE4: CB 4F         bit  1,a
+                6AE6: 28 FA         jr   z,$6AE2
+                6AE8: 3A 0A C8      ld   a,($C80A)
+                6AEB: E6 03         and  $03
+                6AED: CD 52 11      call $1152
+                6AF0: 32 03 E8      ld   ($E803),a
+                6AF3: DB 00         in   a,($00)
+                6AF5: CB 57         bit  2,a
+                6AF7: 20 FA         jr   nz,$6AF3
+                6AF9: 00            nop
+                6AFA: 00            nop
+                6AFB: 00            nop
+                6AFC: 00            nop
+                6AFD: 00            nop
+                6AFE: 00            nop
+                6AFF: 00            nop
+                6B00: 00            nop
+                6B01: 3A 03 E8      ld   a,($E803)
+               We save the regs though to hack it in 'getstar_e803_r' read handler.
+            */
+			if (ZetPc(-1) == 0x6ae2)
+			{
+				GSCommand = 0x00;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x6af3)
+			{
+				GSCommand = 0x00;
+				GS_SAVE_REGS
+			}
+			break;
+		}
+		
+		case GETSTARB2: {
+			/* "Test mode" doesn't compute the lives value :
+                6ADA: 3E 23         ld   a,$23
+                6ADC: CD 52 11      call $1152
+                6ADF: 32 03 E8      ld   ($E803),a
+                6AE2: DB 00         in   a,($00)
+                6AE4: CB 4F         bit  1,a
+                6AE6: 00            nop
+                6AE7: 00            nop
+                6AE8: 3A 0A C8      ld   a,($C80A)
+                6AEB: E6 03         and  $03
+                6AED: CD 52 11      call $1152
+                6AF0: 32 03 E8      ld   ($E803),a
+                6AF3: DB 00         in   a,($00)
+                6AF5: CB 57         bit  2,a
+                6AF7: 00            nop
+                6AF8: 00            nop
+                6AF9: 00            nop
+                6AFA: 00            nop
+                6AFB: 00            nop
+                6AFC: 00            nop
+                6AFD: 00            nop
+                6AFE: 00            nop
+                6AFF: 00            nop
+                6B00: 00            nop
+                6B01: 3A 03 E8      ld   a,($E803)
+               We save the regs though to hack it in 'getstar_e803_r' read handler.
+            */
+			if (ZetPc(-1) == 0x6ae2)
+			{
+				GSCommand = 0x00;
+				GS_RESET_REGS
+			}
+			if (ZetPc(-1) == 0x6af3)
+			{
+				GSCommand = 0x00;
+				GS_SAVE_REGS
+			}
+			break;
+		}
+	}
+}
 
 // ---------------------------------------------------------------------------
 
@@ -1141,7 +1764,7 @@ static INT32 tigerhLoadROMs()
 			nSize = ri.nLen;
 		}
 
-		UINT8* pTemp = (UINT8*)malloc(nSize * 4);
+		UINT8* pTemp = (UINT8*)BurnMalloc(nSize * 4);
 
 		for (INT32 i = 0; i < 4; i++) {
 			nRet |= BurnLoadRom(pTemp + nSize * i, nBaseROM + i, 1);
@@ -1156,10 +1779,7 @@ static INT32 tigerhLoadROMs()
 			}
 		}
 
-		if (pTemp) {
-			free(pTemp);
-			pTemp = NULL;
-		}
+		BurnFree(pTemp);
 
 		nTigerHeliSpriteMask = (nSize >> 5) - 1;
 
@@ -1183,7 +1803,7 @@ static INT32 tigerhLoadROMs()
 				break;
 		}
 
-		UINT8* pTemp = (UINT8*)malloc(0x4000);
+		UINT8* pTemp = (UINT8*)BurnMalloc(0x4000);
 
 		if (BurnLoadRom(pTemp + 0x0000, nBaseROM + 0, 1)) {
 			return 1;
@@ -1199,10 +1819,7 @@ static INT32 tigerhLoadROMs()
 			}
 		}
 
-		if (pTemp) {
-			free(pTemp);
-			pTemp = NULL;
-		}
+		BurnFree(pTemp);
 	}
 
 	// Tile layer
@@ -1233,7 +1850,7 @@ static INT32 tigerhLoadROMs()
 			nSize = ri.nLen;
 		}
 
-		UINT8* pTemp = (UINT8*)malloc(nSize * 4);
+		UINT8* pTemp = (UINT8*)BurnMalloc(nSize * 4);
 
 		for (INT32 i = 0; i < 4; i++) {
 			nRet |= BurnLoadRom(pTemp + nSize * i, nBaseROM + i, 1);
@@ -1248,10 +1865,7 @@ static INT32 tigerhLoadROMs()
 			}
 		}
 
-		if (pTemp) {
-			free(pTemp);
-			pTemp = NULL;
-		}
+		BurnFree(pTemp);
 
 		nTigerHeliTileMask = (nSize >> 3) - 1;
 
@@ -1316,6 +1930,14 @@ static INT32 tigerhLoadROMs()
 
 			use_mcu = 1;
 		}
+		
+		if (strcmp(BurnDrvGetTextA(DRV_NAME), "alcon") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfigh") == 0) {
+			if (BurnLoadRom(Rom03, 16, 1)) {
+				return 1;
+			}
+
+			use_mcu = 1;
+		}
 
 	}
 
@@ -1338,10 +1960,9 @@ static INT32 tigerhExit()
 	}
 
 	// Deallocate all used memory
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
+	
+	GetStarType = 0;
 
 	return 0;
 }
@@ -1379,10 +2000,14 @@ static INT32 tigerhInit()
 	if (strcmp(BurnDrvGetTextA(DRV_NAME), "tigerh") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhj") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhb1") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhb2") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "tigerhb3") == 0) {
 		nWhichGame = 0;
 	}
-	if (strcmp(BurnDrvGetTextA(DRV_NAME), "getstar") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarb1") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarb2") == 0) {
+	if (strcmp(BurnDrvGetTextA(DRV_NAME), "getstar") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "getstarj") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarb1") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarb2") == 0) {
 		nWhichGame = 1;
+		if (strcmp(BurnDrvGetTextA(DRV_NAME), "getstar") == 0) GetStarType = GETSTAR;
+		if (strcmp(BurnDrvGetTextA(DRV_NAME), "getstarj") == 0) GetStarType = GETSTARJ;
+		if (strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarb1") == 0) GetStarType = GETSTARB1;
+		if (strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarb2") == 0) GetStarType = GETSTARB2;
 	}
-	if (strcmp(BurnDrvGetTextA(DRV_NAME), "slapfigh") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb1") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb2") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb3") == 0) {
+	if (strcmp(BurnDrvGetTextA(DRV_NAME), "alcon") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfigh") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb1") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb2") == 0 || strcmp(BurnDrvGetTextA(DRV_NAME), "slapfighb3") == 0) {
 		nWhichGame = 2;
 	}
 
@@ -1390,7 +2015,7 @@ static INT32 tigerhInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8*)0;
-	if ((Mem = (UINT8*)malloc(nLen)) == NULL) {
+	if ((Mem = (UINT8*)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										   	// blank all memory
@@ -1400,6 +2025,8 @@ static INT32 tigerhInit()
 	if (tigerhLoadROMs()) {
 		return 1;
 	}
+	
+	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "gtstarb1")) Rom01[0x6d56] = 0xc3;
 
 	{
 		ZetInit(2);
@@ -1491,7 +2118,8 @@ static INT32 tigerhInit()
 		ZetClose();
 
 		if (use_mcu) {
-			m67805_taito_init(Rom03, Ram03, &tigerh_m68705_interface);
+			if (nWhichGame == 0) m67805_taito_init(Rom03, Ram03, &tigerh_m68705_interface);
+			if (nWhichGame == 2) m67805_taito_init(Rom03, Ram03, &slapfigh_m68705_interface);
 		}
 	}
 
@@ -1713,13 +2341,7 @@ static INT32 tigerhFrame()
 					nSample += pAY8910Buffer[4][n] >> 2;
 					nSample += pAY8910Buffer[5][n] >> 2;
 
-					if (nSample < -32768) {
-						nSample = -32768;
-					} else {
-						if (nSample > 32767) {
-							nSample = 32767;
-						}
-					}
+					nSample = BURN_SND_CLIP(nSample);
 
 					pSoundBuf[(n << 1) + 0] = nSample;
 					pSoundBuf[(n << 1) + 1] = nSample;
@@ -1746,13 +2368,7 @@ static INT32 tigerhFrame()
 					nSample += pAY8910Buffer[4][n] >> 2;
 					nSample += pAY8910Buffer[5][n] >> 2;
 
-					if (nSample < -32768) {
-						nSample = -32768;
-					} else {
-						if (nSample > 32767) {
-							nSample = 32767;
-						}
-					}
+					nSample = BURN_SND_CLIP(nSample);
 
 					pSoundBuf[(n << 1) + 0] = nSample;
 					pSoundBuf[(n << 1) + 1] = nSample;
@@ -1942,12 +2558,43 @@ static struct BurnRomInfo getstarRomDesc[] = {
 
 	{ "a68-03",       0x002000, 0x18DAA44C, BRF_ESS | BRF_PRG }, // 16
 
-	{ "a68_14",       0x000800, 0x00000000, BRF_NODUMP | BRF_ESS | BRF_PRG }, // 17 MCU ROM
+	{ "a68_14",       0x000800, 0x00000000, BRF_NODUMP | BRF_OPT | BRF_PRG }, // 17 MCU ROM
 };
 
 
 STD_ROM_PICK(getstar)
 STD_ROM_FN(getstar)
+
+static struct BurnRomInfo getstarjRomDesc[] = {
+	{ "a68_00.bin",   0x004000, 0xad1a0143, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
+	{ "a68_01.bin",   0x004000, 0x3426eb7c, BRF_ESS | BRF_PRG }, //  1
+	{ "a68_02.bin",   0x008000, 0x3567da17, BRF_ESS | BRF_PRG }, //  2
+
+	{ "a68-13",       0x008000, 0x643FB282, BRF_GRA },			 //  3 Sprite data
+	{ "a68-12",       0x008000, 0x11F74E32, BRF_GRA },			 //  4
+	{ "a68-11",       0x008000, 0xF24158CF, BRF_GRA },			 //  5
+	{ "a68-10",       0x008000, 0x83161Ed0, BRF_GRA },			 //  6
+	
+	{ "a68_05.bin",   0x002000, 0xe3d409e7, BRF_GRA },			 //  7 Text layer
+	{ "a68_04.bin",   0x002000, 0x6e5ac9d4, BRF_GRA },			 //  8
+
+	{ "a68_09",       0x008000, 0xA293CC2E, BRF_GRA },			 //  9 Background layer
+	{ "a68_08",       0x008000, 0x37662375, BRF_GRA },			 // 10
+	{ "a68_07",       0x008000, 0xCF1A964C, BRF_GRA },			 // 11
+	{ "a68_06",       0x008000, 0x05F9EB9A, BRF_GRA },			 // 12
+
+	{ "rom21",        0x000100, 0xD6360B4D, BRF_GRA },			 // 13
+	{ "rom20",        0x000100, 0x4CA01887, BRF_GRA },			 // 14
+	{ "rom19",        0x000100, 0x513224F0, BRF_GRA },			 // 15
+
+	{ "a68-03",       0x002000, 0x18DAA44C, BRF_ESS | BRF_PRG }, // 16
+
+	{ "68705.bin",    0x000800, 0x00000000, BRF_NODUMP | BRF_OPT | BRF_PRG }, // 17 MCU ROM
+};
+
+
+STD_ROM_PICK(getstarj)
+STD_ROM_FN(getstarj)
 
 static struct BurnRomInfo gtstarb2RomDesc[] = {
 	{ "gs_14.rom",    0x004000, 0x1A57A920, BRF_ESS | BRF_PRG }, //  0 CPU #0 code
@@ -2206,10 +2853,20 @@ struct BurnDriver BurnDrvTigerHB3 = {
 
 struct BurnDriver BurnDrvGetStar = {
 	"getstar", NULL, NULL, NULL, "1986",
-	"Guardian\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
+	"Guardian\0", "Protection MCU not emulated", "Toaplan / Taito America Corporation (Kitkorp license)", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
-	NULL, getstarRomInfo, getstarRomName, NULL, NULL, tigerhInputInfo, getstarDIPInfo,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
+	NULL, getstarRomInfo, getstarRomName, NULL, NULL, getstarInputInfo, getstarDIPInfo,
+	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette, 0x100,
+	280, 240, 4, 3
+};
+
+struct BurnDriver BurnDrvGetStarj = {
+	"getstarj", "getstar", NULL, NULL, "1986",
+	"Get Star (Japan)\0", NULL, "Toaplan / Taito", "Early Toaplan",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
+	NULL, getstarjRomInfo, getstarjRomName, NULL, NULL, getstarInputInfo, getstarDIPInfo,
 	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette, 0x100,
 	280, 240, 4, 3
 };
@@ -2219,7 +2876,7 @@ struct BurnDriver BurnDrvGetStarb2 = {
 	"Get Star (bootleg, set 2)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
-	NULL, gtstarb2RomInfo, gtstarb2RomName, NULL, NULL, tigerhInputInfo, getstarDIPInfo,
+	NULL, gtstarb2RomInfo, gtstarb2RomName, NULL, NULL, tigerhInputInfo, getstarb2DIPInfo,
 	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette, 0x100,
 	280, 240, 4, 3
 };
@@ -2229,7 +2886,7 @@ struct BurnDriver BurnDrvGetStarb1 = {
 	"Get Star (bootleg, set 1)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE | BDF_BOOTLEG, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
-	NULL, gtstarb1RomInfo, gtstarb1RomName, NULL, NULL, gtstarbaInputInfo, gtstarbaDIPInfo,
+	NULL, gtstarb1RomInfo, gtstarb1RomName, NULL, NULL, getstarInputInfo, getstarDIPInfo,
 	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette, 0x100,
 	280, 240, 4, 3
 };
@@ -2238,17 +2895,17 @@ struct BurnDriver BurnDrvAlcon = {
 	"alcon", NULL, NULL, NULL, "1986",
 	"Alcon (US)\0", "Protection MCU not emulated", "Taito America Corp.", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, alconRomInfo, alconRomName, NULL, NULL, tigerhInputInfo, slapfighDIPInfo,
 	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette, 0x100,
 	240, 280, 3, 4
 };
 
-struct BurnDriverD BurnDrvSlapFigh = {
+struct BurnDriver BurnDrvSlapFigh = {
 	"slapfigh", "alcon", NULL, NULL, "1986",
 	"Slap Fight (Japan set 1)\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
-	BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, slapfighRomInfo, slapfighRomName, NULL, NULL, tigerhInputInfo, slapfighDIPInfo,
 	tigerhInit, tigerhExit, tigerhFrame, NULL, tigerhScan, &tigerhRecalcPalette, 0x100,
 	240, 280, 3, 4

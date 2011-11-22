@@ -27,8 +27,8 @@ static UINT8 *DrvZ80RAM1;
 static UINT8 *DrvZ80RAM2;
 static UINT8 *DrvObjCtrl;
 
-static UINT32  *DrvPalette;
-static UINT8  DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
 static UINT8 *coin_lockout;
 static UINT8 *soundlatch;
@@ -52,6 +52,8 @@ static UINT8 DrvReset;
 
 static UINT16 DrvAxis[2];
 static INT32 nAnalogAxis[2] = {0,0};
+
+static INT16 *SampleBuffer = NULL;
 
 #define A(a, b, c, d) { a, b, (UINT8*)(c), d }
 
@@ -116,13 +118,13 @@ static struct BurnInputInfo Arknoid2InputList[] = {
 	{"P1 Start",		BIT_DIGITAL,	DrvJoy1 + 7,	"p1 start"	},
 	{"P1 Button 1",		BIT_DIGITAL,	DrvJoy1 + 4,	"p1 fire 1"	},
 
-	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"mouse x-axis"	),
+	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"p1 x-axis"	),
 
 	{"P2 Coin",		BIT_DIGITAL,	DrvJoy2 + 4,	"p2 coin"	},
 	{"P2 Start",		BIT_DIGITAL,	DrvJoy1 + 3,	"p2 start"	},
 	{"P2 Button 1",		BIT_DIGITAL,	DrvJoy1 + 0,	"p2 fire 1"	},
 
-	A("P2 Right / left",	BIT_ANALOG_REL, DrvAxis + 1,	"mouse x-axis"	),
+	A("P2 Right / left",	BIT_ANALOG_REL, DrvAxis + 1,	"p2 x-axis"	),
 
 	{"Reset",		BIT_DIGITAL,	&DrvReset,	"reset"		},
 	{"Service",		BIT_DIGITAL,	DrvJoy2 + 5,	"service"	},
@@ -139,14 +141,14 @@ static struct BurnInputInfo PlumppopInputList[] = {
 	{"P1 Button 1",		BIT_DIGITAL,	DrvJoy1 + 4,	"p1 fire 1"	},
 	{"P1 Button 2",		BIT_DIGITAL,	DrvJoy1 + 5,	"p1 fire 2"	},
 
-	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"mouse x-axis"	),
+	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"p1 x-axis"	),
 
 	{"P2 Coin",		BIT_DIGITAL,	DrvJoy3 + 5,	"p2 coin"	},
 	{"P2 Start",		BIT_DIGITAL,	DrvJoy2 + 7,	"p2 start"	},
 	{"P2 Button 1",		BIT_DIGITAL,	DrvJoy2 + 4,	"p2 fire 1"	},
 	{"P2 Button 2",		BIT_DIGITAL,	DrvJoy2 + 5,	"p2 fire 2"	},
 
-	A("P2 Right / left",	BIT_ANALOG_REL, DrvAxis + 1,	"mouse x-axis"	),
+	A("P2 Right / left",	BIT_ANALOG_REL, DrvAxis + 1,	"p2 x-axis"	),
 
 	{"Reset",		BIT_DIGITAL,	&DrvReset,	"reset"		},
 	{"Service",		BIT_DIGITAL,	DrvJoy3 + 0,	"service"	},
@@ -163,14 +165,14 @@ static struct BurnInputInfo JpopnicsInputList[] = {
 	{"P1 Button 1",		BIT_DIGITAL,	DrvJoy1 + 4,	"p1 fire 1"	},
 	{"P1 Button 2",		BIT_DIGITAL,	DrvJoy1 + 5,	"p1 fire 2"	},
 
-	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"mouse x-axis"	),
+	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"p1 x-axis"	),
 
 	{"P2 Coin",		BIT_DIGITAL,	DrvJoy2 + 6,	"p2 coin"	},
 	{"P2 Start",		BIT_DIGITAL,	DrvJoy2 + 7,	"p2 start"	},
 	{"P2 Button 1",		BIT_DIGITAL,	DrvJoy2 + 4,	"p2 fire 1"	},
 	{"P2 Button 2",		BIT_DIGITAL,	DrvJoy2 + 5,	"p2 fire 2"	},
 
-	A("P2 Right / left",	BIT_ANALOG_REL, DrvAxis + 1,	"mouse x-axis"	),
+	A("P2 Right / left",	BIT_ANALOG_REL, DrvAxis + 1,	"p2 x-axis"	),
 
 	{"Reset",		BIT_DIGITAL,	&DrvReset,	"reset"		},
 	{"Dip A",		BIT_DIPSWITCH,	DrvDips + 0,	"dip"		},
@@ -906,9 +908,13 @@ static INT32 DrvDoReset()
 	}
 
 	tnzs_mcu_reset();
-
-	BurnYM2203Reset();
-	BurnYM2151Reset();
+	
+	if (tnzs_mcu_type() == MCU_NONE_JPOPNICS) {
+		BurnYM2151Reset();
+	} else {
+		BurnYM2203Reset();
+	}
+	
 	DACReset();
 
 	kageki_sample_pos = 0;
@@ -932,6 +938,8 @@ static INT32 MemIndex()
 	DrvSndROM		= Next; Next += 0x010000;
 
 	DrvPalette		= (UINT32*)Next; Next += 0x0200 * sizeof(UINT32);
+	
+	SampleBuffer    = (INT16*)Next; Next += nBurnSoundLen * 2 * sizeof(INT16);
 
 	AllRam			= Next;
 
@@ -976,7 +984,7 @@ static void kageki_sample_init()
 			}
 		}
 
-		kageki_sample_data[i] = (INT16*)malloc(size * sizeof(INT16));
+		kageki_sample_data[i] = (INT16*)BurnMalloc(size * sizeof(INT16));
 		kageki_sample_size[i] = size;
 
 		if (start < 0x100) start = size = 0;
@@ -993,16 +1001,13 @@ static void kageki_sample_init()
 static void kageki_sample_exit()
 {
 	for (INT32 i = 0; i < 0x30; i++) {
-		if (kageki_sample_data[i] != NULL) {
-			free (kageki_sample_data[i]);
-			kageki_sample_data[i] = NULL;
-		}
+		BurnFree (kageki_sample_data[i]);
 	}
 }
 
 static INT32 tnzs_gfx_decode()
 {
-	UINT8 *tmp = (UINT8*)malloc(0x200000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x200000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -1022,17 +1027,14 @@ static INT32 tnzs_gfx_decode()
 		memcpy (DrvGfxROM + 0x200000, DrvGfxROM + 0x000000, 0x200000);
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
 
 static INT32 insectx_gfx_decode()
 {
-	UINT8 *tmp = (UINT8*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -1047,10 +1049,7 @@ static INT32 insectx_gfx_decode()
 
 	memcpy (DrvGfxROM + 0x200000, DrvGfxROM + 0x000000, 0x200000);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -1060,7 +1059,7 @@ static INT32 Type1Init(INT32 mcutype)
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1303,17 +1302,24 @@ static INT32 Type1Init(INT32 mcutype)
 
 	tnzs_mcu_init(mcutype);
 
-	BurnYM2151Init(3000000, 30.0); // jpopnics
-
-	BurnYM2203Init(1, 3000000, NULL, DrvSynchroniseStream, DrvGetTime, 1);
-
-	if (mcutype == MCU_NONE_KAGEKI) {
-		BurnYM2203SetPorts(0, &kageki_ym2203_portA, NULL, NULL, &kageki_ym2203_write_portB);
+	if (mcutype == MCU_NONE_JPOPNICS) {
+		BurnYM2151Init(3000000, 30.0); // jpopnics
 	} else {
-		BurnYM2203SetPorts(0, &tnzs_ym2203_portA, &tnzs_ym2203_portB, NULL, NULL);
-	}
+		BurnYM2203Init(1, 3000000, NULL, DrvSynchroniseStream, DrvGetTime, 0);
 
-	DACInit(0, 0, 1); // kabukiz
+		if (mcutype == MCU_NONE_KAGEKI) {
+			BurnYM2203SetPorts(0, &kageki_ym2203_portA, NULL, NULL, &kageki_ym2203_write_portB);
+			BurnYM2203SetVolumeShift(2);
+		} else {
+			BurnYM2203SetPorts(0, &tnzs_ym2203_portA, &tnzs_ym2203_portB, NULL, NULL);
+		}
+		
+		if (mcutype == MCU_EXTRMATN || mcutype == MCU_DRTOPPEL) {
+			BurnYM2203SetVolumeShift(2);
+		}
+	}	
+
+	DACInit(0, 0, 0); // kabukiz
 
 	GenericTilesInit();
 
@@ -1327,7 +1333,7 @@ static INT32 Type2Init()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1418,9 +1424,7 @@ static INT32 Type2Init()
 	BurnYM2203SetPorts(0, NULL, NULL, &kabukiz_sound_bankswitch, &kabukiz_dac_write);
 	BurnTimerAttachZet(6000000);
 
-	BurnYM2151Init(3000000, 30.0); // jpopnics
-
-	DACInit(0, 0, 1); // kabukiz
+	DACInit(0, 0, 0); // kabukiz
 
 	GenericTilesInit();
 
@@ -1439,10 +1443,7 @@ static INT32 DrvExit()
 	BurnYM2151Exit();
 	DACExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	if (tnzs_mcu_type() == MCU_NONE_KAGEKI) {
 		kageki_sample_exit();
@@ -1468,8 +1469,8 @@ static void kageki_sample_render(INT16 *pSoundBuf, INT32 nLength)
 		if (Addr >= size) break;
 		short Sample = ptr[(INT32)Addr];
 
-		pSoundBuf[i    ] += Sample;
-		pSoundBuf[i + 1] += Sample;
+		pSoundBuf[i    ] = Sample;
+		pSoundBuf[i + 1] = Sample;
 
 		Addr += Step;
 	}
@@ -1754,15 +1755,17 @@ static INT32 DrvFrame()
 			BurnTimerUpdate(i * (nCyclesTotal[nCurrentCPU] / nInterleave));
 			ZetClose();
 		}
-
+		
 		if (pBurnSoundOut) {
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT16* pSoundBuf2 = SampleBuffer + (nSoundBufferPos << 1);
 			ZetOpen(2);
-			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			kageki_sample_render(pSoundBuf, nSegmentLength);
-			DACUpdate(pSoundBuf, nSegmentLength);
+			if (tnzs_mcu_type() == MCU_NONE_JPOPNICS) {
+				BurnYM2151Render(pSoundBuf, nSegmentLength);
+			}
+			kageki_sample_render(pSoundBuf2, nSegmentLength);
+			DACUpdate(pSoundBuf2, nSegmentLength);
 			ZetClose();
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -1772,16 +1775,27 @@ static INT32 DrvFrame()
 	if (tnzs_mcu_type() == MCU_NONE) {
 		BurnTimerEndFrame(nCyclesTotal[2]);
 	}
-
-	// Make sure the buffer is entirely filled.
+	
 	if (pBurnSoundOut) {
 		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
 		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		INT16* pSoundBuf2 = SampleBuffer + (nSoundBufferPos << 1);
 		if (nSegmentLength) {
-			BurnYM2151Render(pSoundBuf, nSegmentLength);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			kageki_sample_render(pSoundBuf, nSegmentLength);
-			DACUpdate(pSoundBuf, nSegmentLength);
+			if (tnzs_mcu_type() == MCU_NONE_JPOPNICS) {
+				BurnYM2151Render(pSoundBuf, nSegmentLength);
+			}
+			kageki_sample_render(pSoundBuf2, nSegmentLength);
+			DACUpdate(pSoundBuf2, nSegmentLength);
+		}
+	}
+	
+	if (tnzs_mcu_type() != MCU_NONE_JPOPNICS) {
+		if (pBurnSoundOut) {
+			BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+			for (int i = 0; i < nBurnSoundLen; i++) {
+				pBurnSoundOut[(i << 1) + 0] += SampleBuffer[(i << 1) + 0];
+				pBurnSoundOut[(i << 1) + 1] += SampleBuffer[(i << 1) + 1];
+			}
 		}
 	}
 
@@ -2614,7 +2628,7 @@ STD_ROM_FN(kabukiz)
 
 struct BurnDriverD BurnDrvKabukiz = {
 	"kabukiz", NULL, NULL, NULL, "1988",
-	"Kabuki-Z (World)\0", "Bad Graphics & Sound", "Taito Corporation Japan", "Miscellaneous",
+	"Kabuki-Z (World)\0", "Imperfect graphics", "Taito Corporation Japan", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, kabukizRomInfo, kabukizRomName, NULL, NULL, CommonInputInfo, KabukizDIPInfo,
@@ -2643,7 +2657,7 @@ STD_ROM_FN(kabukizj)
 
 struct BurnDriverD BurnDrvKabukizj = {
 	"kabukizj", "kabukiz", NULL, NULL, "1988",
-	"Kabuki-Z (Japan)\0", "Bad Graphics & Sound", "Taito Corporation", "Miscellaneous",
+	"Kabuki-Z (Japan)\0", "Imperfect graphics", "Taito Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_MISC, 0,
 	NULL, kabukizjRomInfo, kabukizjRomName, NULL, NULL, CommonInputInfo, KabukizjDIPInfo,
@@ -2705,7 +2719,7 @@ static INT32 JpopnicsInit()
 
 struct BurnDriver BurnDrvJpopnics = {
 	"jpopnics", NULL, NULL, NULL, "1992",
-	"Jumping Pop (Nics, Korean bootleg of Plump Pop)\0", NULL, "Nics", "Miscellaneous",
+	"Jumping Pop (Nics, Korean bootleg of Plump Pop)\0", "Imperfect graphics", "Nics", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_MISC, 0,
 	NULL, jpopnicsRomInfo, jpopnicsRomName, NULL, NULL, JpopnicsInputInfo, JpopnicsDIPInfo,
