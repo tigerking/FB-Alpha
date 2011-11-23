@@ -242,19 +242,19 @@ static INT32 MemIndex()
 	RamStart	= Next;
 	
 	RamPal		= Next; Next += 0x000800;			// 1024 of X1R5G5B5 Palette
-	RamRaster	= (UINT16 *)Next; Next += 0x001000;	// 0x1b0000~0x1b07ff, Raster
+	RamRaster	= (UINT16 *)Next; Next += 0x000800 * sizeof(UINT16);	// 0x1b0000~0x1b07ff, Raster
 															// 0x1b0800~0x1b0801, NOP
 															// 0x1b0ff0~0x1b0fff, stack area during boot
-	RamBg1V		= (UINT16 *)Next; Next += 0x002000;	// BG1 Video Ram
-	RamBg2V		= (UINT16 *)Next; Next += 0x002000;	// BG2 Video Ram
-	RamSpr1		= (UINT16 *)Next; Next += 0x008000;	// Sprite 1 Ram
-	RamSpr2		= (UINT16 *)Next; Next += 0x002000;	// Sprite 2 Ram
+	RamBg1V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG1 Video Ram
+	RamBg2V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG2 Video Ram
+	RamSpr1		= (UINT16 *)Next; Next += 0x004000 * sizeof(UINT16);	// Sprite 1 Ram
+	RamSpr2		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// Sprite 2 Ram
 	Ram01		= Next; Next += 0x010000;					// Work Ram
 	RamZ80		= Next; Next += 0x000800;					// Z80 Ram 2K
 
 	RamEnd		= Next;
 
-	RamCurPal	= (UINT16 *)Next; Next += 0x000800;	// 1024 colors
+	RamCurPal	= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// 1024 colors
 
 	MemEnd		= Next;
 	return 0;
@@ -650,10 +650,8 @@ static INT32 DrvExit()
 	ZetExit();
 	SekExit();
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
+	
 	return 0;
 }
 
@@ -1159,7 +1157,7 @@ static INT32 DrvFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -1514,12 +1512,12 @@ static INT32 turbofrcMemIndex()
 	
 	RamStart	= Next;
 
-	RamBg1V		= (UINT16 *)Next; Next += 0x002000;	// BG1 Video Ram
-	RamBg2V		= (UINT16 *)Next; Next += 0x002000;	// BG2 Video Ram
-	RamSpr1		= (UINT16 *)Next; Next += 0x004000;	// Sprite 1 Ram
-	RamSpr2		= (UINT16 *)Next; Next += 0x004000;	// Sprite 2 Ram
-	RamSpr3		= (UINT16 *)Next; Next += 0x000800;	// Sprite 3 Ram
-	RamRaster	= (UINT16 *)Next; Next += 0x001000;	// Raster Ram
+	RamBg1V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG1 Video Ram
+	RamBg2V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG2 Video Ram
+	RamSpr1		= (UINT16 *)Next; Next += 0x002000 * sizeof(UINT16);	// Sprite 1 Ram
+	RamSpr2		= (UINT16 *)Next; Next += 0x002000 * sizeof(UINT16);	// Sprite 2 Ram
+	RamSpr3		= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// Sprite 3 Ram
+	RamRaster	= (UINT16 *)Next; Next += 0x000800 * sizeof(UINT16);	// Raster Ram
 	
 	RamSpr1SizeMask = 0x1FFF;
 	RamSpr2SizeMask = 0x1FFF;
@@ -1533,7 +1531,7 @@ static INT32 turbofrcMemIndex()
 
 	RamEnd		= Next;
 
-	RamCurPal	= (UINT16 *)Next; Next += 0x000800;
+	RamCurPal	= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);
 
 	MemEnd		= Next;
 	return 0;
@@ -1585,7 +1583,7 @@ static INT32 turbofrcInit()
 	Mem = NULL;
 	turbofrcMemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	turbofrcMemIndex();	
 	
@@ -2190,7 +2188,7 @@ static INT32 turbofrcFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -2528,11 +2526,11 @@ static INT32 karatblzMemIndex()
 	
 	RamStart	= Next;
 
-	RamBg1V		= (UINT16 *)Next; Next += 0x002000;	// BG1 Video Ram
-	RamBg2V		= (UINT16 *)Next; Next += 0x002000;	// BG2 Video Ram
-	RamSpr1		= (UINT16 *)Next; Next += 0x010000;	// Sprite 1 Ram
-	RamSpr2		= (UINT16 *)Next; Next += 0x010000;	// Sprite 2 Ram
-	RamSpr3		= (UINT16 *)Next; Next += 0x000800;	// Sprite 3 Ram
+	RamBg1V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG1 Video Ram
+	RamBg2V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG2 Video Ram
+	RamSpr1		= (UINT16 *)Next; Next += 0x008000 * sizeof(UINT16);	// Sprite 1 Ram
+	RamSpr2		= (UINT16 *)Next; Next += 0x008000 * sizeof(UINT16);	// Sprite 2 Ram
+	RamSpr3		= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// Sprite 3 Ram
 	Ram01		= Next; Next += 0x014000;					// Work Ram 1 + Work Ram 1
 	RamPal		= Next; Next += 0x000800;					// 1024 of X1R5G5B5 Palette
 	RamZ80		= Next; Next += 0x000800;					// Z80 Ram 2K
@@ -2544,7 +2542,7 @@ static INT32 karatblzMemIndex()
 
 	RamEnd		= Next;
 
-	RamCurPal	= (UINT16 *)Next; Next += 0x000800;
+	RamCurPal	= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);
 
 	MemEnd		= Next;
 	return 0;
@@ -2555,7 +2553,7 @@ static INT32 karatblzInit()
 	Mem = NULL;
 	karatblzMemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	karatblzMemIndex();	
 	
@@ -2830,7 +2828,7 @@ static INT32 karatblzFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -3248,16 +3246,16 @@ static INT32 spinlbrkMemIndex()
 	RomSndSize1 = 0x100000;
 	RomSndSize2 = 0x100000;
 	
-	RamSpr2		= (UINT16 *)Next; Next += 0x020000;	// Sprite 2 Ram
-	RamSpr1		= (UINT16 *)Next; Next += 0x004000;	// Sprite 1 Ram
+	RamSpr2		= (UINT16 *)Next; Next += 0x010000 * sizeof(UINT16);	// Sprite 2 Ram
+	RamSpr1		= (UINT16 *)Next; Next += 0x002000 * sizeof(UINT16);	// Sprite 1 Ram
 		
 	RamStart	= Next;
 
-	RamBg1V		= (UINT16 *)Next; Next += 0x001000;	// BG1 Video Ram
-	RamBg2V		= (UINT16 *)Next; Next += 0x002000;	// BG2 Video Ram
+	RamBg1V		= (UINT16 *)Next; Next += 0x000800 * sizeof(UINT16);	// BG1 Video Ram
+	RamBg2V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG2 Video Ram
 	Ram01		= Next; Next += 0x004000;					// Work Ram
-	RamSpr3		= (UINT16 *)Next; Next += 0x000800;	// Sprite 3 Ram
-	RamRaster	= (UINT16 *)Next; Next += 0x000200;	// Raster
+	RamSpr3		= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// Sprite 3 Ram
+	RamRaster	= (UINT16 *)Next; Next += 0x000100 * sizeof(UINT16);	// Raster
 	RamPal		= Next; Next += 0x000800;					// 1024 of X1R5G5B5 Palette
 	RamZ80		= Next; Next += 0x000800;					// Z80 Ram 2K
 
@@ -3269,7 +3267,7 @@ static INT32 spinlbrkMemIndex()
 
 	RamEnd		= Next;
 
-	RamCurPal	= (UINT16 *)Next; Next += 0x000800;
+	RamCurPal	= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);
 
 	MemEnd		= Next;
 	return 0;
@@ -3280,7 +3278,7 @@ static INT32 spinlbrkInit()
 	Mem = NULL;
 	spinlbrkMemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	spinlbrkMemIndex();	
 	
@@ -3492,7 +3490,7 @@ static INT32 spinlbrkFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();
@@ -3738,13 +3736,13 @@ static INT32 aerofgtbMemIndex()
 	RamStart	= Next;
 	
 	Ram01		= Next; Next += 0x014000;					// Work Ram 
-	RamBg1V		= (UINT16 *)Next; Next += 0x002000;	// BG1 Video Ram
-	RamBg2V		= (UINT16 *)Next; Next += 0x002000;	// BG2 Video Ram
-	RamSpr1		= (UINT16 *)Next; Next += 0x004000;	// Sprite 1 Ram
-	RamSpr2		= (UINT16 *)Next; Next += 0x004000;	// Sprite 2 Ram
-	RamSpr3		= (UINT16 *)Next; Next += 0x000800;	// Sprite 3 Ram
+	RamBg1V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG1 Video Ram
+	RamBg2V		= (UINT16 *)Next; Next += 0x001000 * sizeof(UINT16);	// BG2 Video Ram
+	RamSpr1		= (UINT16 *)Next; Next += 0x002000 * sizeof(UINT16);	// Sprite 1 Ram
+	RamSpr2		= (UINT16 *)Next; Next += 0x002000 * sizeof(UINT16);	// Sprite 2 Ram
+	RamSpr3		= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// Sprite 3 Ram
 	RamPal		= Next; Next += 0x000800;					// 1024 of X1R5G5B5 Palette
-	RamRaster	= (UINT16 *)Next; Next += 0x001000;	// Raster
+	RamRaster	= (UINT16 *)Next; Next += 0x000800 * sizeof(UINT16);	// Raster
 
 	RamSpr1SizeMask = 0x1FFF;
 	RamSpr2SizeMask = 0x1FFF;
@@ -3755,7 +3753,7 @@ static INT32 aerofgtbMemIndex()
 
 	RamEnd		= Next;
 
-	RamCurPal	= (UINT16 *)Next; Next += 0x000800;	// 1024 colors
+	RamCurPal	= (UINT16 *)Next; Next += 0x000400 * sizeof(UINT16);	// 1024 colors
 
 	MemEnd		= Next;
 	return 0;
@@ -3790,7 +3788,7 @@ static INT32 aerofgtbInit()
 	Mem = NULL;
 	aerofgtbMemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -4376,7 +4374,7 @@ static INT32 aerofgtbFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 	
 	BurnTimerEndFrame(nCyclesTotal[1]);
-	BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
 
 	ZetClose();
 	SekClose();

@@ -309,8 +309,8 @@ static INT32 MemIndex()
 
 	tilemap_reg		= Next; Next += 0x000001;
 
-	scrollx			= (UINT16*)Next; Next += 0x000008 * sizeof(INT16);
-	scrolly			= (UINT16*)Next; Next += 0x000008 * sizeof(INT16);
+	scrollx			= (UINT16*)Next; Next += 0x000008 * sizeof(UINT16);
+	scrolly			= (UINT16*)Next; Next += 0x000008 * sizeof(UINT16);
 
 	RamEnd			= Next;
 
@@ -334,7 +334,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -401,6 +401,7 @@ static INT32 DrvInit()
 
 	BurnYM2203Init(1, 4000000, &DrvIRQHandler, DrvSynchroniseStream, DrvGetTime, 0);
 	BurnYM2203SetPorts(0, NULL, NULL, &DrvYM2203WritePortA, &DrvYM2203WritePortB);
+	BurnYM2203SetVolumeShift(4);
 	BurnTimerAttachZet(4000000);
 
 	ZetClose();
@@ -422,10 +423,7 @@ static INT32 DrvExit()
 	BurnYM2203Exit();
 	MSM5205Exit();
 
-	if (AllMem) {
-		free(AllMem);
-		AllMem = NULL;
-	}
+	BurnFree(AllMem);
 
 	return 0;
 }
@@ -585,14 +583,6 @@ static INT32 DrvFrame()
 
 	if (pBurnSoundOut) {
 		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
-
-		// ym2203 doesn't have a volume control and is MUCH TOO LOUD
-		// so go ahead and quiet it down a bit.
-		for (INT32 i = 0; i < nBurnSoundLen * 2; i+=2) {
-			pBurnSoundOut[i + 0] /= 10;
-			pBurnSoundOut[i + 1] /= 10;
-		}
-
 		MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
 	}
 

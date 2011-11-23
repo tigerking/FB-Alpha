@@ -285,7 +285,7 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);										// blank all memory
 	MemIndex();	
 	
@@ -353,10 +353,8 @@ static INT32 DrvExit()
 	MSM6295Exit(0);
 	MSM6295Exit(1);
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
+	
 	return 0;
 }
 
@@ -576,7 +574,7 @@ static INT32 DrvFrame()
 	if (pBurnDraw) DrvDraw();
 	
 	if (pBurnSoundOut) {
-		memset(pBurnSoundOut, 0, nBurnSoundLen * 4);
+		memset(pBurnSoundOut, 0, nBurnSoundLen * 2 * sizeof(INT16));
 		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 		MSM6295Render(1, pBurnSoundOut, nBurnSoundLen);
 	}
