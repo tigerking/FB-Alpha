@@ -2803,7 +2803,7 @@ STD_ROM_FN(slapfgtr)
 
 struct BurnDriver BurnDrvTigerH = {
 	"tigerh", NULL, NULL, NULL, "1985",
-	"Tiger Heli (US)\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
+	"Tiger Heli (US)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, tigerhRomInfo, tigerhRomName, NULL, NULL, tigerhInputInfo, tigerhDIPInfo,
@@ -2813,7 +2813,7 @@ struct BurnDriver BurnDrvTigerH = {
 
 struct BurnDriver BurnDrvTigerhJ = {
 	"tigerhj", "tigerh", NULL, NULL, "1985",
-	"Tiger Heli (Japan)\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
+	"Tiger Heli (Japan)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, tigerhjRomInfo, tigerhjRomName, NULL, NULL, tigerhInputInfo, tigerhDIPInfo,
@@ -2853,7 +2853,7 @@ struct BurnDriver BurnDrvTigerHB3 = {
 
 struct BurnDriver BurnDrvGetStar = {
 	"getstar", NULL, NULL, NULL, "1986",
-	"Guardian\0", "Protection MCU not emulated", "Toaplan / Taito America Corporation (Kitkorp license)", "Early Toaplan",
+	"Guardian\0", NULL, "Toaplan / Taito America Corporation (Kitkorp license)", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
 	NULL, getstarRomInfo, getstarRomName, NULL, NULL, getstarInputInfo, getstarDIPInfo,
@@ -2893,7 +2893,7 @@ struct BurnDriver BurnDrvGetStarb1 = {
 
 struct BurnDriver BurnDrvAlcon = {
 	"alcon", NULL, NULL, NULL, "1986",
-	"Alcon (US)\0", "Protection MCU not emulated", "Taito America Corp.", "Early Toaplan",
+	"Alcon (US)\0", NULL, "Taito America Corp.", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, alconRomInfo, alconRomName, NULL, NULL, tigerhInputInfo, slapfighDIPInfo,
@@ -2903,7 +2903,7 @@ struct BurnDriver BurnDrvAlcon = {
 
 struct BurnDriver BurnDrvSlapFigh = {
 	"slapfigh", "alcon", NULL, NULL, "1986",
-	"Slap Fight (Japan set 1)\0", "Protection MCU not emulated", "Taito", "Early Toaplan",
+	"Slap Fight (Japan set 1)\0", NULL, "Taito", "Early Toaplan",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, slapfighRomInfo, slapfighRomName, NULL, NULL, tigerhInputInfo, slapfighDIPInfo,

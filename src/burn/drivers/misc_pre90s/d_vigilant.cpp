@@ -26,7 +26,7 @@ static UINT8 *DrvBackTiles        = NULL;
 static UINT8 *DrvSprites          = NULL;
 static UINT8 *DrvSamples          = NULL;
 static UINT8 *DrvTempRom          = NULL;
-static UINT32  *DrvPalette          = NULL;
+static UINT32 *DrvPalette         = NULL;
 
 static UINT8 DrvRomBank;
 static UINT8 DrvSoundLatch;
@@ -45,6 +45,8 @@ static INT32 nCyclesSegment;
 
 static UINT8 DrvHasYM2203 = 0;
 static UINT8 DrvKikcubicDraw = 0;
+
+static INT16 *DACBuffer = NULL;
 
 #define VECTOR_INIT		0
 #define YM2151_ASSERT		1
@@ -770,6 +772,8 @@ static INT32 MemIndex()
 	DrvChars               = Next; Next += 0x1000 * 8 * 8;
 	DrvSprites             = Next; Next += 0x1000 * 16 * 16;
 	DrvBackTiles           = Next; Next += 0x4000 * 32;
+	
+	DACBuffer              = (INT16*)Next; Next += nBurnSoundLen * 2 * sizeof(INT16);
 
 	MemEnd                 = Next;
 
@@ -849,7 +853,7 @@ UINT8 __fastcall VigilanteZ80Read1(UINT16 a)
 {
 	switch (a) {
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #1 Read => %04X\n"), a);
+//			bprintf(PRINT_NORMAL, _T("Z80 #1 Read => %04X\n"), a);
 		}
 	}
 
@@ -881,7 +885,7 @@ void __fastcall VigilanteZ80Write1(UINT16 a, UINT8 d)
 	
 	switch (a) {
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #1 Write => %04X, %02X\n"), a, d);
+//			bprintf(PRINT_NORMAL, _T("Z80 #1 Write => %04X, %02X\n"), a, d);
 		}
 	}
 }
@@ -912,7 +916,7 @@ UINT8 __fastcall VigilanteZ80PortRead1(UINT16 a)
 		}
 		
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Read => %02X\n"), a);
+//			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Read => %02X\n"), a);
 		}
 	}
 
@@ -945,7 +949,7 @@ UINT8 __fastcall BuccanrsZ80PortRead1(UINT16 a)
 		}
 		
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Read => %02X\n"), a);
+//			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Read => %02X\n"), a);
 		}
 	}
 
@@ -978,7 +982,7 @@ UINT8 __fastcall BuccanrsaZ80PortRead1(UINT16 a)
 		}
 		
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Read => %02X\n"), a);
+//			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Read => %02X\n"), a);
 		}
 	}
 
@@ -1039,7 +1043,7 @@ void __fastcall VigilanteZ80PortWrite1(UINT16 a, UINT8 d)
 		}
 		
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Write => %02X, %02X\n"), a, d);
+//			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Write => %02X, %02X\n"), a, d);
 		}
 	}
 }
@@ -1048,7 +1052,7 @@ UINT8 __fastcall KikcubicZ80Read1(UINT16 a)
 {
 	switch (a) {
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #1 Read => %04X\n"), a);
+//			bprintf(PRINT_NORMAL, _T("Z80 #1 Read => %04X\n"), a);
 		}
 	}
 
@@ -1075,7 +1079,7 @@ void __fastcall KikcubicZ80Write1(UINT16 a, UINT8 d)
 	
 	switch (a) {
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #1 Write => %04X, %02X\n"), a, d);
+//			bprintf(PRINT_NORMAL, _T("Z80 #1 Write => %04X, %02X\n"), a, d);
 		}
 	}
 }
@@ -1106,7 +1110,7 @@ UINT8 __fastcall KikcubicZ80PortRead1(UINT16 a)
 		}
 		
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Read => %02X\n"), a);
+//			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Read => %02X\n"), a);
 		}
 	}
 
@@ -1131,6 +1135,7 @@ void __fastcall KikcubicZ80PortWrite1(UINT16 a, UINT8 d)
 		}
 		
 		case 0x06: {
+			if (d == 0x20) return; // ???
 			DrvSoundLatch = d;
 			ZetClose();
 			ZetOpen(1);
@@ -1146,7 +1151,7 @@ void __fastcall KikcubicZ80PortWrite1(UINT16 a, UINT8 d)
 		}
 		
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Write => %02X, %02X\n"), a, d);
+//			bprintf(PRINT_NORMAL, _T("Z80 #1 Port Write => %02X, %02X\n"), a, d);
 		}
 	}
 }
@@ -1155,18 +1160,18 @@ UINT8 __fastcall VigilanteZ80Read2(UINT16 a)
 {
 	switch (a) {
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #2 Read => %04X\n"), a);
+//			bprintf(PRINT_NORMAL, _T("Z80 #2 Read => %04X\n"), a);
 		}
 	}
 
 	return 0;
 }
 
-void __fastcall VigilanteZ80Write2(UINT16 a, UINT8 d)
+void __fastcall VigilanteZ80Write2(UINT16 a, UINT8 /*d*/)
 {
 	switch (a) {
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #2 Write => %04X, %02X\n"), a, d);
+//			bprintf(PRINT_NORMAL, _T("Z80 #2 Write => %04X, %02X\n"), a, d);
 		}
 	}
 }
@@ -1189,7 +1194,7 @@ UINT8 __fastcall VigilanteZ80PortRead2(UINT16 a)
 		}
 		
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #2 Port Read => %02X\n"), a);
+//			bprintf(PRINT_NORMAL, _T("Z80 #2 Port Read => %02X\n"), a);
 		}
 	}
 
@@ -1233,7 +1238,7 @@ void __fastcall VigilanteZ80PortWrite2(UINT16 a, UINT8 d)
 		}
 		
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #2 Port Write => %02X, %02X\n"), a, d);
+//			bprintf(PRINT_NORMAL, _T("Z80 #2 Port Write => %02X, %02X\n"), a, d);
 		}
 	}
 }
@@ -1260,7 +1265,7 @@ UINT8 __fastcall BuccanrsZ80PortRead2(UINT16 a)
 		}
 		
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #2 Port Read => %02X\n"), a);
+//			bprintf(PRINT_NORMAL, _T("Z80 #2 Port Read => %02X\n"), a);
 		}
 	}
 
@@ -1314,7 +1319,7 @@ void __fastcall BuccanrsZ80PortWrite2(UINT16 a, UINT8 d)
 		}
 		
 		default: {
-			bprintf(PRINT_NORMAL, _T("Z80 #2 Port Write => %02X, %02X\n"), a, d);
+//			bprintf(PRINT_NORMAL, _T("Z80 #2 Port Write => %02X, %02X\n"), a, d);
 		}
 	}
 }
@@ -1367,11 +1372,11 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -1404,10 +1409,7 @@ static INT32 DrvInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x20000, 15, 1); if (nRet != 0) return 1;
 	GfxDecode(0x4000, 4, 32, 1, BackTilePlaneOffsets, BackTileXOffsets, BackTileYOffsets, 0x80, DrvTempRom, DrvBackTiles);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Load sample Roms
 	nRet = BurnLoadRom(DrvSamples + 0x00000, 16, 1); if (nRet != 0) return 1;
@@ -1470,11 +1472,11 @@ static INT32 BuccanrsInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(DrvZ80Rom1 + 0x00000,  0, 1); if (nRet != 0) return 1;
@@ -1504,10 +1506,7 @@ static INT32 BuccanrsInit()
 	nRet = BurnLoadRom(DrvTempRom + 0x00000, 10, 1); if (nRet != 0) return 1;
 	GfxDecode(0x4000, 4, 32, 1, BuccBackTilePlaneOffsets, BackTileXOffsets, BackTileYOffsets, 0x80, DrvTempRom, DrvBackTiles);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Load sample Roms
 	nRet = BurnLoadRom(DrvSamples + 0x00000, 11, 1); if (nRet != 0) return 1;
@@ -1556,8 +1555,9 @@ static INT32 BuccanrsInit()
 	
 	DrvHasYM2203 = 1;
 	BurnYM2203Init(2, 18432000 / 6, &BuccanrsYM2203IRQHandler, BuccanrsSynchroniseStream, BuccanrsGetTime, 0);
+	BurnYM2203SetVolumeShift(2);
 	BurnTimerAttachZet(18432000 / 6);
-	DACInit(0, 0, 1);
+	DACInit(0, 0, 0);
 	DACSetVolShift(0, 1);
 	
 	DrvDoReset();
@@ -1573,11 +1573,11 @@ static INT32 KikcubicInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x80000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x80000);
 
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "kikcubicb")) {
 		// Load Z80 #1 Program Roms
@@ -1632,10 +1632,7 @@ static INT32 KikcubicInit()
 		nRet = BurnLoadRom(DrvSamples + 0x00000, 8, 1); if (nRet != 0) return 1;
 	}
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the Z80 emulation
 	ZetInit(2);
@@ -1700,10 +1697,7 @@ static INT32 DrvExit()
 	
 	GenericTilesExit();
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 	
 	DrvRomBank = 0;
 	DrvSoundLatch = 0;
@@ -1944,11 +1938,13 @@ static void KikcubicDraw()
 static INT32 DrvFrame()
 {
 	INT32 nInterleave = nBurnSoundLen;
-	INT32 nFireNmiEveryFrames = 3;
-	if (nBurnSoundRate == 11025) nFireNmiEveryFrames = 2;
-	if (nBurnSoundRate == 44100) nFireNmiEveryFrames = 6;
-	if (nBurnSoundRate == 48000) nFireNmiEveryFrames = 7;
 	INT32 nSoundBufferPos = 0;
+	
+	INT32 MSMIRQSlice[128];
+	
+	for (INT32 i = 0; i < 128; i++) {
+			MSMIRQSlice[i] = (INT32)((double)((nInterleave * (i + 1)) / 129));
+		}
 	
 	if (DrvReset) DrvDoReset();
 
@@ -1961,7 +1957,6 @@ static INT32 DrvFrame()
 	for (INT32 i = 0; i < nInterleave; i++) {
 		INT32 nCurrentCPU, nNext;
 
-		// Run Z80 #1
 		nCurrentCPU = 0;
 		ZetOpen(nCurrentCPU);
 		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
@@ -1970,7 +1965,6 @@ static INT32 DrvFrame()
 		if (i == (nInterleave - 1)) ZetRaiseIrq(0);
 		ZetClose();
 
-		// Run Z80 #2
 		nCurrentCPU = 1;
 		ZetOpen(nCurrentCPU);
 		if (!DrvHasYM2203) {
@@ -1980,22 +1974,25 @@ static INT32 DrvFrame()
 		} else {
 			BurnTimerUpdate(i * (nCyclesTotal[nCurrentCPU] / nInterleave));
 		}
-		if ((i % nFireNmiEveryFrames) == 0) {
-			ZetNmi();
+		for (INT32 j = 0; j < 128; j++) {
+			if (i == MSMIRQSlice[j]) {
+				ZetNmi();
+			}
 		}
 		ZetClose();
 		
 		if (pBurnSoundOut) {
 			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT16* pSoundBuf2 = DACBuffer + (nSoundBufferPos << 1);
 			ZetOpen(1);
 			if (DrvHasYM2203) {
-				BurnYM2203Update(pSoundBuf, nSegmentLength);
+				DACUpdate(pSoundBuf2, nSegmentLength);
 			} else {
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
+				DACUpdate(pSoundBuf, nSegmentLength);
 			}
 			ZetClose();
-			DACUpdate(pSoundBuf, nSegmentLength);
 			nSoundBufferPos += nSegmentLength;
 		}
 	}
@@ -2011,14 +2008,25 @@ static INT32 DrvFrame()
 		
 		if (nSegmentLength) {
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			INT16* pSoundBuf2 = DACBuffer + (nSoundBufferPos << 1);
 			ZetOpen(1);
 			if (DrvHasYM2203) {
-				BurnYM2203Update(pSoundBuf, nSegmentLength);
+				DACUpdate(pSoundBuf2, nSegmentLength);
 			} else {
 				BurnYM2151Render(pSoundBuf, nSegmentLength);
+				DACUpdate(pSoundBuf, nSegmentLength);
 			}
-			ZetClose();
-			DACUpdate(pSoundBuf, nSegmentLength);
+			ZetClose();			
+		}
+	}
+	
+	if (DrvHasYM2203 && pBurnSoundOut) {
+		ZetOpen(1);
+		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+		ZetClose();
+		for (INT32 i = 0; i < nBurnSoundLen; i++) {
+			pBurnSoundOut[(i << 1) + 0] += DACBuffer[(i << 1) + 0];
+			pBurnSoundOut[(i << 1) + 1] += DACBuffer[(i << 1) + 1];
 		}
 	}
 	
@@ -2163,7 +2171,7 @@ struct BurnDriver BurnDrvKikcubicb = {
 
 struct BurnDriver BurnDrvBuccanrs = {
 	"buccanrs", NULL, NULL, NULL, "1989",
-	"Buccaneers (set 1)\0", "No sound", "Duintronic", "Miscellaneous",
+	"Buccaneers (set 1)\0", NULL, "Duintronic", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
 	NULL, BuccanrsRomInfo, BuccanrsRomName, NULL, NULL, BuccanrsInputInfo, BuccanrsDIPInfo,
@@ -2173,7 +2181,7 @@ struct BurnDriver BurnDrvBuccanrs = {
 
 struct BurnDriver BurnDrvBuccanrsa = {
 	"buccanrsa", "buccanrs", NULL, NULL, "1989",
-	"Buccaneers (set 2)\0", "No sound", "Duintronic", "Miscellaneous",
+	"Buccaneers (set 2)\0", NULL, "Duintronic", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT, 0,
 	NULL, BuccanrsaRomInfo, BuccanrsaRomName, NULL, NULL, BuccanrsaInputInfo, BuccanrsaDIPInfo,

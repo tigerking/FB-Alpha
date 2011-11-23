@@ -256,7 +256,7 @@ static INT32 MemIndex()
 
 static INT32 DrvPaletteInit()
 {
-	UINT32 *tmp = (UINT32*)malloc(0x100 * sizeof(UINT32));
+	UINT32 *tmp = (UINT32*)BurnMalloc(0x100 * sizeof(UINT32));
 	if (tmp == NULL) { 
 		return 1;
 	}
@@ -301,17 +301,14 @@ static INT32 DrvPaletteInit()
 		Palette[0x700 + i] = tmp[Prom[0x500 + i] + 0xc0];
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
 
 static INT32 DrvGfxDecode()
 {
-	UINT8 *tmp = (UINT8*)malloc(0xc000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0xc000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -340,10 +337,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x100, 4, 16, 16, SpriPlanes + 0, SpriXOffs, SpriYOffs, 0x200, tmp, Gfx2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -355,7 +349,7 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -431,10 +425,7 @@ static INT32 DrvExit()
 	AY8910Exit(1);
 	GenericTilesExit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	Mem = MemEnd = Rom0 = Rom1 = NULL;
 	Gfx0 = Gfx1 = Gfx2 = Prom = NULL;
@@ -583,12 +574,10 @@ static INT32 DrvFrame()
 		ZetOpen(0);
 		nCycles[0] -= ZetRun(nCycles[0] / (nInterleave - i));
 		if (i == ((nInterleave / 2) - 1)) {
-			//ZetRaiseIrq(0xd7);
 			ZetSetVector(0xd7);
 			ZetRaiseIrq(0);
 		}
 		if (i == ( nInterleave      - 1)) {
-			//ZetRaiseIrq(0xcf);
 			ZetSetVector(0xcf);
 			ZetRaiseIrq(0);
 		}
@@ -601,7 +590,7 @@ static INT32 DrvFrame()
 
 		if (pBurnSoundOut) {
 			INT32 nSample;
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
@@ -613,18 +602,12 @@ static INT32 DrvFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) | 0] = nSample;
 				pSoundBuf[(n << 1) | 1] = nSample;
-    			}
-				nSoundBufferPos += nSegmentLength;
+    		}
+			nSoundBufferPos += nSegmentLength;
 		}
 	}
 
@@ -643,13 +626,7 @@ static INT32 DrvFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) | 0] = nSample;
 				pSoundBuf[(n << 1) | 1] = nSample;
@@ -742,7 +719,7 @@ struct BurnDriver BurnDrvvulgus = {
 	"vulgus", NULL, NULL, NULL, "1984",
 	"Vulgus (set 1)\0", NULL, "Capcom", "Misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, vulgusRomInfo, vulgusRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
 	224, 256, 3, 4
@@ -792,7 +769,7 @@ struct BurnDriver BurnDrvvulgusa = {
 	"vulgusa", "vulgus", NULL, NULL, "1984",
 	"Vulgus (set 2)\0", NULL, "Capcom", "Misc",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, vulgusaRomInfo, vulgusaRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
 	224, 256, 3, 4
@@ -847,4 +824,3 @@ struct BurnDriver BurnDrvvulgusj = {
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
 	224, 256, 3, 4
 };
-

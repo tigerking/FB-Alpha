@@ -17,8 +17,8 @@ static UINT8 *DrvGfxROM;
 static UINT8 *DrvColPROM;
 static UINT8 *DrvZ80RAM;
 static UINT8 *DrvVidRAM;
-static UINT32  *Palette;
-static UINT32  *DrvPalette;
+static UINT32 *Palette;
+static UINT32 *DrvPalette;
 
 static INT16 *pAY8910Buffer[3];
 
@@ -41,7 +41,7 @@ static struct BurnInputInfo WallcInputList[] = {
 	{"P1 Button 1",	BIT_DIGITAL,	DrvJoy1 + 3,	"p1 fire 1"	},
 	{"P1 Button 2",	BIT_DIGITAL,	DrvJoy1 + 0,	"p1 fire 2"	},
 
-	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"mouse x-axis"),
+	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"p1 x-axis"),
 
 	{"Service",     BIT_DIGITAL,	DrvJoy1 + 6,	"service"	},
 	{"Reset",	BIT_DIGITAL,	&DrvReset,	"reset"		},
@@ -53,8 +53,8 @@ STDINPUTINFO(Wallc)
 
 static struct BurnDIPInfo WallcDIPList[]=
 {
-	{0x09, 0xff, 0xff, 0xff, NULL                     	},
-	{0x0a, 0xff, 0xff, 0xff, NULL                     	},
+	{0x09, 0xff, 0xff, 0x61, NULL                     	},
+	{0x0a, 0xff, 0xff, 0x00, NULL                     	},
 
 	{0   , 0xfe, 0   , 4   , "Lives"                  	},
 	{0x09, 0x01, 0x03, 0x03, "5"       		  	},
@@ -159,7 +159,7 @@ static INT32 DrvGfxDecode()
 	INT32 XOffs[8] = { 7, 6,  5,  4,  3,  2,  1,  0 };
 	INT32 YOffs[8] = { 0, 8, 16, 24, 32, 40, 48, 56 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x3000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x3000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -168,10 +168,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x0100, 3, 8, 8, Plane, XOffs, YOffs, 0x040, tmp, DrvGfxROM);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -232,7 +229,7 @@ static INT32 DrvInit(INT32 incr)
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -289,10 +286,7 @@ static INT32 DrvExit()
 	ZetExit();
 	AY8910Exit(0);
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -355,13 +349,7 @@ static INT32 DrvFrame()
 
 			nSample /= 4;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
+			nSample = BURN_SND_CLIP(nSample);
 
 			pBurnSoundOut[(n << 1) + 0] = nSample;
 			pBurnSoundOut[(n << 1) + 1] = nSample;

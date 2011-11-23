@@ -1792,7 +1792,7 @@ static INT32 DrvFrame()
 	if (tnzs_mcu_type() != MCU_NONE_JPOPNICS) {
 		if (pBurnSoundOut) {
 			BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
-			for (int i = 0; i < nBurnSoundLen; i++) {
+			for (INT32 i = 0; i < nBurnSoundLen; i++) {
 				pBurnSoundOut[(i << 1) + 0] += SampleBuffer[(i << 1) + 0];
 				pBurnSoundOut[(i << 1) + 1] += SampleBuffer[(i << 1) + 1];
 			}

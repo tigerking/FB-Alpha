@@ -1192,7 +1192,7 @@ static INT32 ToramichInit()
 
 struct BurnDriver BurnDrvToramich = {
 	"toramich", "tigeroad", NULL, NULL, "1987",
-	"Tora-he no Michi (Japan)\0", "Sample Z80 unemulated", "Capcom", "hardware",
+	"Tora-he no Michi (Japan)\0", NULL, "Capcom", "hardware",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SCRFIGHT | GBF_PLATFORM, 0,
 	NULL, toramichRomInfo, toramichRomName, NULL, NULL, TigeroadInputInfo, ToramichDIPInfo,

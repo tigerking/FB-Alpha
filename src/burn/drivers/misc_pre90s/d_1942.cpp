@@ -964,8 +964,8 @@ static INT32 DrvFrame()
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
-    			}
-				nSoundBufferPos += nSegmentLength;
+    		}
+			nSoundBufferPos += nSegmentLength;
 		}
 	}
 	

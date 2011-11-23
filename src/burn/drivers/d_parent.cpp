@@ -47,7 +47,7 @@ STD_ROM_FN(Bagman)
 
 struct BurnDriver BurnDrvBagman = {
 	"bagman", NULL, NULL, NULL, "1982",
-	"Bagman\0", NULL, "Valadon Automation", "Miscellaneous",
+	"Bagman\0", "Parent set for working drivers", "Valadon Automation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	0, 2, HARDWARE_MISC_PRE90S, GBF_MAZE, 0,
 	NULL, BagmanRomInfo, BagmanRomName, NULL, NULL, ParentInputInfo, NULL,
@@ -83,7 +83,7 @@ STD_ROM_FN(Ckong)
 
 struct BurnDriver BurnDrvCkong = {
 	"ckong", NULL, NULL, NULL, "1981",
-	"Crazy Kong Part II (set 1)\0", NULL, "Falcon", "Miscellaneous",
+	"Crazy Kong Part II (set 1)\0", "Parent set for working drivers", "Falcon", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	0, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, CkongRomInfo, CkongRomName, NULL, NULL, ParentInputInfo, NULL,
@@ -116,7 +116,7 @@ STD_ROM_FN(Dkongjr)
 
 struct BurnDriver BurnDrvDkongjr = {
 	"dkongjr", NULL, NULL, NULL, "1982",
-	"Donkey Kong Junior (US)\0", NULL, "Nintendo of America", "Miscellaneous",
+	"Donkey Kong Junior (US)\0", "Parent set for working drivers", "Nintendo of America", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	0, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, DkongjrRomInfo, DkongjrRomName, NULL, NULL, ParentInputInfo, NULL,
@@ -145,7 +145,7 @@ STD_ROM_FN(Dockman)
 
 struct BurnDriver BurnDrvDockman = {
 	"dockman", NULL, NULL, NULL, "1982",
-	"Dock Man\0", NULL, "Taito Corporation", "Miscellaneous",
+	"Dock Man\0", "Parent set for working drivers", "Taito Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	0, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, DockmanRomInfo, DockmanRomName, NULL, NULL, ParentInputInfo, NULL,
@@ -183,7 +183,7 @@ STD_ROM_FN(Eightballact)
 
 struct BurnDriver BurnDrvEightballact = {
 	"8ballact", NULL, NULL, NULL, "1984",
-	"Eight Ball Action (DK conversion)\0", NULL, "Seatongrove Ltd (Magic Eletronics USA licence)", "Miscellaneous",
+	"Eight Ball Action (DK conversion)\0", "Parent set for working drivers", "Seatongrove Ltd (Magic Eletronics USA licence)", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	0, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
 	NULL, EightballactRomInfo, EightballactRomName, NULL, NULL, ParentInputInfo, NULL,
@@ -217,7 +217,7 @@ STD_ROM_FN(Hunchbak)
 
 struct BurnDriver BurnDrvHunchbak = {
 	"hunchbak", NULL, NULL, NULL, "1983",
-	"Hunchback (set 1)\0", NULL, "Century Electronics", "Miscellaneous",
+	"Hunchback (set 1)\0", "Parent set for working drivers", "Century Electronics", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	0, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, HunchbakRomInfo, HunchbakRomName, NULL, NULL, ParentInputInfo, NULL,
@@ -251,7 +251,7 @@ STD_ROM_FN(Huncholy)
 
 struct BurnDriver BurnDrvHuncholy = {
 	"huncholy", NULL, NULL, NULL, "1984",
-	"Hunchback Olympic\0", NULL, "Seatongrove Ltd", "Miscellaneous",
+	"Hunchback Olympic\0", "Parent set for working drivers", "Seatongrove Ltd", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	0, 2, HARDWARE_MISC_PRE90S, GBF_SPORTSMISC, 0,
 	NULL, HuncholyRomInfo, HuncholyRomName, NULL, NULL, ParentInputInfo, NULL,
@@ -274,7 +274,7 @@ STD_ROM_FN(Maniacsq)
 
 struct BurnDriver BurnDrvManiacsq = {
 	"maniacsq", NULL, NULL, NULL, "1996",
-	"Maniac Square (unprotected)\0", NULL, "Gaelco", "Miscellaneous",
+	"Maniac Square (unprotected)\0", "Parent set for working drivers", "Gaelco", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	0, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
 	NULL, ManiacsqRomInfo, ManiacsqRomName, NULL, NULL, ParentInputInfo, NULL,
@@ -306,7 +306,7 @@ STD_ROM_FN(Phoenix)
 
 struct BurnDriver BurnDrvPhoenix = {
 	"phoenix", NULL, NULL, NULL, "1980",
-	"Phoenix (Amstar)\0", NULL, "Amstar", "Miscellaneous",
+	"Phoenix (Amstar)\0", "Parent set for working drivers", "Amstar", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	0, 2, HARDWARE_MISC_PRE90S, GBF_VERSHOOT, 0,
 	NULL, PhoenixRomInfo, PhoenixRomName, NULL, NULL, ParentInputInfo, NULL,
@@ -334,7 +334,7 @@ STD_ROM_FN(Thepit)
 
 struct BurnDriver BurnDrvThepit = {
 	"thepit", NULL, NULL, NULL, "1992",
-	"The Pit\0", NULL, "Taito", "Miscellaneous",
+	"The Pit\0", "Parent set for working drivers", "Taito", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	0, 2, HARDWARE_MISC_PRE90S, GBF_PLATFORM, 0,
 	NULL, ThepitRomInfo, ThepitRomName, NULL, NULL, ParentInputInfo, NULL,

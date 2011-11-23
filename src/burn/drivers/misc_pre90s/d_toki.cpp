@@ -1961,7 +1961,7 @@ static struct BurnRomInfo tokibRomDesc[] = {
 STD_ROM_PICK(tokib)
 STD_ROM_FN(tokib)
 
-struct BurnDriverD BurnDrvTokib = {
+struct BurnDriver BurnDrvTokib = {
 	"tokib", "toki", NULL, NULL, "1989",
 	"Toki (bootleg)\0", NULL, "bootleg", "hardware",
 	NULL, NULL, NULL, NULL,

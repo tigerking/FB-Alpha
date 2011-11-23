@@ -26,7 +26,7 @@ static UINT8 *Wc90TextVideoRam = NULL;
 static UINT8 *Wc90SpriteRam    = NULL;
 static UINT8 *Wc90PaletteRam   = NULL;
 static UINT8 *Wc90SharedRam    = NULL;
-static UINT32 *Wc90Palette      = NULL;
+static UINT32 *Wc90Palette     = NULL;
 static UINT8 *Wc90CharTiles    = NULL;
 static UINT8 *Wc90BgTiles      = NULL;
 static UINT8 *Wc90FgTiles      = NULL;
@@ -1060,11 +1060,11 @@ static INT32 Wc90Init()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	Wc90TempGfx = (UINT8*)malloc(0x80000);
+	Wc90TempGfx = (UINT8*)BurnMalloc(0x80000);
 	if (Wc90TempGfx == NULL) return 1;
 
 	// Load Z80 #1 Program Roms
@@ -1103,10 +1103,7 @@ static INT32 Wc90Init()
 	nRet = BurnLoadRom(Wc90TempGfx + 0x60000, 13, 1); if (nRet != 0) return 1;
 	GfxDecode(4096, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x200, Wc90TempGfx, Wc90Sprites);
 
-	if (Wc90TempGfx) {
-		free(Wc90TempGfx);
-		Wc90TempGfx = NULL;
-	}
+	BurnFree(Wc90TempGfx);
 
 	// Load ADPCM Rom
 	nRet = BurnLoadRom(Wc90YM2608Rom, 14, 1); if (nRet !=0) return 1;
@@ -1205,10 +1202,7 @@ static INT32 Wc90Exit()
 	GenericTilesExit();
 	BurnYM2608Exit();
 
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 	
 	Wc90Scroll0YLo = 0;
 	Wc90Scroll0YHi = 0;
