@@ -113,6 +113,8 @@ depobj	:= 	about.o bzip.o cona.o debugger.o drv.o dwmapi_core.o dynhuff.o fba_ka
 			\
 			gal_gfx.o gal_run.o gal_sound.o gal_stars.o \
 			\
+			irem_cpu.o \
+			\
 			k051316.o k051733.o k051960.o k052109.o k053245.o k053247.o k053251.o k053936.o k054000.o konamiic.o \
 			\
 			neo_decrypt.o neo_palette.o neo_run.o neo_sprite.o neo_text.o neo_upd4990a.o neogeo.o \
@@ -130,7 +132,7 @@ depobj	:= 	about.o bzip.o cona.o debugger.o drv.o dwmapi_core.o dynhuff.o fba_ka
 			\
 			tnzs_prot.o \
 			\
-			deco16ic.o irem_cpu.o nmk004.o \
+			deco16ic.o nmk004.o \
 			\
 			megadrive.o \
 			\
