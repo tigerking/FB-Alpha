@@ -72,7 +72,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>src\burner\win32\resource;src\burn\drivers\taito;src\burn\drivers\misc_post90s;src\burn\devices;src\depend\generated;src\interface\scalers;src\interface\win32\resource;src\interface\win32;src\interface;src\burner\win32;src\depend\libs\zlib;src\depend\libs\libpng;src\depend\libs;src\depend\kaillera\client;src\depend\kaillera;src\burn\sound;src\cpu;src\burner;src\burn;src\cpu\z80;src\cpu\sh2;src\cpu\s2650;src\cpu\nec;src\cpu\m6809;src\cpu\m6805;src\cpu\m6800;src\cpu\m6502;src\cpu\m68k;src\cpu\i8039;src\cpu\konami;src\cpu\hd6309;src\cpu\h6280;src\cpu\arm7;src\cpu\arm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>src\burner\win32\resource;src\burn\drivers\taito;src\burn\drivers\misc_post90s;src\burn\devices;src\depend\generated;src\interface\scalers;src\interface\win32\resource;src\interface\win32;src\interface;src\burner\win32;src\depend\libs\zlib;src\depend\libs\libpng;src\depend\libs;src\depend\kaillera\client;src\depend\kaillera;src\burn\sound;src\cpu;src\burner;src\burn;src\cpu\z80;src\cpu\sh2;src\cpu\s2650;src\cpu\nec;src\cpu\m6809;src\cpu\m6805;src\cpu\m6800;src\cpu\m6502;src\cpu\m68k;src\cpu\i8039;src\cpu\konami;src\cpu\hd6309;src\cpu\h6280;src\cpu\arm7;src\cpu\arm;src\cpu\g65816;src\cpu\spc700;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <PreprocessorDefinitions>BUILD_WIN32;FASTCALL;_DEBUG;FBA_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -490,7 +490,7 @@
     <ClCompile Include="src\burn\drivers\snes\mem.cpp" />
     <ClCompile Include="src\burn\drivers\snes\ppu.cpp" />
     <ClCompile Include="src\burn\drivers\snes\snes_main.cpp" />
-    <ClCompile Include="src\burn\drivers\snes\spc700.cpp" />
+    <ClCompile Include="src\burn\drivers\snes\aspc700.cpp" />
     <ClCompile Include="src\burn\drivers\taito\cchip.cpp" />
     <ClCompile Include="src\burn\drivers\taito\d_asuka.cpp" />
     <ClCompile Include="src\burn\drivers\taito\d_bublbobl.cpp" />
@@ -638,6 +638,7 @@
     </ClCompile>
     <ClCompile Include="src\cpu\m68k\m68kdasm.c" />
     <ClCompile Include="src\cpu\nec\v25.cpp" />
+    <ClCompile Include="src\cpu\spc700\spc700.c" />
     <ClCompile Include="src\depend\generated\m68kopac.c" />
     <ClCompile Include="src\depend\generated\m68kopdm.c" />
     <ClCompile Include="src\depend\generated\m68kopnz.c" />
@@ -943,6 +944,7 @@
     <ClInclude Include="src\cpu\sek.h" />
     <ClInclude Include="src\cpu\sekdebug.h" />
     <ClInclude Include="src\cpu\sh2\sh2.h" />
+    <ClInclude Include="src\cpu\spc700\spc700.h" />
     <ClInclude Include="src\cpu\vez.h" />
     <ClInclude Include="src\cpu\z80\z80.h" />
     <ClInclude Include="src\cpu\z80\z80daisy.h" />
