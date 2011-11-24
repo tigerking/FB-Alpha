@@ -6184,6 +6184,30 @@ static struct BurnRomInfo Pang3RomDesc[] = {
 STD_ROM_PICK(Pang3)
 STD_ROM_FN(Pang3)
 
+static struct BurnRomInfo Pang3r1RomDesc[] = {
+	{ "pa3e_17.bin",   0x080000, 0xd7041d32, BRF_ESS | BRF_PRG | CPS1_68K_PROGRAM_NO_BYTESWAP },
+	{ "pa3e_16.bin",   0x080000, 0x1be9a483, BRF_ESS | BRF_PRG | CPS1_68K_PROGRAM_NO_BYTESWAP },
+
+	{ "pa3-01m.2c",    0x200000, 0x068a152c, BRF_GRA | CPS1_TILES },
+	{ "pa3-07m.2f",    0x200000, 0x3a4a619d, BRF_GRA | CPS1_TILES },
+
+	{ "pa3_11.bin",    0x020000, 0xcb1423a2, BRF_PRG | CPS1_Z80_PROGRAM },
+
+	{ "pa3_05.10d",    0x020000, 0x73a10d5d, BRF_SND | CPS1_OKIM6295_SAMPLES },
+	{ "pa3_06.11d",    0x020000, 0xaffa4f82, BRF_SND | CPS1_OKIM6295_SAMPLES },
+	
+	A_BOARD_PLDS
+	
+	{ "cp1b1f.1f",     0x000117, 0x00000000, BRF_OPT | BRF_NODUMP },	// b-board PLDs
+	{ "cp1b8k.8k",     0x000117, 0x00000000, BRF_OPT | BRF_NODUMP },
+	{ "cp1b9ka.9k",    0x000117, 0x00000000, BRF_OPT | BRF_NODUMP },
+	{ "ioc1.ic7",      0x000117, 0x0d182081, BRF_OPT },	// c-board PLDs
+	{ "c632.ic1",      0x000117, 0x0fbd9270, BRF_OPT },
+};
+
+STD_ROM_PICK(Pang3r1)
+STD_ROM_FN(Pang3r1)
+
 static struct BurnRomInfo Pang3nRomDesc[] = {
 	{ "pa3w_17.11l",   0x080000, 0x12138234, BRF_ESS | BRF_PRG | CPS1_68K_PROGRAM_NO_BYTESWAP },
 	{ "pa3w_16.10l",   0x080000, 0xd1ba585c, BRF_ESS | BRF_PRG | CPS1_68K_PROGRAM_NO_BYTESWAP },
@@ -9761,6 +9785,7 @@ static const struct GameConfig ConfigTable[] =
 	{ "nemo"        , CPS_B_15    , mapper_NM24B , 0, NULL                },
 	{ "nemoj"       , CPS_B_15    , mapper_NM24B , 0, NULL                },
 	{ "pang3"       , CPS_B_21_DEF, mapper_pang3 , 0, NULL                },
+	{ "pang3r1"     , CPS_B_21_DEF, mapper_pang3 , 0, NULL                },
 	{ "pang3n"      , CPS_B_21_DEF, mapper_pang3 , 0, NULL                },
 	{ "pang3j"      , CPS_B_21_DEF, mapper_pang3 , 0, NULL                },
 	{ "pnickj"      , CPS_B_21_DEF, mapper_PKB10B, 0, NULL                },
@@ -12151,9 +12176,19 @@ struct BurnDriver BurnDrvCpsPang3 = {
 	&CpsRecalcPal, 0x1000, 384, 224, 4, 3
 };
 
+struct BurnDriver BurnDrvCpsPang3r1 = {
+	"pang3r1", "pang3", NULL, NULL, "1995",
+	"Pang! 3 (950511 Euro)\0", NULL, "Mitchell", "CPS1",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_CAPCOM_CPS1_GENERIC, GBF_PUZZLE, 0,
+	NULL, Pang3r1RomInfo, Pang3r1RomName, NULL, NULL, Pang3InputInfo, Pang3DIPInfo,
+	Pang3Init, DrvExit, Cps1Frame, CpsRedraw, CpsAreaScan,
+	&CpsRecalcPal, 0x1000, 384, 224, 4, 3
+};
+
 struct BurnDriver BurnDrvCpsPang3n = {
 	"pang3n", "pang3", NULL, NULL, "1995",
-	"Pang! 3 (950511 Euro)\0", NULL, "Mitchell", "CPS1",
+	"Pang! 3 (950511 Euro, not encrypted)\0", NULL, "Mitchell", "CPS1",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_CAPCOM_CPS1_GENERIC, GBF_PUZZLE, 0,
 	NULL, Pang3nRomInfo, Pang3nRomName, NULL, NULL, Pang3InputInfo, Pang3DIPInfo,
