@@ -617,10 +617,10 @@ static INT32 MemIndex()
 
 	RamStart	= Next;
 
-	RamFg		= (UINT16 *) Next; Next += 0x020000;
-	RamBg		= (UINT16 *) Next; Next += 0x020000;
-	RamPal	= (UINT16 *) Next; Next += 0x000800;
-	RamSpr	= (UINT16 *) Next; Next += 0x004800;
+	RamFg		= (UINT16 *) Next; Next += 0x010000 * sizeof(UINT16);
+	RamBg		= (UINT16 *) Next; Next += 0x010000 * sizeof(UINT16);
+	RamPal	= (UINT16 *) Next; Next += 0x000400 * sizeof(UINT16);
+	RamSpr	= (UINT16 *) Next; Next += 0x002400 * sizeof(UINT16);
 
 	RamEnd		= Next;
 
@@ -649,12 +649,12 @@ static INT32 MemIndex2()
 
 	RamStart	= Next;
 
-	Ram68K	= (UINT16 *) Next; Next += 0x010040;
-	RamFg		= (UINT16 *) Next; Next += 0x020000;
-	RamBg		= (UINT16 *) Next; Next += 0x020000;
-	RamPal	= (UINT16 *) Next; Next += 0x001000;
-	RamSpr	= (UINT16 *) Next; Next += 0x001000;
-	RamBgM	= (UINT16 *) Next; Next += 0x004000;
+	Ram68K	= (UINT16 *) Next; Next += 0x008020 * sizeof(UINT16);
+	RamFg		= (UINT16 *) Next; Next += 0x010000 * sizeof(UINT16);
+	RamBg		= (UINT16 *) Next; Next += 0x010000 * sizeof(UINT16);
+	RamPal	= (UINT16 *) Next; Next += 0x000800 * sizeof(UINT16);
+	RamSpr	= (UINT16 *) Next; Next += 0x000800 * sizeof(UINT16);
+	RamBgM	= (UINT16 *) Next; Next += 0x002000 * sizeof(UINT16);
 
 	RamEnd		= Next;
 
@@ -875,7 +875,7 @@ static INT32 GalpanicInit()
 	Mem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -939,7 +939,7 @@ static INT32 FantasiaInit()
 	Mem = NULL;
 	MemIndex2();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -1011,7 +1011,7 @@ static INT32 Missw96Init()
 	Mem = NULL;
 	MemIndex2();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -1080,7 +1080,7 @@ static INT32 Fantsia2Init()
 	Mem = NULL;
 	MemIndex2();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -1152,7 +1152,7 @@ static INT32 WownfantInit()
 	Mem = NULL;
 	MemIndex2();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -1218,7 +1218,7 @@ static INT32 GalhustlInit()
 	Mem = NULL;
 	MemIndex2();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -1283,7 +1283,7 @@ static INT32 ZipzapInit()
 	Mem = NULL;
 	MemIndex2();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) {
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) {
 		return 1;
 	}
 	memset(Mem, 0, nLen);										// blank all memory
@@ -1358,10 +1358,7 @@ static INT32 GalpanicExit()
 	SekExit();
 	MSM6295Exit(0);
 
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 
 	RecalcBgPalette = 0;
 	return 0;
@@ -1758,16 +1755,16 @@ static INT32 GalpanicFrame()
 		DrvInput[5] |= (DrvButton[i] & 1) << i;
 	}
 
-	nCyclesTotal[0] = (INT32)((INT64)8000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
+	nCyclesTotal[0] = (INT32)((INT64)12000000 * nBurnCPUSpeedAdjust / (0x0100 * 60));
 
 	SekNewFrame();
 
 	SekOpen(0);
 
+	SekRun(nCyclesTotal[0] / 2);
 	SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);						// let game run ???
-	SekRun(nCyclesTotal[0]);
+	SekRun(nCyclesTotal[0] / 2);
 	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);						// update palette
-	SekRun(nCyclesTotal[0]);
 
 	SekClose();
 
@@ -1808,13 +1805,13 @@ static INT32 ComadFrame()
 	SekOpen(0);
 	SekNewFrame();
 
-	SekRun(nCyclesTotal[0]);
+	SekRun(nCyclesTotal[0] / 4);
 	SekSetIRQLine(3, SEK_IRQSTATUS_AUTO);						// let game run
-	SekRun(nCyclesTotal[0]);
+	SekRun(nCyclesTotal[0] / 4);
 	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);						// enable icons
-	SekRun(nCyclesTotal[0]);
+	SekRun(nCyclesTotal[0] / 4);
 	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);						// update palette
-	SekRun(nCyclesTotal[0]);
+	SekRun(nCyclesTotal[0] / 4);
 
 	SekClose();
 
@@ -2014,7 +2011,7 @@ struct BurnDriver BurnDrvGalhustl = {
 	256, 224, 4, 3
 };
 
-struct BurnDriverD BurnDrvZipzap = {
+struct BurnDriver BurnDrvZipzap = {
 	"zipzap", NULL, NULL, NULL, "1995",
 	"Zip & Zap\0", "Imperfect GFXs, No Sound", "Barko Corp", "Miscellaneous",
 	NULL, NULL, NULL, NULL,

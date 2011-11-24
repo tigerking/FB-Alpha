@@ -243,7 +243,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs1[16] = { 0*16, 1*16, 2*16, 3*16, 4*16, 5*16, 6*16, 7*16,
 	  			8*16, 9*16,10*16,11*16,12*16,13*16,14*16,15*16 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x200000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x200000);
 
 	if (tmp == NULL) {
 		return 1;
@@ -262,10 +262,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x2000, 8, 16, 16, Plane1, XOffs1, YOffs1, 0x200, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -283,7 +280,7 @@ static INT32 MemIndex()
 	DrvGfxROM0	= Next; Next += 0x200000;
 	DrvGfxROM1	= Next; Next += 0x200000;
 
-	DrvPalette	= (UINT32*)Next; Next += 0x0300 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0300 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -293,7 +290,7 @@ static INT32 MemIndex()
 
 	DrvZ80RAM1	= Next; Next += 0x000800;
 
-	Palette		= (UINT32*)Next; Next += 0x0300 * sizeof(int);
+	Palette		= (UINT32*)Next; Next += 0x0300 * sizeof(UINT32);
 
 	RamEnd		= Next;
 
@@ -331,7 +328,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -396,10 +393,7 @@ static INT32 DrvExit()
 
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	MSM6295ROM = NULL;
 

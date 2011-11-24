@@ -1,4 +1,3 @@
-
 #include "tiles_generic.h"
 #include "msm6295.h"
 
@@ -204,7 +203,7 @@ static INT32 DrvGfxDecode()
 	static INT32 YOffs[16] = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38,
 				 0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -214,10 +213,7 @@ static INT32 DrvGfxDecode()
 	GfxDecode(0x8000, 4,  8,  8, Planes, XOffs, YOffs, 0x040, tmp, Gfx0);
 	GfxDecode(0x2000, 4, 16, 16, Planes, XOffs, YOffs, 0x100, tmp, Gfx1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -256,7 +252,7 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -305,10 +301,7 @@ static INT32 DrvExit()
 	GenericTilesExit();
 	MSM6295Exit(0);
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 	
 	MSM6295ROM = NULL;
 

@@ -26,7 +26,7 @@ static UINT8 *DrvPaletteRam       = NULL;
 static UINT8 *DrvTiles            = NULL;
 static UINT8 *DrvSprites          = NULL;
 static UINT8 *DrvTempRom          = NULL;
-static UINT32 *DrvPalette          = NULL;
+static UINT32 *DrvPalette         = NULL;
 
 static UINT16 DrvBgTileBase;
 static UINT16 DrvBgScrollX;
@@ -689,8 +689,7 @@ void __fastcall Ddragon368KWriteByte(UINT32 a, UINT8 d)
 			DrvSoundLatch = d;
 			ZetOpen(0);
 			ZetNmi();
-			ZetRun(100);
-			nCyclesDone[1] += 100;
+			nCyclesDone[1] += ZetRun(100);
 			ZetClose();
 			return;
 		}
@@ -767,8 +766,7 @@ void __fastcall Ddragon368KWriteWord(UINT32 a, UINT16 d)
 			DrvSoundLatch = d;
 			ZetOpen(0);
 			ZetNmi();
-			ZetRun(100);
-			nCyclesDone[1] += 100;
+			nCyclesDone[1] += ZetRun(100);
 			ZetClose();
 			return;
 		}
@@ -824,8 +822,7 @@ void __fastcall Ddragon3b68KWriteByte(UINT32 a, UINT8 d)
 			DrvSoundLatch = d;
 			ZetOpen(0);
 			ZetNmi();
-			ZetRun(100);
-			nCyclesDone[1] += 100;
+			nCyclesDone[1] += ZetRun(100);
 			ZetClose();
 			return;
 		}
@@ -906,8 +903,7 @@ void __fastcall Ddragon3b68KWriteWord(UINT32 a, UINT16 d)
 			DrvSoundLatch = d;
 			ZetOpen(0);
 			ZetNmi();
-			ZetRun(100);
-			nCyclesDone[1] += 100;
+			nCyclesDone[1] += ZetRun(100);
 			ZetClose();
 			return;
 		}
@@ -1098,8 +1094,7 @@ void __fastcall Ctribeb68KWriteWord(UINT32 a, UINT16 d)
 			DrvSoundLatch = d & 0xff;
 			ZetOpen(0);
 			ZetNmi();
-			ZetRun(100);
-			nCyclesDone[1] += 100;
+			nCyclesDone[1] += ZetRun(100);
 			ZetClose();
 			return;
 		}
@@ -1190,11 +1185,11 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x400000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x400000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -1226,10 +1221,7 @@ static INT32 DrvInit()
 	nRet = BurnLoadRom(DrvMSM6295ROMSrc + 0x00000, 15, 1); if (nRet != 0) return 1;
 	memcpy(MSM6295ROM, DrvMSM6295ROMSrc, 0x40000);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1286,11 +1278,11 @@ static INT32 DrvpInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x400000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x400000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -1339,10 +1331,7 @@ static INT32 DrvpInit()
 	nRet = BurnLoadRom(DrvMSM6295ROMSrc + 0x40000, 32, 1); if (nRet != 0) return 1;
 	memcpy(MSM6295ROM, DrvMSM6295ROMSrc, 0x40000);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1399,11 +1388,11 @@ static INT32 DrvbInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x400000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x400000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -1449,10 +1438,7 @@ static INT32 DrvbInit()
 	nRet = BurnLoadRom(DrvMSM6295ROMSrc + 0x40000, 29, 1); if (nRet != 0) return 1;
 	memcpy(MSM6295ROM, DrvMSM6295ROMSrc, 0x40000);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1509,11 +1495,11 @@ static INT32 CtribeInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	DrvTempRom = (UINT8 *)malloc(0x400000);
+	DrvTempRom = (UINT8 *)BurnMalloc(0x400000);
 
 	// Load 68000 Program Roms
 	nRet = BurnLoadRom(Drv68KRom + 0x00000, 0, 2); if (nRet != 0) return 1;
@@ -1588,10 +1574,7 @@ static INT32 CtribeInit()
 	}
 	memcpy(DrvMSM6295ROMSrc, MSM6295ROM, 0x40000);
 	
-	if (DrvTempRom) {
-		free(DrvTempRom);
-		DrvTempRom = NULL;
-	}
+	BurnFree(DrvTempRom);
 	
 	// Setup the 68000 emulation
 	SekInit(0, 0x68000);
@@ -1661,10 +1644,7 @@ static INT32 DrvExit()
 	DrvOkiBank = 0;
 	DrvVBlank = 0;
 	
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 
 	return 0;
 }

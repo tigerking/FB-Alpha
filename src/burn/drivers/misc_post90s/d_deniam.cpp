@@ -20,7 +20,7 @@ static UINT8 *DrvPalRAM;
 static UINT8 *DrvSprRAM;
 static UINT8 *DrvVidRAM;
 static UINT8 *DrvTxtRAM;
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 static INT16 *DrvTxtTable;
 static INT16 *DrvLayerTable;
 
@@ -355,7 +355,7 @@ static INT32 DrvGfxDecode()
 	INT32 XOffs[8] = { 0,  1,  2,  3,  4,  5,  6,  7 };
 	INT32 YOffs[8] = { 0,  8, 16, 24, 32, 40, 48, 56 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x180000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x180000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -364,10 +364,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x10000, 3, 8, 8, Plane, XOffs, YOffs, 0x040, tmp, DrvGfxROM0);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -377,7 +374,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -484,14 +481,12 @@ static INT32 DrvExit()
 {
 	GenericTilesExit();
 
+	BurnYM3812Exit();
 	MSM6295Exit(0);
 	SekExit();
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	MSM6295ROM = NULL;
 
@@ -774,13 +769,13 @@ static INT32 DrvFrame()
 
 		nCyclesSegment = nCyclesTotal[1] / nInterleave;
 
-		nCyclesDone[1] = ZetRun(nCyclesSegment);
+		BurnTimerUpdateYM3812(i * nCyclesSegment);
 	}
 
 	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
-		if (nGame != 2) BurnTimerEndFrameYM3812(nCyclesTotal[1] - nCyclesDone[1]);
+		if (nGame != 2) BurnTimerEndFrameYM3812(nCyclesTotal[1]);
 		BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
 		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 	}

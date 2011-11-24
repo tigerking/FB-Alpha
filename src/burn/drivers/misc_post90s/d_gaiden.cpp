@@ -39,8 +39,8 @@ static UINT8 *DrvSprRAM;
 static UINT8 *DrvPalRAM;
 static UINT8 *DrvZ80RAM;
 
-static UINT32  *DrvPalette;
-static UINT32  *Palette;
+static UINT32 *DrvPalette;
+static UINT32 *Palette;
 static UINT8 DrvRecalc;
 
 static INT32 flipscreen;
@@ -808,7 +808,7 @@ static INT32 DrvGfxDecode()
 					 0x000008, 0x00000c, 0x400008, 0x40000c };
 	static INT32 SpriteYOffsets[8] = { 0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -829,10 +829,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x08000, 4,  8,  8, Planes, SpriteXOffsets, SpriteYOffsets, 0x080, tmp, DrvGfxROM3);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	// Make transparency tables
 	{
@@ -857,7 +854,7 @@ static INT32 DrvGfxDecode()
 
 static INT32 drgnbowlDecode()
 {
-	UINT8 *buf = (UINT8*)malloc(0x100000);
+	UINT8 *buf = (UINT8*)BurnMalloc(0x100000);
 	if (buf == NULL) {
 		return 1;
 	}
@@ -892,10 +889,7 @@ static INT32 drgnbowlDecode()
 
 	GfxDecode(0x00800, 4,  8,  8, CharPlanes, CharXOffsets, CharYOffsets, 0x100, buf, DrvGfxROM0);
 
-	if (buf) {
-		free (buf);
-		buf = NULL;
-	}
+	BurnFree (buf);
 
 	// Make transparency tables
 	{
@@ -1007,7 +1001,7 @@ static INT32 DrvInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -1085,10 +1079,7 @@ static INT32 DrvExit()
 
 	GenericTilesExit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	game = 0;
 
@@ -1443,6 +1434,9 @@ static INT32 DrvFrame()
 	}
 
 	ZetNewFrame();
+	
+	INT32 nInterleave = 10;
+	INT32 nSoundBufferPos = 0;
 
 	{
 		DrvInputs[0] = DrvInputs[1] = DrvInputs[2] = 0xff;
@@ -1454,25 +1448,56 @@ static INT32 DrvFrame()
 		}
 	}
 
-	INT32 nTotalCycles[2] = { (game == 1 ? 10000000 : 9216000) / 60, 4000000 / 60 };
+	INT32 nCyclesTotal[2] = { (game == 1 ? 10000000 : 9216000) / 60, 4000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 	ZetOpen(0);
-
-	SekRun(nTotalCycles[0]);
-	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
-
-	if (pBurnSoundOut) {
+	
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
+		
+		nCurrentCPU = 0;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+		if (i == (nInterleave - 1)) SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
+		
+		nCurrentCPU = 1;
 		if (game == 1) {
-			ZetRun(nTotalCycles[1]);
-			BurnYM2151Render(pBurnSoundOut, nBurnSoundLen);
+			nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+			nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+			nCyclesSegment = ZetRun(nCyclesSegment);
+			nCyclesDone[nCurrentCPU] += nCyclesSegment;
 		} else {
-			BurnTimerEndFrame(nTotalCycles[1]);
-			BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+			BurnTimerUpdate(i * (nCyclesTotal[nCurrentCPU] / nInterleave));
 		}
 
-		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
+		if (pBurnSoundOut && game == 1) {
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}		
 	}
+	
+	if (game != 1) BurnTimerEndFrame(nCyclesTotal[1]);
+	
+	if (pBurnSoundOut) {
+		if (game == 1) {
+			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+
+			if (nSegmentLength) {
+				BurnYM2151Render(pSoundBuf, nSegmentLength);
+				MSM6295Render(0, pSoundBuf, nSegmentLength);
+			}
+		} else {
+			BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+			MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
+		}
+	}		
 
 	ZetClose();
 	SekClose();

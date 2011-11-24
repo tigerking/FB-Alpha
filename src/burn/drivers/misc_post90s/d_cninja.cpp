@@ -31,7 +31,7 @@ static UINT8 *DrvSprBuf1;
 static UINT8 *DrvPrtRAM;
 static UINT8 *DrvZ80RAM;
 
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 static UINT8 DrvRecalc;
 
 static UINT8 *soundlatch;
@@ -1014,7 +1014,7 @@ static INT32 DrvDoReset()
 
 static void DrvBootlegCharDecode(UINT8 *gfx, INT32 len)
 {
-	UINT8 *dst = (UINT8*)malloc(len);
+	UINT8 *dst = (UINT8*)BurnMalloc(len);
 
 	memcpy (dst, gfx, len);
 
@@ -1029,10 +1029,7 @@ static void DrvBootlegCharDecode(UINT8 *gfx, INT32 len)
 		}
 	}
 
-	if (dst) {
-		free (dst);
-		dst = NULL;
-	}
+	BurnFree (dst);
 }
 
 static INT32 MemIndex()
@@ -1106,7 +1103,7 @@ static INT32 CninjaInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1209,7 +1206,7 @@ static INT32 EdrandyInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1318,7 +1315,7 @@ static INT32 MutantfInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1439,7 +1436,7 @@ static INT32 CninjablInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1544,7 +1541,7 @@ static INT32 StoneageInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1660,7 +1657,7 @@ static INT32 Robocop2Init()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1789,10 +1786,7 @@ static INT32 DrvExit()
 		// huc6280
 	}
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	MSM6295ROM = NULL;
 
@@ -2348,6 +2342,7 @@ static INT32 StoneageFrame()
 	}
 
 	INT32 nInterleave = 256;
+	INT32 nSoundBufferPos = 0;
 	INT32 nCyclesTotal[2] = { 12000000 / 58, 3579545 / 58 };
 	INT32 nCyclesDone[2] = { 0, 0 };
 
@@ -2366,14 +2361,27 @@ static INT32 StoneageFrame()
 			irq_timer = -1;
 		}
 		if (i == 248) deco16_vblank = 0x08;
+		
+		if (pBurnSoundOut) {
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+			MSM6295Render(1, pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}
 	}
 
 	SekSetIRQLine(5, SEK_IRQSTATUS_AUTO);
 
 	if (pBurnSoundOut) {
-		BurnYM2151Render(pBurnSoundOut, nBurnSoundLen);
-		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
-		MSM6295Render(1, pBurnSoundOut, nBurnSoundLen);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		if (nSegmentLength) {
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0, pSoundBuf, nSegmentLength);
+			MSM6295Render(1, pSoundBuf, nSegmentLength);
+		}
 	}
 
 	ZetClose();

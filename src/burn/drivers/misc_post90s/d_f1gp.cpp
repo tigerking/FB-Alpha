@@ -51,7 +51,7 @@ static UINT8 DrvDips[4];
 static UINT16 DrvInputs[3];
 static UINT8 DrvReset;
 
-static short zoom_table[32][33];
+static INT16 zoom_table[32][33];
 
 static INT32 nScreenStartY = 8;
 
@@ -566,7 +566,7 @@ static INT32 F1gpGfxDecode()
 	INT32 YOffs[16] = { 0x000, 0x040, 0x080, 0x0c0, 0x100, 0x140, 0x180, 0x1c0,
 			  0x200, 0x240, 0x280, 0x2c0, 0x300, 0x340, 0x380, 0x3c0 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -579,10 +579,7 @@ static INT32 F1gpGfxDecode()
 
 	GfxDecode(0x1000, 4, 16, 16, Plane, XOffs, YOffs, 0x400, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -595,7 +592,7 @@ static INT32 F1gp2GfxDecode()
 	INT32 YOffs[16] = { 0x000, 0x040, 0x080, 0x0c0, 0x100, 0x140, 0x180, 0x1c0,
 			  0x200, 0x240, 0x280, 0x2c0, 0x300, 0x340, 0x380, 0x3c0 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x400000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x400000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -610,10 +607,7 @@ static INT32 F1gp2GfxDecode()
 
 	GfxDecode(0x8000, 4, 16, 16, Plane, XOffs, YOffs, 0x400, tmp, DrvGfxROM3);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -623,7 +617,7 @@ static INT32 DrvInit(INT32 nGame)
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -759,10 +753,7 @@ static INT32 DrvExit()
 	SekExit();
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	nScreenStartY = 8;
 
@@ -1198,7 +1189,7 @@ static INT32 DrvFrame()
 		SekClose();
 	}
 
-	BurnTimerEndFrame(nCyclesTotal[2] - ZetTotalCycles());
+	BurnTimerEndFrame(nCyclesTotal[2]);
 
 	if (pBurnSoundOut) {
 		BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);

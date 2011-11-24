@@ -462,7 +462,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -564,10 +564,7 @@ static INT32 DrvExit()
 	SekExit();
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -1168,7 +1165,7 @@ static INT32 DrvFrame()
 		DrvScrollBuf[i + 0x300] = vregs[3];
 	}
 
-	BurnTimerEndFrame(nCyclesTotal[1] - ZetTotalCycles());
+	BurnTimerEndFrame(nCyclesTotal[1]);
 	BurnYMF278BUpdate(nBurnSoundLen);
 
 	ZetClose();
@@ -1298,7 +1295,7 @@ struct BurnDriver BurnDrvAsurabus = {
 	"asurabus", NULL, NULL, NULL, "2000",
 	"Asura Buster - Eternal Warriors (Japan)\0", "Imperfect SND, freezes on first boss", "Fuuki", "FG-3",
 	NULL, NULL, NULL, NULL,
-	0, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
+	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
 	NULL, asurabusRomInfo, asurabusRomName, NULL, NULL, AsurabldInputInfo, AsurabldDIPInfo,
 	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x2000,
 	320, 240, 4, 3

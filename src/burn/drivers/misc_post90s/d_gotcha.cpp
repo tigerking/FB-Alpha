@@ -25,7 +25,7 @@ static UINT8 *DrvSprRAM;
 static UINT8 *DrvGfxBank;
 static UINT16 *DrvScrollx;
 static UINT16 *DrvScrolly;
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 
 static UINT8 DrvRecalc;
 
@@ -118,8 +118,8 @@ static void set_okibank(INT32 data)
 	*DrvSndBank = data & 1;
 
 	INT32 nBank = (~data & 1) << 18;
-
-	MSM6295ROM = DrvSndROM + nBank;
+	
+	memcpy(MSM6295ROM + 0x00000, DrvSndROM + nBank, 0x40000);
 }
 
 void __fastcall gotcha_write_byte(UINT32 address, UINT8 data)
@@ -250,7 +250,8 @@ static INT32 MemIndex()
 	DrvGfxROM0	= Next; Next += 0x400000;
 	DrvGfxROM1	= Next; Next += 0x400000;
 
-	MSM6295ROM	= Next;
+//	MSM6295ROM	= Next;
+	MSM6295ROM  = Next; Next += 0x040000;
 	DrvSndROM	= Next; Next += 0x080000;
 
 	DrvPalette	= (UINT32*)Next; Next += 0x0300 * sizeof(UINT32);
@@ -290,7 +291,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs[16] = { 0x000, 0x008, 0x010, 0x018, 0x020, 0x028, 0x030, 0x038,
 			  0x040, 0x048, 0x050, 0x058, 0x060, 0x068, 0x070, 0x078 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x200000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x200000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -303,10 +304,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x4000, 4, 16, 16, Plane, XOffs, YOffs, 0x100, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -325,7 +323,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -349,7 +347,8 @@ static INT32 DrvInit()
 		if (BurnLoadRom(DrvGfxROM1 + 0x100000,	 9, 1)) return 1; // gfx0
 		if (BurnLoadRom(DrvGfxROM1 + 0x180000,	10, 1)) return 1; // gfx0
 
-		if (BurnLoadRom(DrvSndROM,		4, 1)) return 1;
+		if (BurnLoadRom(DrvSndROM,		11, 1)) return 1;
+		memcpy(MSM6295ROM, DrvSndROM, 0x40000);
 
 		DrvGfxDecode();
 	}
@@ -401,10 +400,7 @@ static INT32 DrvExit()
 	SekExit();
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	MSM6295ROM = NULL;
 
@@ -508,7 +504,7 @@ static INT32 DrvFrame()
 	}
 
 	{
-		memset (DrvInputs, 0xff, 2 * sizeof(INT16));
+		memset (DrvInputs, 0xff, 2 * sizeof(UINT16));
 		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
@@ -540,10 +536,10 @@ static INT32 DrvFrame()
 		if (pBurnSoundOut) {
 			nSegment = nBurnSoundLen / nInterleave;
 
-			BurnYM2151Render(pBurnSoundOut + nSoundBufferPos, nSegment);
-			MSM6295Render(0, pBurnSoundOut + nSoundBufferPos, nSegment);
+			BurnYM2151Render(pBurnSoundOut + (nSoundBufferPos << 1), nSegment);
+			MSM6295Render(0, pBurnSoundOut + (nSoundBufferPos << 1), nSegment);
 
-			nSoundBufferPos += nSegment << 1;
+			nSoundBufferPos += nSegment;
 		}
 	}
 
@@ -552,8 +548,8 @@ static INT32 DrvFrame()
 	if (pBurnSoundOut) {
 		nSegment = nBurnSoundLen - nSoundBufferPos;
 		if (nSegment > 0) {
-			BurnYM2151Render(pBurnSoundOut + nSoundBufferPos, nSegment);
-			MSM6295Render(0, pBurnSoundOut + nSoundBufferPos, nSegment);
+			BurnYM2151Render(pBurnSoundOut + (nSoundBufferPos << 1), nSegment);
+			MSM6295Render(0, pBurnSoundOut + (nSoundBufferPos << 1), nSegment);
 		}
 	}
 

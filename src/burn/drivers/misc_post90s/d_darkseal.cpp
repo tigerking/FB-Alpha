@@ -29,7 +29,7 @@ static UINT8 *DrvPf12RowRAM;
 static UINT8 *DrvPf34RowRAM;
 static UINT8 *DrvPfCtrlRAM0;
 static UINT8 *DrvPfCtrlRAM1;
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 
 static UINT8 *soundlatch;
 
@@ -299,7 +299,7 @@ static INT32 DrvGfxDecode()
 	INT32 XOffs1[16] = { 32*8+0, 32*8+1, 32*8+2, 32*8+3, 32*8+4, 32*8+5, 32*8+6, 32*8+7, 0, 1, 2, 3, 4, 5, 6, 7 };
 	INT32 YOffs1[16] = { 0*16, 1*16, 2*16, 3*16, 4*16, 5*16, 6*16, 7*16, 8*16, 9*16, 10*16, 11*16, 12*16, 13*16, 14*16, 15*16 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -320,10 +320,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x2000, 4, 16, 16, Plane2, XOffs1, YOffs1, 0x200, tmp, DrvGfxROM3);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -339,7 +336,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -403,10 +400,7 @@ static INT32 DrvExit()
 
 	SekExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -622,7 +616,7 @@ static INT32 DrvFrame()
 	}
 
 	{
-		memset (DrvInputs, 0xff, 4);
+		memset (DrvInputs, 0xff, 2 * sizeof(UINT16));
 
 		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
@@ -713,7 +707,7 @@ STD_ROM_FN(darkseal)
 
 struct BurnDriver BurnDrvDarkseal = {
 	"darkseal", NULL, NULL, NULL, "1990",
-	"Dark Seal (World revision 3)\0", NULL, "Data East Corporation", "Miscellaneous",
+	"Dark Seal (World revision 3)\0", "No Sound", "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_MAZE | GBF_SCRFIGHT, 0,
 	NULL, darksealRomInfo, darksealRomName, NULL, NULL, DarksealInputInfo, DarksealDIPInfo,
@@ -752,7 +746,7 @@ STD_ROM_FN(darksea1)
 
 struct BurnDriver BurnDrvDarksea1 = {
 	"darkseal1", "darkseal", NULL, NULL, "1990",
-	"Dark Seal (World revision 1)\0", NULL, "Data East Corporation", "Miscellaneous",
+	"Dark Seal (World revision 1)\0", "No Sound", "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_MAZE | GBF_SCRFIGHT, 0,
 	NULL, darksea1RomInfo, darksea1RomName, NULL, NULL, DarksealInputInfo, DarksealDIPInfo,
@@ -791,7 +785,7 @@ STD_ROM_FN(darkseaj)
 
 struct BurnDriver BurnDrvDarkseaj = {
 	"darksealj", "darkseal", NULL, NULL, "1990",
-	"Dark Seal (Japan)\0", NULL, "Data East Corporation", "Miscellaneous",
+	"Dark Seal (Japan)\0", "No Sound", "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_MAZE | GBF_SCRFIGHT, 0,
 	NULL, darkseajRomInfo, darkseajRomName, NULL, NULL, DarksealInputInfo, DarksealDIPInfo,
@@ -830,7 +824,7 @@ STD_ROM_FN(gatedoom)
 
 struct BurnDriver BurnDrvGatedoom = {
 	"gatedoom", "darkseal", NULL, NULL, "1990",
-	"Gate of Doom (US revision 4)\0", NULL, "Data East Corporation", "Miscellaneous",
+	"Gate of Doom (US revision 4)\0", "No Sound", "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_MAZE | GBF_SCRFIGHT, 0,
 	NULL, gatedoomRomInfo, gatedoomRomName, NULL, NULL, DarksealInputInfo, DarksealDIPInfo,
@@ -869,7 +863,7 @@ STD_ROM_FN(gatedom1)
 
 struct BurnDriver BurnDrvGatedom1 = {
 	"gatedoom1", "darkseal", NULL, NULL, "1990",
-	"Gate of Doom (US revision 1)\0", NULL, "Data East Corporation", "Miscellaneous",
+	"Gate of Doom (US revision 1)\0", "No Sound", "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_MAZE | GBF_SCRFIGHT, 0,
 	NULL, gatedom1RomInfo, gatedom1RomName, NULL, NULL, DarksealInputInfo, DarksealDIPInfo,

@@ -378,10 +378,8 @@ INT32 FstarfrcDoReset()
 void FstarfrcYM2151IrqHandler(INT32 Irq)
 {
 	if (Irq) {
-		//ZetRaiseIrq(1);
 		ZetSetIRQLine(0xff, ZET_IRQSTATUS_ACK);
 	} else {
-		//ZetLowerIrq();
 		ZetSetIRQLine(0   , ZET_IRQSTATUS_NONE);
 	}
 }
@@ -689,11 +687,11 @@ INT32 FstarfrcInit()
 	Mem = NULL;
 	FstarfrcMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	FstarfrcMemIndex();
 
-	FstarfrcTempGfx = (UINT8*)malloc(0x100000);
+	FstarfrcTempGfx = (UINT8*)BurnMalloc(0x100000);
 
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(FstarfrcRom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -716,10 +714,7 @@ INT32 FstarfrcInit()
 	nRet = BurnLoadRom(FstarfrcTempGfx + 0x000001, 6, 2); if (nRet != 0) return 1;
 	GfxDecode(32768, 4, 8, 8, CharPlaneOffsets, CharXOffsets, CharYOffsets, 0x100, FstarfrcTempGfx, FstarfrcSpriteTiles);
 
-	if (FstarfrcTempGfx) {
-		free(FstarfrcTempGfx);
-		FstarfrcTempGfx = NULL;
-	}
+	BurnFree(FstarfrcTempGfx);
 
 	// Load Z80 Program rom
 	nRet = BurnLoadRom(FstarfrcZ80Rom, 7, 1); if (nRet != 0) return 1;
@@ -804,10 +799,7 @@ INT32 FstarfrcExit()
 
 	GenericTilesExit();
 
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 	
 	Ginkun = 0;
 	Riot = 0;
