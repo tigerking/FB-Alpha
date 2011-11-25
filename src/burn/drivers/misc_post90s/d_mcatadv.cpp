@@ -21,7 +21,7 @@ static UINT8 *DrvVidRAM1;
 static UINT8 *DrvSprRAM;
 static UINT8 *DrvSprBuf;
 static UINT8 *DrvPalRAM;
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 
 static UINT8 *DrvPrioBitmap;
 
@@ -441,7 +441,7 @@ static INT32 DrvGfxDecode()
 	static INT32 XOffs[16] = { 0, 4, 8, 12, 16, 20, 24, 28, 256, 260, 264, 268, 272, 276, 280, 284 };
 	static INT32 YOffs[16] = { 0, 32, 64, 96, 128, 160, 192, 224, 512, 544, 576, 608, 640, 672, 704, 736 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x280000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x280000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -454,10 +454,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x5000, 4, 16, 16, Planes, XOffs, YOffs, 0x400, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -533,7 +530,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -623,10 +620,7 @@ static INT32 DrvExit()
 	ZetExit();
 	BurnYM2610Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -672,7 +666,7 @@ static void draw_sprites()
 		INT32 drawxpos, drawypos;
 		INT32 xcnt,ycnt;
 		INT32 pix;
-
+		
 		if (x & 0x200) x-=0x400;
 		if (y & 0x200) y-=0x400;
 
@@ -693,17 +687,18 @@ static void draw_sprites()
 					for (xcnt = xstart; xcnt != xend; xcnt += xinc) {
 						drawxpos = x+xcnt-global_x;
 
-						if (prio[drawxpos] < pri) {
-							if (offset >= 0xa00000) offset = 0;
-							pix = sprdata[offset >> 1];
+						if (drawxpos >= 0 && drawxpos < 320) {
+							if (prio[drawxpos] < pri) {
+								if (offset >= 0xa00000) offset = 0;
+								pix = sprdata[offset >> 1];
 
-							if (offset & 1)  pix >>= 4;
-							pix &= 0x0f;
+								if (offset & 1)  pix >>= 4;
+								pix &= 0x0f;
 
-							if ((drawxpos >= 0) && (drawxpos < 320) && pix)
-								destline[drawxpos] = pix | pen;
+								if (pix && drawxpos >= 0 && drawxpos < 320) destline[drawxpos] = pix | pen;
+							}
 						}
-
+						
 						offset++;
 					}
 				} else  {
@@ -841,7 +836,7 @@ static INT32 DrvDraw()
 	draw_sprites();
 
 	memcpy (DrvSprBuf, DrvSprRAM, 0x08000);
-	memcpy (DrvVidRegBuf, DrvVidRegs, 0x10);
+	memcpy (DrvVidRegBuf, DrvVidRegs, 0x08 * sizeof(UINT16));
 
 	BurnTransferCopy(DrvPalette);
 
@@ -869,11 +864,11 @@ static INT32 DrvFrame()
 	nCyclesTotal[1] = 4000000 / 60;
 	nCyclesDone[1 ] = 0;
 
-	SekOpen(0);
-	ZetOpen(0);
-
 	SekNewFrame();
 	ZetNewFrame();
+	
+	SekOpen(0);
+	ZetOpen(0);
 
 	watchdog++;
 	if (watchdog == 180) {
@@ -885,8 +880,7 @@ static INT32 DrvFrame()
 	SekRun(nCyclesTotal[0]);
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 
-	if (nCyclesTotal[1] - nCyclesDone[1] > 0)
-		BurnTimerEndFrame(nCyclesTotal[1] - nCyclesDone[1]);
+	BurnTimerEndFrame(nCyclesTotal[1]);
 
 	if (pBurnSoundOut) {
 		BurnYM2610Update(pBurnSoundOut, nBurnSoundLen);
