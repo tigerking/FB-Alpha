@@ -190,7 +190,7 @@ void deco16_tile_decode(UINT8 *src, UINT8 *dst, INT32 len, INT32 type)
 
 	INT32 Plane1[8] = { 0x100000*8+8, 0x100000*8, 0x40000*8+8, 0x40000*8, 0xc0000*8+8, 0xc0000*8, 8, 0 };
 
-	UINT8 *tmp = (UINT8*)malloc(len);
+	UINT8 *tmp = (UINT8*)BurnMalloc(len);
 	if (tmp == NULL) {
 		return;
 	}
@@ -205,10 +205,7 @@ void deco16_tile_decode(UINT8 *src, UINT8 *dst, INT32 len, INT32 type)
 		GfxDecode((len * 2) / 0x100, 4, 16, 16, Plane, XOffs + 0, YOffs, 0x200, tmp, dst);
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 }
 
 void deco16_sprite_decode(UINT8 *gfx, INT32 len)
@@ -217,7 +214,7 @@ void deco16_sprite_decode(UINT8 *gfx, INT32 len)
 	INT32 XOffs[16] = { 512,513,514,515,516,517,518,519, 0, 1, 2, 3, 4, 5, 6, 7 };
 	INT32 YOffs[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,  8*32, 9*32,10*32,11*32,12*32,13*32,14*32,15*32};
 
-	UINT8 *tmp = (UINT8*)malloc(len);
+	UINT8 *tmp = (UINT8*)BurnMalloc(len);
 	if (tmp == NULL) {
 		return;
 	}
@@ -226,10 +223,7 @@ void deco16_sprite_decode(UINT8 *gfx, INT32 len)
 
 	GfxDecode((len * 2) / 0x100, 4, 16, 16, Plane, XOffs, YOffs, 0x400, tmp, gfx);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 }
 
 void deco16_draw_layer(INT32 tmap, UINT16 *dest, INT32 flags)
@@ -425,25 +419,25 @@ void deco16Init(INT32 no_pf34, INT32 split, INT32 full_width)
 
 	memset (deco16_scroll_offset, 0, 4 * 2 * 2 * sizeof(INT32));
 
-	deco16_pf_ram[0] = (UINT8*)malloc(0x2000); // ok
-	deco16_pf_ram[1] = (UINT8*)malloc(0x2000);
+	deco16_pf_ram[0] = (UINT8*)BurnMalloc(0x2000); // ok
+	deco16_pf_ram[1] = (UINT8*)BurnMalloc(0x2000);
 
-	deco16_pf_rowscroll[0] = (UINT8*)malloc(0x1000);// plenty
-	deco16_pf_rowscroll[1] = (UINT8*)malloc(0x1000);
+	deco16_pf_rowscroll[0] = (UINT8*)BurnMalloc(0x1000);// plenty
+	deco16_pf_rowscroll[1] = (UINT8*)BurnMalloc(0x1000);
 
-	deco16_pf_control[0]	= (UINT16*)malloc(0x10); //1/2
-	deco16_pf_control[1]	= (UINT16*)malloc(0x10); //3/4
+	deco16_pf_control[0]	= (UINT16*)BurnMalloc(0x10); //1/2
+	deco16_pf_control[1]	= (UINT16*)BurnMalloc(0x10); //3/4
 
 	if (no_pf34 == 0) {
-		deco16_pf_ram[2] = (UINT8*)malloc(0x2000); // right?
-		deco16_pf_ram[3] = (UINT8*)malloc(0x2000);
+		deco16_pf_ram[2] = (UINT8*)BurnMalloc(0x2000); // right?
+		deco16_pf_ram[3] = (UINT8*)BurnMalloc(0x2000);
 
-		deco16_pf_rowscroll[2] = (UINT8*)malloc(0x1000); // right?
-		deco16_pf_rowscroll[3] = (UINT8*)malloc(0x1000);
+		deco16_pf_rowscroll[2] = (UINT8*)BurnMalloc(0x1000); // right?
+		deco16_pf_rowscroll[3] = (UINT8*)BurnMalloc(0x1000);
 	}
 
-	deco16_prio_map = (UINT8*)malloc(512 * 256); // priority map
-	deco16_sprite_prio_map = (UINT8*)malloc(512 * 256);
+	deco16_prio_map = (UINT8*)BurnMalloc(512 * 256); // priority map
+	deco16_sprite_prio_map = (UINT8*)BurnMalloc(512 * 256);
 
 	deco16_bank_callback[0] = NULL;
 	deco16_bank_callback[1] = NULL;
@@ -517,40 +511,17 @@ void deco16Reset()
 
 void deco16Exit()
 {
-	if (deco16_prio_map) {
-		free(deco16_prio_map);
-		deco16_prio_map = NULL;
-	}
+	BurnFree(deco16_prio_map);
 
-	if (deco16_sprite_prio_map) {
-		free (deco16_sprite_prio_map);
-		deco16_sprite_prio_map = NULL;
-	}
+	BurnFree (deco16_sprite_prio_map);
 
 	for (INT32 i = 0; i < 4; i++) {
-		if (deco16_pf_rowscroll[i] == NULL) continue;
-
-		if (deco16_pf_rowscroll[i]) {
-			free (deco16_pf_rowscroll[i]);
-			deco16_pf_rowscroll[i] = NULL;
-		}
-		
-		if (deco16_pf_ram[i]) {
-			free (deco16_pf_ram[i]);
-			deco16_pf_ram[i] = NULL;
-		}
-	}
-
-	
-	if (deco16_pf_control[0]) {
-		free (deco16_pf_control[0]);
-		deco16_pf_control[0] = NULL;
+		BurnFree (deco16_pf_rowscroll[i]);
+		BurnFree (deco16_pf_ram[i]);
 	}
 	
-	if (deco16_pf_control[1]) {
-		free (deco16_pf_control[1]);
-		deco16_pf_control[1] = NULL;
-	}
+	BurnFree (deco16_pf_control[0]);	
+	BurnFree (deco16_pf_control[1]);
 }
 
 static void pf_update(INT32 tmap, INT32 scrollx, INT32 scrolly, UINT16 *rowscroll, INT32 control0, INT32 control1)
@@ -1490,7 +1461,7 @@ static void deco_decrypt(UINT8 *src, INT32 len, const UINT8 *xor_table,const UIN
 {
 	UINT16 *rom = (UINT16*)src;
 	len/=2;
-	UINT16 *buffer = (UINT16*)malloc(len * sizeof(INT16));
+	UINT16 *buffer = (UINT16*)BurnMalloc(len * sizeof(INT16));
 	INT32 i;
 
 #if 0
@@ -1533,10 +1504,7 @@ static void deco_decrypt(UINT8 *src, INT32 len, const UINT8 *xor_table,const UIN
 						swap_patterns[pat][15]);
 	}
 
-	if (buffer) {
-		free(buffer);
-		buffer = NULL;
-	}
+	BurnFree(buffer);
 
 #if 0
 	/* we work on 16-bit words but data is loaded as 8-bit, so swap bytes on LSB machines */
@@ -1606,7 +1574,7 @@ void deco102_decrypt_cpu(UINT8 *data, UINT8 *ops, INT32 size, INT32 address_xor,
 {
 	UINT16 *rom	= (UINT16*)data;
 	UINT16 *opcodes = (UINT16*)ops;
-	UINT16 *buf	= (UINT16*)malloc(size);
+	UINT16 *buf	= (UINT16*)BurnMalloc(size);
 
 	memcpy(buf, rom, size);
 
@@ -1641,10 +1609,7 @@ void deco102_decrypt_cpu(UINT8 *data, UINT8 *ops, INT32 size, INT32 address_xor,
 		opcodes[i] = decrypt(buf[src], i, opcode_select_xor);
 	}
 
-	if (buf) {
-		free(buf);
-		buf = NULL;
-	}
+	BurnFree(buf);
 }
 
 
@@ -1738,16 +1703,13 @@ static void decrypt156(UINT32 *src, UINT32 *dst, INT32 length)
 void deco156_decrypt(UINT8 *src, INT32 len)
 {
 	UINT32 *rom = (UINT32*)src;
-	UINT32 *buf = (UINT32*)malloc(len);
+	UINT32 *buf = (UINT32*)BurnMalloc(len);
 
 	memcpy (buf, rom, len);
 
 	decrypt156(buf, rom, len);
 
-	if (buf) {
-		free(buf);
-		buf = NULL;
-	}
+	BurnFree(buf);
 }
 
 

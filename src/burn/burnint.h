@@ -112,7 +112,8 @@ void CpuCheatRegister(INT32 type, INT32 num);
 // burn_memory.cpp
 void BurnInitMemoryManager();
 UINT8 *BurnMalloc(INT32 size);
-void BurnFree(void *ptr);
+void _BurnFree(void *ptr);
+#define BurnFree(x)		_BurnFree(x); x = NULL;
 void BurnExitMemoryManager();
 
 // ---------------------------------------------------------------------------
