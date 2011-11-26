@@ -555,6 +555,7 @@
     <ClCompile Include="src\burn\drivers\snes\snes_main.cpp" />
     <ClCompile Include="src\cpu\spc700\spc700.c" />
     <ClCompile Include="src\burn\drivers\snes\aspc700.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\irem_cpu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\burn\devices\8255ppi.h" />
@@ -743,6 +744,7 @@
     <ClInclude Include="src\burner\win32\memleakdetect.h" />
     <ClInclude Include="src\burn\drivers\snes\snem.h" />
     <ClInclude Include="src\cpu\spc700\spc700.h" />
+    <ClInclude Include="src\burn\drivers\irem\irem_cpu.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\burn\burn_sound_a.asm" />

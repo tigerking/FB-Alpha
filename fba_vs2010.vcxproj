@@ -257,6 +257,7 @@
     <ClCompile Include="src\burn\drivers\irem\d_m72.cpp" />
     <ClCompile Include="src\burn\drivers\irem\d_m90.cpp" />
     <ClCompile Include="src\burn\drivers\irem\d_m92.cpp" />
+    <ClCompile Include="src\burn\drivers\irem\irem_cpu.cpp" />
     <ClCompile Include="src\burn\drivers\konami\d_88games.cpp" />
     <ClCompile Include="src\burn\drivers\konami\d_ajax.cpp" />
     <ClCompile Include="src\burn\drivers\konami\d_aliens.cpp" />
@@ -363,7 +364,6 @@
     <ClCompile Include="src\burn\drivers\misc_post90s\d_xorworld.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_yunsun16.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_zerozone.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_post90s\irem_cpu.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\nmk004.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_1942.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_1943.cpp" />
@@ -839,6 +839,7 @@
     <ClInclude Include="src\burn\drivers\cave\cave_tile_render.h" />
     <ClInclude Include="src\burn\drivers\cps3\cps3.h" />
     <ClInclude Include="src\burn\drivers\galaxian\gal.h" />
+    <ClInclude Include="src\burn\drivers\irem\irem_cpu.h" />
     <ClInclude Include="src\burn\drivers\konami\konamiic.h" />
     <ClInclude Include="src\burn\drivers\megadrive\megadrive.h" />
     <ClInclude Include="src\burn\drivers\misc_post90s\deco16ic.h" />
