@@ -964,7 +964,7 @@ static INT32 DrvGfxDecode(INT32 type)
 		0x040, 0x048, 0x050, 0x058, 0x060, 0x068, 0x070, 0x078
 	};
 
-	UINT8 *tmp = (UINT8*)malloc(0x1000000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x1000000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -981,10 +981,7 @@ static INT32 DrvGfxDecode(INT32 type)
 
 	GfxDecode(0x04000, 5, 16, 16, Planes1, XOffs1, YOffs1, 0x100, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -1008,7 +1005,7 @@ static INT32 DrvInit(INT32 loadtype, INT32 sektype, INT32 zettype) // 0 nmg, 1 p
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -1111,10 +1108,7 @@ static INT32 DrvExit()
 	ZetExit();
 	SekExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }

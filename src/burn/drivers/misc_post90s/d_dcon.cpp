@@ -212,7 +212,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs1[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
 			   0x100, 0x120, 0x140, 0x160, 0x180, 0x1a0, 0x1c0, 0x1e0 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x200000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x200000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -237,10 +237,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x4000, 4, 16, 16, Plane1, XOffs1, YOffs1, 0x400, tmp, DrvGfxROM4);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -309,7 +306,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -381,10 +378,7 @@ static INT32 DrvExit()
 
 	seibu_sound_exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	is_sdgndmps = 0;
 
@@ -606,7 +600,7 @@ static INT32 DrvFrame()
 	ZetNewFrame();
 
 	{
-		memset (DrvInputs, 0xff, 3 * 3);
+		memset (DrvInputs, 0xff, 3 * sizeof(UINT16));
 		for (INT32 i = 0; i < 16; i++)
 		{
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
@@ -617,7 +611,8 @@ static INT32 DrvFrame()
 	}
 
 	INT32 nSegment;
-	INT32 nInterleave = 1000;
+	INT32 nInterleave = 100;
+	INT32 nSoundBufferPos = 0;
 	INT32 nTotalCycles[2] = { 10000000 / 60, 3579545 / 60 };
 	INT32 nCyclesDone[2] = { 0, 0 };
 
@@ -630,6 +625,13 @@ static INT32 DrvFrame()
 		{
 			SekRun(nTotalCycles[0] / nInterleave);
 			ZetRun(nTotalCycles[1] / nInterleave);
+			
+			if (pBurnSoundOut) {
+				INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+				INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+				seibu_sound_update(pSoundBuf, nSegmentLength);
+				nSoundBufferPos += nSegmentLength;
+			}
 		}
 	}
 	else
@@ -640,7 +642,7 @@ static INT32 DrvFrame()
 
 			nCyclesDone[0] += SekRun(nSegment);
 
-			BurnTimerUpdateYM3812(nTotalCycles[1] / nInterleave);
+			BurnTimerUpdateYM3812(i * (nTotalCycles[1] / nInterleave));
 		}
 
 		BurnTimerEndFrameYM3812(nTotalCycles[1]);
@@ -648,8 +650,14 @@ static INT32 DrvFrame()
 
 	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
 
-	if (pBurnSoundOut) {
+	if (pBurnSoundOut && !is_sdgndmps) {
 		seibu_sound_update(pBurnSoundOut, nBurnSoundLen);
+	} else {
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		if (nSegmentLength) {
+			seibu_sound_update(pSoundBuf, nSegmentLength);
+		}
 	}
 
 	ZetClose();

@@ -1,4 +1,3 @@
-
 #include "tiles_generic.h"
 #include "burn_ym3812.h"
 #include "upd7759.h"
@@ -96,7 +95,7 @@ static struct BurnInputInfo IkariInputList[] = {
 	{"P1 Button 2"  , BIT_DIGITAL  , DrvJoy1 + 5,	"p1 fire 2"},
 	{"P1 Button 3"  , BIT_DIGITAL  , DrvJoy1 + 6,	"p1 fire 3"},
 
-	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"mouse x-axis"),
+	A("P1 Right / left",	BIT_ANALOG_REL, DrvAxis + 0,	"p1 z-axis"),
 
 	{"P2 Start"  ,    BIT_DIGITAL  , DrvJoy2 + 7,	"p2 start" },
 	{"P2 Up",	  BIT_DIGITAL,   DrvJoy2 + 0,   "p2 up",   },
@@ -723,7 +722,7 @@ static INT32 DrvGfxDecode(INT32 *spriPlanes, INT32 *spriXOffs, INT32 *spriYOffs,
 	static INT32 tileXOffs[8]  = { 0x43, 0x42, 0x41, 0x40, 0x03, 0x02, 0x01, 0x00 };
 	static INT32 tileYOffs[8]  = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x300000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x300000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -736,10 +735,7 @@ static INT32 DrvGfxDecode(INT32 *spriPlanes, INT32 *spriXOffs, INT32 *spriYOffs,
 
 	GfxDecode(0x6000, 4, 16, 16, spriPlanes, spriXOffs, spriYOffs, modulo, tmp, DrvGfx1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	memset (DrvGfx0Trans, 1, 0x800);
 	for (INT32 i = 0; i < 0x20000; i++) {
@@ -912,7 +908,7 @@ static INT32 DrvInit(INT32 game)
 	Mem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
@@ -976,10 +972,7 @@ static INT32 DrvExit()
 	SekExit();
 	ZetExit();
 
-	if (Mem) {
-		free (Mem);
-		Mem = NULL;
-	}
+	BurnFree (Mem);
 
 	game_select = 0;
 
@@ -1307,8 +1300,10 @@ static INT32 DrvFrame()
 	SekSetIRQLine(1, SEK_IRQSTATUS_AUTO);
 
 	BurnTimerEndFrameYM3812(nTotalCycles[1]);
-	BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
-	UPD7759Update(0, pBurnSoundOut, nBurnSoundLen);
+	if (pBurnSoundOut) {
+		BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
+		UPD7759Update(0, pBurnSoundOut, nBurnSoundLen);
+	}
 
 	ZetClose();
 	SekClose();
@@ -1828,6 +1823,56 @@ struct BurnDriver BurnDrvikari3u = {
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
 	NULL, ikari3uRomInfo, ikari3uRomName, NULL, NULL, IkariInputInfo, IkariDIPInfo,
+	ikari3Init, DrvExit, DrvFrame, DrvDraw, DrvScan,
+	&DrvRecalc, 0x800, 256, 224, 4, 3
+};
+
+// Ikari Three - The Rescue (Japan, Rotary Joystick)
+
+static struct BurnRomInfo ikari3jRomDesc[] = {
+	{ "ik3-2-j.c10",  0x20000, 0x7b1b4be4, 1 | BRF_PRG }, //  0 68k Code
+	{ "ik3-3-j.c9",   0x20000, 0x8e6e2aa9, 1 | BRF_PRG }, //  1
+	{ "ik3-1.c8",     0x10000, 0x47e4d256, 1 | BRF_PRG }, //  2
+	{ "ik3-4.c12",    0x10000, 0xa43af6b5, 1 | BRF_PRG }, //  3
+
+	{ "ik3-5.bin",    0x10000, 0xce6706fc, 2 | BRF_PRG }, //  4 Z80 Code
+
+	{ "ik3-7.bin",    0x08000, 0x0b4804df, 3 | BRF_GRA }, //  5 Characters
+	{ "ik3-8.bin",    0x08000, 0x10ab4e50, 3 | BRF_GRA }, //  6
+
+	{ "ik3-13.bin",   0x20000, 0x9a56bd32, 4 | BRF_GRA }, //  7 Sprites
+	{ "ik3-12.bin",   0x20000, 0x0ce6a10a, 4 | BRF_GRA }, //  8
+	{ "ik3-11.bin",   0x20000, 0xe4e2be43, 4 | BRF_GRA }, //  9
+	{ "ik3-10.bin",   0x20000, 0xac222372, 4 | BRF_GRA }, // 10
+	{ "ik3-9.bin",    0x20000, 0xc33971c2, 4 | BRF_GRA }, // 11
+	{ "ik3-14.bin",   0x20000, 0x453bea77, 4 | BRF_GRA }, // 12
+	{ "ik3-15.bin",   0x20000, 0x781a81fc, 4 | BRF_GRA }, // 13
+	{ "ik3-16.bin",   0x20000, 0x80ba400b, 4 | BRF_GRA }, // 14
+	{ "ik3-17.bin",   0x20000, 0x0cc3ce4a, 4 | BRF_GRA }, // 15
+	{ "ik3-18.bin",   0x20000, 0xba106245, 4 | BRF_GRA }, // 16
+	{ "ik3-23.bin",   0x20000, 0xd0fd5c77, 4 | BRF_GRA }, // 17
+	{ "ik3-22.bin",   0x20000, 0x4878d883, 4 | BRF_GRA }, // 18
+	{ "ik3-21.bin",   0x20000, 0x50d0fbf0, 4 | BRF_GRA }, // 19
+	{ "ik3-20.bin",   0x20000, 0x9a851efc, 4 | BRF_GRA }, // 20
+	{ "ik3-19.bin",   0x20000, 0x4ebdba89, 4 | BRF_GRA }, // 21
+	{ "ik3-24.bin",   0x20000, 0xe9b26d68, 4 | BRF_GRA }, // 22
+	{ "ik3-25.bin",   0x20000, 0x073b03f1, 4 | BRF_GRA }, // 23
+	{ "ik3-26.bin",   0x20000, 0x9c613561, 4 | BRF_GRA }, // 24
+	{ "ik3-27.bin",   0x20000, 0x16dd227e, 4 | BRF_GRA }, // 25
+	{ "ik3-28.bin",   0x20000, 0x711715ae, 4 | BRF_GRA }, // 26
+
+	{ "ik3-6.bin",    0x20000, 0x59d256a4, 5 | BRF_SND }, // 27 upd7759 samples
+};
+
+STD_ROM_PICK(ikari3j)
+STD_ROM_FN(ikari3j)
+
+struct BurnDriver BurnDrvikari3j = {
+	"ikari3j", "ikari3", NULL, NULL, "1989",
+	"Ikari Three - The Rescue (Japan, Rotary Joystick)\0", NULL, "SNK", "Miscellaneous",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_SHOOT, 0,
+	NULL, ikari3jRomInfo, ikari3jRomName, NULL, NULL, IkariInputInfo, IkariDIPInfo,
 	ikari3Init, DrvExit, DrvFrame, DrvDraw, DrvScan,
 	&DrvRecalc, 0x800, 256, 224, 4, 3
 };

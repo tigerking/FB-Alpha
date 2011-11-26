@@ -309,7 +309,7 @@ static INT32 DrvGfxDecode()
 	INT32 XOffs1[16] = { 0, 1, 2, 3, 4, 5, 6, 7, 128, 129, 130, 131, 132, 133, 134, 135 };
 	INT32 YOffs1[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x300000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x300000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -322,10 +322,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x4000, 4, 16, 16, Plane1, XOffs1, YOffs1, 0x100, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -343,7 +340,7 @@ static INT32 MemIndex()
 	DrvGfxROM0	= Next; Next += 0x600000;
 	DrvGfxROM1	= Next; Next += 0x400000;
 
-	DrvPalette	= (UINT32*)Next; Next += 0x0300 * sizeof(UINT16);
+	DrvPalette	= (UINT32*)Next; Next += 0x0300 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -404,7 +401,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -478,10 +475,7 @@ static INT32 DrvExit()
 	MSM6295Exit(0);
 	BurnYM2151Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -610,10 +604,9 @@ static INT32 DrvFrame()
 
 		nSegment = nBurnSoundLen / nInterleave;
 
-		BurnYM2151Render(pBurnSoundOut + nSegment * i, nSegment);
-
 		if (pBurnSoundOut) {
-			MSM6295Render(0, pBurnSoundOut + nSegment * i, nSegment);
+			BurnYM2151Render(pBurnSoundOut + ((nSegment * i) << 1), nSegment);
+			MSM6295Render(0, pBurnSoundOut + ((nSegment * i) << 1), nSegment);
 		}
 	}
 

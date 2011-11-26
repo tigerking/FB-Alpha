@@ -22,7 +22,7 @@ static UINT8 *DrvPalRAM;
 static UINT8 *DrvFgRAM;
 static UINT8 *DrvBgRAM;
 
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 
 static UINT8 *soundlatch;
 static UINT8 *flipscreen;
@@ -326,7 +326,7 @@ static INT32 DrvGfxDecode()
 	INT32 XOffs1[16] = { 0x003, 0x002, 0x001, 0x000, 0x083, 0x082, 0x081, 0x080,
 			   0x103, 0x102, 0x101, 0x100, 0x183, 0x182, 0x181, 0x180 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x200000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x200000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -343,10 +343,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x1000, 4, 16, 16, Plane2, XOffs1, YOffs, 0x200, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -356,7 +353,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -487,10 +484,7 @@ static INT32 DrvExit()
 	MSM6295Exit(0);
 	BurnYM2151Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -689,6 +683,7 @@ static INT32 DrvFrame()
 	}
 
 	INT32 nInterleave = 256;
+	INT32 nSoundBufferPos = 0;
 	INT32 nCyclesTotal[2] = { 10000000 / 60, 3579545 / 60 };
 	INT32 nCyclesDone[2] = { 0, 0 };
 
@@ -704,11 +699,23 @@ static INT32 DrvFrame()
 
 		nSegment = nCyclesTotal[1] / nInterleave;
 		nCyclesDone[1] += ZetRun(nSegment);
+		
+		if (pBurnSoundOut) {
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
+			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0,pSoundBuf, nSegmentLength);
+			nSoundBufferPos += nSegmentLength;
+		}
 	}
 
 	if (pBurnSoundOut) {
-		BurnYM2151Render(pBurnSoundOut, nBurnSoundLen);
-		MSM6295Render(0,pBurnSoundOut, nBurnSoundLen);
+		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
+		if (nSegmentLength) {
+			BurnYM2151Render(pSoundBuf, nSegmentLength);
+			MSM6295Render(0,pSoundBuf, nSegmentLength);
+		}
 	}
 
 	ZetClose();
@@ -991,9 +998,9 @@ static struct BurnRomInfo wwfsstarjRomDesc[] = {
 STD_ROM_PICK(wwfsstarj)
 STD_ROM_FN(wwfsstarj)
 
-struct BurnDriver BurnDrvWwfsstarj = {
+struct BurnDriverD BurnDrvWwfsstarj = {
 	"wwfsstarj", "wwfsstar", NULL, NULL, "1989",
-	"WWF Superstars (Japan)\0", NULL, "Technos Japan", "Miscellaneous",
+	"WWF Superstars (Japan)\0", "Missing program ROM", "Technos Japan", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_CLONE, 2, HARDWARE_MISC_PRE90S, GBF_VSFIGHT, 0,
 	NULL, wwfsstarjRomInfo, wwfsstarjRomName, NULL, NULL, WwfsstarInputInfo, WwfsstarDIPInfo,

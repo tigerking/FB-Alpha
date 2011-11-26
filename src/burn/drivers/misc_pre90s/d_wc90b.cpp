@@ -24,7 +24,7 @@ static UINT8 *Wc90b1TextVideoRam = NULL;
 static UINT8 *Wc90b1SpriteRam    = NULL;
 static UINT8 *Wc90b1PaletteRam   = NULL;
 static UINT8 *Wc90b1SharedRam    = NULL;
-static UINT32 *Wc90b1Palette      = NULL;
+static UINT32 *Wc90b1Palette     = NULL;
 static UINT8 *Wc90b1CharTiles    = NULL;
 static UINT8 *Wc90b1Tiles        = NULL;
 static UINT8 *Wc90b1Sprites      = NULL;
@@ -504,11 +504,11 @@ static INT32 Wc90b1Init()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	Wc90b1TempGfx = (UINT8*)malloc(0x80000);
+	Wc90b1TempGfx = (UINT8*)BurnMalloc(0x80000);
 	if (Wc90b1TempGfx == NULL) return 1;
 
 	// Load Z80 #1 Program Roms
@@ -568,10 +568,7 @@ static INT32 Wc90b1Init()
 	}
 	GfxDecode(4096, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x100, Wc90b1TempGfx, Wc90b1Sprites);
 
-	if (Wc90b1TempGfx) {
-		free(Wc90b1TempGfx);
-		Wc90b1TempGfx = NULL;
-	}
+	BurnFree(Wc90b1TempGfx);
 
 	// Setup the Z80 emulation
 	ZetInit(3);
@@ -662,10 +659,7 @@ static INT32 Wc90b1Exit()
 	BurnYM2203Exit();
 	MSM5205Exit();
 
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 	
 	Wc90b1Scroll0X = Wc90b1Scroll0Y = 0;
 	Wc90b1Scroll1X = Wc90b1Scroll1Y = 0;
@@ -873,7 +867,6 @@ static INT32 Wc90b1Frame()
 {
 	INT32 nInterleave = MSM5205CalcInterleave(0, 5000000);
 	INT32 nVBlankIRQFire = (INT32)((double)242 / 260 * nInterleave);
-	INT32 nSoundBufferPos = 0;
 
 	if (Wc90b1Reset) Wc90b1DoReset();
 
@@ -912,32 +905,17 @@ static INT32 Wc90b1Frame()
 		ZetOpen(nCurrentCPU);
 		BurnTimerUpdate(i * (nCyclesTotal[2] / nInterleave));
 		MSM5205Update();
-		if (pBurnSoundOut) {
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			nSoundBufferPos += nSegmentLength;
-		}
 		ZetClose();
 	}
 
 	ZetOpen(2);
 	BurnTimerEndFrame(nCyclesTotal[2]);
 	if (pBurnSoundOut) {
-		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-		}
+		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+		MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
 	}
 	ZetClose();
 	
-	if (pBurnSoundOut) {
-		ZetOpen(2);
-		MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
-		ZetClose();
-	}
-
 	if (pBurnDraw) Wc90b1Draw();
 
 	return 0;

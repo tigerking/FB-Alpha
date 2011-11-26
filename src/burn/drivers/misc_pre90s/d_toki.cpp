@@ -1,6 +1,7 @@
 #include "tiles_generic.h"
 #include "burn_ym3812.h"
 #include "msm6295.h"
+#include "msm5205.h"
 #include "bitswap.h"
 
 static UINT8 *AllMem;
@@ -32,8 +33,8 @@ static UINT8 DrvJoy3[2];
 static UINT8 DrvDips[2];
 static UINT16 DrvInps[2];
 
-static UINT32  *DrvPalette;
-static UINT32  *Palette;
+static UINT32 *DrvPalette;
+static UINT32 *Palette;
 
 static UINT8 DrvRecalc;
 
@@ -43,6 +44,9 @@ static UINT8 main2sub[2],sub2main[2];
 static INT32 main2sub_pending,sub2main_pending;
 
 static INT32 is_bootleg = 0;
+
+static UINT8 TokibMSM5205Next = 0;
+static UINT8 TokibMSM5205Toggle = 0;
 
 static INT32 nCyclesTotal[2] = { 10000000 / 60, 3579545 / 60 };
 
@@ -72,7 +76,6 @@ static struct BurnInputInfo TokiInputList[] = {
 };
 
 STDINPUTINFO(Toki)
-
 
 static struct BurnDIPInfo TokiDIPList[]=
 {
@@ -378,7 +381,9 @@ void __fastcall tokib_write_byte(UINT32 address, UINT8 data)
 		case 0x75000:
 		case 0x75001: {
 			*soundlatch = data & 0xff;
+			ZetOpen(0);
 			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			ZetClose();
 			return;
 		}
 
@@ -442,7 +447,9 @@ void __fastcall tokib_write_word(UINT32 address, UINT16 data)
 
 		case 0x75000: {
 			*soundlatch = data & 0xff;
+			ZetOpen(0);
 			ZetSetIRQLine(0, ZET_IRQSTATUS_ACK);
+			ZetClose();
 			return;
 		}
 
@@ -506,13 +513,11 @@ UINT8 __fastcall tokib_read_byte(UINT32 address)
 		case 0xc0001:
 			return DrvDips[~address & 1];
 
-		case 0xc0002:
-		case 0xc0003:
-			return DrvInps[0] >> ((~address & 1) << 3);
+		case 0xc0002: return DrvInps[0] >> 8;
+		case 0xc0003: return DrvInps[0] & 0xff;
 
-		case 0xc0004:
-		case 0xc0005:
-			return DrvInps[1] >> (( address & 1) << 3);
+		case 0xc0004: return DrvInps[1] >> 8;
+		case 0xc0005: return DrvInps[1] & 0xff;
 
 		case 0xc000e:
 		case 0xc000f:
@@ -665,7 +670,7 @@ static void toki_adpcm_control_w(INT32 data)
 	ZetMapArea(0x8000, 0xbfff, 2, RAM);
 
 
-//	msm5205_reset_w(0,data & 0x08);
+	MSM5205ResetWrite(0, data & 0x08);
 }
 
 
@@ -678,7 +683,7 @@ void __fastcall tokib_sound_write(UINT16 address, UINT8 data)
 		return;
 
 		case 0xe400:
-			// toki_adpcm_data_w
+			TokibMSM5205Next = data;
 		return;
 
 		case 0xec00:
@@ -727,6 +732,16 @@ static INT32 DrvDoReset()
 	if (!is_bootleg) MSM6295Reset(0);
 
 	return 0;
+}
+
+static INT32 TokibDoReset()
+{
+	TokibMSM5205Next = 0;
+	TokibMSM5205Toggle = 0;
+	
+	MSM5205Reset();
+	
+	return DrvDoReset();
 }
 
 
@@ -803,7 +818,7 @@ static INT32 TokibGfxDecode()
 	  0x10000*8+ 0, 0x10000*8+ 8, 0x10000*8+16, 0x10000*8+24, 0x10000*8+32,
 	  0x10000*8+40, 0x10000*8+48, 0x10000*8+56 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -824,10 +839,7 @@ static INT32 TokibGfxDecode()
 
 	GfxDecode(4096, 4, 16, 16, Plane2, XOffs1, YOffs1, 0x040, tmp, DrvGfxROM3);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -890,6 +902,20 @@ static void DrvFMIRQHandler(INT32, INT32 nStatus)
 	}
 }
 
+inline static INT32 TokibSynchroniseStream(INT32 nSoundRate)
+{
+	return (INT64)(ZetTotalCycles() * nSoundRate / 4000000);
+}
+
+static void toki_adpcm_int()
+{
+	MSM5205DataWrite(0, TokibMSM5205Next);
+	TokibMSM5205Next >>= 4;
+	
+	TokibMSM5205Toggle ^= 1;
+	if (TokibMSM5205Toggle) ZetNmi();
+}
+
 static INT32 TokibInit()
 {
 	is_bootleg = 1;
@@ -915,6 +941,8 @@ static INT32 TokibInit()
 			if (BurnLoadRom(DrvGfxROM2 + i * 0x10000, 17 + i, 1)) return 1;
 			if (BurnLoadRom(DrvGfxROM3 + i * 0x10000, 25 + i, 1)) return 1;
 		}
+		
+		if (BurnLoadRom(DrvZ80ROM  + 0x00000,   4, 1)) return 1;
 
 		tokib_rom_decode();
 
@@ -940,7 +968,8 @@ static INT32 TokibInit()
 	ZetOpen(0);
 	ZetMapArea(0x0000, 0x7fff, 0, DrvZ80ROM);
 	ZetMapArea(0x0000, 0x7fff, 2, DrvZ80ROM);
-	// 8000 - bfff banked data
+	ZetMapArea(0x8000, 0xbfff, 0, DrvZ80ROM + 0x8000);
+	ZetMapArea(0x8000, 0xbfff, 2, DrvZ80ROM + 0x8000);
 	ZetMapArea(0xf000, 0xf7ff, 0, DrvZ80RAM);
 	ZetMapArea(0xf000, 0xf7ff, 1, DrvZ80RAM);
 	ZetMapArea(0xf000, 0xf7ff, 2, DrvZ80RAM);
@@ -949,12 +978,14 @@ static INT32 TokibInit()
 	ZetMemEnd();
 	ZetClose();
 
-	BurnYM3812Init(3579545, NULL, &DrvSynchroniseStream, 0);
+	BurnYM3812Init(3579545, NULL, &TokibSynchroniseStream, 0);
 	BurnTimerAttachZetYM3812(3579545);
+	
+	MSM5205Init(0, TokibSynchroniseStream, 384000, toki_adpcm_int, MSM5205_S96_4B, 45, 1);
 
 	GenericTilesInit();
 
-	DrvDoReset();
+	TokibDoReset();
 
 	return 0;
 }
@@ -973,7 +1004,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs1[32] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,
 			8*32, 9*32, 10*32, 11*32, 12*32, 13*32, 14*32, 15*32 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -994,10 +1025,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(4096, 4, 16, 16, Plane1, XOffs1, YOffs1, 0x400, tmp, DrvGfxROM3);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -1057,7 +1085,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 	
@@ -1132,7 +1160,7 @@ static INT32 JujubInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 	
@@ -1195,15 +1223,12 @@ static INT32 JujubInit()
 
 	DrvGfxDecode();
 	
-	UINT8 *Temp = (UINT8*)malloc(0x20000);
+	UINT8 *Temp = (UINT8*)BurnMalloc(0x20000);
 	memcpy(Temp, DrvSndROM, 0x20000);
 	for (INT32 i = 0; i < 0x20000; i++ ) {
 		DrvSndROM[i] = Temp[BITSWAP24(i, 23, 22, 21, 20, 19, 18, 17, 16, 13, 14, 15, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)];
 	}
-	if (Temp) {
-		free(Temp);
-		Temp = NULL;
-	}
+	BurnFree(Temp);
 
 	SekInit(0, 0x68000);
 	SekOpen(0);
@@ -1256,10 +1281,10 @@ static INT32 DrvExit()
 	SekExit();
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
+	
+	TokibMSM5205Next = 0;
+	TokibMSM5205Toggle = 0;
 
 	return 0;
 }
@@ -1492,26 +1517,44 @@ void assemble_inputs(UINT16 in0base, UINT16 in1base)
 static INT32 TokibFrame()
 {
 	if (DrvReset) {
-		DrvDoReset();
+		TokibDoReset();
 	}
+	
+	INT32 nInterleave = MSM5205CalcInterleave(0, 4000000);
 
 	SekNewFrame();
 	ZetNewFrame();
 
-	assemble_inputs(0x3f3f, 0x1f1f);
+	assemble_inputs(0x3f3f, 0xff1f);
+	
+	INT32 nCyclesToDo[2] = { 12000000 / 60, 4000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
+	
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
 
-	SekOpen(0);
-	SekRun(12000000 / 60);
-	SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
-	SekClose();
+		nCurrentCPU = 0;
+		SekOpen(0);
+		nNext = (i + 1) * nCyclesToDo[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+		if (i == (nInterleave - 1)) SekSetIRQLine(6, SEK_IRQSTATUS_AUTO);
+		SekClose();
+
+		ZetOpen(0);
+		BurnTimerUpdateYM3812(i * (nCyclesToDo[1] / nInterleave));
+		MSM5205Update();
+		ZetClose();
+	}
 	
 	ZetOpen(0);
-	BurnTimerEndFrameYM3812(4000000 / 60);
+	BurnTimerEndFrameYM3812(nCyclesToDo[1]);
 	if (pBurnSoundOut) {
 		BurnYM3812Update(pBurnSoundOut, nBurnSoundLen);
-	}
-	ZetClose();
-
+		MSM5205Render(0, pBurnSoundOut, nBurnSoundLen);
+	}	
+	ZetClose();	
+	
 	if (pBurnDraw) {
 		TokibDraw();
 	}
@@ -1918,7 +1961,7 @@ static struct BurnRomInfo tokibRomDesc[] = {
 STD_ROM_PICK(tokib)
 STD_ROM_FN(tokib)
 
-struct BurnDriverD BurnDrvTokib = {
+struct BurnDriver BurnDrvTokib = {
 	"tokib", "toki", NULL, NULL, "1989",
 	"Toki (bootleg)\0", NULL, "bootleg", "hardware",
 	NULL, NULL, NULL, NULL,

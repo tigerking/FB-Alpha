@@ -232,7 +232,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs[16] = { 0*8, 1*8, 2*8, 3*8, 4*8, 5*8, 6*8, 7*8,
 			8*8, 9*8, 10*8, 11*8, 12*8, 13*8, 14*8, 15*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0xC000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0xC000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -245,17 +245,14 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x200, 3, 16, 16, Plane1, XOffs,  YOffs, 0x100, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
 
 static INT32 DrvPaletteInit()
 {
-	UINT32 *tmp = (UINT32*)malloc(0x20 * sizeof (UINT32));
+	UINT32 *tmp = (UINT32*)BurnMalloc(0x20 * sizeof (UINT32));
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -290,10 +287,7 @@ static INT32 DrvPaletteInit()
 		Palette[i] = tmp[(DrvColPROM[0x200 + i] & 0x0f) | ((i >> 4) & 0x10)];
 	}
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -363,7 +357,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -447,10 +441,7 @@ static INT32 DrvExit()
 	AY8910Exit(0);
 	AY8910Exit(1);
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	sonsonj = 0;
 
@@ -603,7 +594,7 @@ static INT32 DrvFrame()
 
 		if (pBurnSoundOut) {
 			INT32 nSample;
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
@@ -617,13 +608,7 @@ static INT32 DrvFrame()
 
 				nSample /= 4;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -648,13 +633,7 @@ static INT32 DrvFrame()
 
 			nSample /= 4;
 
-			if (nSample < -32768) {
-				nSample = -32768;
-			} else {
-				if (nSample > 32767) {
-					nSample = 32767;
-				}
-			}
+			nSample = BURN_SND_CLIP(nSample);
 
 			pSoundBuf[(n << 1) + 0] = nSample;
 			pSoundBuf[(n << 1) + 1] = nSample;

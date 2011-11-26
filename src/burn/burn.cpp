@@ -642,13 +642,16 @@ extern "C" INT32 BurnDrvExit()
 	CheatSearchExit();
 	HiscoreExit();
 	BurnStateExit();
-	BurnExitMemoryManager();
-
+	
 	nBurnCPUSpeedAdjust = 0x0100;
 	
 	pBurnDrvPalette = NULL;	
+	
+	INT32 nRet = pDriver[nBurnDrvActive]->Exit();			// Forward to drivers function
+	
+	BurnExitMemoryManager();
 
-	return pDriver[nBurnDrvActive]->Exit();			// Forward to drivers function
+	return nRet;
 }
 
 INT32 (__cdecl* BurnExtCartridgeSetupCallback)(BurnCartrigeCommand nCommand) = NULL;

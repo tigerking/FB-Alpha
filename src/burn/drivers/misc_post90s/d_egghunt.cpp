@@ -20,8 +20,8 @@ static UINT8 *DrvColRAM;
 static UINT8 *DrvPalRAM;
 static UINT8 *DrvZ80RAM1;
 
-static UINT32  *DrvPalette;
-static UINT8  DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
 static UINT8 *soundlatch;
 
@@ -246,7 +246,7 @@ static INT32 DrvGfxDecode()
 	INT32 XOffs1[16]= { 0x04, 0x05, 0x06, 0x07, 0x00, 0x01, 0x02, 0x03, 0x84, 0x85, 0x86, 0x87, 0x80, 0x81, 0x82, 0x83 };
 	INT32 YOffs[16] = { 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38, 0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70, 0x78 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -259,7 +259,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x01000, 4, 16, 16, Plane, XOffs1, YOffs, 0x100, tmp, DrvGfxROM1);
 
-	free (tmp);
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -304,7 +304,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -379,8 +379,7 @@ static INT32 DrvExit()
 
 	ZetExit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }

@@ -1,4 +1,5 @@
 // FB Alpha Blood Bros. driver module
+// FB Alpha Blood Bros. driver module
 // Based on MAME driver by Carlos A. Lozano Baides and Richard Bush
 
 #include "tiles_generic.h"
@@ -23,9 +24,9 @@ static UINT8 *DrvTxRAM;
 static UINT8 *DrvFgRAM;
 static UINT8 *DrvSprRAM;
 static UINT8 *DrvScrollRAM;
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 
-static UINT8  DrvRecalc;
+static UINT8 DrvRecalc;
 
 static UINT8 DrvJoy1[2];
 static UINT8 DrvJoy2[15];
@@ -495,7 +496,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs1[16] = { 0x000, 0x020, 0x040, 0x060, 0x080, 0x0a0, 0x0c0, 0x0e0,
 			   0x100, 0x120, 0x140, 0x160, 0x180, 0x1a0, 0x1c0, 0x1e0 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -512,10 +513,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x2000, 4, 16, 16, Plane1, XOffs1, YOffs1, 0x400, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -565,14 +563,56 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
 
 	if (!strcmp(BurnDrvGetTextA(DRV_NAME), "weststry"))
 	{
-		return 1;
+		{
+			if (BurnLoadRom(Drv68KROM + 0x000000, 0, 2)) return 1;
+			if (BurnLoadRom(Drv68KROM + 0x000001, 1, 2)) return 1;
+			if (BurnLoadRom(Drv68KROM + 0x040000, 2, 2)) return 1;
+			if (BurnLoadRom(Drv68KROM + 0x040001, 3, 2)) return 1;
+	
+			if (BurnLoadRom(DrvZ80ROM + 0x000000, 4, 1)) return 1;
+			memcpy (DrvZ80ROM + 0x10000, DrvZ80ROM + 0x8000, 0x8000);
+			memcpy (DrvZ80ROM + 0x18000, DrvZ80ROM + 0x8000, 0x8000);
+	
+			UINT8 *pTemp = (UINT8*)BurnMalloc(0x10000);
+			if (BurnLoadRom(pTemp      + 0x00000, 5, 1)) return 1;
+			memcpy(DrvGfxROM0 + 0x00000, pTemp + 0x8000, 0x8000);
+			if (BurnLoadRom(pTemp      + 0x00000, 6, 1)) return 1;
+			memcpy(DrvGfxROM0 + 0x08000, pTemp + 0x8000, 0x8000);
+			if (BurnLoadRom(pTemp      + 0x00000, 7, 1)) return 1;
+			memcpy(DrvGfxROM0 + 0x10000, pTemp + 0x8000, 0x8000);
+			if (BurnLoadRom(pTemp      + 0x00000, 8, 1)) return 1;
+			memcpy(DrvGfxROM0 + 0x18000, pTemp + 0x8000, 0x8000);
+			BurnFree(pTemp);
+	
+			if (BurnLoadRom(DrvGfxROM1 + 0x20000, 9, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0x60000,10, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0xa0000,11, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0xe0000,12, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0x00000,13, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0x40000,14, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0x80000,15, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM1 + 0xc0000,16, 1)) return 1;
+	
+			if (BurnLoadRom(DrvGfxROM2 + 0x00000,17, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0x20000,18, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0x40000,19, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0x60000,20, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0x80000,21, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0xa0000,22, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0xc0000,23, 1)) return 1;
+			if (BurnLoadRom(DrvGfxROM2 + 0xe0000,24, 1)) return 1;
+	
+			if (BurnLoadRom(DrvSndROM + 0x000000,25, 1)) return 1;
+
+			DrvGfxDecode();
+		}
 
 		SekInit(0, 0x68000);
 		SekOpen(0);
@@ -650,10 +690,7 @@ static INT32 DrvExit()
 
 	seibu_sound_exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	nGameSelect = 0;
 
@@ -806,7 +843,7 @@ static INT32 DrvFrame()
 	ZetNewFrame();
 
 	{
-		memset (DrvInputs, 0xff, 3 * 2);
+		memset (DrvInputs, 0xff, 3 * sizeof(UINT16));
 		for (INT32 i = 0; i < 16; i++)
 		{
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;

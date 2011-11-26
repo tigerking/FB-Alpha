@@ -496,7 +496,7 @@ static INT32 DrvGfxDecode()
 	static INT32 YOffs[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,
 	  0*32+64*8, 1*32+64*8, 2*32+64*8, 3*32+64*8, 4*32+64*8, 5*32+64*8, 6*32+64*8, 7*32+64*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x100000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x100000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -511,10 +511,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x2000, 4, 16, 16, Plane, XOffs, YOffs, 0x400, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -526,7 +523,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -626,6 +623,7 @@ static INT32 DrvInit()
 
 	BurnYM2203Init(1, 3000000, NULL, DrvSynchroniseStream, DrvGetTime, 0);
 	BurnYM2203SetPorts(0, &DrvYM2203PortA, &DrvYM2203PortB, NULL, NULL);
+	BurnYM2203SetVolumeShift(2);
 	BurnTimerAttachZet(6000000);
 
 	MSM6295Init(0, 3000000 / 132, 80, 1);
@@ -650,10 +648,7 @@ static INT32 DrvExit()
 
 	BurnYM2203Exit();
 
-	if (AllMem) {
-		free(AllMem);
-		AllMem = NULL;
-	}
+	BurnFree(AllMem);
 
 	return 0;
 }
@@ -742,7 +737,6 @@ static INT32 DrvFrame()
 	}
 
 	INT32 nInterleave = 100;
-	INT32 nSoundBufferPos = 0;
 	INT32 nCyclesTotal[3] =  { 6000000 / 60, 6000000 / 60, 6000000 / 60 };
 	INT32 nCyclesDone[3] = { 0, 0, 0 };
 
@@ -773,14 +767,6 @@ static INT32 DrvFrame()
 		if (i == 99) {
 			ZetSetIRQLine(0, ZET_IRQSTATUS_AUTO);
 		}
-
-		if (pBurnSoundOut) {
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-			nSoundBufferPos += nSegmentLength;
-		}
 		ZetClose();
 	}
 
@@ -789,12 +775,8 @@ static INT32 DrvFrame()
 	BurnTimerEndFrame(nCyclesTotal[2]);
 
 	if (pBurnSoundOut) {
-		INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
-		INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
-		if (nSegmentLength) {
-			BurnYM2203Update(pSoundBuf, nSegmentLength);
-			MSM6295Render(0, pSoundBuf, nSegmentLength);
-		}
+		BurnYM2203Update(pBurnSoundOut, nBurnSoundLen);
+		MSM6295Render(0, pBurnSoundOut, nBurnSoundLen);
 	}
 
 	ZetClose();

@@ -15,7 +15,7 @@ static UINT8 *DrvGfxRAM;
 static UINT8 *DrvVidRAM;
 static UINT8 *DrvGfxROM;
 
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 static UINT8 DrvRecalc;
 
 static UINT8 DrvJoy1[8] = {0, };
@@ -112,7 +112,8 @@ void __fastcall mogura_write_port(UINT16 port, UINT8 data)
 	switch (port & 0xff)
 	{
 		case 0x14:
-			DACWrite(0, (data & 0xf0) | ((data & 0x0f) << 4));
+			DACWrite(0, (data & 0xf0));
+			DACWrite(1, (data & 0x0f) << 4);
 		return;
 	}
 }
@@ -188,7 +189,7 @@ static INT32 MemIndex()
 	DrvZ80ROM	= Next; Next += 0x008000;
 	DrvColPROM	= Next; Next += 0x000020;
 
-	DrvPalette	= (UINT32*)Next; Next += 0x0020 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0020 * sizeof(UINT32);
 
 	AllRam		= Next;
 
@@ -211,7 +212,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -241,6 +242,7 @@ static INT32 DrvInit()
 	ZetClose();
 
 	DACInit(0, 0, 0);
+	DACInit(1, 0, 0);
 
 	GenericTilesInit();
 
@@ -256,10 +258,7 @@ static INT32 DrvExit()
 	ZetExit();
 	DACExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }

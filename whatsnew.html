@@ -120,6 +120,7 @@
 <li>Added SAA1099 sound core module and added support to the XOR World driver which now has sound [iq_132]</li>
 <li>Added support to the DAC module for up to eight DACs [Barry]</li>
 <li>Added BURN_SND_CLIP macro [Barry]</li>
+<li>Fixed rendering MSM6295 sound in Seibu sound module [Barry]</li>
 <li>Added Neo Geo CD Load Game dialog [CaptainCPS]</li>
 <li>Integrated the Neo Geo CD Load Game dialog with the rest of the application and fixed several x64 issues [Barry]</li>
 <li>Changed the burn, burn/devices, burn/drivers, burn/sound, burner and interface folders to use defined variable types, allowing better control for ports to other architectures [Barry]</li>
@@ -135,18 +136,25 @@
 <li>Removed the BurnMedia functionality since it is replaced by the Neo Geo CD id module, and updated all drivers to reflect the new structure [Barry]</li>
 <li>Added driver for Dragon Ninja, Heavy Barrel and Robocop on DEC-0 hardware [Barry]</li>
 <li>Added bootleg of Knights of the Round to the CPS-1 driver [Barry, JacKc]</li>
+<li>Added clone of Pang 3 to the CPS-1 driver [Barry]</li>
 <li>Added clone of Cobra Command to the DEC-8 driver [Barry]</li>
+<li>Added clone of Puckman to the Pacman driver [JacKc]</li>
 <li>Improved the asic27_kov protection simulation, allowing Knights of Valour: SanGuo QunYingZhuan / Sangoku Senki: SanGuo QunYingZhuan to work, albeit with incorrect roms due to rom-hoarding [iq_132]</li>
+<li>Added clone of Ninja Warriors to the Taito drivers [JacKc]</li>
 <li>Added Fix Eight to the Toaplan drivers [iq_132]</li>
 <li>Added Ghox to the Toaplan drivers [iq_132]</li>
 <li>Added support for the analog paddle in Ghox [Barry]</li>
 <li>Added clone of Alien Storm to the Sega System 18 driver [JacKc]</li>
-<li>Added clone of JJ Squakwers to the Seta drivers [JacKc]</li>
+<li>Added clone of JJ Squakwers to the Seta driver [JacKc]</li>
+<li>Added clone of Ikari III to the SNK68 driver [JacKc]</li>
 <li>Added Pipi & Bibis to the Toaplan drivers [iq_132]</li>
+<li>Fixed sound in Aquarium driver [Barry]</li>
 <li>Fixed sound in Armed Formation driver [Barry]</li>
 <li>Fixed crash in the Baraduke driver [Barry]</li>
 <li>Fixed Saturn in the Blue Print driver [Barry]</li>
+<li>Fixed sound in Caveman Ninja bootleg in the Caveman Ninja driver [Barry]</li>
 <li>Fixed crash when exiting CPS-1 drivers [Barry]</li>
+<li>Fixed sound in SD Gundam Psycho Salamander no Kyoui in D-Con driver [Barry]</li>
 <li>Fixed coin inputs in Garyoret in the DEC-8 driver [Barry]</li>
 <li>Fixed an app crash in the Garyoret and Gondo drivers in the DEC-8 driver [Barry]</li>
 <li>Fixed orientation in Last Mission in the DEC-8 driver [Barry]</li>
@@ -157,11 +165,15 @@
 <li>Added overclocking support to the Double Dragon driver [Barry]</li>
 <li>Improved video timing and sound balance in the Exed Exes driver [Barry]</li>
 <li>Added sample support to the Galaga driver [Barry]</li>
+<li>Fixed sound in Got-cha Mini Game Festival [Barry]</li>
 <li>Fixed clone of Gyrodine in the Kyugo driver [Barry]</li>
 <li>Fixed orientation of vertical games in the Lady Bug driver [Barry]</li>
 <li>Fixed bootleg of Legend of Kage in the Legend of Kage driver [Barry]</li>
 <li>Added ADPCM sound to Avengers and Trojan in the Legendary Wings driver [Barry]</li>
 <li>Fixed music tempo in the M92 driver [Barry]</li>
+<li>Fixed crash in Magical Cat Adventure driver [Barry]</li>
+<li>Added support for second DAC in Mogua Desse driver [Barry]</li>
+<li>Fixed sound in Mug Smashers driver [Barry]</li>
 <li>Added support for the NeoOpen BIOS v0.1 beta to the NeoGeo driver [Barry]</li>
 <li>Fixed orientation of all games in the Pacman driver [Barry]</li>
 <li>Fixed Paint Roller in the Pacman driver and added to release builds [Barry]</li>
@@ -171,10 +183,20 @@
 <li>Emulated the MCU in the Renegade driver [Barry]</li>
 <li>Emulated the custom ADPCM sound in the Renegade driver [Barry]</li>
 <li>Fixed DAC sound in Route 16 driver [Barry]</li>
+<li>Fixed Get Star (bootleg set 1) in Tiger Heli driver [Barry]</li>
+<li>Emulated MCU in non-bootleg versions of Alcon and Slapfight in Tiger Heli drivers which are now working [Barry]</li>
+<li>Simulated MCU in non-bootleg version of Get Star in Tiger Heli driver which is now working [Barry]</li>
+<li>Added clone of Get Star to the Tiger Heli driver [Barry]</li>
+<li>Added ADPCM sound to Toramich in the Tiger Road driver [Barry]</li>
+<li>Fixed DAC sound in Kabuki-Z in the TNZS driver [Barry]</li>
+<li>Fixed inputs and added sound in bootleg of Toki in the Toki driver [Barry]</li>
+<li>Fixed sound in Buccaneers and Kickle Cubele in the Vigilante driver [Barry]</li>
+<li>Fixed orientation in Vulgus [Barry]</li>
 <li>Fixed a crash when starting the Neo Geo driver from the command-line [Barry]</li>
 <li>Removed a 64Mb rom limit on Neo Geo sprite ROM size, fixing kof98ae and maybe some others [Barry]</li>
 <li>Fixed an app crash when exiting drivers using the taito_m68705 module [Barry]</li>
 <li>Moved Atari and Kaneko16 into the misc categories and added a category for Irem to the game selection dialog [Barry]</li>
+<li>Fixed nullifying pointers in BurnFree in the Burn memory module [Barry]</li>
 <li>Tidied some drivers, and updated to use Burn Memory module and BURN_SND_CLIP macro [Barry]</li>
 <li>Moved Kaneko Pandora code to it's own file [Barry]</li>
 <li>Moved Air Buster driver to misc_post90s folder [Barry]</li>

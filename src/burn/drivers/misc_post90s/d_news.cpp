@@ -19,7 +19,7 @@ static UINT8 *NewsRam          = NULL;
 static UINT8 *NewsFgVideoRam   = NULL;
 static UINT8 *NewsBgVideoRam   = NULL;
 static UINT8 *NewsPaletteRam   = NULL;
-static UINT32  *NewsPalette      = NULL;
+static UINT32 *NewsPalette     = NULL;
 static UINT8 *NewsTiles        = NULL;
 static UINT8 *NewsTempGfx      = NULL;
 
@@ -260,11 +260,11 @@ INT32 NewsInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	NewsTempGfx = (UINT8*)malloc(0x80000);
+	NewsTempGfx = (UINT8*)BurnMalloc(0x80000);
 
 	// Load Z80 Program Rom
 	nRet = BurnLoadRom(NewsRom, 0, 1); if (nRet != 0) return 1;
@@ -273,10 +273,7 @@ INT32 NewsInit()
 	nRet = BurnLoadRom(NewsTempGfx + 0x00000, 1, 2); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(NewsTempGfx + 0x00001, 2, 2); if (nRet != 0) return 1;
 	GfxDecode(16384, 4, 8, 8, TilePlaneOffsets, TileXOffsets, TileYOffsets, 0x100, NewsTempGfx, NewsTiles);
-	if (NewsTempGfx) {
-		free(NewsTempGfx);
-		NewsTempGfx = NULL;
-	}
+	BurnFree(NewsTempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 3, 1); if (nRet != 0) return 1;
@@ -318,10 +315,7 @@ INT32 NewsExit()
 
 	GenericTilesExit();
 
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 
 	BgPic = 0;
 

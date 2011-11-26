@@ -26,7 +26,7 @@ static UINT8 *SolomonBgColourRam  = NULL;
 static UINT8 *SolomonBgVideoRam   = NULL;
 static UINT8 *SolomonSpriteRam    = NULL;
 static UINT8 *SolomonPaletteRam   = NULL;
-static UINT32  *SolomonPalette      = NULL;
+static UINT32 *SolomonPalette     = NULL;
 static UINT8 *SolomonBgTiles      = NULL;
 static UINT8 *SolomonFgTiles      = NULL;
 static UINT8 *SolomonSprites      = NULL;
@@ -369,11 +369,11 @@ INT32 SolomonInit()
 	Mem = NULL;
 	SolomonMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	SolomonMemIndex();
 
-	SolomonTempRom = (UINT8 *)malloc(0x10000);
+	SolomonTempRom = (UINT8 *)BurnMalloc(0x10000);
 
 	// Load Z80 #1 Program Roms
 	nRet = BurnLoadRom(SolomonZ80Rom1, 0, 1); if (nRet != 0) return 1;
@@ -452,10 +452,7 @@ INT32 SolomonInit()
 	ZetMemEnd();
 	ZetClose();
 
-	if (SolomonTempRom) {
-		free(SolomonTempRom);
-		SolomonTempRom = NULL;
-	}
+	BurnFree(SolomonTempRom);
 
 	pAY8910Buffer[0] = pFMBuffer + nBurnSoundLen * 0;
 	pAY8910Buffer[1] = pFMBuffer + nBurnSoundLen * 1;
@@ -489,10 +486,7 @@ INT32 SolomonExit()
 
 	GenericTilesExit();
 
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 
 	return 0;
 }
@@ -714,7 +708,7 @@ INT32 SolomonFrame()
 		// Render Sound Segment
 		if (pBurnSoundOut) {
 			INT32 nSample;
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
@@ -730,13 +724,7 @@ INT32 SolomonFrame()
 				nSample += pAY8910Buffer[7][n] >> 2;
 				nSample += pAY8910Buffer[8][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
@@ -765,13 +753,7 @@ INT32 SolomonFrame()
 				nSample += pAY8910Buffer[7][n] >> 2;
 				nSample += pAY8910Buffer[8][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;

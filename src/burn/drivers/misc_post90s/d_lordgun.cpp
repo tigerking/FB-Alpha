@@ -34,7 +34,7 @@ static UINT8 *DrvSprRAM		= NULL;
 static UINT8 *DrvProtRAM	= NULL;
 static UINT8 *DrvZ80RAM		= NULL;
 
-static UINT32  *DrvPalette	= NULL;
+static UINT32 *DrvPalette	= NULL;
 static UINT8  DrvRecalc;
 
 static UINT16 *scrollx		= NULL;
@@ -696,7 +696,7 @@ static void DrvGfxDecode(UINT8 *gfxsrc, UINT8 *gfxdest, INT32 len, INT32 size)
 			   0x100, 0x110, 0x120, 0x130, 0x140, 0x150, 0x160, 0x170,
 			   0x180, 0x190, 0x1a0, 0x1b0, 0x1c0, 0x1d0, 0x1e0, 0x1f0 };
 
-	UINT8 *tmp = (UINT8*)malloc(len);
+	UINT8 *tmp = (UINT8*)BurnMalloc(len);
 	if (tmp == NULL) {
 		return;
 	}
@@ -705,10 +705,7 @@ static void DrvGfxDecode(UINT8 *gfxsrc, UINT8 *gfxdest, INT32 len, INT32 size)
 
 	GfxDecode(((len * 8) / 6) / (size*size), 6, size, size, Planes, (size == 32) ? XOffs2 : XOffs1, YOffs, (size*size*2), tmp, gfxdest);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 }
 
 static INT32 DrvInit(INT32 (*pInitCallback)(), INT32 lordgun)
@@ -716,7 +713,7 @@ static INT32 DrvInit(INT32 (*pInitCallback)(), INT32 lordgun)
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -821,10 +818,7 @@ static INT32 DrvExit()
 
 	EEPROMExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -1255,12 +1249,24 @@ static INT32 lordgunFrame()
 	ZetNewFrame();
 
 	INT32 nTotalCycles[2] =  { 10000000 / 60, 5000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
+	INT32 nInterleave = 50;
+	
 	SekOpen(0);
 	ZetOpen(0);
+	
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
 
-	SekRun(nTotalCycles[0]);
-	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		nCurrentCPU = 0;
+		nNext = (i + 1) * nTotalCycles[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+		if (i == (nInterleave - 1)) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		
+		BurnTimerUpdateYM3812(i * (nTotalCycles[1] / nInterleave));
+	}
 
 	BurnTimerEndFrameYM3812(nTotalCycles[1]);
 
@@ -1289,20 +1295,27 @@ static INT32 alienchaFrame()
 
 	SekNewFrame();
 	ZetNewFrame();
+	
+	INT32 nInterleave = 1000;
 
 	INT32 nCyclesTotal[2] =  { 10000000 / 60, 5000000 / 60 };
+	INT32 nCyclesDone[2] = { 0, 0 };
 
 	SekOpen(0);
 	ZetOpen(0);
 
-	for (INT32 i = 0; i < 100; i++) {
-		SekRun(nCyclesTotal[0] / 100);
+	for (INT32 i = 0; i < nInterleave; i++) {
+		INT32 nCurrentCPU, nNext, nCyclesSegment;
 
-		BurnTimerUpdate(nCyclesTotal[1] / 100);
+		nCurrentCPU = 0;
+		nNext = (i + 1) * nCyclesTotal[nCurrentCPU] / nInterleave;
+		nCyclesSegment = nNext - nCyclesDone[nCurrentCPU];
+		nCyclesDone[nCurrentCPU] += SekRun(nCyclesSegment);
+		if (i == (nInterleave - 1)) SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
+		
+		BurnTimerUpdate(i * (nCyclesTotal[1] / nInterleave));
 	}
-
-	SekSetIRQLine(4, SEK_IRQSTATUS_AUTO);
-
+	
 	BurnTimerEndFrame(nCyclesTotal[1]);
 
 	if (pBurnSoundOut) {
@@ -1400,7 +1413,7 @@ static INT32 lordgunInit()
 
 struct BurnDriver BurnDrvLordgun = {
 	"lordgun", NULL, NULL, NULL, "1994",
-	"Lord of Gun (USA)\0", "Imperfect graphics", "IGS", "Miscellaneous",
+	"Lord of Gun (USA)\0", "Imperfect graphics and sound", "IGS", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_SHOOT, 0,
 	NULL, lordgunRomInfo, lordgunRomName, NULL, NULL, LordgunInputInfo, LordgunDIPInfo,
@@ -1444,7 +1457,7 @@ static INT32 alienchaInit()
 
 struct BurnDriver BurnDrvAliencha = {
 	"aliencha", NULL, NULL, NULL, "1994",
-	"Alien Challenge (World)\0", NULL, "IGS", "Miscellaneous",
+	"Alien Challenge (World)\0", "Imperfect sound", "IGS", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
 	NULL, alienchaRomInfo, alienchaRomName, NULL, NULL, AlienchaInputInfo, AlienchaDIPInfo,
@@ -1491,7 +1504,7 @@ static INT32 alienchacInit()
 
 struct BurnDriver BurnDrvAlienchac = {
 	"alienchac", "aliencha", NULL, NULL, "1994",
-	"Alien Challenge (China)\0", NULL, "IGS", "Miscellaneous",
+	"Alien Challenge (China)\0", "Imperfect sound", "IGS", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_VSFIGHT, 0,
 	NULL, alienchacRomInfo, alienchacRomName, NULL, NULL, AlienchaInputInfo, AlienchacDIPInfo,

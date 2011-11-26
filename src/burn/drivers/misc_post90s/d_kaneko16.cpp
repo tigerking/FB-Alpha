@@ -43,7 +43,7 @@ static UINT8 *Kaneko16VScrl0Ram    = NULL;
 static UINT8 *Kaneko16VScrl1Ram    = NULL;
 static UINT8 *Kaneko16VScrl2Ram    = NULL;
 static UINT8 *Kaneko16VScrl3Ram    = NULL;
-static UINT32  *Kaneko16Palette      = NULL;
+static UINT32 *Kaneko16Palette     = NULL;
 static UINT8 *Kaneko16Tiles        = NULL;
 static UINT8 *Kaneko16Tiles2       = NULL;
 static UINT8 *Kaneko16Sprites      = NULL;
@@ -1287,7 +1287,7 @@ static INT32 ExplbrkrMemIndex()
 		LayerQueuePriority[2] = Next; Next += nScreenWidth * nScreenHeight;
 		LayerQueuePriority[3] = Next; Next += nScreenWidth * nScreenHeight;
 	}
-	pFMBuffer             = (short*)Next; Next += nBurnSoundLen * 6 * sizeof(short);
+	pFMBuffer             = (INT16*)Next; Next += nBurnSoundLen * 6 * sizeof(INT16);
 	if (Kaneko16Bg15) {
 		Kaneko16Bg15Data     = (UINT16*)Next; Next += (32 * 256 * 256) * sizeof(UINT16); // 32 bitmaps - 256 x 256
 		Kaneko16Palette      = (UINT32*)Next; Next += (0x001000 + 32768) * sizeof(UINT32);
@@ -2762,7 +2762,7 @@ static void Kaneko16VideoInit()
 {
 	GenericTilesInit();
 	
-	spritelist.first_sprite = (struct tempsprite *)malloc(0x400 * sizeof(spritelist.first_sprite[0]));
+	spritelist.first_sprite = (struct tempsprite *)BurnMalloc(0x400 * sizeof(spritelist.first_sprite[0]));
 	
 	Kaneko16ParseSprite = Kaneko16ParseSpriteType0;
 	
@@ -2851,11 +2851,11 @@ static INT32 BerlwallInit()
 	Mem = NULL;
 	ExplbrkrMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	ExplbrkrMemIndex();
 
-	Kaneko16TempGfx = (UINT8*)malloc(0x400000);
+	Kaneko16TempGfx = (UINT8*)BurnMalloc(0x400000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2884,10 +2884,7 @@ static INT32 BerlwallInit()
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x300000, 12, 2); if (nRet != 0) return 1;
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x300001, 13, 2); if (nRet != 0) return 1;
 	Kaneko16DecodeBg15Bitmaps();
-	if (Kaneko16TempGfx) {
-		free(Kaneko16TempGfx);
-		Kaneko16TempGfx = NULL;
-	}
+	BurnFree(Kaneko16TempGfx);
 			
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 14, 1); if (nRet != 0) return 1;
@@ -2948,11 +2945,11 @@ static INT32 BlazeonInit()
 	Mem = NULL;
 	BlazeonMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	BlazeonMemIndex();
 
-	Kaneko16TempGfx = (UINT8*)malloc(0x200000);
+	Kaneko16TempGfx = (UINT8*)BurnMalloc(0x200000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -2968,6 +2965,8 @@ static INT32 BlazeonInit()
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x000000, 4, 1); if (nRet != 0) return 1;
 	UnscrambleTiles(0x100000);
 	GfxDecode(Kaneko16NumTiles, 4, 16, 16, FourBppPlaneOffsets, FourBppXOffsets, FourBppYOffsets, 0x400, Kaneko16TempGfx, Kaneko16Tiles);
+	
+	BurnFree(Kaneko16TempGfx);
 	
 	// Load Z80 Rom
 	nRet = BurnLoadRom(Kaneko16Z80Rom, 5, 1); if (nRet != 0) return 1;
@@ -3031,11 +3030,11 @@ static INT32 BloodwarInit()
 	Mem = NULL;
 	GtmrMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (UINT8*)malloc(0x1e00000);
+	Kaneko16TempGfx = (UINT8*)BurnMalloc(0x1e00000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3074,10 +3073,7 @@ static INT32 BloodwarInit()
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x000000, 25, 1); if (nRet != 0) return 1;
 	UnscrambleTiles(0x100000);
 	GfxDecode(Kaneko16NumTiles2, 4, 16, 16, FourBppPlaneOffsets, FourBppXOffsets, FourBppYOffsets, 0x400, Kaneko16TempGfx, Kaneko16Tiles2);
-	if (Kaneko16TempGfx) {
-		free(Kaneko16TempGfx);
-		Kaneko16TempGfx = NULL;
-	}
+	BurnFree(Kaneko16TempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROMData, 26, 1); if (nRet != 0) return 1;
@@ -3112,11 +3108,11 @@ static INT32 BonkadvInit()
 	Mem = NULL;
 	GtmrMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (UINT8*)malloc(0x500000);
+	Kaneko16TempGfx = (UINT8*)BurnMalloc(0x500000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3139,10 +3135,7 @@ static INT32 BonkadvInit()
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x000000, 9, 1); if (nRet != 0) return 1;
 	UnscrambleTiles(0x100000);
 	GfxDecode(Kaneko16NumTiles2, 4, 16, 16, FourBppPlaneOffsets, FourBppXOffsets, FourBppYOffsets, 0x400, Kaneko16TempGfx, Kaneko16Tiles2);
-	if (Kaneko16TempGfx) {
-		free(Kaneko16TempGfx);
-		Kaneko16TempGfx = NULL;
-	}
+	BurnFree(Kaneko16TempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROMData, 10, 1); if (nRet != 0) return 1;
@@ -3176,11 +3169,11 @@ static INT32 ExplbrkrInit()
 	Mem = NULL;
 	ExplbrkrMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	ExplbrkrMemIndex();
 
-	Kaneko16TempGfx = (UINT8*)malloc(0x240000);
+	Kaneko16TempGfx = (UINT8*)BurnMalloc(0x240000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3221,10 +3214,7 @@ static INT32 ExplbrkrInit()
 	memcpy(MSM6295ROMData + 0x160000, Kaneko16TempGfx + 0x0c0000, 0x20000);
 	memcpy(MSM6295ROMData + 0x180000, Kaneko16TempGfx + 0x000000, 0x20000);
 	memcpy(MSM6295ROMData + 0x1a0000, Kaneko16TempGfx + 0x0e0000, 0x20000);
-	if (Kaneko16TempGfx) {
-		free(Kaneko16TempGfx);
-		Kaneko16TempGfx = NULL;
-	}
+	BurnFree(Kaneko16TempGfx);
 	
 	SekInit(0, 0x68000);
 	SekOpen(0);
@@ -3290,11 +3280,11 @@ static INT32 GtmrInit()
 	Mem = NULL;
 	GtmrMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (UINT8*)malloc(0x840000);
+	Kaneko16TempGfx = (UINT8*)BurnMalloc(0x840000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3314,10 +3304,7 @@ static INT32 GtmrInit()
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x000000, 9, 1); if (nRet != 0) return 1;
 	UnscrambleTiles(0x200000);
 	GfxDecode(Kaneko16NumTiles, 4, 16, 16, FourBppPlaneOffsets, FourBppXOffsets, FourBppYOffsets, 0x400, Kaneko16TempGfx, Kaneko16Tiles);
-	if (Kaneko16TempGfx) {
-		free(Kaneko16TempGfx);
-		Kaneko16TempGfx = NULL;
-	}
+	BurnFree(Kaneko16TempGfx);
 	memcpy(Kaneko16Tiles2, Kaneko16Tiles, Kaneko16NumTiles * 16 * 16);
 
 	// Load Sample Rom
@@ -3352,11 +3339,11 @@ static INT32 GtmrevoInit()
 	Mem = NULL;
 	GtmrMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (UINT8*)malloc(0x800000);
+	Kaneko16TempGfx = (UINT8*)BurnMalloc(0x800000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3376,10 +3363,7 @@ static INT32 GtmrevoInit()
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x000000, 9, 1); if (nRet != 0) return 1;
 	UnscrambleTiles(0x200000);
 	GfxDecode(Kaneko16NumTiles, 4, 16, 16, FourBppPlaneOffsets, FourBppXOffsets, FourBppYOffsets, 0x400, Kaneko16TempGfx, Kaneko16Tiles);
-	if (Kaneko16TempGfx) {
-		free(Kaneko16TempGfx);
-		Kaneko16TempGfx = NULL;
-	}
+	BurnFree(Kaneko16TempGfx);
 	memcpy(Kaneko16Tiles2, Kaneko16Tiles, Kaneko16NumTiles * 16 * 16);
 
 	// Load Sample Rom
@@ -3415,11 +3399,11 @@ INT32 Gtmr2Init()
 	Mem = NULL;
 	GtmrMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (UINT8*)malloc(0x800000);
+	Kaneko16TempGfx = (UINT8*)BurnMalloc(0x800000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3441,10 +3425,7 @@ INT32 Gtmr2Init()
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x400001, 11, 2); if (nRet != 0) return 1;
 	UnscrambleTiles(0x440000);
 	GfxDecode(Kaneko16NumTiles, 4, 16, 16, FourBppPlaneOffsets, FourBppXOffsets, FourBppYOffsets, 0x400, Kaneko16TempGfx, Kaneko16Tiles);
-	if (Kaneko16TempGfx) {
-		free(Kaneko16TempGfx);
-		Kaneko16TempGfx = NULL;
-	}
+	BurnFree(Kaneko16TempGfx);
 	memcpy(Kaneko16Tiles2, Kaneko16Tiles, Kaneko16NumTiles * 16 * 16);
 
 	// Load Sample Rom
@@ -3480,11 +3461,11 @@ INT32 Gtmr2uInit()
 	Mem = NULL;
 	GtmrMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	GtmrMemIndex();
 
-	Kaneko16TempGfx = (UINT8*)malloc(0x800000);
+	Kaneko16TempGfx = (UINT8*)BurnMalloc(0x800000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3506,10 +3487,7 @@ INT32 Gtmr2uInit()
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x400001, 11, 2); if (nRet != 0) return 1;
 	UnscrambleTiles(0x440000);
 	GfxDecode(Kaneko16NumTiles, 4, 16, 16, FourBppPlaneOffsets, FourBppXOffsets, FourBppYOffsets, 0x400, Kaneko16TempGfx, Kaneko16Tiles);
-	if (Kaneko16TempGfx) {
-		free(Kaneko16TempGfx);
-		Kaneko16TempGfx = NULL;
-	}
+	BurnFree(Kaneko16TempGfx);
 	memcpy(Kaneko16Tiles2, Kaneko16Tiles, Kaneko16NumTiles * 16 * 16);
 
 	// Load Sample Rom
@@ -3544,11 +3522,11 @@ static INT32 MgcrystlInit()
 	Mem = NULL;
 	ExplbrkrMemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	ExplbrkrMemIndex();
 
-	Kaneko16TempGfx = (UINT8*)malloc(0x280000);
+	Kaneko16TempGfx = (UINT8*)BurnMalloc(0x280000);
 	
 	// Load and byte-swap 68000 Program roms
 	nRet = BurnLoadRom(Kaneko16Rom + 0x00001, 0, 2); if (nRet != 0) return 1;
@@ -3573,10 +3551,7 @@ static INT32 MgcrystlInit()
 	nRet = BurnLoadRom(Kaneko16TempGfx + 0x000000, 6, 1); if (nRet != 0) return 1;
 	UnscrambleTiles(0x100000);
 	GfxDecode(Kaneko16NumTiles2, 4, 16, 16, FourBppPlaneOffsets, FourBppXOffsets, FourBppYOffsets, 0x400, Kaneko16TempGfx, Kaneko16Tiles2);
-	if (Kaneko16TempGfx) {
-		free(Kaneko16TempGfx);
-		Kaneko16TempGfx = NULL;
-	}
+	BurnFree(Kaneko16TempGfx);
 	
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM, 7, 1); if (nRet != 0) return 1;
@@ -3644,10 +3619,7 @@ INT32 Kaneko16Exit()
 
 	GenericTilesExit();
 
-	if (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 	
 	Kaneko16NumTiles = 0;
 	Kaneko16NumTiles2 = 0;
@@ -4624,7 +4596,7 @@ INT32 ExplbrkrFrame()
 		// Render Sound Segment
 		if (pBurnSoundOut) {
 			INT32 nSample;
-			INT32 nSegmentLength = nBurnSoundLen - nSoundBufferPos;
+			INT32 nSegmentLength = nBurnSoundLen / nInterleave;
 			INT16* pSoundBuf = pBurnSoundOut + (nSoundBufferPos << 1);
 			AY8910Update(0, &pAY8910Buffer[0], nSegmentLength);
 			AY8910Update(1, &pAY8910Buffer[3], nSegmentLength);
@@ -4636,17 +4608,11 @@ INT32 ExplbrkrFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;
-    			}
+    		}
 			
 			nSoundBufferPos += nSegmentLength;
 		}
@@ -4668,13 +4634,7 @@ INT32 ExplbrkrFrame()
 				nSample += pAY8910Buffer[4][n] >> 2;
 				nSample += pAY8910Buffer[5][n] >> 2;
 
-				if (nSample < -32768) {
-					nSample = -32768;
-				} else {
-					if (nSample > 32767) {
-						nSample = 32767;
-					}
-				}
+				nSample = BURN_SND_CLIP(nSample);
 
 				pSoundBuf[(n << 1) + 0] = nSample;
 				pSoundBuf[(n << 1) + 1] = nSample;

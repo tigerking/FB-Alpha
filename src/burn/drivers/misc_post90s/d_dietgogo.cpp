@@ -23,7 +23,7 @@ static UINT8 *DrvPalRAM;
 static UINT8 *DrvSprRAM;
 static UINT8 *DrvHucRAM;
 
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 static UINT8 DrvRecalc;
 
 static UINT8 *soundlatch;
@@ -241,7 +241,7 @@ static INT32 DrvInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -308,8 +308,7 @@ static INT32 DrvExit()
 
 	SekExit();
 
-	free (AllMem);
-	AllMem = NULL;
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -419,7 +418,7 @@ static INT32 DrvFrame()
 	h6280NewFrame();
 
 	{
-		memset (DrvInputs, 0xff, 2 * sizeof(INT16)); 
+		memset (DrvInputs, 0xff, 2 * sizeof(UINT16)); 
 		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
@@ -512,7 +511,7 @@ STD_ROM_FN(dietgou)
 
 struct BurnDriver BurnDrvDietgou = {
 	"dietgou", "dietgo", NULL, NULL, "1992",
-	"Diet Go Go (USA v1.1 1992.09.26)\0", NULL, "Data East Corporation", "Miscellaneous",
+	"Diet Go Go (USA v1.1 1992.09.26)\0", "No sound", "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
 	NULL, dietgouRomInfo, dietgouRomName, NULL, NULL, DietgoInputInfo, DietgoDIPInfo,
@@ -546,7 +545,7 @@ STD_ROM_FN(dietgoe)
 
 struct BurnDriver BurnDrvDietgoe = {
 	"dietgoe", "dietgo", NULL, NULL, "1992",
-	"Diet Go Go (Euro v1.1 1992.08.04)\0", NULL, "Data East Corporation", "Miscellaneous",
+	"Diet Go Go (Euro v1.1 1992.08.04)\0", "No sound", "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
 	NULL, dietgoeRomInfo, dietgoeRomName, NULL, NULL, DietgoInputInfo, DietgoDIPInfo,
@@ -580,7 +579,7 @@ STD_ROM_FN(dietgo)
 
 struct BurnDriver BurnDrvDietgo = {
 	"dietgo", NULL, NULL, NULL, "1992",
-	"Diet Go Go (Euro v1.1 1992.09.26)\0", NULL, "Data East Corporation", "Miscellaneous",
+	"Diet Go Go (Euro v1.1 1992.09.26)\0", "No sound", "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
 	NULL, dietgoRomInfo, dietgoRomName, NULL, NULL, DietgoInputInfo, DietgoDIPInfo,
@@ -610,7 +609,7 @@ STD_ROM_FN(dietgoj)
 
 struct BurnDriver BurnDrvDietgoj = {
 	"dietgoj", "dietgo", NULL, NULL, "1992",
-	"Diet Go Go (Japan v1.1 1992.09.26)\0", NULL, "Data East Corporation", "Miscellaneous",
+	"Diet Go Go (Japan v1.1 1992.09.26)\0", "No sound", "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_PLATFORM, 0,
 	NULL, dietgojRomInfo, dietgojRomName, NULL, NULL, DietgoInputInfo, DietgoDIPInfo,

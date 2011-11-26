@@ -45,11 +45,11 @@ UINT8 *BurnMalloc(INT32 size)
 }
 
 // call instead of "free"
-void BurnFree(void *ptr)
+void _BurnFree(void *ptr)
 {
 	UINT8 *mptr = (UINT8*)ptr;
 
-	for (int i = 0; i < MAX_MEM_PTR; i++)
+	for (INT32 i = 0; i < MAX_MEM_PTR; i++)
 	{
 		if (memptr[i] == mptr) {
 			free (memptr[i]);
@@ -58,8 +58,6 @@ void BurnFree(void *ptr)
 			break;
 		}
 	}
-
-	ptr = NULL;
 }
 
 // call in BurnDrvExit?

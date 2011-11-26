@@ -26,7 +26,7 @@ static UINT8 *DrvPalRAM;
 static UINT8 *DrvFgRAM;
 static UINT8 *DrvBgRAM;
 static UINT8 *DrvSprRAM;
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 
 static UINT8 *soundlatch;
 static UINT8 *tile_bank;
@@ -344,7 +344,7 @@ static INT32 DrvGfxDecode(INT32 gfx0len, INT32 gfx1len, INT32 type)
 	INT32 YOffs[16] = { 0*16, 1*16,  2*16,  3*16,  4*16,  5*16,  6*16,  7*16,
 			  8*16, 9*16, 10*16, 11*16, 12*16, 13*16, 14*16, 15*16 };
 
-	UINT8 *tmp = (UINT8*)malloc(((gfx0len - 1) | (gfx1len - 1)) + 1);
+	UINT8 *tmp = (UINT8*)BurnMalloc(((gfx0len - 1) | (gfx1len - 1)) + 1);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -360,10 +360,7 @@ static INT32 DrvGfxDecode(INT32 gfx0len, INT32 gfx1len, INT32 type)
 
 	GfxDecode((gfx1len * 2) / (16 * 16), 4, 16, 16, Plane1, XOffs, YOffs, 0x200, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -412,7 +409,7 @@ static INT32 DrvInit(INT32 (*pRomLoadCallback)())
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -462,7 +459,7 @@ static INT32 DrvInit(INT32 (*pRomLoadCallback)())
 	BurnYM3812Init(3579545, &crospangYM3812IrqHandler, crospangSynchroniseStream, 0);
 	BurnTimerAttachZetYM3812(3579545);
 
-	MSM6295Init(0, 1056000 / 132, 100.0, 1);
+	MSM6295Init(0, 1056000 / 132, 80.0, 1);
 
 	GenericTilesInit();
 
@@ -479,10 +476,7 @@ static INT32 DrvExit()
 	SekExit();
 	ZetExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	MSM6295ROM = NULL;
 

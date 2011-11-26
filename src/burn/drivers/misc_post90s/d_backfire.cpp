@@ -27,8 +27,8 @@ static UINT16 *DrvTmpBitmap0;
 static UINT16 *DrvTmpBitmap_p;
 static UINT16 *DrvTmpBitmap1;
 
-static UINT32  *DrvPalette;
-static UINT8  DrvRecalc;
+static UINT32 *DrvPalette;
+static UINT8 DrvRecalc;
 
 static UINT8 DrvJoy1[16];
 static UINT8 DrvJoy2[16];
@@ -241,8 +241,8 @@ static INT32 MemIndex()
 	DrvPalette		= (UINT32*)Next; Next += 0x800 * sizeof(UINT32);
 
 	DrvTmpBitmap_p		= (UINT16*)Next;
-	DrvTmpBitmap0		= (UINT16*)Next; Next += 320 * 240 * sizeof(INT16);
-	DrvTmpBitmap1		= (UINT16*)Next; Next += 320 * 240 * sizeof(INT16);
+	DrvTmpBitmap0		= (UINT16*)Next; Next += 320 * 240 * sizeof(UINT16);
+	DrvTmpBitmap1		= (UINT16*)Next; Next += 320 * 240 * sizeof(UINT16);
 
 	AllRam			= Next;
 
@@ -291,7 +291,7 @@ static void sprite_decode(UINT8 *gfx, INT32 len)
 	INT32 XOffs[16] = { 512,513,514,515,516,517,518,519, 0, 1, 2, 3, 4, 5, 6, 7 };
 	INT32 YOffs[16] = { 0*32, 1*32, 2*32, 3*32, 4*32, 5*32, 6*32, 7*32,  8*32, 9*32,10*32,11*32,12*32,13*32,14*32,15*32};
 
-	UINT8 *tmp = (UINT8*)malloc(len);
+	UINT8 *tmp = (UINT8*)BurnMalloc(len);
 	if (tmp == NULL) {
 		return;
 	}
@@ -300,15 +300,12 @@ static void sprite_decode(UINT8 *gfx, INT32 len)
 
 	GfxDecode((len * 2) / 0x100, 4, 16, 16, Plane, XOffs, YOffs, 0x400, tmp, gfx);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 }
 
 static void decode_samples()
 {
-	UINT8 *tmp = (UINT8*)malloc(0x200000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x200000);
 
 	for (INT32 i = 0; i < 0x200000; i++) {
 		tmp[((i & 1) << 20) | (i >> 1) ] = DrvSndROM[i];
@@ -316,10 +313,7 @@ static void decode_samples()
 
 	memcpy (DrvSndROM, tmp, 0x200000);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 }
 
 static void pCommonSpeedhackCallback()
@@ -332,7 +326,7 @@ static INT32 DrvInit(UINT32 speedhack)
 {
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -432,10 +426,7 @@ static INT32 DrvExit()
 
 	deco16Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -594,8 +585,8 @@ static INT32 DrvDraw()
 		UINT16 *src1 = DrvTmpBitmap1;
 
 		for (INT32 y = 0; y < nScreenHeight; y++) {
-			memcpy (dst0, src0, 320 * sizeof(INT16));
-			memcpy (dst1, src1, 320 * sizeof(INT16));
+			memcpy (dst0, src0, 320 * sizeof(UINT16));
+			memcpy (dst1, src1, 320 * sizeof(UINT16));
 
 			dst0 += 640;
 			dst1 += 640;
@@ -755,11 +746,11 @@ static INT32 backfireaInit()
 	return DrvInit(0xcee4);
 }
 
-struct BurnDriver BurnDrvBackfirea = {
+struct BurnDriverD BurnDrvBackfirea = {
 	"backfirea", "backfire", NULL, NULL, "1995",
 	"Backfire! (set 2)\0", "Set inputs to \"Joystick\" in test mode", "Data East Corporation", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
-	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_RACING, 0,
+	BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_RACING, 0,
 	NULL, backfireaRomInfo, backfireaRomName, NULL, NULL, BackfireInputInfo, BackfireDIPInfo,
 	backfireaInit, DrvExit, DrvFrame, DrvDraw, DrvScan, &DrvRecalc, 0x800,
 	640, 240, 8, 3

@@ -25,8 +25,8 @@ static UINT8 *DrvPalRAM;
 static UINT8 *DrvVidRAM0;
 static UINT8 *DrvVidRAM1;
 static UINT8 *DrvSprRAM;
-static UINT32  *DrvPalette;
-static UINT32  *Palette;
+static UINT32 *DrvPalette;
+static UINT32 *Palette;
 static UINT8  DrvRecalc;
 static UINT16 *esd16_scroll_0;
 static UINT16 *esd16_scroll_1;
@@ -685,7 +685,7 @@ static INT32 DrvGfxDecode()
 		0x000, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070
 	};
 
-	UINT8 *tmp = (UINT8*)malloc(0x400000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x400000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -698,10 +698,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x10000, 8,  8,  8, Planes1, XOffs1, YOffs1, 0x080, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -734,7 +731,7 @@ static INT32 HedpanicGfxDecode()
 		0x400, 0x440, 0x480, 0x4c0, 0x500, 0x540, 0x580, 0x5c0
 	};
 
-	UINT8 *tmp = (UINT8*)malloc(0x600000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x600000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -748,10 +745,7 @@ static INT32 HedpanicGfxDecode()
 	GfxDecode(0x10000, 8,  8,  8, Planes1, XOffs1, YOffs1, 0x200, tmp, DrvGfxROM1);
 	GfxDecode(0x04000, 8, 16, 16, Planes1, XOffs1, YOffs1, 0x800, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -786,7 +780,7 @@ static INT32 TangtangGfxDecode()
 		0x400, 0x440, 0x480, 0x4c0, 0x500, 0x540, 0x580, 0x5c0
 	};
 
-	UINT8 *tmp = (UINT8*)malloc(0x600000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x600000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -800,10 +794,7 @@ static INT32 TangtangGfxDecode()
 	GfxDecode(0x10000, 8,  8,  8, Planes1, XOffs1, YOffs1, 0x200, tmp, DrvGfxROM1);
 	GfxDecode(0x04000, 8, 16, 16, Planes1, XOffs1, YOffs1, 0x800, tmp, DrvGfxROM2);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -864,7 +855,7 @@ static INT32 DrvInit(INT32 (*pInitCallback)())
 	AllMem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -907,10 +898,7 @@ static INT32 DrvExit()
 	SekExit();
 	GenericTilesExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }

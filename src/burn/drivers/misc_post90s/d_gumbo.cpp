@@ -16,7 +16,7 @@ static UINT8 *Drv68KRAM;
 static UINT8 *DrvPalRAM;
 static UINT8 *DrvFgRAM;
 static UINT8 *DrvBgRAM;
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 
 static UINT8 DrvRecalc;
 
@@ -270,7 +270,7 @@ static INT32 DrvGfxDecode()
 	INT32 YOffs0[8] = { 0, 32, 64, 96, 128, 160, 192, 224 };
 	INT32 YOffs1[4] = { 0, 16, 32, 48 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x200000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x200000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -283,10 +283,7 @@ static INT32 DrvGfxDecode()
 
 	GfxDecode(0x8000, 8, 4, 4, Plane, XOffs1, YOffs1, 0x040, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -324,7 +321,7 @@ static INT32 GumboInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -372,7 +369,7 @@ static INT32 MspuzzleInit()
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -427,10 +424,7 @@ static INT32 DrvExit()
 	MSM6295Exit(0);
 	SekExit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	MSM6295ROM = NULL;
 
@@ -709,7 +703,7 @@ static struct BurnRomInfo mspuzzlenRomDesc[] = {
 STD_ROM_PICK(mspuzzlen)
 STD_ROM_FN(mspuzzlen)
 
-struct BurnDriver BurnDrvMspuzzlen = {
+struct BurnDriverD BurnDrvMspuzzlen = {
 	"mspuzzlen", "mspuzzle", NULL, NULL, "1994",
 	"Miss Puzzle (Nudes)\0", NULL, "Min Corp.", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
@@ -738,7 +732,7 @@ static struct BurnRomInfo dblpointRomDesc[] = {
 STD_ROM_PICK(dblpoint)
 STD_ROM_FN(dblpoint)
 
-struct BurnDriver BurnDrvDblpoINT32 = {
+struct BurnDriver BurnDrvDblpoint = {
 	"dblpoint", NULL, NULL, NULL, "1995",
 	"Double Point\0", NULL, "Min Corp.", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
@@ -749,7 +743,7 @@ struct BurnDriver BurnDrvDblpoINT32 = {
 };
 
 
-// Double PoINT32 (Dong Bang Electron, bootleg?)
+// Double Point (Dong Bang Electron, bootleg?)
 
 static struct BurnRomInfo dblpoindRomDesc[] = {
 	{ "d12.bin",	0x20000, 0x44bc1bd9, 1 | BRF_PRG | BRF_ESS }, //  0 68k Code
@@ -769,7 +763,7 @@ STD_ROM_FN(dblpoind)
 
 struct BurnDriver BurnDrvDblpoind = {
 	"dblpointd", "dblpoint", NULL, NULL, "1995",
-	"Double PoINT32 (Dong Bang Electron, bootleg?)\0", NULL, "Dong Bang Electron", "Miscellaneous",
+	"Double Point (Dong Bang Electron, bootleg?)\0", NULL, "Dong Bang Electron", "Miscellaneous",
 	NULL, NULL, NULL, NULL,
 	BDF_GAME_WORKING | BDF_CLONE, 2, HARDWARE_MISC_POST90S, GBF_PUZZLE, 0,
 	NULL, dblpoindRomInfo, dblpoindRomName, NULL, NULL, DblpointInputInfo, DblpointDIPInfo,

@@ -2890,6 +2890,44 @@ struct BurnDriver BurnDrvpopeyeman = {
 };
 
 
+// Crock-Man
+
+static struct BurnRomInfo crockmanRomDesc[] = {
+	{ "p1.6e",        0x0800, 0x2c0fa0ab, 1 | BRF_ESS | BRF_PRG },	//  0 Z80 Code
+	{ "p5.6k",	      0x0800, 0xafeca2f1, 1 | BRF_ESS | BRF_PRG },	//  1
+	{ "p2.6f",        0x0800, 0x7d177853, 1 | BRF_ESS | BRF_PRG },	//  2
+	{ "p6.6m",        0x0800, 0xd3e8914c, 1 | BRF_ESS | BRF_PRG },	//  3
+	{ "p3.6h",        0x0800, 0x9045a44c, 1 | BRF_ESS | BRF_PRG },	//  4
+	{ "p7.6n",        0x0800, 0x93f344c5, 1 | BRF_ESS | BRF_PRG },	//  5
+	{ "p4.6j",        0x0800, 0xbed4a077, 1 | BRF_ESS | BRF_PRG },	//  6
+	{ "p8.6p",        0x0800, 0x800be41e, 1 | BRF_ESS | BRF_PRG },	//  7
+
+	{ "p9.5e", 	      0x0800, 0xa10218c4, 2 | BRF_GRA },		//  8 Graphics
+	{ "p11.5h",       0x0800, 0x3591b89d, 2 | BRF_GRA },		//  9
+	{ "p10.5f", 	  0x0800, 0x9e39323a, 2 | BRF_GRA },		// 10
+	{ "p12.5j", 	  0x0800, 0x1b1d9096, 2 | BRF_GRA },		// 11
+
+	{ "82s123.7f",    0x0020, 0x2fc650bd, 3 | BRF_GRA },		// 12 Color Proms
+	{ "82s126.4a",    0x0100, 0x3eb3a8e4, 3 | BRF_GRA },		// 13
+
+	{ "82s126.1m",    0x0100, 0xa9cc86bf, 4 | BRF_SND },		// 14 Sound Prom
+	{ "82s126.3m",    0x0100, 0x77245b66, 0 | BRF_SND | BRF_OPT },	// 15 Timing Prom (not used)
+};
+
+STD_ROM_PICK(crockman)
+STD_ROM_FN(crockman)
+
+struct BurnDriver BurnDrvcrockman = {
+	"crockman", "puckman", NULL, NULL, "1980",
+	"Crock-Man (bootleg, Rene-Pierre)\0", NULL, "bootleg (Rene-Pierre)", "Pac-man",
+	NULL, NULL, NULL, NULL,
+	BDF_GAME_WORKING | BDF_CLONE | BDF_ORIENTATION_VERTICAL | BDF_ORIENTATION_FLIPPED | BDF_BOOTLEG, 2, HARDWARE_PACMAN, GBF_MAZE, 0,
+	NULL, crockmanRomInfo, crockmanRomName, NULL, NULL, DrvInputInfo, DrvDIPInfo,
+	DrvInit, DrvExit, DrvFrame, DrvDraw, DrvScan, NULL, 0x200,
+	224, 288, 3, 4
+};
+
+
 // Pac-Man (Midway, harder)
 
 static struct BurnRomInfo pacmodRomDesc[] = {

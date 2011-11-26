@@ -27,7 +27,7 @@ static UINT8 *DrvPrioBitmap;
 
 static UINT8 *soundlatch;
 
-static UINT32  *DrvPalette;
+static UINT32 *DrvPalette;
 static UINT8 DrvRecalc;
 
 static UINT8 DrvJoy1[16];
@@ -777,7 +777,7 @@ static INT32 MemIndex()
 
 	RamEnd		= Next;
 
-	DrvPalette	= (UINT32*)Next; Next += 0x0400 * sizeof(int);
+	DrvPalette	= (UINT32*)Next; Next += 0x0400 * sizeof(UINT32);
 
 	DrvPrioBitmap	= Next; Next += 320 * 240;
 
@@ -793,7 +793,7 @@ static INT32 DrvGfxDecode()
 	INT32 XOffs[16] = { 0,1,2,3,4,5,6,7, 16*8+0,16*8+1,16*8+2,16*8+3,16*8+4,16*8+5,16*8+6,16*8+7 };
 	INT32 YOffs[16] = { 0*8,1*8,2*8,3*8,4*8,5*8,6*8,7*8, 8*8,9*8,10*8,11*8,12*8,13*8,14*8,15*8 };
 
-	UINT8 *tmp = (UINT8*)malloc(0x400000);
+	UINT8 *tmp = (UINT8*)BurnMalloc(0x400000);
 	if (tmp == NULL) {
 		return 1;
 	}
@@ -803,10 +803,7 @@ static INT32 DrvGfxDecode()
 	GfxDecode(0x10000, 4,  8,  8, Plane0, XOffs, YOffs, 0x040, tmp, DrvGfxROM0);
 	GfxDecode(0x04000, 4, 16, 16, Plane1, XOffs, YOffs, 0x100, tmp, DrvGfxROM1);
 
-	if (tmp) {
-		free (tmp);
-		tmp = NULL;
-	}
+	BurnFree (tmp);
 
 	return 0;
 }
@@ -816,7 +813,7 @@ static INT32 DrvInit(INT32 (*pRomLoadCallback)(), INT32 encrypted_ram, INT32 sou
 	AllMem = NULL;
 	MemIndex();
 	INT32 nLen = MemEnd - (UINT8 *)0;
-	if ((AllMem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((AllMem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(AllMem, 0, nLen);
 	MemIndex();
 
@@ -979,10 +976,7 @@ static INT32 DrvExit()
 	SekExit();
 	M6809Exit();
 
-	if (AllMem) {
-		free (AllMem);
-		AllMem = NULL;
-	}
+	BurnFree (AllMem);
 
 	return 0;
 }
@@ -1205,7 +1199,7 @@ static INT32 DrvFrame()
 	}
 
 	{
-		memset (DrvInputs, 0xff, 3 * sizeof(INT16));
+		memset (DrvInputs, 0xff, 3 * sizeof(UINT16));
 		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
@@ -1238,7 +1232,7 @@ static INT32 BigkarnkFrame()
 	M6809NewFrame();
 
 	{
-		memset (DrvInputs, 0xff, 3 * sizeof(INT16));
+		memset (DrvInputs, 0xff, 3 * sizeof(UINT16));
 		for (INT32 i = 0; i < 16; i++) {
 			DrvInputs[0] ^= (DrvJoy1[i] & 1) << i;
 			DrvInputs[1] ^= (DrvJoy2[i] & 1) << i;
