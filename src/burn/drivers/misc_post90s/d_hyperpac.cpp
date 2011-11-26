@@ -2119,16 +2119,7 @@ INT32 Cookbib2Init()
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 8, 1); if (nRet) return 1;
-		
-	UINT8 *pTemp = (UINT8*)BurnMalloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (INT32 i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	BurnFree(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 
@@ -2179,16 +2170,7 @@ INT32 Cookbib3Init()
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 8, 1); if (nRet) return 1;
-		
-	pTemp = (UINT8*)BurnMalloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (INT32 i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	BurnFree(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 
@@ -2234,16 +2216,7 @@ INT32 MoremoreInit()
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 9, 1); if (nRet) return 1;
-		
-	UINT8 *pTemp = (UINT8*)BurnMalloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (INT32 i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	BurnFree(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 
@@ -2283,16 +2256,7 @@ INT32 TwinkleInit()
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 6, 1); if (nRet) return 1;
-		
-	UINT8 *pTemp = (UINT8*)BurnMalloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (INT32 i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	BurnFree(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 
@@ -2333,16 +2297,7 @@ INT32 PzlbreakInit()
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 7, 1); if (nRet) return 1;
-		
-	UINT8 *pTemp = (UINT8*)BurnMalloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (INT32 i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	BurnFree(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 
@@ -2460,16 +2415,7 @@ INT32 FinalttrInit()
 	
 	// Load Shared RAM data
 	nRet = BurnLoadRom(HyperpacProtData, 9, 1); if (nRet) return 1;
-		
-	UINT8 *pTemp = (UINT8*)BurnMalloc(0x200);
-	memcpy(pTemp, HyperpacProtData, 0x200);
-	
-	for (INT32 i = 0; i < 0x200; i+=2) {
-		HyperpacProtData[i + 0] = pTemp[i + 1];
-		HyperpacProtData[i + 1] = pTemp[i + 0];
-	}
-	
-	BurnFree(pTemp);
+	BurnByteswap(HyperpacProtData, 0x200);
 	
 	nRet = HyperpacMachineInit(); if (nRet) return 1;
 

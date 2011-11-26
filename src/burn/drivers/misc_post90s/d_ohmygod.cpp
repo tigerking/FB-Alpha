@@ -2,7 +2,7 @@
 #include "msm6295.h"
 
 // define this to enable basic unmapped memory reads and writes
-//#define OHMYGODLOG 1
+#define OHMYGODLOG 1
 
 static UINT8  OhmygodInputPort0[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 static UINT8  OhmygodInputPort1[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -19,7 +19,7 @@ static UINT8 *OhmygodRam           = NULL;
 static UINT8 *OhmygodVideoRam      = NULL;
 static UINT8 *OhmygodPaletteRam    = NULL;
 static UINT8 *OhmygodSpriteRam     = NULL;
-static UINT32  *OhmygodPalette       = NULL;
+static UINT32 *OhmygodPalette       = NULL;
 
 UINT8 *OhmygodChars;
 UINT8 *OhmygodSprites;
@@ -286,12 +286,11 @@ INT32 OhmygodDoReset()
 void do_watchtick()
 {
 	if (watch_tick > 0)
-	if (--watch_tick == 0)
-	{
-	SekOpen(0);
-	SekReset();
-	SekClose();
-	watch_tick=3*60;
+	if (--watch_tick == 0) {
+		SekOpen(0);
+		SekReset();
+		SekClose();
+		watch_tick=3*60;
 	}
 }
 
@@ -307,17 +306,17 @@ UINT16 __fastcall OhmygodReadWord(UINT32 a)
 		}
 
 		case 0xb00000: {
-			return MSM6295ReadStatus(0);
+			return 0xff00 | MSM6295ReadStatus(0);
 		}
 
 		case 0xc00000: {
-			watch_tick=3*60;
-			return 0xFF;
+			watch_tick= 3 * 60;
+			return 0xffff;
 		}
 	}
 
 #ifdef OHMYGODLOG
-	bprintf(PRINT_NORMAL, "68000 Read Word: %06X\n", a);
+	bprintf(PRINT_NORMAL, _T("68000 Read Word: %06X\n"), a);
 #endif
 	SEK_DEF_READ_WORD(0, a);
 }
@@ -330,7 +329,7 @@ UINT8 __fastcall OhmygodReadByte(UINT32 a)
 		}
 
 		case 0xa00001: {
-			return 0x00;
+			return 0xff;
 		}
 
 		case 0xa00002: {
@@ -338,12 +337,12 @@ UINT8 __fastcall OhmygodReadByte(UINT32 a)
 		}
 
 		case 0xa00003: {
-			return 0x00;
+			return 0xff;
 		}
 	}
 
 #ifdef OHMYGODLOG
-	bprintf(PRINT_NORMAL, "68000 Read Byte: %06X\n", a);
+	bprintf(PRINT_NORMAL, _T("68000 Read Byte: %06X\n"), a);
 #endif
 
 	return 0;
@@ -368,18 +367,18 @@ void __fastcall OhmygodWriteWord(UINT32 a, UINT16 d)
 		}
 
 		case 0xb00000: {
-			MSM6295Command(0, d);
+			SEK_DEF_WRITE_WORD(0, a, d);
 			return;
 		}
 
 		case 0xd00000: {
-			SEK_DEF_WRITE_WORD(0, a, d);
+			OhmygodSpriteBank = d & 0x8000;
 			return;
 		}
 	}
 
 #ifdef OHMYGODLOG
-	bprintf(PRINT_NORMAL, "68000 Write Word: %06X, %04X\n", a, d);
+	bprintf(PRINT_NORMAL, _T("68000 Write Word: %06X, %04X\n"), a, d);
 #endif
 }
 
@@ -401,20 +400,19 @@ void __fastcall OhmygodWriteByte(UINT32 a, UINT8 d)
 			}
 			return;
 		}
-
-		case 0xd00000: {
-			OhmygodSpriteBank = d & 0x8000;
+		
+		case 0xb00000: {
 			return;
 		}
 
-		case 0xd00001: {
-//			OhmygodSpriteBank = d & 0x8000;
+		case 0xb00001: {
+			MSM6295Command(0, d);
 			return;
 		}
 	}
 
 #ifdef OHMYGODLOG
-	bprintf(PRINT_NORMAL, "68000 Write Byte: %06X, %02X\n", a, d);
+	bprintf(PRINT_NORMAL, _T("68000 Write Byte: %06X, %02X\n"), a, d);
 #endif
 }
 
@@ -456,15 +454,15 @@ INT32 OhmygodInit()
 	Mem = NULL;
 	MemIndex();
 	nLen = MemEnd - (UINT8 *)0;
-	if ((Mem = (UINT8 *)malloc(nLen)) == NULL) return 1;
+	if ((Mem = (UINT8 *)BurnMalloc(nLen)) == NULL) return 1;
 	memset(Mem, 0, nLen);
 	MemIndex();
 
-	// Load and byte-swap 68000 Program Rom
+	// Load 68000 Program Rom
 	nRet = BurnLoadRom(OhmygodRom, 0x00, 1); if (nRet != 0) return 1;
 
 	// malloc stuff
-	UINT8 *TempGfx=(UINT8*)malloc (0x80000);
+	UINT8 *TempGfx=(UINT8*)BurnMalloc(0x80000);
 	
 	// Load and decode Character Rom
 	nRet = BurnLoadRom(TempGfx, 1, 1); if (nRet != 0) return 1;
@@ -474,10 +472,7 @@ INT32 OhmygodInit()
 	memset(TempGfx, 0, 0x80000);
 	nRet = BurnLoadRom(TempGfx, 2, 1); if (nRet != 0) return 1;
 	GfxDecode(4096, 4, 16, 16, SpritePlaneOffsets, SpriteXOffsets, SpriteYOffsets, 0x400, TempGfx, OhmygodSprites);
-	if (TempGfx) {
-		free(TempGfx);
-		TempGfx = NULL;
-	}
+	BurnFree(TempGfx);
 
 	// Load Sample Rom
 	nRet = BurnLoadRom(MSM6295ROM + 0x00000, 3, 1); if (nRet != 0) return 1;
@@ -517,18 +512,7 @@ INT32 OhmygodExit()
 	SekExit();
 	GenericTilesExit();
 
-	if (OhmygodChars) {
-		free(OhmygodChars);
-		OhmygodChars = NULL;
-	}
-	if (OhmygodSprites) {
-		free(OhmygodSprites);
-		OhmygodSprites = NULL;
-	}
-	if  (Mem) {
-		free(Mem);
-		Mem = NULL;
-	}
+	BurnFree(Mem);
 
 	return 0;
 }
