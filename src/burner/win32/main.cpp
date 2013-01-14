@@ -824,12 +824,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 	}
 		dprintf(_T("3\n"));
 	if (!(AppInit())) {							// Init the application
-		
+		if (!(ProcessCmdLine()))
+		{
 			MediaInit();
-				dprintf(_T("4\n"));
+			dprintf(_T("4\n"));
 			RunMessageLoop();					// Run the application message loop
-				dprintf(_T("5\n"));
-
+			dprintf(_T("5\n"));
+		}
+		else
+		{
+			dprintf(_T("Launched from command line\n"));
+		}
 	}
 		dprintf(_T("6\n"));
 	ConfigAppSave();							// Save config for the application
