@@ -164,7 +164,7 @@ void writeio(unsigned short addr, unsigned char val)
 						break;
 
 					default:
-						snemlog(L"Bad DMA mode %i\n",dmactrl[d]&7);
+						snemlog("Bad DMA mode %i\n",dmactrl[d]&7);
 					}
 					dmalen[d]--;
 					//                                        delay+=16;

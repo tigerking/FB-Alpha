@@ -2855,13 +2855,13 @@ int ScrnInit()
 	REBARBANDINFO rebarBandInfo;
 	RECT rect;
 	int nWindowStyles, nWindowExStyles;
-
+	dprintf(_T("t1\n"));
 	ScrnExit();
-	
+	dprintf(_T("t2\n"));
 	if (ScrnRegister() != 0) {
 		return 1;
 	}
-
+	dprintf(_T("t3\n"));
 	if (nVidFullscreen) {
 		nWindowStyles = WS_POPUP;
 		nWindowExStyles = 0;
@@ -2874,24 +2874,25 @@ int ScrnInit()
 			nWindowExStyles = WS_EX_CLIENTEDGE;
 		}
 	}
+	dprintf(_T("t4\n"));
 
 	RegNewMDIChild();
-
+	dprintf(_T("t5\n"));
 	hScrnWnd = CreateWindowEx(nWindowExStyles, szClass, _T(APP_TITLE), nWindowStyles,
 		0, 0, 0, 0,									   			// size of window
 		NULL, NULL, hAppInst, NULL);
-
+	dprintf(_T("t6\n"));
 	if (hScrnWnd == NULL) {
 		ScrnExit();
 		return 1;
 	}
-
+	dprintf(_T("t7\n"));
 	nMenuHeight = 0;
 	if (!nVidFullscreen) {
-
+		dprintf(_T("t8\n"));
 		// Create the menu toolbar itself
 		MenuCreate();
-
+		dprintf(_T("t9\n"));
 		// Create the toolbar
 		if (bMenuEnabled) {
 			// Create the Rebar control that will contain the menu toolbar
@@ -2922,11 +2923,13 @@ int ScrnInit()
 
 			GetWindowRect(hRebar, &rect);
 			nMenuHeight = rect.bottom - rect.top;
-
+			dprintf(_T("t10\n"));
 		}
-
+		dprintf(_T("t11\n"));
 		ScrnTitle();
+		dprintf(_T("t12\n"));
 		ScrnSize();
+		dprintf(_T("t13\n"));
 	}
 
 	return 0;

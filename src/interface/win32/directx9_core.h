@@ -2,7 +2,7 @@
 #define _DIRECTX9_CORE_
 
 #include <d3d9.h>
-#include <d3dx9effect.h>
+//#include <d3dx9effect.h>
 
 #ifndef D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY
 #define D3DXSHADER_ENABLE_BACKWARDS_COMPATIBILITY   0x1000

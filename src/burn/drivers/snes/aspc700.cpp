@@ -1859,7 +1859,7 @@ void execspc()
 
 		default:
 			spc.pc--;
-			snemlog(L"Bad SPC opcode %02X at %04X\n",opcode,spc.pc);
+			snemlog("Bad SPC opcode %02X at %04X\n",opcode,spc.pc);
 
 		}
 		if (pal) spccycles-=(spccount*20.7796875f);//20.36383f);

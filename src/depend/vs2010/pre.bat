@@ -37,3 +37,4 @@ m68kmake ../../depend/generated/ m68k_in.c
 del m68kmake.exe
 del m68kmake.obj
 
+pause

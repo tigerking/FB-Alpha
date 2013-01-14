@@ -159,7 +159,6 @@
     <ClCompile Include="src\burn\drivers\misc_post90s\d_yunsun16.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\d_zerozone.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\deco16ic.cpp" />
-    <ClCompile Include="src\burn\drivers\misc_post90s\irem_cpu.cpp" />
     <ClCompile Include="src\burn\drivers\misc_post90s\nmk004.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_1942.cpp" />
     <ClCompile Include="src\burn\drivers\misc_pre90s\d_1943.cpp" />
@@ -411,23 +410,11 @@
     <ClCompile Include="src\cpu\sek.cpp" />
     <ClCompile Include="src\cpu\vez.cpp" />
     <ClCompile Include="src\cpu\zet.cpp" />
-    <ClCompile Include="src\interface\scalers\2xpm.cpp" />
-    <ClCompile Include="src\interface\scalers\2xsai.cpp" />
-    <ClCompile Include="src\interface\scalers\epx.cpp" />
-    <ClCompile Include="src\interface\scalers\hq2xs.cpp" />
-    <ClCompile Include="src\interface\scalers\hq2xs_16.cpp" />
-    <ClCompile Include="src\interface\scalers\hq3xs.cpp" />
-    <ClCompile Include="src\interface\scalers\hq_shared32.cpp" />
     <ClCompile Include="src\interface\win32\aud_dsound3.cpp" />
-    <ClCompile Include="src\interface\win32\aud_xaudio2.cpp" />
     <ClCompile Include="src\interface\win32\cd_isowav.cpp" />
     <ClCompile Include="src\interface\win32\cdsound.cpp" />
     <ClCompile Include="src\interface\win32\inp_dinput.cpp" />
     <ClCompile Include="src\interface\win32\prf_performance_counter.cpp" />
-    <ClCompile Include="src\interface\win32\vid_d3d.cpp" />
-    <ClCompile Include="src\interface\win32\vid_ddraw.cpp" />
-    <ClCompile Include="src\interface\win32\vid_ddrawfx.cpp" />
-    <ClCompile Include="src\interface\win32\vid_directx9.cpp" />
     <ClCompile Include="src\interface\win32\vid_directx_support.cpp" />
     <ClCompile Include="src\interface\aud_dsp.cpp" />
     <ClCompile Include="src\interface\aud_interface.cpp" />
@@ -534,9 +521,7 @@
     <ClCompile Include="src\depend\generated\m68kopnz.c" />
     <ClCompile Include="src\depend\generated\m68kops.c" />
     <ClCompile Include="src\burner\win32\neocdsel.cpp" />
-    <ClCompile Include="src\interface\win32\ddraw_core.cpp" />
     <ClCompile Include="src\interface\win32\dinput_core.cpp" />
-    <ClCompile Include="src\interface\win32\directx9_core.cpp" />
     <ClCompile Include="src\interface\win32\dsound_core.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_fixeight.cpp" />
     <ClCompile Include="src\burn\drivers\toaplan\d_ghox.cpp" />
@@ -546,7 +531,6 @@
     <ClCompile Include="src\burn\sound\saa1099.cpp" />
     <ClCompile Include="src\burn\devices\pandora.cpp" />
     <ClCompile Include="src\burner\win32\MemLeakDetect.cpp" />
-    <ClCompile Include="src\cpu\m68k\m68kdasm.c" />
     <ClCompile Include="src\burn\drivers\snes\65816.cpp" />
     <ClCompile Include="src\burn\drivers\snes\d_snes.cpp" />
     <ClCompile Include="src\burn\drivers\snes\io.cpp" />
@@ -556,6 +540,9 @@
     <ClCompile Include="src\cpu\spc700\spc700.c" />
     <ClCompile Include="src\burn\drivers\snes\aspc700.cpp" />
     <ClCompile Include="src\burn\drivers\irem\irem_cpu.cpp" />
+    <ClCompile Include="src\interface\win32\ddraw_core.cpp" />
+    <ClCompile Include="src\interface\win32\vid_ddraw.cpp" />
+    <ClCompile Include="src\interface\win32\vid_d3d.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\burn\devices\8255ppi.h" />
@@ -684,13 +671,6 @@
     <ClInclude Include="src\cpu\sekdebug.h" />
     <ClInclude Include="src\cpu\vez.h" />
     <ClInclude Include="src\cpu\zet.h" />
-    <ClInclude Include="src\interface\scalers\hq2xs.h" />
-    <ClInclude Include="src\interface\scalers\hq3xs.h" />
-    <ClInclude Include="src\interface\scalers\hq_shared32.h" />
-    <ClInclude Include="src\interface\scalers\interp.h" />
-    <ClInclude Include="src\interface\scalers\scale2x.h" />
-    <ClInclude Include="src\interface\scalers\scale2x_vc.h" />
-    <ClInclude Include="src\interface\scalers\scale3x.h" />
     <ClInclude Include="src\interface\win32\cdsound.h" />
     <ClInclude Include="src\interface\win32\rgb_pattern.h" />
     <ClInclude Include="src\interface\win32\vid_directx_support.h" />
@@ -738,7 +718,6 @@
     <ClInclude Include="src\interface\win32\dsound_core.h" />
     <ClInclude Include="src\interface\win32\ddraw_core.h" />
     <ClInclude Include="src\interface\win32\dinput_core.h" />
-    <ClInclude Include="src\interface\win32\directx9_core.h" />
     <ClInclude Include="src\burn\sound\saa1099.h" />
     <ClInclude Include="src\burn\devices\pandora.h" />
     <ClInclude Include="src\burner\win32\memleakdetect.h" />
@@ -748,12 +727,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="src\burn\burn_sound_a.asm" />
-    <None Include="src\interface\scalers\2xsaimmx.asm" />
-    <None Include="src\interface\scalers\eagle_fm.asm" />
-    <None Include="src\interface\scalers\hq2x32.asm" />
-    <None Include="src\interface\scalers\hq3x32.asm" />
-    <None Include="src\interface\scalers\hq4x32.asm" />
-    <None Include="src\interface\scalers\superscale.asm" />
     <None Include="src\depend\vs2010\include\d3dvec.inl" />
   </ItemGroup>
   <ItemGroup>

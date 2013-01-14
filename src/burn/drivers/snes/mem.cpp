@@ -178,7 +178,7 @@ unsigned char readmeml(unsigned long addr)
 				{
 					return readjoyold(addr);
 				}
-				snemlog(L"Bad Read %06X\n",addr);
+				snemlog("Bad Read %06X\n",addr);
 				return 0;
 			case 0x6000: 
 			case 0x7000:
@@ -187,7 +187,7 @@ unsigned char readmeml(unsigned long addr)
 					return sram[addr&srammask];
 				}
 			default:
-				snemlog(L"Bad read %06X\n",addr);
+				snemlog("Bad read %06X\n",addr);
 				return 0xFF;
 		}
 	}
@@ -211,7 +211,7 @@ unsigned char readmeml(unsigned long addr)
 		return 0;
 	}
 
-	snemlog(L"Bad read %06X\n",addr);
+	snemlog("Bad read %06X\n",addr);
 
 	return 0xff;
 }
@@ -255,7 +255,7 @@ void writememl(unsigned long addr, unsigned char val)
 		case 0xF000:
 			return;
 		default:
-			snemlog(L"Bad write %06X %02X\n",addr,val);
+			snemlog("Bad write %06X %02X\n",addr,val);
 
 		}
 	}
@@ -271,7 +271,7 @@ void writememl(unsigned long addr, unsigned char val)
 		return;
 	}
 
-	snemlog(L"Bad write %06X %02X\n",addr,val);
+	snemlog("Bad write %06X %02X\n",addr,val);
 
 }
 

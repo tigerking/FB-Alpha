@@ -1886,7 +1886,7 @@ void dohdma(int line)
 					writeppu(dmadest[c]+3,hdmadat[c]);
 					break;
 				default:
-					snemlog(L"Bad HDMA transfer mode %i %02X %i\n",dmactrl[c]&7,dmadest[c],hdmastat[c]);
+					snemlog("Bad HDMA transfer mode %i %02X %i\n",dmactrl[c]&7,dmadest[c],hdmastat[c]);
 				}
 			}
 			else if (hdmastat[c]&CONTINUOUS)
@@ -1939,7 +1939,7 @@ void dohdma(int line)
 					writeppu(dmadest[c]+3,hdmadat[c]);
 					break;
 				default:
-					snemlog(L"Bad HDMA2 transfer mode %i\n",dmactrl[c]&7);
+					snemlog("Bad HDMA2 transfer mode %i\n",dmactrl[c]&7);
 				}
 			}
 finishhdma:

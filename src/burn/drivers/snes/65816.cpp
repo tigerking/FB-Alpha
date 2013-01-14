@@ -3860,7 +3860,7 @@ void reset65816()
 
 static inline void badopcode()
 {
-	snemlog(L"Bad opcode %02X\n",opcode);
+	snemlog("Bad opcode %02X\n",opcode);
 	pc--;
 }
 
@@ -4484,7 +4484,7 @@ void nmi65816()
 	}
 	else
 	{
-		snemlog(L"Emulation mode NMI\n");
+		snemlog("Emulation mode NMI\n");
 	}
 }
 
@@ -4524,6 +4524,6 @@ void irq65816()
 	}
 	else
 	{
-		snemlog(L"Emulation mode IRQ\n");
+		snemlog("Emulation mode IRQ\n");
 	}
 }

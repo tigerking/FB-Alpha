@@ -1,11 +1,10 @@
 This list contains all games supported by FB Alpha.
 
-8580 games supported in total; X = excluded from build; D = included in debug build only; NW = not working
+8585 games supported in total; X = excluded from build; D = included in debug build only; NW = not working
 
   name		  status  full name						  parent	  year	  company	  hardware	  remarks
 +---------------+-------+-------------------------------------------------------+---------------+-------+---------------+---------------+---------------------------------------+
 |  = {	"Odekake Lester - Lelele no Le (^^;|   NW	|  = {	"Odekake Lester - Lelele no Le (^^;| 	| 	| 		| 		| 					|
-| asurabus	|   NW	| "asurabus"						| 		| 2000	| FG-3		| 		| Fuuki					|
 | cninja	|   NW	| "cninja"						| 		| 1991	| Miscellaneous	| 		| Data East Corporation			|
 | ddungeon	| D NW	| "ddungeon"						| 		| 1992	| Miscellaneous	| 		| Game Room				|
 | drgw3		| D NW	| "drgw3"						| 		| 1998	| PolyGameMaster| 		| IGS					|
@@ -15,7 +14,6 @@ This list contains all games supported by FB Alpha.
 | edrandy	| D NW	| "edrandy"						| 		| 1990	| Miscellaneous	| 		| Data East Corporation			|
 | funcube2	| D NW	| "funcube2"						| 		| 2001	| Newer Seta	| 		| Namco					|
 | funcube4	| D NW	| "funcube4"						| 		| 2001	| Newer Seta	| 		| Namco					|
-| getstar	|   NW	| "getstar"						| 		| 1986	| Early Toaplan	| 		| Taito					|
 | happy6	| D NW	| "happy6"						| 		| 2004	| PolyGameMaster| 		| IGS					|
 | hippodrm	| D NW	| "hippodrm"						| 		| 1989	| DEC0		| 		| Data East USA				|
 | jockeyc	| D NW	| "jockeyc"						| 		| 1990	| Seta		| 		| [Seta] (Visco license)		|
@@ -229,7 +227,7 @@ This list contains all games supported by FB Alpha.
 | Albert Odyssey (Japan) (BS)|  	| Albert Odyssey (Japan) (BS)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Albert Odyssey 2 - Jashin no Taidou (Japan)|  	| Albert Odyssey 2 - Jashin no Taidou (Japan)| 	| 1986	| Nintendo	| Miscellaneous	| 					|
 | Alcahest (Japan)|  	| Alcahest (Japan)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
-| alcon		|   NW	| Alcon (US)						| 		| 1986	| Taito America | Early Toaplan	| Protection MCU not emulated		|
+| alcon		|  	| Alcon (US)						| 		| 1986	| Taito America | Early Toaplan	| 					|
 | md_alexkiddk	|  	| Alex Kidd - Cheongong Maseong (Kor)			| md_alexkidd	| 1990	| Samsung	| Sega Megadrive| 					|
 | md_alexkidd1	|  	| Alex Kidd in the Enchanted Castle (Euro)		| md_alexkidd	| 1990	| Sega		| Sega Megadrive| 					|
 | md_alexkidd	|  	| Alex Kidd in the Enchanted Castle (Euro, Rev. A)	| 		| 1990	| Sega		| Sega Megadrive| 					|
@@ -244,8 +242,8 @@ This list contains all games supported by FB Alpha.
 | Alien 3 (Japan)|  	| Alien 3 (Japan)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Alien 3 (USA)	|  	| Alien 3 (USA)						| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Alien 3 (USA) (Beta)|  	| Alien 3 (USA) (Beta)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
-| alienchac	|  	| Alien Challenge (China)				| aliencha	| 1994	| IGS		| Miscellaneous	| 					|
-| aliencha	|  	| Alien Challenge (World)				| 		| 1994	| IGS		| Miscellaneous	| 					|
+| alienchac	|  	| Alien Challenge (China)				| aliencha	| 1994	| IGS		| Miscellaneous	| Imperfect sound			|
+| aliencha	|  	| Alien Challenge (World)				| 		| 1994	| IGS		| Miscellaneous	| Imperfect sound			|
 | aliensec	|  	| Alien Sector						| 		| 1985	| Namco		| Miscellaneous	| 					|
 | md_aliens	|  	| Alien Soldier (Euro)					| 		| 1995	| Sega		| Sega Megadrive| 					|
 | md_aliensj	|  	| Alien Soldier (Jpn)					| md_aliens	| 1995	| Sega		| Sega Megadrive| 					|
@@ -437,6 +435,7 @@ This list contains all games supported by FB Alpha.
 | asukaj	|  	| Asuka & Asuka (Japan)					| asuka		| 1988	| Taito Corporat| Taito Misc	| 					|
 | asuka		|  	| Asuka & Asuka (World)					| 		| 1988	| Taito Corporat| Taito Misc	| 					|
 | asurabld	|  	| Asura Blade - Sword of Dynasty (Japan)		| 		| 1998	| Fuuki		| FG-3		| Imperfect GFX				|
+| asurabus	|  	| Asura Buster - Eternal Warriors (Japan)		| 		| 2000	| Fuuki		| FG-3		| Imperfect SND, freezes on first boss	|
 | atehate	|  	| Athena no Hatena ?					| 		| 1993	| Athena	| Seta		| 					|
 | acitya	|  	| Atlantic City Action					| bwcasino	| 1983	| EPOS Corporati| Pac-man	| 					|
 | Atlas, The - Renaissance Voyager (Japan)|  	| Atlas, The - Renaissance Voyager (Japan)| 	| 1986	| Nintendo	| Miscellaneous	| 					|
@@ -495,7 +494,7 @@ This list contains all games supported by FB Alpha.
 | md_backtof3	|  	| Back to the Future Part III (Euro)			| 		| 1991	| Imageworks	| Sega Megadrive| 					|
 | md_backtof3u	|  	| Back to the Future Part III (USA)			| md_backtof3	| 1991	| Arena Entertai| Sega Megadrive| 					|
 | backfire	|  	| Backfire! (set 1)					| 		| 1995	| Data East Corp| Miscellaneous	| 					|
-| backfirea	|  	| Backfire! (set 2)					| backfire	| 1995	| Data East Corp| Miscellaneous	| Set inputs to \"Joystick\" in test mod|
+| backfirea	| D NW	| Backfire! (set 2)					| backfire	| 1995	| Data East Corp| Miscellaneous	| Set inputs to \"Joystick\" in test mod|
 | baddudes	|  	| Bad Dudes vs. Dragonninja (US)			| 		| 1988	| Data East USA	| DEC0		| 					|
 | md_badomen	|  	| Bad Omen (Jpn, Kor)					| md_devilish	| 1992	| Hot-B		| Sega Megadrive| 					|
 | bagmanmc	|  	| Bagman (Moon Cresta hardware)				| bagman	| 1982	| bootleg	| Galaxian	| Bad Colours				|
@@ -919,8 +918,8 @@ This list contains all games supported by FB Alpha.
 | Bubsy in Claws Encounters of the Furred Kind (Europe) (Accolade)|  	| Bubsy in Claws Encounters of the Furred Kind (Europe) | | 1986| Nintendo| Miscellaneous| 				|
 | Bubsy in Claws Encounters of the Furred Kind (USA)|  	| Bubsy in Claws Encounters of the Furred Kind (USA)| | 1986| Nintendo	| Miscellaneous	| 					|
 | Bubsy in Claws Encounters of the Furred Kind (USA) (Beta)|  	| Bubsy in Claws Encounters of the Furred Kind (USA) (Be| | 1986| Nintendo| Miscellaneous| 					|
-| buccanrs	|  	| Buccaneers (set 1)					| 		| 1989	| Duintronic	| Miscellaneous	| No sound				|
-| buccanrsa	|  	| Buccaneers (set 2)					| buccanrs	| 1989	| Duintronic	| Miscellaneous	| No sound				|
+| buccanrs	|  	| Buccaneers (set 1)					| 		| 1989	| Duintronic	| Miscellaneous	| 					|
+| buccanrsa	|  	| Buccaneers (set 2)					| buccanrs	| 1989	| Duintronic	| Miscellaneous	| 					|
 | md_buckrog	|  	| Buck Rogers - Countdown to Doomsday (Euro, USA)	| 		| 1991	| Electronic Art| Sega Megadrive| 					|
 | md_budokan	|  	| Budokan - The Martial Spirit (Euro)			| 		| 1990	| Electronic Art| Sega Megadrive| 					|
 | md_budokanu	|  	| Budokan - The Martial Spirit (USA)			| md_budokan	| 1990	| Electronic Art| Sega Megadrive| 					|
@@ -1135,8 +1134,8 @@ This list contains all games supported by FB Alpha.
 | Chou Makai Taisen! Dorabocchan (Japan)|  	| Chou Makai Taisen! Dorabocchan (Japan)| 	| 1986	| Nintendo	| Miscellaneous	| 					|
 | Chou Makai Taisen! Dorabocchan (Japan) (Beta) (1992-12-21)|  	| Chou Makai Taisen! Dorabocchan (Japan) (Beta) (1992-12| | 1986| Nintendo| Miscellaneous| 					|
 | md_dinolandj	|  	| Chou Touryuu Retsuden - Dino Land (Jpn)		| md_dinoland	| 1991	| Wolf Team	| Sega Megadrive| 					|
-| legiono	|  	| Chouji Meikyuu Legion (ver 1.05)			| legion	| 1987	| Nichibutsu	| Miscellaneous	| Imperfect Graphics, No Sound		|
-| legion	|  	| Chouji Meikyuu Legion (ver 2.03)			| 		| 1987	| Nichibutsu	| Miscellaneous	| Imperfect Graphics, No Sound		|
+| legiono	|  	| Chouji Meikyuu Legion (ver 1.05)			| legion	| 1987	| Nichibutsu	| Miscellaneous	| Imperfect Graphics			|
+| legion	|  	| Chouji Meikyuu Legion (ver 2.03)			| 		| 1987	| Nichibutsu	| Miscellaneous	| Imperfect Graphics			|
 | Choujikuu Yousai Macross - Scrambled Valkyrie (Japan)|  	| Choujikuu Yousai Macross - Scrambled Valkyrie (Japan)| | 1986| Nintendo	| Miscellaneous	| 					|
 | Choukou Gasshin Xardion (Japan)|  	| Choukou Gasshin Xardion (Japan)	| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | ironclad	|  	| Choutetsu Brikin'ger - Iron clad (Prototype)		| 		| 1996	| Saurus	| Neo Geo MVS	| 					|
@@ -1325,6 +1324,7 @@ This list contains all games supported by FB Alpha.
 | crimfght	|  	| Crime Fighters (US 4 players)				| 		| 1989	| Konami	| Miscellaneous	| 					|
 | crimfght2	|  	| Crime Fighters (World 2 Players)			| crimfght	| 1989	| Konami	| Miscellaneous	| 					|
 | vendettaj	|  	| Crime Fighters 2 (Japan 2 Players ver. P)		| vendetta	| 1991	| Konami	| GX081		| 					|
+| crockman	|  	| Crock-Man (bootleg, Rene-Pierre)			| puckman	| 1980	| bootleg (Rene-| Pac-man	| 					|
 | croquis	|  	| Croquis (Germany)					| logicpro	| 1996	| Deniam	| Deniam-16b Har| 					|
 | crossbld	|  	| Cross Blades! (Japan)					| bmaster	| 1991	| Irem		| M92		| Imperfect sound and graphics		|
 | md_crossf	|  	| Cross Fire (USA)					| 		| 1991	| Kyugo Boueki	| Sega Megadrive| 					|
@@ -1459,9 +1459,9 @@ This list contains all games supported by FB Alpha.
 | Dark Kingdom (Japan)|  	| Dark Kingdom (Japan)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Dark Law - Meaning of Death (Japan)|  	| Dark Law - Meaning of Death (Japan)	| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | darkplnt	|  	| Dark Planet						| 		| 1982	| Stern		| Galaxian	| Dial doesn't work very well		|
-| darksealj	|  	| Dark Seal (Japan)					| darkseal	| 1990	| Data East Corp| Miscellaneous	| 					|
-| darkseal1	|  	| Dark Seal (World revision 1)				| darkseal	| 1990	| Data East Corp| Miscellaneous	| 					|
-| darkseal	|  	| Dark Seal (World revision 3)				| 		| 1990	| Data East Corp| Miscellaneous	| 					|
+| darksealj	|  	| Dark Seal (Japan)					| darkseal	| 1990	| Data East Corp| Miscellaneous	| No Sound				|
+| darkseal1	|  	| Dark Seal (World revision 1)				| darkseal	| 1990	| Data East Corp| Miscellaneous	| No Sound				|
+| darkseal	|  	| Dark Seal (World revision 3)				| 		| 1990	| Data East Corp| Miscellaneous	| No Sound				|
 | darkseal2	|  	| Dark Seal 2 (Japan v2.1)				| wizdfire	| 1992	| Data East Corp| Miscellaneous	| No sound				|
 | darktowr	|  	| Dark Tower						| 		| 1992	| Game Room	| Miscellaneous	| 					|
 | dstlka	|  	| Darkstalkers - the night warriors (940705 Asia)	| dstlk		| 1994	| Capcom	| CPS2		| 					|
@@ -1580,10 +1580,10 @@ This list contains all games supported by FB Alpha.
 | diamond	|  	| Diamond Run						| 		| 1985	| KH Video	| Miscellaneous	| 					|
 | md_dicktr	|  	| Dick Tracy (World)					| 		| 1991	| Sega		| Sega Megadrive| 					|
 | md_dickvitl	|  	| Dick Vitale's 'Awesome, Baby!' College Hoops (USA)	| 		| 1994	| Time Warner In| Sega Megadrive| 					|
-| dietgoe	|  	| Diet Go Go (Euro v1.1 1992.08.04)			| dietgo	| 1992	| Data East Corp| Miscellaneous	| 					|
-| dietgo	|  	| Diet Go Go (Euro v1.1 1992.09.26)			| 		| 1992	| Data East Corp| Miscellaneous	| 					|
-| dietgoj	|  	| Diet Go Go (Japan v1.1 1992.09.26)			| dietgo	| 1992	| Data East Corp| Miscellaneous	| 					|
-| dietgou	|  	| Diet Go Go (USA v1.1 1992.09.26)			| dietgo	| 1992	| Data East Corp| Miscellaneous	| 					|
+| dietgoe	|  	| Diet Go Go (Euro v1.1 1992.08.04)			| dietgo	| 1992	| Data East Corp| Miscellaneous	| No sound				|
+| dietgo	|  	| Diet Go Go (Euro v1.1 1992.09.26)			| 		| 1992	| Data East Corp| Miscellaneous	| No sound				|
+| dietgoj	|  	| Diet Go Go (Japan v1.1 1992.09.26)			| dietgo	| 1992	| Data East Corp| Miscellaneous	| No sound				|
+| dietgou	|  	| Diet Go Go (USA v1.1 1992.09.26)			| dietgo	| 1992	| Data East Corp| Miscellaneous	| No sound				|
 | Dig & Spike Volleyball (USA)|  	| Dig & Spike Volleyball (USA)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | diggerma	|  	| Digger Man						| 		| 2000	| Kyle Hodgetts	| Neo Geo MVS	| 					|
 | Digital Magazine Busters BS - 4-12 Gou (Japan) (BS)|  	| Digital Magazine Busters BS - 4-12 Gou (Japan) (BS)| | 1986| Nintendo	| Miscellaneous	| 					|
@@ -1718,7 +1718,7 @@ This list contains all games supported by FB Alpha.
 | md_ddragon5	|  	| Double Dragon V - The Shadow Falls (USA)		| 		| 1994	| Tradewest	| Sega Megadrive| 					|
 | md_ddribble	|  	| Double Dribble - The Playoff Edition (USA)		| md_hyperd	| 1994	| Konami	| Sega Megadrive| 					|
 | dblpoint	|  	| Double Point						| 		| 1995	| Min Corp.	| Miscellaneous	| 					|
-| dblpointd	|  	| Double PoINT32 (Dong Bang Electron, bootleg?)		| dblpoint	| 1995	| Dong Bang Elec| Miscellaneous	| 					|
+| dblpointd	|  	| Double Point (Dong Bang Electron, bootleg?)		| dblpoint	| 1995	| Dong Bang Elec| Miscellaneous	| 					|
 | Doukyuusei 2 (Japan) (NP)|  	| Doukyuusei 2 (Japan) (NP)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Down the World - Mervil's Ambition (Japan)|  	| Down the World - Mervil's Ambition (Japan)| 	| 1986	| Nintendo	| Miscellaneous	| 					|
 | downtownj	|  	| DownTown / Mokugeki (Joystick Hack)			| downtown	| 1989	| Seta		| Seta		| No sound, imperfect inputs		|
@@ -1760,7 +1760,7 @@ This list contains all games supported by FB Alpha.
 | drgnbowl	|  	| Dragon Bowl						| 		| 1992	| Nics		| Miscellaneous	| 					|
 | dbreedm72	|  	| Dragon Breed (M72 PCB version)			| dbreed	| 1989	| Irem		| M72		| 					|
 | dbreed	|  	| Dragon Breed (M81 PCB version)			| 		| 1989	| Irem		| M81		| 					|
-| drgnbstr	|  	| Dragon Buster						| 		| 1984	| Namco		| Miscellaneous	| 					|
+| drgnbstr	|  	| Dragon Buster						| 		| 1984	| Namco		| Miscellaneous	| Missing sounds			|
 | Dragon Knight 4 (Japan)|  	| Dragon Knight 4 (Japan)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Dragon Quest I & II (Japan)|  	| Dragon Quest I & II (Japan)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Dragon Quest III - Soshite Densetsu e... (Japan)|  	| Dragon Quest III - Soshite Densetsu e... (Japan)| | 1986| Nintendo	| Miscellaneous	| 					|
@@ -2441,8 +2441,8 @@ This list contains all games supported by FB Alpha.
 | md_sbtank	|  	| Garry Kitchen's Super Battletank - War in the Gulf (US| 		| 1992	| Absolute Enter| Sega Megadrive| 					|
 | garuka	|  	| Garuka (Japan ver. W)					| devstors	| 1988	| Konami	| GX890		| 					|
 | garyoret	|  	| Garyo Retsuden (Japan)				| 		| 1987	| Data East Corp| hardware	| 					|
-| gatedoom1	|  	| Gate of Doom (US revision 1)				| darkseal	| 1990	| Data East Corp| Miscellaneous	| 					|
-| gatedoom	|  	| Gate of Doom (US revision 4)				| darkseal	| 1990	| Data East Corp| Miscellaneous	| 					|
+| gatedoom1	|  	| Gate of Doom (US revision 1)				| darkseal	| 1990	| Data East Corp| Miscellaneous	| No Sound				|
+| gatedoom	|  	| Gate of Doom (US revision 4)				| darkseal	| 1990	| Data East Corp| Miscellaneous	| No Sound				|
 | gauntlet2pg1	|  	| Gauntlet (2 Players, German, rev 1)			| gauntlet	| 1985	| Atari Games	| Atari Gauntlet| 					|
 | gauntlet2pg	|  	| Gauntlet (2 Players, German, rev 4)			| gauntlet	| 1985	| Atari Games	| Atari Gauntlet| 					|
 | gauntlet2pj2	|  	| Gauntlet (2 Players, Japanese rev 2)			| gauntlet	| 1985	| Atari Games	| Atari Gauntlet| 					|
@@ -2503,6 +2503,7 @@ This list contains all games supported by FB Alpha.
 | Get in the Hole (Japan)|  	| Get in the Hole (Japan)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | gtstarb1	|  	| Get Star (bootleg, set 1)				| getstar	| 1986	| Taito		| Early Toaplan	| 					|
 | gtstarb2	|  	| Get Star (bootleg, set 2)				| getstar	| 1986	| Taito		| Early Toaplan	| 					|
+| getstarj	|  	| Get Star (Japan)					| getstar	| 1986	| Toaplan / Tait| Early Toaplan	| 					|
 | Getsumen no Anubis (Japan)|  	| Getsumen no Anubis (Japan)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | ghostbi	|  	| Ghost Busters (Intro demo)				| 		| 2009	| Demo		| Neo Geo MVS	| You must use the Universe BIOS and set|
 | Ghost Chaser Densei (Japan)|  	| Ghost Chaser Densei (Japan)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
@@ -2539,8 +2540,8 @@ This list contains all games supported by FB Alpha.
 | Gindama Oyakata no Pachinko Hisshouhou (Japan)|  	| Gindama Oyakata no Pachinko Hisshouhou (Japan)| | 1986| Nintendo	| Miscellaneous	| 					|
 | Gindama Oyakata no Pachinko Hisshouhou (Japan) (Rev 1)|  	| Gindama Oyakata no Pachinko Hisshouhou (Japan) (Rev 1)| | 1986| Nintendo| Miscellaneous| 					|
 | Ginga Eiyuu Densetsu (Japan)|  	| Ginga Eiyuu Densetsu (Japan)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
-| ginganin	|  	| Ginga NinkyouDen (set 1)				| 		| 1987	| Jaleco	| Miscellaneous	| Incomplete sound			|
-| ginganina	|  	| Ginga NinkyouDen (set 2)				| ginganin	| 1987	| Jaleco	| Miscellaneous	| Incomplete sound			|
+| ginganin	|  	| Ginga NinkyouDen (set 1)				| 		| 1987	| Jaleco	| Miscellaneous	| 					|
+| ginganina	|  	| Ginga NinkyouDen (set 2)				| ginganin	| 1987	| Jaleco	| Miscellaneous	| 					|
 | Ginga Sengoku Gunyuuden Rai (Japan)|  	| Ginga Sengoku Gunyuuden Rai (Japan)	| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | gteikoku	|  	| Gingateikoku No Gyakushu				| uniwars	| 1980	| Irem		| Galaxian	| 					|
 | gteikokb	|  	| Gingateikoku No Gyakushu (bootleg set 1)		| uniwars	| 1980	| bootleg	| Galaxian	| 					|
@@ -2651,6 +2652,7 @@ This list contains all games supported by FB Alpha.
 | gryzora	|  	| Gryzor (Set 2)					| contra	| 1987	| Konami	| GX633		| 					|
 | GS Mikami - Joreishi wa Nice Body (Japan)|  	| GS Mikami - Joreishi wa Nice Body (Japan)| 	| 1986	| Nintendo	| Miscellaneous	| 					|
 | GT Racing (Japan)|  	| GT Racing (Japan)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
+| getstar	|  	| Guardian						| 		| 1986	| Toaplan / Tait| Early Toaplan	| 					|
 | grdnstrm	|  	| Guardian Storm					| 		| 1998	| Afega (Apples | NMK16		| 					|
 | grdians	|  	| Guardians\0Denjin Makai II				| 		| 1995	| Banpresto	| Newer Seta	| 					|
 | gumbo		|  	| Gumbo							| 		| 1994	| Min Corp.	| Miscellaneous	| 					|
@@ -2912,6 +2914,7 @@ This list contains all games supported by FB Alpha.
 | ikari3u	|  	| Ikari III - The Rescue (US, Rotary Joystick)		| ikari3	| 1989	| SNK		| Miscellaneous	| 					|
 | Ikari no Yousai (Japan)|  	| Ikari no Yousai (Japan)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Ikari no Yousai (Japan) (BS)|  	| Ikari no Yousai (Japan) (BS)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
+| ikari3j	|  	| Ikari Three - The Rescue (Japan, Rotary Joystick)	| ikari3	| 1989	| SNK		| Miscellaneous	| 					|
 | md_dokidokignk|  	| Ikazuse! Koi no Doki Doki Penguin Land MD (Jpn, Game n| md_dokidoki	| 1991	| Sega		| Sega Megadrive| 					|
 | md_dokidoki	|  	| Ikazuse! Koi no Doki Doki Penguin Land MD (Jpn, SegaNe| 		| 1991	| Sega		| Sega Megadrive| 					|
 | ikki		|  	| Ikki (Japan)						| 		| 1985	| Sun Electronic| Miscellaneous	| 					|
@@ -2992,8 +2995,8 @@ This list contains all games supported by FB Alpha.
 | Izzy's Quest for the Olympic Rings (USA)|  	| Izzy's Quest for the Olympic Rings (USA)| 	| 1986	| Nintendo	| Miscellaneous	| 					|
 | Izzy's Quest for the Olympic Rings (USA) (Beta)|  	| Izzy's Quest for the Olympic Rings (USA) (Beta)| | 1986| Nintendo	| Miscellaneous	| 					|
 | jjsquawk	|  	| J. J. Squawkers					| 		| 1993	| Athena / Able	| Seta		| 					|
-| jjsquawka	|  	| J. J. Squawkers (Alternate set)			| jjsquawk	| 1999	| Athena / Able	| Seta		| 					|
 | jjsquawkb	|  	| J. J. Squawkers (bootleg)				| jjsquawk	| 1993	| bootleg	| Seta		| 					|
+| jjsquawkb2	|  	| J. J. Squawkers (bootleg, Blandia conversion)		| jjsquawk	| 1993	| Athena / Able	| Seta		| 					|
 | md_jlcs	|  	| J. League Champion Soccer (Jpn)			| md_euroclub	| 1993	| Game Arts	| Sega Megadrive| 					|
 | md_jlpsa	|  	| J. League Pro Striker (Jpn, v1.0)			| md_jlps	| 1993	| Sega		| Sega Megadrive| 					|
 | md_jlps	|  	| J. League Pro Striker (Jpn, v1.3)			| 		| 1993	| Sega		| Sega Megadrive| 					|
@@ -3159,7 +3162,7 @@ This list contains all games supported by FB Alpha.
 | jumpshotp	|  	| Jump Shot Engineering Sample				| jumpshot	| 1985	| Bally Midway	| Pac-man	| 					|
 | Jumpin' Derby (Japan)|  	| Jumpin' Derby (Japan)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | jumping	|  	| Jumping						| rainbow	| 1989	| bootleg	| Taito Misc	| 					|
-| jpopnics	|  	| Jumping Pop (Nics, Korean bootleg of Plump Pop)	| 		| 1992	| Nics		| Miscellaneous	| 					|
+| jpopnics	|  	| Jumping Pop (Nics, Korean bootleg of Plump Pop)	| 		| 1992	| Nics		| Miscellaneous	| Imperfect graphics			|
 | jumppop	|  	| Jumping Pop						| 		| 2001	| ESD		| Miscellaneous	| Missing Sounds			|
 | md_junction	|  	| Junction (Jpn, USA)					| 		| 1990	| Micronet	| Sega Megadrive| 					|
 | Jungle Book, The (Europe)|  	| Jungle Book, The (Europe)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
@@ -3174,7 +3177,7 @@ This list contains all games supported by FB Alpha.
 | Jungle Strike - Uketsugareta Kyouki (Japan)|  	| Jungle Strike - Uketsugareta Kyouki (Japan)| 	| 1986	| Nintendo	| Miscellaneous	| 					|
 | md_jstrikej	|  	| Jungle Strike - Uketsugareta Kyouki (Jpn)		| md_jstrike	| 1993	| Electronic Art| Sega Megadrive| 					|
 | Jungle Wars 2 - Kodai Mahou Atimos no Nazo (Japan)|  	| Jungle Wars 2 - Kodai Mahou Atimos no Nazo (Japan)| | 1986| Nintendo	| Miscellaneous	| 					|
-| jungler	| D	| Jungler						| 		| 1981	| Konami	| Miscellaneous	| 					|
+| jungler	| D NW	| Jungler						| 		| 1981	| Konami	| Miscellaneous	| 					|
 | md_junker	|  	| Junker's High (Jpn, Prototype)			| md_outr2019	| 199?	| <unknown>	| Sega Megadrive| 					|
 | md_jpark	|  	| Jurassic Park (Euro)					| 		| 1993	| Sega		| Sega Megadrive| 					|
 | Jurassic Park (Europe)|  	| Jurassic Park (Europe)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
@@ -3223,8 +3226,8 @@ This list contains all games supported by FB Alpha.
 | Kablooey (USA)|  	| Kablooey (USA)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Kabuki Chou Reach Mahjong Tonpuusen (Japan)|  	| Kabuki Chou Reach Mahjong Tonpuusen (Japan)| 	| 1986	| Nintendo	| Miscellaneous	| 					|
 | Kabuki Rocks (Japan)|  	| Kabuki Rocks (Japan)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
-| kabukizj	| D	| Kabuki-Z (Japan)					| kabukiz	| 1988	| Taito Corporat| Miscellaneous	| Bad Graphics & Sound			|
-| kabukiz	| D	| Kabuki-Z (World)					| 		| 1988	| Taito Corporat| Miscellaneous	| Bad Graphics & Sound			|
+| kabukizj	| D	| Kabuki-Z (Japan)					| kabukiz	| 1988	| Taito Corporat| Miscellaneous	| Imperfect graphics			|
+| kabukiz	| D	| Kabuki-Z (World)					| 		| 1988	| Taito Corporat| Miscellaneous	| Imperfect graphics			|
 | Kachiuma Yosou Soft - Baken Renkinjutsu (Japan)|  	| Kachiuma Yosou Soft - Baken Renkinjutsu (Japan)| | 1986| Nintendo	| Miscellaneous	| 					|
 | Kachou Shima Kousaku (Japan)|  	| Kachou Shima Kousaku (Japan)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Kagakusha Harley no Haran Banjou (Japan)|  	| Kagakusha Harley no Haran Banjou (Japan)| 	| 1986	| Nintendo	| Miscellaneous	| 					|
@@ -3618,7 +3621,7 @@ This list contains all games supported by FB Alpha.
 | Lord Monarch (Japan)|  	| Lord Monarch (Japan)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Lord Monarch (Japan) (BS)|  	| Lord Monarch (Japan) (BS)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | md_lordmon	|  	| Lord Monarch - Tokoton Sentou Densetsu (Jpn)		| 		| 1994	| Sega		| Sega Megadrive| 					|
-| lordgun	|  	| Lord of Gun (USA)					| 		| 1994	| IGS		| Miscellaneous	| Imperfect graphics			|
+| lordgun	|  	| Lord of Gun (USA)					| 		| 1994	| IGS		| Miscellaneous	| Imperfect graphics and sound		|
 | md_lotrgs	|  	| Lord of the Rings (Rus)				| 		| 199?	| Glorysun	| Sega Megadrive| 					|
 | md_lotr	|  	| Lord of the Rings (Rus, Hack of Stormlord)		| md_strmlord	| 199?	| <unknown>	| Sega Megadrive| 					|
 | losttomb	|  	| Lost Tomb (Easy)					| 		| 1982	| Stern		| Galaxian	| 					|
@@ -4087,7 +4090,7 @@ This list contains all games supported by FB Alpha.
 | missmw96	|  	| Miss Mister World '96 (Nude)				| missw96	| 1996	| Comad		| Miscellaneous	| 					|
 | mspuzzle	|  	| Miss Puzzle						| 		| 1994	| Min Corp.	| Miscellaneous	| 					|
 | mspuzzleg	|  	| Miss Puzzle (Clone of Gumbo)				| gumbo		| 1994	| Min Corp.	| Miscellaneous	| 					|
-| mspuzzlen	|   NW	| Miss Puzzle (Nudes)					| mspuzzle	| 1994	| Min Corp.	| Miscellaneous	| 					|
+| mspuzzlen	| D NW	| Miss Puzzle (Nudes)					| mspuzzle	| 1994	| Min Corp.	| Miscellaneous	| 					|
 | missw96	|  	| Miss World '96 (Nude)					| 		| 1996	| Comad		| Miscellaneous	| 					|
 | mrviking	|  	| Mister Viking (315-5041)				| 		| 1984	| Sega		| System 1	| 					|
 | mrvikingj	|  	| Mister Viking (315-5041, Japan)			| mrviking	| 1984	| Sega		| System 1	| 					|
@@ -4203,7 +4206,7 @@ This list contains all games supported by FB Alpha.
 | mspacmnf	|  	| Ms. Pac-Man (with speedup hack)			| mspacman	| 1980	| Midway	| Pac-man	| 					|
 | mspacpls	|  	| Ms. Pac-Man Plus					| mspacman	| 1981	| hack		| Pac-man	| 					|
 | mschamps	|  	| Ms. Pacman Champion Edition / Super Zola Pac Gal	| mspacman	| 1995	| hack		| Pac-man	| 					|
-| rocktrv2	|  	| MTV Rock-N-Roll Trivia (Part 2)			| 		| 1986	| Triumph Softwa| Pac-man	| 					|
+| rocktrv2	| D NW	| MTV Rock-N-Roll Trivia (Part 2)			| 		| 1986	| Triumph Softwa| Pac-man	| 					|
 | mugsmash	|  	| Mug Smashers						| 		| 1990?	| Electronic Dev| Miscellaneous	| 					|
 | md_valisj	|  	| Mugen Senshi Valis (Jpn)				| md_valis	| 1991	| Riot		| Sega Megadrive| 					|
 | md_muhamm	|  	| Muhammad Ali Heavyweight Boxing (Euro)		| 		| 1992	| Virgin Games	| Sega Megadrive| 					|
@@ -4398,7 +4401,7 @@ This list contains all games supported by FB Alpha.
 | newfant	|  	| New Fantasia						| 		| 1995	| Comad / New Ja| Miscellaneous	| 					|
 | md_newhoriz	|  	| New Horizons (USA)					| 		| 1994	| Koei		| Sega Megadrive| 					|
 | newpuckx	|  	| New Puck-X						| puckman	| 1980	| hack		| Pac-man	| 					|
-| nrallyx	| D	| New Rally X						| 		| 1981	| Namco		| Miscellaneous	| 					|
+| nrallyx	|  	| New Rally X						| 		| 1981	| Namco		| Miscellaneous	| 					|
 | newsin7	|  	| New Sinbad 7						| 		| 1983	| ATW USA, Inc.	| Galaxian	| 					|
 | New Yatterman - Nandai Kandai Yajirobee (Japan)|  	| New Yatterman - Nandai Kandai Yajirobee (Japan)| | 1986| Nintendo	| Miscellaneous	| 					|
 | md_mansell	|  	| Newman Haas Indy Car Featuring Nigel Mansell ~ Nigel M| 		| 1994	| Acclaim Entert| Sega Megadrive| 					|
@@ -4739,7 +4742,7 @@ This list contains all games supported by FB Alpha.
 | Pagemaster, The (Europe)|  	| Pagemaster, The (Europe)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Pagemaster, The (USA)|  	| Pagemaster, The (USA)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Pagemaster, The (USA) (Beta)|  	| Pagemaster, The (USA) (Beta)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
-| paintrlr	| D	| PaINT32 Roller					| crush		| 1981	| bootleg	| Pac-man	| 					|
+| paintrlr	|  	| Paint Roller						| crush		| 1981	| bootleg	| Pac-man	| 					|
 | pairlove	|  	| Pairs Love						| 		| 1991	| Athena	| Seta		| 					|
 | Paladin's Quest (USA)|  	| Paladin's Quest (USA)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Panel de Pon (Japan)|  	| Panel de Pon (Japan)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
@@ -4748,7 +4751,8 @@ This list contains all games supported by FB Alpha.
 | pangbold	|  	| Pang (bootleg, set 2)					| pang		| 1989	| bootleg	| Miscellaneous	| 					|
 | pang		|  	| Pang (World)						| 		| 1989	| Mitchell	| Miscellaneous	| 					|
 | pangpang	|  	| Pang Pang						| 		| 1994	| Dong Gue La Mi| Miscellaneous	| 					|
-| pang3n	|  	| Pang! 3 (950511 Euro)					| pang3		| 1995	| Mitchell	| CPS1		| 					|
+| pang3r1	|  	| Pang! 3 (950511 Euro)					| pang3		| 1995	| Mitchell	| CPS1		| 					|
+| pang3n	|  	| Pang! 3 (950511 Euro, not encrypted)			| pang3		| 1995	| Mitchell	| CPS1		| 					|
 | pang3j	|  	| Pang! 3 (950511 Japan)				| pang3		| 1995	| Mitchell	| CPS1		| 					|
 | pang3		|  	| Pang! 3 (950601 Euro)					| 		| 1995	| Mitchell	| CPS1		| 					|
 | panicbom	|  	| Panic Bomber						| 		| 1994	| Eighting / Hud| Neo Geo MVS	| 					|
@@ -5246,9 +5250,9 @@ This list contains all games supported by FB Alpha.
 | rainbowo	|  	| Rainbow Islands (old version)				| rainbow	| 1987	| Taito Corporat| Taito Misc	| 					|
 | md_rainbow	|  	| Rainbow Islands Extra (Jpn)				| 		| 1990	| Taito		| Sega Megadrive| 					|
 | rallybik	|  	| Rally Bike / Dash Yarou				| 		| 1988	| [Toaplan] Tait| Toaplan BCU-2 | 					|
-| rallyxa	| D	| Rally X						| rallyx	| 1980	| Namco		| Miscellaneous	| 					|
-| rallyx	| D	| Rally X (32k Ver.?))					| 		| 1980	| Namco		| Miscellaneous	| 					|
-| rallyxm	| D	| Rally X (Midway)					| rallyx	| 1980	| Namco (Midway | Miscellaneous	| 					|
+| rallyxa	|  	| Rally X						| rallyx	| 1980	| Namco		| Miscellaneous	| 					|
+| rallyx	|  	| Rally X (32k Ver.?))					| 		| 1980	| Namco		| Miscellaneous	| 					|
+| rallyxm	|  	| Rally X (Midway)					| rallyx	| 1980	| Namco (Midway | Miscellaneous	| 					|
 | rambo3	|  	| Rambo III (Europe)					| 		| 1989	| Taito Europe C| Taito B System| 					|
 | rambo3p	|  	| Rambo III (Europe, Proti?)				| rambo3	| 1989	| Taito Europe C| Taito B System| 					|
 | rambo3u	|  	| Rambo III (US)					| rambo3	| 1989	| Taito Europe C| Taito B System| 					|
@@ -5816,7 +5820,7 @@ This list contains all games supported by FB Alpha.
 | Shodai Nekketsu Kouha Kunio-kun (Japan)|  	| Shodai Nekketsu Kouha Kunio-kun (Japan)| 	| 1986	| Nintendo	| Miscellaneous	| 					|
 | Shodan Morita Shougi (Japan)|  	| Shodan Morita Shougi (Japan)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Shodani Nintei - Shodan Pro Mahjong (Japan)|  	| Shodani Nintei - Shodan Pro Mahjong (Japan)| 	| 1986	| Nintendo	| Miscellaneous	| 					|
-| shootbul	|  	| Shoot the Bull					| 		| 1985	| Bally Midway	| Pac-man	| 					|
+| shootbul	| D NW	| Shoot the Bull					| 		| 1985	| Bally Midway	| Pac-man	| Analog inputs don't work		|
 | Shougi Club (Japan)|  	| Shougi Club (Japan)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Shougi Fuurinkazan (Japan)|  	| Shougi Fuurinkazan (Japan)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | md_shougi	|  	| Shougi no Hoshi (Jpn)					| 		| 1991	| Home Data	| Sega Megadrive| 					|
@@ -5898,7 +5902,7 @@ This list contains all games supported by FB Alpha.
 | slapfighb1	|  	| Slap Fight (bootleg set 1)				| alcon		| 1986	| Taito		| Early Toaplan	| 					|
 | slapfighb2	|  	| Slap Fight (bootleg set 2)				| alcon		| 1986	| Taito		| Early Toaplan	| 					|
 | slapfighb3	|  	| Slap Fight (bootleg set 3)				| alcon		| 1986	| Taito		| Early Toaplan	| 					|
-| slapfigh	| D NW	| Slap Fight (Japan set 1)				| alcon		| 1986	| Taito		| Early Toaplan	| Protection MCU not emulated		|
+| slapfigh	|  	| Slap Fight (Japan set 1)				| alcon		| 1986	| Taito		| Early Toaplan	| 					|
 | md_slapfigh	|  	| Slap Fight MD (Jpn)					| 		| 1993	| Tengen	| Sega Megadrive| 					|
 | slapshot	|  	| Slap Shot (Japan)					| 		| 1994	| Taito Corporat| Taito Misc	| 					|
 | Slap Stick (Japan)|  	| Slap Stick (Japan)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
@@ -7232,7 +7236,7 @@ This list contains all games supported by FB Alpha.
 | Terminator, The (Europe) (Beta)|  	| Terminator, The (Europe) (Beta)	| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Terminator, The (USA)|  	| Terminator, The (USA)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | terrafb	|  	| Terra Force (bootleg)					| terraf	| 1987	| Nichibutsu	| Miscellaneous	| imperfect graphics			|
-| terrafjb	| D NW	| Terra Force (Japan bootleg with additional Z80)	| terraf	| 1987	| bootleg	| Miscellaneous	| imperfect graphics			|
+| terrafjb	|  	| Terra Force (Japan bootleg with additional Z80)	| terraf	| 1987	| bootleg	| Miscellaneous	| imperfect graphics			|
 | terrafu	|  	| Terra Force (US)					| terraf	| 1987	| Nichibutsu USA| Miscellaneous	| imperfect graphics			|
 | terraf	|  	| Terra Force						| 		| 1987	| Nichibutsu	| Miscellaneous	| imperfect graphics			|
 | Terranigma (Europe)|  	| Terranigma (Europe)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
@@ -7467,6 +7471,7 @@ This list contains all games supported by FB Alpha.
 | ninjaku	|  	| The Ninja Kids (US)					| ninjak	| 1990	| Taito America | Taito-F2	| 					|
 | ninjak	|  	| The Ninja Kids (World)				| 		| 1990	| Taito Corporat| Taito-F2	| 					|
 | ninjawj	|  	| The Ninja Warriors (Japan)				| ninjaw	| 1987	| Taito Corporat| Taito Misc	| 					|
+| ninjawu	|  	| The Ninja Warriors (US)				| ninjaw	| 1987	| Taito Corporat| Taito Misc	| 					|
 | ninjaw	|  	| The Ninja Warriors (World)				| 		| 1987	| Taito Corporat| Taito Misc	| 					|
 | md_ooze	|  	| The Ooze (Euro)					| 		| 1995	| Sega		| Sega Megadrive| 					|
 | md_oozep01	|  	| The Ooze (Euro, Prototype, 19950728)			| md_ooze	| 1995	| Sega		| Sega Megadrive| 					|
@@ -7587,8 +7592,8 @@ This list contains all games supported by FB Alpha.
 | tigerhb1	|  	| Tiger Heli (bootleg, set 1)				| tigerh	| 1985	| Taito		| Early Toaplan	| 					|
 | tigerhb2	|  	| Tiger Heli (bootleg, set 2)				| tigerh	| 1985	| Taito		| Early Toaplan	| 					|
 | tigerhb3	|  	| Tiger Heli (bootleg, set 3)				| tigerh	| 1985	| Taito		| Early Toaplan	| 					|
-| tigerhj	|  	| Tiger Heli (Japan)					| tigerh	| 1985	| Taito		| Early Toaplan	| Protection MCU not emulated		|
-| tigerh	|  	| Tiger Heli (US)					| 		| 1985	| Taito		| Early Toaplan	| Protection MCU not emulated		|
+| tigerhj	|  	| Tiger Heli (Japan)					| tigerh	| 1985	| Taito		| Early Toaplan	| 					|
+| tigerh	|  	| Tiger Heli (US)					| 		| 1985	| Taito		| Early Toaplan	| 					|
 | tigeroadb	|  	| Tiger Road (US bootleg)				| tigeroad	| 1987	| bootleg	| hardware	| 					|
 | tigeroad	|  	| Tiger Road (US)					| 		| 1987	| Capcom (Romsta| hardware	| 					|
 | md_timedom	|  	| Time Dominator 1st (Jpn, Kor)				| md_socket	| 1994	| Vic Tokai	| Sega Megadrive| 					|
@@ -7644,7 +7649,7 @@ This list contains all games supported by FB Alpha.
 | md_tje2	|  	| Toe Jam & Earl in Panic on Funkotron (Euro)		| 		| 1993	| Sega		| Sega Megadrive| 					|
 | md_tje2j	|  	| Toe Jam & Earl in Panic on Funkotron (Jpn)		| md_tje2	| 1993	| Sega		| Sega Megadrive| 					|
 | md_tje2u	|  	| Toe Jam & Earl in Panic on Funkotron (USA)		| md_tje2	| 1993	| Sega		| Sega Megadrive| 					|
-| tokib		| D	| Toki (bootleg)					| toki		| 1989	| bootleg	| hardware	| 					|
+| tokib		|  	| Toki (bootleg)					| toki		| 1989	| bootleg	| hardware	| 					|
 | tokiu		|  	| Toki (US)						| toki		| 1989	| Tad (Fabtek li| hardware	| 					|
 | toki		|  	| Toki (World set 1)					| 		| 1989	| Tad		| hardware	| 					|
 | tokia		|  	| Toki (World set 2)					| toki		| 1989	| Tad		| hardware	| 					|
@@ -7689,7 +7694,7 @@ This list contains all games supported by FB Alpha.
 | topspeedu	|  	| Top Speed (US)					| topspeed	| 1987	| Taito America | Taito Misc	| 					|
 | topspeed	|  	| Top Speed (World)					| 		| 1987	| Taito Corporat| Taito Misc	| 					|
 | toppyrap	|  	| Toppy & Rappy						| 		| 1996	| SemiCom	| Kaneko Pandora| 					|
-| toramich	|  	| Tora-he no Michi (Japan)				| tigeroad	| 1987	| Capcom	| hardware	| Sample Z80 unemulated			|
+| toramich	|  	| Tora-he no Michi (Japan)				| tigeroad	| 1987	| Capcom	| hardware	| 					|
 | Toride (Japan)|  	| Toride (Japan)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | Torneco no Daibouken - Fushigi no Dungeon (Japan)|  	| Torneco no Daibouken - Fushigi no Dungeon (Japan)| | 1986| Nintendo	| Miscellaneous	| 					|
 | Torneco no Daibouken - Fushigi no Dungeon (Japan) (Rev 1)|  	| Torneco no Daibouken - Fushigi no Dungeon (Japan) (Rev| | 1986| Nintendo| Miscellaneous| 					|
@@ -8215,7 +8220,7 @@ This list contains all games supported by FB Alpha.
 | wondstck	|  	| Wonder Stick						| 		| ????	| Yun Sung	| Miscellaneous	| 					|
 | Wondrous Magic (Japan)|  	| Wondrous Magic (Japan)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | woodpeck	|  	| Woodpecker (set 1)					| 		| 1981	| Amenip (Palcom| Pac-man	| 					|
-| woodpeka	| D NW	| Woodpecker (set 2)					| woodpeck	| 1981	| Amenip (Palcom| Pac-man	| 					|
+| woodpeca	|  	| Woodpecker (set 2)					| woodpeck	| 1981	| Amenip (Palcom| Pac-man	| 					|
 | Wordtris (USA)|  	| Wordtris (USA)					| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | md_wcsb	|  	| World Championship Soccer (USA) ~ World Cup Soccer (Jp| md_wc90	| 1989	| Sega		| Sega Megadrive| 					|
 | md_wcs	|  	| World Championship Soccer (USA, Rev. B) ~ World Cup So| md_wc90	| 1989	| Sega		| Sega Megadrive| 					|
@@ -8366,7 +8371,7 @@ This list contains all games supported by FB Alpha.
 | WWF Super WrestleMania (Japan)|  	| WWF Super WrestleMania (Japan)	| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | WWF Super WrestleMania (USA)|  	| WWF Super WrestleMania (USA)			| 		| 1986	| Nintendo	| Miscellaneous	| 					|
 | wwfsstar	|  	| WWF Superstars (Europe)				| 		| 1989	| Technos Japan	| Miscellaneous	| 					|
-| wwfsstarj	|   NW	| WWF Superstars (Japan)				| wwfsstar	| 1989	| Technos Japan	| Miscellaneous	| 					|
+| wwfsstarj	| D NW	| WWF Superstars (Japan)				| wwfsstar	| 1989	| Technos Japan	| Miscellaneous	| Missing program ROM			|
 | wwfsstaru	|  	| WWF Superstars (US)					| wwfsstar	| 1989	| Technos Japan	| Miscellaneous	| 					|
 | wwfsstara	|  	| WWF Superstars (US, Newer)				| wwfsstar	| 1989	| Technos Japan	| Miscellaneous	| 					|
 | wwfwfestj	|  	| WWF WrestleFest (Japan)				| wwfwfest	| 1991	| Technos Japan	| Miscellaneous	| 					|
@@ -8558,7 +8563,7 @@ This list contains all games supported by FB Alpha.
 | zingzip	|  	| Zing Zing Zip						| 		| 1992	| Allumer + Tecm| Seta		| 					|
 | zintrckb	|  	| Zintrick / Oshidashi Zentrix (hack / bootleg)		| 		| 1996	| hack / bootleg| Neo Geo MVS	| 					|
 | zintrkcd	|  	| Zintrick / Oshidashi Zentrix (Neo CD conversion)	| zintrckb	| 1996	| hack		| Neo Geo MVS	| 					|
-| zipzap	| D	| Zip & Zap						| 		| 1995	| Barko Corp	| Miscellaneous	| Imperfect GFXs, No Sound		|
+| zipzap	|  	| Zip & Zap						| 		| 1995	| Barko Corp	| Miscellaneous	| Imperfect GFXs, No Sound		|
 | md_zombhigh	|  	| Zombie High (USA, Prototype)				| 		| 199?	| <unknown>	| Sega Megadrive| 					|
 | zombraid	|  	| Zombie Raid (US)					| 		| 1995	| American Sammy| Seta		| 					|
 | md_zombies	|  	| Zombies (Euro)					| 		| 1993	| Konami	| Sega Megadrive| 					|

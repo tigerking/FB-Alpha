@@ -9,7 +9,7 @@
 // #include "vid_directx_support.h"
 #include <InitGuid.h>
 #include "vid_softfx.h"
-
+#include "vid_directx_support.h"
 // #define ENABLE_PROFILING FBA_DEBUG
 
 #define DIRECT3D_VERSION 0x0700							// Use this Direct3D version
@@ -1004,10 +1004,6 @@ static int vidAllocSurfaces()
 	nPreScaleTextureWidth = GetTextureSize(nGameImageWidth * nPreScaleZoom);
 	nPreScaleTextureHeight = GetTextureSize(nGameImageHeight * nPreScaleZoom);
 
-	// 2xSaI etc. needs an extra line below the image
-	if (nPreScaleEffect >= FILTER_SUPEREAGLE && nPreScaleEffect <= FILTER_SUPER_2XSAI && nGameImageHeight == nTextureHeight) {
-		nTextureHeight <<= 1;
-	}
 
 	if (d3dDeviceDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY) {
 		if (nTextureWidth < nTextureHeight) {
@@ -2109,13 +2105,7 @@ static int vidBurnToSurf()
 	ddsd.dwSize = sizeof(ddsd);
 
 	if (nVidTransferMethod <= 0) {
-		if (nPreScaleEffect) {
 
-			rect.right *= nPreScaleZoom;
-			rect.bottom *= nPreScaleZoom;
-
-			VidSoftFXApplyEffectDirectX(pEmuImage[2], NULL);
-		} else {
 			// Copy the image to a surface (located in video memory), then use bltfast() to blit it to the texture
 			if (FAILED(pEmuImage[2]->Lock(NULL, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, NULL))) {
 				return 1;
@@ -2129,17 +2119,13 @@ static int vidBurnToSurf()
 			}
 
 			pEmuImage[2]->Unlock(NULL);
-		}
+
 
 		pEmuImage[0]->BltFast(0, 0, pEmuImage[2], &rect, DDBLTFAST_WAIT);
-	} else {
-		if (nPreScaleEffect) {
-
-			rect.right *= nPreScaleZoom;
-			rect.bottom *= nPreScaleZoom;
-
-			VidSoftFXApplyEffectDirectX(pEmuImage[0], &rect);
-		} else {
+	} 
+	else
+	{
+	 {
 			// Use the surface supplied by DirectX texture management and let it perform the blit
 			if (FAILED(pEmuImage[0]->Lock(&rect, &ddsd, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WRITEONLY | DDLOCK_DISCARDCONTENTS | DDLOCK_WAIT, NULL))) {
 				return 1;

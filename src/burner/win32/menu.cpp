@@ -329,19 +329,19 @@ int MenuCreate()
 	TCHAR szButtonText[32];
 	MENUITEMINFO menuItemInfo;
 	MENUINFO menu;
-
+	dprintf(_T("e2\n"));
 	if (hMenu == NULL) {
 		hMenu = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU));					// Main application menu
-		hBlitterMenu[0] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_BLITTER_1));	// DirectDraw Standard blitter
+	/*	hBlitterMenu[0] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_BLITTER_1));	// DirectDraw Standard blitter
 		hBlitterMenu[1] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_BLITTER_2));	// Direct3D
 		hBlitterMenu[2] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_BLITTER_3));	// Software effects blitter
 		hBlitterMenu[3] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_BLITTER_4));	// DirectX 9
 		hBlitterMenu[4] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_BLITTER_5));	// DirectX 9 Alt
 
 		hAudioPluginMenu[0] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_AUD_PLUGIN_1));
-		hAudioPluginMenu[1] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_AUD_PLUGIN_2));
+		hAudioPluginMenu[1] = FBALoadMenu(hAppInst, MAKEINTRESOURCE(IDR_MENU_AUD_PLUGIN_2));*/
 	}
-	
+	dprintf(_T("e3\n"));
 	if (hMenuPopup == NULL) {
 		hMenuPopup = CreatePopupMenu();
 
@@ -355,10 +355,11 @@ int MenuCreate()
 			AppendMenu(hMenuPopup, MF_POPUP | MF_STRING, (UINT_PTR)GetSubMenu(hMenu, i), szButtonText);
 		}
 	}
-
+	dprintf(_T("e4\n"));
 	MenuEnableItems();
+	dprintf(_T("e5\n"));
 	MenuUpdate();
-
+	dprintf(_T("e6\n"));
 	bMenuDisplayed = false;
 	nLastMenu = -1;
 
@@ -367,13 +368,13 @@ int MenuCreate()
 		TBSTYLE_FLAT | TBSTYLE_LIST | CCS_NODIVIDER | CCS_NOPARENTALIGN | CCS_NORESIZE | WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
 		0, 0, 0, 0,
 		hScrnWnd, NULL, hAppInst, NULL);
-
+	dprintf(_T("e7\n"));
 	SendMessage(hMenubar, TB_BUTTONSTRUCTSIZE, sizeof(TBBUTTON), 0);
 	SendMessage(hMenubar, TB_SETBITMAPSIZE, 0, 0);
 	
 	// Reset window menu to default
 	GetSystemMenu(hScrnWnd, TRUE);
-
+	dprintf(_T("e8\n"));
 	if (bModelessMenu) {							// Make menu modeless
 
 		memset(&menu, 0, sizeof(MENUINFO));
@@ -401,7 +402,7 @@ int MenuCreate()
 		}
 #endif
 	}
-
+	dprintf(_T("e9\n"));
 	// Add buttons to the menu toolbar
 	memset(&button, 0, sizeof(TBBUTTON));
 	memset(&menuItemInfo, 0, sizeof(MENUITEMINFO));
@@ -409,7 +410,7 @@ int MenuCreate()
 	menuItemInfo.cbSize = sizeof(MENUITEMINFO);
 	menuItemInfo.fMask = MIIM_TYPE;
 	menuItemInfo.dwTypeData = szButtonText;
-
+	dprintf(_T("e10\n"));
 	for (int i = 0; i < 6; i++) {
 
 		menuItemInfo.cch = 32;
@@ -422,11 +423,11 @@ int MenuCreate()
 
 		button.iString = (INT_PTR)szButtonText;
 
-		SendMessage(hMenubar, TB_ADDBUTTONS, 1, (LPARAM)&button);
+		SendMessage(hMenubar, TB_ADDBUTTONS, 1, (LPARAM)&button);dprintf(_T("e11\n"));
 	}
-	
+	dprintf(_T("e12\n"));
 	SendMessage(hMenubar, TB_AUTOSIZE, 0, 0);
-
+	dprintf(_T("e13\n"));
 	return 0;
 }
 
@@ -619,8 +620,13 @@ static void CreateCDItems()
 	SetMenuItemInfo(hMenu, MENU_CDIMAGE, 0, &menuItem);
 }
 #endif
-// Update bullets, checkmarks, and item text
+
+
 void MenuUpdate()
+{
+}
+// Update bullets, checkmarks, and item text
+void MenuUpdat1e()
 {
 	int var;
 

@@ -277,8 +277,8 @@ extern int nLoadMenuBoardTypeFilter;
 extern int nLoadMenuGenreFilter;
 extern int nLoadMenuFamilyFilter;
 int SelDialog(int nMVSCartsOnly, HWND hParentWND);
-extern UINT_PTR nTimer;
-extern HBITMAP hPrevBmp;
+
+
 extern int nDialogSelect;
 void CreateToolTipForRect(HWND hwndParent, PTSTR pszText);
 int SelMVSDialog();

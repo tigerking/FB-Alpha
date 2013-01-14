@@ -403,6 +403,7 @@ int OpenDebugLog()
 #endif
 
 	return 0;
+
 }
 
 void MonitorAutoCheck()
@@ -501,7 +502,7 @@ static int AppInit()
 	_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF);				//
 #endif
 
-	OpenDebugLog();
+
 
 	// Create a handle to the main thread of execution
 	DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &hMainThread, 0, false, DUPLICATE_SAME_ACCESS);
@@ -749,15 +750,16 @@ int ProcessCmdLine()
 // Main program entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd)
 {
+		OpenDebugLog();
 	DSCore_Init();
-	DICore_Init();
+//	DICore_Init();
 	DDCore_Init();
-	Dx9Core_Init();
+	//Dx9Core_Init();
 
 	// Try to initiate DWMAPI.DLL on Windows 7
-	if(IsWindows7()) {
-		InitDWMAPI();
-	}
+	//if(IsWindows7()) {
+		//InitDWMAPI();
+//	}
 
 	// Provide a custom exception handler
 	SetUnhandledExceptionFilter(ExceptionFilter);
@@ -808,7 +810,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 	}
 
 	//
-	
+		dprintf(_T("1\n"));
 	{
 		INITCOMMONCONTROLSEX initCC = {
 			sizeof(INITCOMMONCONTROLSEX),
@@ -816,19 +818,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 		};
 		InitCommonControlsEx(&initCC);
 	}
-
+		dprintf(_T("2\n"));
 	if (lpCmdLine) {
 		_tcscpy(szCmdLine, ANSIToTCHAR(lpCmdLine, NULL, 0));
 	}
-
+		dprintf(_T("3\n"));
 	if (!(AppInit())) {							// Init the application
-		if (!(ProcessCmdLine())) {
+		
 			MediaInit();
-
+				dprintf(_T("4\n"));
 			RunMessageLoop();					// Run the application message loop
-		}
+				dprintf(_T("5\n"));
+
 	}
-	
+		dprintf(_T("6\n"));
 	ConfigAppSave();							// Save config for the application
 
 	AppExit();									// Exit the application	

@@ -19,7 +19,7 @@ static HANDLE hEvent = NULL;
 static void CreateRomDatName(TCHAR* szRomDat)
 {
 	_stprintf(szRomDat, _T("config\\%s.roms.dat"), szAppExeName);
-
+	dprintf(_T("r1\n"));
 	return;
 }
 
@@ -29,7 +29,7 @@ static INT_PTR CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 {
 	int var;
 	static bool chOk;
-
+	dprintf(_T("r2\n"));
 	switch (Msg) {
 		case WM_INITDIALOG: {
 			chOk = false;
@@ -170,7 +170,7 @@ static INT_PTR CALLBACK DefInpProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 int RomsDirCreate(HWND hParentWND)
 {
 	hParent = hParentWND;
-	
+		dprintf(_T("r3\n"));
 	FBADialogBox(hAppInst, MAKEINTRESOURCE(IDD_ROMSDIR), hParent, (DLGPROC)DefInpProc);
 	return 1;
 }
@@ -179,7 +179,7 @@ int RomsDirCreate(HWND hParentWND)
 //Check Romsets Dialog/////////////////////////////////////////////////////////////////////////////
 
 static int WriteGameAvb()
-{
+{	dprintf(_T("r4\n"));
 	TCHAR szRomDat[MAX_PATH];
 	FILE* h;
 
@@ -212,7 +212,7 @@ static int WriteGameAvb()
 }
 
 static int DoCheck(TCHAR* buffPos)
-{
+{dprintf(_T("r6\n"));
 	TCHAR label[256];
 
 	// Check identifier
@@ -260,7 +260,7 @@ static int DoCheck(TCHAR* buffPos)
 }
 
 int CheckGameAvb()
-{
+{dprintf(_T("r7\n"));
 	TCHAR szRomDat[MAX_PATH];
 	FILE* h;
 	int bOK;
@@ -290,7 +290,7 @@ int CheckGameAvb()
 }
 
 static int QuitRomsScan()
-{
+{dprintf(_T("r8\n"));
 	DWORD dwExitCode;
 
 	GetExitCodeThread(hScanThread, &dwExitCode);
@@ -330,7 +330,7 @@ static int QuitRomsScan()
 }
 
 static unsigned __stdcall AnalyzingRoms(void*)
-{
+{dprintf(_T("r9\n"));
 	for (unsigned int z = 0; z < nBurnDrvCount; z++) {
 		nBurnDrvActive = z;
 
@@ -362,7 +362,7 @@ static unsigned __stdcall AnalyzingRoms(void*)
 }
 
 static INT_PTR CALLBACK WaitProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)		// LPARAM lParam
-{
+{dprintf(_T("r10\n"));
 	switch (Msg) {
 		case WM_INITDIALOG:
 			hRomsDlg = hDlg;
@@ -418,7 +418,7 @@ static INT_PTR CALLBACK WaitProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM)		//
 }
 
 int CreateROMInfo(HWND hParentWND)
-{
+{dprintf(_T("r11\n"));
 	hParent = hParentWND;
 	
 	if (gameAv == NULL) {
@@ -436,7 +436,7 @@ int CreateROMInfo(HWND hParentWND)
 }
 
 void FreeROMInfo()
-{
+{dprintf(_T("r12\n"));
 	if (gameAv) {
 		free(gameAv);
 		gameAv = NULL;

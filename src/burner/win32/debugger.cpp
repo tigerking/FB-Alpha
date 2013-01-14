@@ -2,7 +2,7 @@
 
 HWND hDbgDlg = NULL;
 
-#if defined (FBA_DEBUG)
+#if defined (FBA_DEBfUG)
 
 #include "sek.h"
 #include "sekdebug.h"
@@ -148,27 +148,7 @@ static void TraceBackDo(unsigned int start_pc, unsigned int trace_level, int cpu
 			break;
 		}
 
-		// Check if there is a valid instruction at the current address
-		if (m68k_is_valid_instruction(SekFetchWord(pc - size),  cpu_type) != 0) {
-			char buf[100] = "";
 
-			// Check if the instruction at the current address has the right size
-			if (m68k_disassemble(buf, pc - size,  cpu_type) == size) {
-				pc -= size;
-				trace++;
-
-				// Update best result
-				if (trace_size < trace) {
-					trace_size = trace;
-					trace_pc = pc;
-				}
-
-				// Recurse until we've traced back enough instructions
-				if (trace < trace_max) {
-					TraceBackDo(pc, trace,  cpu_type);
-				}
-			}
-		}
 	}
 }
 
@@ -181,10 +161,7 @@ static unsigned int TraceBack(unsigned int nStartAddress, unsigned int nTotalIns
 		return 0;
 	}
 
-	// If there's no valid instruction at the start adress, increase it
-	while (m68k_is_valid_instruction(SekFetchWord(pc), nCPU) == 0 && (pc - nStartAddress) < ((nCPU == M68K_CPU_TYPE_68000) ? 10 : 30) - 2) {
-		pc += 2;
-	}
+
 
 	do {
 		trace_size = 0;
@@ -373,9 +350,7 @@ static void CreateDisass(HWND hWindow, unsigned int nAddress, int nCPU)
 
 		// Colour Invalid instructions gray
 		if (nCol == 0) {
-			if (m68k_is_valid_instruction(SekFetchWord(pc), nCPU) == 0) {
-				nCol++;
-			}
+
 		}
 		// Print the instruction
 		pszBuf += _stprintf(pszBuf, _T("\\fs%i\\cf%i %hs\\par"), bLargeWindow ? 24 : 16, nCol, buf);
@@ -1503,7 +1478,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 int DebugExit()
 {
 
-#if defined (FBA_DEBUG)
+#if defined (FBA_DEBfUG)
 
 	if (DbgMemoryAreaInfo) {
 		free(DbgMemoryAreaInfo);
@@ -1533,7 +1508,7 @@ int DebugExit()
 int DebugCreate()
 {
 
-#if defined (FBA_DEBUG)
+#if defined (FBA_DEgBUG)
 
 	if (bDrvOkay == 0) {
 		return 1;

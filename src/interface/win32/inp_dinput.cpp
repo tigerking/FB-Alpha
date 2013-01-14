@@ -65,7 +65,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 	
 	int gamepadInitSingle()
 	{
-		gamepadData* gamepad = &gamepadProperties[gamepadCount];
+	/*	gamepadData* gamepad = &gamepadProperties[gamepadCount];
 		if (gamepad->lpdid == NULL) {
 			return 1;
 		}
@@ -86,15 +86,15 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 		gamepad->dwButtons = didcl.dwButtons;
 
 		gamepad->lpdid->SetCooperativeLevel(hDinpWnd, DISCL_EXCLUSIVE | DISCL_BACKGROUND);
-		gamepad->lpdid->EnumObjects(gamepadEnumAxesCallback, /*(void*)this*/ gamepad->lpdid, DIDFT_AXIS);
+		gamepad->lpdid->EnumObjects(gamepadEnumAxesCallback, gamepad->lpdid, DIDFT_AXIS);
 		gamepad->lpdid->Acquire();
-
+		*/
 		return 0;
 	}
 
 	int mouseInitSingle()
 	{
-		mouseData* mouse = &mouseProperties[mouseCount];
+	/*	mouseData* mouse = &mouseProperties[mouseCount];
 		if (mouse->lpdid == NULL) {
 			return 1;
 		}
@@ -112,15 +112,15 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 		mouse->dwButtons = didcl.dwButtons;
 
 		mouse->lpdid->SetCooperativeLevel(hDinpWnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
-		mouse->lpdid->EnumObjects(mouseEnumAxesCallback, /*(void*)this*/mouse->lpdid, DIDFT_AXIS);
+		mouse->lpdid->EnumObjects(mouseEnumAxesCallback, mouse->lpdid, DIDFT_AXIS);
 		mouse->lpdid->Acquire();
-
+		*/
 		return 0;
 	}
 
 	bool mouseEnumDevice(LPCDIDEVICEINSTANCE instance)
 	{
-		if (!instance) {
+	/*	if (!instance) {
 			return DIENUM_CONTINUE;
 		}
 
@@ -136,13 +136,13 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 		if (!mouseInitSingle()) {
 			mouseCount++;
 		}
-
+		*/
 		return DIENUM_CONTINUE;
 	}
 
 	bool gamepadEnumDevice(LPCDIDEVICEINSTANCE instance)
 	{
-		if (!instance) {
+	/*	if (!instance) {
 			return DIENUM_CONTINUE;
 		}
 
@@ -157,23 +157,23 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 
 		if (gamepadInitSingle() == 0) {
 			gamepadCount++;
-		}
+		}*/
 
 		return DIENUM_CONTINUE;
 	}
 
 	bool mouseEnumObject(LPCDIDEVICEOBJECTINSTANCE instance)
 	{
-		mouseData* p = &mouseProperties[mouseCount];
+	/*	mouseData* p = &mouseProperties[mouseCount];
 
 		// Store the flags for later use
-		((mouseData*)p)->dwAxisType[DIDFT_GETINSTANCE(instance->dwType)] = instance->dwType;
+		((mouseData*)p)->dwAxisType[DIDFT_GETINSTANCE(instance->dwType)] = instance->dwType;*/
 		return DIENUM_CONTINUE;
 	}
 
 	bool gamepadEnumObject(LPCDIDEVICEOBJECTINSTANCE instance)
 	{
-		if (!(DIDFT_GETTYPE(instance->dwType) & DIDFT_AXIS)) {
+/*		if (!(DIDFT_GETTYPE(instance->dwType) & DIDFT_AXIS)) {
 			return DIENUM_CONTINUE;
 		}
 
@@ -193,13 +193,13 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 				return DIENUM_CONTINUE;
 			}
 		}
-
+		*/
 		return DIENUM_CONTINUE;
 	}
 
 	int setCooperativeLevel(bool exclusive, bool foreGround)
 	{
-		if (keyboardProperties[0].lpdid) {
+	/*	if (keyboardProperties[0].lpdid) {
 			keyboardProperties[0].lpdid->Unacquire();
 			if (foreGround) {
 				keyboardProperties[0].lpdid->SetCooperativeLevel(hDinpWnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND | (nVidFullscreen ? DISCL_NOWINKEY : 0));
@@ -236,14 +236,14 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 			while (ShowCursor(FALSE) >= 0) {}
 		} else {
 			while (ShowCursor(TRUE)  <  0) {}
-		}
+		}*/
 
 		return 0;
 	}
 
 	int exit()
 	{
-		// Release the keyboard interface
+	/*	// Release the keyboard interface
 		for (int i = 0; i < MAX_KEYBOARD; i++) {
 			RELEASE(keyboardProperties[i].lpdid)
 		}
@@ -263,13 +263,13 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 
 		// Release the DirectInput interface
 		RELEASE(pDI)
-
+*/
 		return 0;
 	}
 
 	int init()
 	{
-		hDinpWnd = hScrnWnd;
+	/*	hDinpWnd = hScrnWnd;
 
 		exit();
 
@@ -292,22 +292,22 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 
 		// Enumerate and set up the mice connected to the system
 		// Note that under Win2K/WinXP only one mouse device will be enumerated
-		if (FAILED(pDI->EnumDevices(DI8DEVTYPE_MOUSE, mouseEnumCallback, /*(void*)this*/pDI, DIEDFL_ATTACHEDONLY))) {
+		if (FAILED(pDI->EnumDevices(DI8DEVTYPE_MOUSE, mouseEnumCallback, pDI, DIEDFL_ATTACHEDONLY))) {
 			return 1;
 		}
 
 		// Enumerate and set up the gamepads connected to the system
-		if (FAILED(pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, gamepadEnumCallback, /*(void*)this*/pDI, DIEDFL_ATTACHEDONLY))) {
+		if (FAILED(pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, gamepadEnumCallback,pDI, DIEDFL_ATTACHEDONLY))) {
 			return 1;
 		}
-
+		*/
 		return 0;
 	}
 
 	// Call before checking for Input in a frame
 	int newFrame()
 	{
-		// No gamepads have been read for this frame
+	/*	// No gamepads have been read for this frame
 		for (int i = 0; i < gamepadCount; i++) {
 			gamepadProperties[i].readStatus = 0;
 		}
@@ -321,14 +321,14 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 		for (int i = 0; i < keyboardCount; i++) {
 			keyboardProperties[i].readStatus = 0;
 		}
-
+		*/
 		return 0;
 	}
 
 	// Read the keyboard
 	int readKeyboard(keyboardData* keyboard)
 	{
-		if (keyboard->readStatus) {			// Already read this frame - ready to go
+	/*	if (keyboard->readStatus) {			// Already read this frame - ready to go
 			return 0;
 		}
 		if (!keyboard->lpdid) {
@@ -350,14 +350,14 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 
 		// The keyboard has been successfully Read this frame
 		keyboard->readStatus = 1;
-
+		*/
 		return 0;
 	}
 
 	// Read one of the gamepads
 	int readGamepad(gamepadData* gamepad)
 	{
-		if (gamepad->readStatus == 1) {		// Already read this frame - ready to go
+	/*	if (gamepad->readStatus == 1) {		// Already read this frame - ready to go
 			return 0;
 		}
 		if (gamepad->readStatus == 2) {		// Error reading gamepad
@@ -386,14 +386,14 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 
 		// This gamepad had been successfully Read this frame
 		gamepad->readStatus = 1;
-
+		*/
 		return 0;
 	}
 
 	// Check a subcode (the 40xx bit in 4001, 4102 etc) for a gamepad input code
 	int gamepadState(gamepadData* gamepad, unsigned int subCode)
 	{
-		if (subCode < 0x10) {										// gamepad directions
+	/*	if (subCode < 0x10) {										// gamepad directions
 			// Some drivers don't assign unused axes a value of 0
 			if (!(gamepad->dwAxisType[subCode >> 1] & DIDFT_AXIS)) {
 				return 0;
@@ -442,7 +442,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 		}
 		if (subCode < 0x80 + gamepad->dwButtons) {			// gamepad buttons
 			return (gamepad->dijs.rgbButtons[subCode & 0x7F] & 0x80) ? 1 : 0;
-		}
+		}*/
 
 		return 0;
 	}
@@ -450,7 +450,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
  	// Read the mouse
 	int readMouse(mouseData* mouse)
 	{
-		if (mouse->readStatus) {			// Already read this frame - ready to go
+	/*	if (mouse->readStatus) {			// Already read this frame - ready to go
 			return 0;
 		}
 		if (!mouse->lpdid) {
@@ -472,27 +472,27 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 
 		// The mouse has been successfully Read this frame
 		mouse->readStatus = 1;
-
+		*/
 		return 0;
 	}
 
 	// Check a subcode (the 80xx bit in 8001, 8102 etc) for a mouse input code
 	int checkMouseState(mouseData* mouse, unsigned int subCode)
 	{
-		if (subCode < 0x80) {							// Undefined
+	/*	if (subCode < 0x80) {							// Undefined
 			return 0;
 		}
 		if (subCode < 0x80 + mouse->dwButtons) {		// mouse buttons
 			return (mouse->dims.rgbButtons[subCode & 0x7F] & 0x80) ? 1 : 0;
 		}
-
+		*/
 		return 0;
 	}
 
 	// Get the state (pressed = 1, not pressed = 0) of a particular input code
 	int getState(int code)
 	{
-		if (code < 0) {
+	/*	if (code < 0) {
 			return 0;
 		}
 
@@ -532,14 +532,14 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 			}
 			return checkMouseState(&mouseProperties[i], code & 0xFF);
 		}
-
+		*/
 		return 0;
 	}
-
+	
 	// Read one gamepad axis
 	int readGamepadAxis(int i, int axis)
 	{
-		gamepadData* gamepad = &gamepadProperties[i];
+	/*	gamepadData* gamepad = &gamepadProperties[i];
 
 		if (i < 0 || i >= gamepadCount) {		// This gamepad isn't connected
 			return 0;
@@ -570,7 +570,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 				return gamepad->dijs.rglSlider[0];
 			case 7:
 				return gamepad->dijs.rglSlider[1];
-		}
+		}*/
 
 		return 0;
 	}
@@ -578,7 +578,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 	// Read one mouse axis
 	int readMouseAxis(int i, int axis)
 	{
-		mouseData* mouse = &mouseProperties[i];
+/*		mouseData* mouse = &mouseProperties[i];
 
 		if (i < 0 || i >= mouseCount) {		// This mouse isn't connected
 			return 0;
@@ -600,7 +600,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 			case 2:
 				return mouse->dims.lZ / WHEEL_DELTA;
 		}
-
+		*/
 		return 0;
 	}
 
@@ -609,7 +609,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 	int find(bool createBaseline)
 	{
 		int retVal = -1;									// assume nothing pressed
-
+/*
 		// check if any keyboard keys are pressed
 		if (!readKeyboard(&keyboardProperties[0])) {
 			for (int i = 0; i < 256; i++) {
@@ -691,13 +691,13 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 				}
 			}
 		}
-
+		*/
 		return retVal;
 	}
 
 	int getControlName(int code, wchar_t* deviceName, wchar_t* controlName)
 	{
-		IDirectInputDevice8W* lpdid = NULL;
+	/*	IDirectInputDevice8W* lpdid = NULL;
 		DWORD* pdwAxisType = NULL;
 		DWORD dwMouseAxes = 0, dwPOVs = 0, dwButtons = 0;
 		DWORD dwObj = 0;
@@ -813,16 +813,16 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 				wcsncpy(controlName, didoi.tszName, MAX_PATH);
 			}
 		}
-
+		*/
 		return 0;
 	}
 
 	int get(void* info)
 	{
-		InterfaceInfo* pInfo = (InterfaceInfo*)info;
+	/*	InterfaceInfo* pInfo = (InterfaceInfo*)info;
 		if (!pInfo) {
 			return 1;
-		}
+		}*/
 
 		return 0;
 	}
