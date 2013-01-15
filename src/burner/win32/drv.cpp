@@ -192,7 +192,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 	}
 
 	bSaveRAM = false;
-	if (kNetGame) {
+	if (0) {
 		KailleraInitInput();
 		KailleraGetInput();
 	} else {

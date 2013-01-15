@@ -183,13 +183,8 @@ static int WINAPI gameCallback(char* game, int player, int numplayers)
 		}
 	}
 
-	if (!bFound) {
-//		kailleraEndGame();
-		Kaillera_End_Game();
-		return 1;
-	}
 
-	kNetGame = 1;
+	kNetGame = 0;
 	hActive = GetActiveWindow();
 
 	bCheatsAllowed = false;								// Disable cheats during netplay
@@ -202,26 +197,14 @@ static int WINAPI gameCallback(char* game, int player, int numplayers)
 
 //	dprintf(_T(" ** OSD startnet text sent.\n"));
 
-	TCHAR szTemp1[256];
-	TCHAR szTemp2[256];
-	VidSAddChatMsg(FBALoadStringEx(hAppInst, IDS_NETPLAY_START, true), 0xFFFFFF, BurnDrvGetText(DRV_FULLNAME), 0xFFBFBF);
-	_sntprintf(szTemp1, 256, FBALoadStringEx(hAppInst, IDS_NETPLAY_START_YOU, true), player);
-	_sntprintf(szTemp2, 256, FBALoadStringEx(hAppInst, IDS_NETPLAY_START_TOTAL, true), numplayers);
-	VidSAddChatMsg(szTemp1, 0xFFFFFF, szTemp2, 0xFFBFBF);
 
 	RunMessageLoop();
 
 	DrvExit();
-	if (kNetGame) {
-		kNetGame = 0;
-//		kailleraEndGame();
-		Kaillera_End_Game();
-	}
-	DeActivateChat();
+
 
 	bCheatsAllowed = true;								// reenable cheats netplay has ended
 
-	SetFocus(hActive);
 	return 0;
 }
 

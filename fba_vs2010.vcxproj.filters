@@ -454,7 +454,6 @@
     <ClCompile Include="src\burner\win32\cona.cpp" />
     <ClCompile Include="src\burner\win32\debugger.cpp" />
     <ClCompile Include="src\burner\win32\drv.cpp" />
-    <ClCompile Include="src\burner\win32\dwmapi_core.cpp" />
     <ClCompile Include="src\burner\win32\dynhuff.cpp" />
     <ClCompile Include="src\burner\win32\fba_kaillera.cpp" />
     <ClCompile Include="src\burner\win32\image_win32.cpp" />
@@ -702,7 +701,6 @@
     <ClInclude Include="src\depend\libs\zlib\zlib.h" />
     <ClInclude Include="src\depend\libs\zlib\zutil.h" />
     <ClInclude Include="src\burner\win32\burner_win32.h" />
-    <ClInclude Include="src\burner\win32\dwmapi_core.h" />
     <ClInclude Include="src\burner\win32\dynhuff.h" />
     <ClInclude Include="src\burner\win32\neocdlist.h" />
     <ClInclude Include="src\burner\win32\resource.h" />

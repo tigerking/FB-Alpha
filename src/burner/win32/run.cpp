@@ -312,10 +312,10 @@ int RunMessageLoop()
 
 		GameInpCheckLeftAlt();
 		GameInpCheckMouse();															// Hide the cursor
-
+		/*
 		if(bVidDWMCore) {
 			DWM_StutterFix();
-		}
+		}*/
 
 		while (1) {
 			if (PeekMessage(&Msg, NULL, 0, 0, PM_REMOVE)) {
@@ -338,7 +338,7 @@ int RunMessageLoop()
 					if (Msg.lParam & 0x20000000) {
 						// An Alt/AltGr-key was pressed
 						switch (Msg.wParam) {
-
+/*
 #if defined (FBA_DEBUG)
 							case 'C': {
 								static int count = 0;
@@ -349,7 +349,7 @@ int RunMessageLoop()
 								break;
 							}
 #endif
-							
+							*/
               				// 'Silence' & 'Sound Restored' Code (added by CaptainCPS-X) 
 							case 'S': {
 								TCHAR buffer[15];

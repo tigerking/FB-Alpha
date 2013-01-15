@@ -747,6 +747,44 @@ int ProcessCmdLine()
 	return 0;
 }
 
+
+
+static int WINAPI RunGame(char* game, int player, int numplayers)
+{
+	bool bFound = false;
+	HWND hActive;
+
+	for (nBurnDrvActive = 0; nBurnDrvActive < nBurnDrvCount; nBurnDrvActive++) {
+
+		char* szDecoratedName = DecorateGameName(nBurnDrvActive);
+
+		if (!strcmp(szDecoratedName, game)) {
+			bFound = true;
+			break;
+		}
+	}
+
+
+	kNetGame = 0;
+	hActive = GetActiveWindow();
+
+	bCheatsAllowed = false;								// Disable cheats during netplay
+	AudSoundStop();										// Stop while we load roms
+	DrvInit(nBurnDrvActive, false);						// Init the game driver
+	ScrnInit();
+	AudSoundPlay();										// Restart sound
+	VidInit();
+	SetFocus(hScrnWnd);
+	RunMessageLoop();
+
+	DrvExit();
+
+
+	bCheatsAllowed = true;								// reenable cheats netplay has ended
+
+	return 0;
+}
+
 // Main program entry point
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd)
 {
@@ -828,7 +866,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 		{
 			MediaInit();
 			dprintf(_T("4\n"));
-			RunMessageLoop();					// Run the application message loop
+			RunGame("punisher",1,1);
+			//RunMessageLoop();					// Run the application message loop
 			dprintf(_T("5\n"));
 		}
 		else

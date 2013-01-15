@@ -695,7 +695,7 @@ static BOOL CALLBACK mouseEnumCallback(LPCDIDEVICEINSTANCE, LPVOID);
 		return retVal;
 	}
 
-	int getControlName(int code, wchar_t* deviceName, wchar_t* controlName)
+	int getControlName(int code, TCHAR* deviceName, TCHAR* controlName)
 	{
 	/*	IDirectInputDevice8W* lpdid = NULL;
 		DWORD* pdwAxisType = NULL;
