@@ -1077,7 +1077,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			break;
 
 		case MENU_DWMFIX:
-			bVidDWMCore = !bVidDWMCore;
+			//bVidDWMCore = !bVidDWMCore;
 			POST_INITIALISE_MESSAGE;
 			break;
 

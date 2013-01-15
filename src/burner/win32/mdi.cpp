@@ -271,12 +271,6 @@ static int OnMouseMove(HWND /*hwnd*/, int /*x*/, int /*y*/, UINT keyIndicators)
 	{
 		AudSoundStop();
 
-		// If UxThemes are active (Windows XP+) or DWM Composition is active
-		if(GetThemeStatus() || IsCompositeOn()) {
-			// Redraw everything on the MDI frame to get accurate calculatations
-			RedrawWindow(hWndChildFrame, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-		}
-
 		POINT pointer;
 		memset(&pointer, 0, sizeof(POINT));
         

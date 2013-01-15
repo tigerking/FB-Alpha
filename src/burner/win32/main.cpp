@@ -866,8 +866,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 		{
 			MediaInit();
 			dprintf(_T("4\n"));
-			RunGame("punisher",1,1);
-			//RunMessageLoop();					// Run the application message loop
+			//RunGame("punisher",1,1);
+			RunMessageLoop();					// Run the application message loop
 			dprintf(_T("5\n"));
 		}
 		else
