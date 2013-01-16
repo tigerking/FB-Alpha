@@ -156,9 +156,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 	InputMake(true);
 	GameInpDefault();
 
-	if (kNetGame) {
-		nBurnCPUSpeedAdjust = 0x0100;
-	}
+
 
 	nStatus = DoLibInit();			// Init the Burn library's driver
 	if (nStatus) {
@@ -192,10 +190,7 @@ int DrvInit(int nDrvNum, bool bRestore)
 	}
 
 	bSaveRAM = false;
-	if (0) {
-		KailleraInitInput();
-		KailleraGetInput();
-	} else {
+	 {
 		if (bRestore) {
 			StatedAuto(0);
 			bSaveRAM = true;

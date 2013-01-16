@@ -392,7 +392,7 @@ static int OnSysCommand(HWND, UINT sysCommand, int, int)
 		}
 		case SC_KEYMENU:
 		case SC_MOUSEMENU: {
-			if (kNetGame && !bModelessMenu) {
+			if (!bModelessMenu) {
 				return 1;
 			}
 			break;

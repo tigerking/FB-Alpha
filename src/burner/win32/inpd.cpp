@@ -689,7 +689,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 	if (Msg == WM_INITDIALOG) {
 		hInpdDlg = hDlg;
 		InpdInit();
-		if (!kNetGame && bAutoPause) {
+		if (bAutoPause) {
 			bRunPause = 1;
 		}
 		

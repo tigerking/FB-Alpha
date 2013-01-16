@@ -764,8 +764,6 @@ static int WINAPI RunGame(char* game, int player, int numplayers)
 		}
 	}
 
-
-	kNetGame = 0;
 	hActive = GetActiveWindow();
 
 	bCheatsAllowed = false;								// Disable cheats during netplay
@@ -794,10 +792,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nShowCmd
 	DDCore_Init();
 	//Dx9Core_Init();
 
-	// Try to initiate DWMAPI.DLL on Windows 7
-	//if(IsWindows7()) {
-		//InitDWMAPI();
-//	}
+
 
 	// Provide a custom exception handler
 	SetUnhandledExceptionFilter(ExceptionFilter);

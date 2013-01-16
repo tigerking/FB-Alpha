@@ -31,8 +31,6 @@
  #include "burner_sdl.h"
 #endif
 
-
-#include "net.h"
 #include "png.h"
 
 

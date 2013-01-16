@@ -44,7 +44,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 		hPaletteViewerDlg = hDlg;
 
 		if (bDrvOkay) {
-			if (!kNetGame && bAutoPause) bRunPause = 1;
+			if (bAutoPause) bRunPause = 1;
 			AudSoundStop();
 		}
 		

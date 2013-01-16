@@ -15,8 +15,6 @@ static unsigned int nDoFPS = 0;
 static bool bMute = false;
 static int nOldAudVolume;
 
-int kNetGame = 0;							// Non-zero if Kaillera is being used
-
 #ifdef FBA_DEBUG
 int counter;								// General purpose variable used when debugging
 #endif
@@ -96,13 +94,7 @@ static int RunFrame(int bDraw, int bPause)
 
 		nFramesEmulated++;
 		nCurrentFrame++;
-
-		if (kNetGame) {
-			GetInput(true);						// Update inputs
-			if (KailleraGetInput()) {			// Synchronize input with Kaillera
-				return 0;
-			}
-		} else {
+		{
 			if (nReplayStatus == 2) {
 				GetInput(false);				// Update burner inputs, but not game inputs
 				if (ReplayInput()) {			// Read input from file
@@ -195,7 +187,7 @@ int RunIdle()
 
 	if (bAudPlaying) {
 		// Run with sound
-		
+
 		if(bRunFrame) {
 			bRunFrame = false;
 			if(bAlwaysDrawFrames) {
@@ -314,7 +306,7 @@ int RunMessageLoop()
 		GameInpCheckMouse();															// Hide the cursor
 		/*
 		if(bVidDWMCore) {
-			DWM_StutterFix();
+		DWM_StutterFix();
 		}*/
 
 		while (1) {
@@ -338,180 +330,154 @@ int RunMessageLoop()
 					if (Msg.lParam & 0x20000000) {
 						// An Alt/AltGr-key was pressed
 						switch (Msg.wParam) {
-/*
-#if defined (FBA_DEBUG)
+							/*
+							#if defined (FBA_DEBUG)
 							case 'C': {
-								static int count = 0;
-								if (count == 0) {
-									count++;
-									{ char* p = NULL; if (*p) { printf("crash...\n"); } }
-								}
-								break;
+							static int count = 0;
+							if (count == 0) {
+							count++;
+							{ char* p = NULL; if (*p) { printf("crash...\n"); } }
 							}
-#endif
+							break;
+							}
+							#endif
 							*/
-              				// 'Silence' & 'Sound Restored' Code (added by CaptainCPS-X) 
-							case 'S': {
-								TCHAR buffer[15];
-								bMute = !bMute;
+							// 'Silence' & 'Sound Restored' Code (added by CaptainCPS-X) 
+						case 'S': {
+							TCHAR buffer[15];
+							bMute = !bMute;
 
-								if (bMute) {
-									nAudVolume = 0;// mute sound
-									_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_MUTE, true), nAudVolume / 100);
-								} else {
-									nAudVolume = nOldAudVolume;// restore volume
-									_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_MUTE_OFF, true), nAudVolume / 100);
-								}
-								if (AudSoundSetVolume() == 0) {
-									VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_SOUND_NOVOLUME, true));
-								} else {
-									VidSNewShortMsg(buffer);
-								}
-								break;
+							if (bMute) {
+								nAudVolume = 0;// mute sound
+								_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_MUTE, true), nAudVolume / 100);
+							} else {
+								nAudVolume = nOldAudVolume;// restore volume
+								_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_MUTE_OFF, true), nAudVolume / 100);
 							}
-							
-							case VK_OEM_PLUS: {
-								if (bMute) break; // if mute, not do this
-								nOldAudVolume = nAudVolume;
-								TCHAR buffer[15];
-
-								nAudVolume += 100;
-								if (GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
-									nAudVolume += 900;
-								}
-
-								if (nAudVolume > 10000) {
-									nAudVolume = 10000;
-								}
-								if (AudSoundSetVolume() == 0) {
-									VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_SOUND_NOVOLUME, true));
-								} else {
-									_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_VOLUMESET, true), nAudVolume / 100);
-									VidSNewShortMsg(buffer);
-								}
-								break;
+							if (AudSoundSetVolume() == 0) {
+								VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_SOUND_NOVOLUME, true));
+							} else {
+								VidSNewShortMsg(buffer);
 							}
-							case VK_OEM_MINUS: {
-								if (bMute) break; // if mute, not do this
-							  	nOldAudVolume = nAudVolume;
-								TCHAR buffer[15];
+							break;
+								  }
 
-								nAudVolume -= 100;
-								if (GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
-									nAudVolume -= 900;
-								}
+						case VK_OEM_PLUS: {
+							if (bMute) break; // if mute, not do this
+							nOldAudVolume = nAudVolume;
+							TCHAR buffer[15];
 
-								if (nAudVolume < 0) {
-									nAudVolume = 0;
-								}
-								if (AudSoundSetVolume() == 0) {
-									VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_SOUND_NOVOLUME, true));
-								} else {
-									_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_VOLUMESET, true), nAudVolume / 100);
-									VidSNewShortMsg(buffer);
-								}
-								break;
+							nAudVolume += 100;
+							if (GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
+								nAudVolume += 900;
 							}
-							case VK_MENU: {
-								continue;
+
+							if (nAudVolume > 10000) {
+								nAudVolume = 10000;
 							}
+							if (AudSoundSetVolume() == 0) {
+								VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_SOUND_NOVOLUME, true));
+							} else {
+								_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_VOLUMESET, true), nAudVolume / 100);
+								VidSNewShortMsg(buffer);
+							}
+							break;
+										  }
+						case VK_OEM_MINUS: {
+							if (bMute) break; // if mute, not do this
+							nOldAudVolume = nAudVolume;
+							TCHAR buffer[15];
+
+							nAudVolume -= 100;
+							if (GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
+								nAudVolume -= 900;
+							}
+
+							if (nAudVolume < 0) {
+								nAudVolume = 0;
+							}
+							if (AudSoundSetVolume() == 0) {
+								VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_SOUND_NOVOLUME, true));
+							} else {
+								_stprintf(buffer, FBALoadStringEx(hAppInst, IDS_SOUND_VOLUMESET, true), nAudVolume / 100);
+								VidSNewShortMsg(buffer);
+							}
+							break;
+										   }
+						case VK_MENU: {
+							continue;
+									  }
 						}
 					} else {
 						switch (Msg.wParam) {
 
 #if defined (FBA_DEBUG)
-							case 'N':
-								counter--;
-								bprintf(PRINT_IMPORTANT, _T("*** New counter value: %04X.\n"), counter);
-								break;
-							case 'M':
-								counter++;
-								bprintf(PRINT_IMPORTANT, _T("*** New counter value: %04X.\n"), counter);
-								break;
+						case 'N':
+							counter--;
+							bprintf(PRINT_IMPORTANT, _T("*** New counter value: %04X.\n"), counter);
+							break;
+						case 'M':
+							counter++;
+							bprintf(PRINT_IMPORTANT, _T("*** New counter value: %04X.\n"), counter);
+							break;
 #endif
-							case VK_ESCAPE: {
-								if (hwndChat) {
-									DeActivateChat();
+						case VK_ESCAPE: {
+						 {
+								if (bCmdOptUsed) {
+									PostQuitMessage(0);
 								} else {
-									if (bCmdOptUsed) {
-										PostQuitMessage(0);
-									} else {
-										if (nVidFullscreen) {
-											nVidFullscreen = 0;
-											POST_INITIALISE_MESSAGE;
+									if (nVidFullscreen) {
+										nVidFullscreen = 0;
+										POST_INITIALISE_MESSAGE;
+									}
+								}
+							}
+							break;
 										}
-									}
-								}
+						case VK_RETURN: {
+
+							if (GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
+								bMenuEnabled = !bMenuEnabled;
+								POST_INITIALISE_MESSAGE;
+
 								break;
 							}
-							case VK_RETURN: {
-								if (hwndChat) {
-									int i = 0;
-									while (EditText[i]) {
-										if (EditText[i++] != 0x20) {
-											break;
+
+							break;
 										}
-									}
-									if (i) {
-										Kaillera_Chat_Send(TCHARToANSI(EditText, NULL, 0));
-										//kailleraChatSend(TCHARToANSI(EditText, NULL, 0));
-									}
-									DeActivateChat();
+						case VK_F1: {
 
-									break;
-								}
-								if (GetAsyncKeyState(VK_CONTROL) & 0x80000000) {
-									bMenuEnabled = !bMenuEnabled;
-									POST_INITIALISE_MESSAGE;
-
-									break;
-								}
-
-								break;
-							}
-							case VK_F1: {
-								if (kNetGame) {
-									break;
-								}
-
-								if (((GetAsyncKeyState(VK_CONTROL) | GetAsyncKeyState(VK_SHIFT)) & 0x80000000) == 0) {
-									if (bRunPause) {
-										bAppDoStep = 1;
-									} else {
-										bAppDoFast = 1;
-									}
-								}
-								break;
-							}
-
-							case VK_BACK: {
-								bShowFPS = !bShowFPS;
-								if (bShowFPS) {
-									DisplayFPS();
+							if (((GetAsyncKeyState(VK_CONTROL) | GetAsyncKeyState(VK_SHIFT)) & 0x80000000) == 0) {
+								if (bRunPause) {
+									bAppDoStep = 1;
 								} else {
-									VidSKillShortMsg();
-									VidSKillOSDMsg();
+									bAppDoFast = 1;
 								}
-								break;
 							}
-							case 'T': {
-								if (kNetGame && hwndChat == NULL) {
-									if (AppMessage(&Msg)) {
-										ActivateChat();
+							break;
 									}
-								}
-								break;
+
+						case VK_BACK: {
+							bShowFPS = !bShowFPS;
+							if (bShowFPS) {
+								DisplayFPS();
+							} else {
+								VidSKillShortMsg();
+								VidSKillOSDMsg();
 							}
+							break;
+									  }
+
 						}
 					}
 				} else {
 					if (Msg.message == WM_SYSKEYUP || Msg.message == WM_KEYUP) {
 						switch (Msg.wParam) {
-							case VK_MENU:
-								continue;
-							case VK_F1:
-								bAppDoFast = 0;
-								break;
+						case VK_MENU:
+							continue;
+						case VK_F1:
+							bAppDoFast = 0;
+							break;
 						}
 					}
 				}
@@ -526,7 +492,7 @@ int RunMessageLoop()
 					}
 				}
 			} else {
-				
+
 				bRunPause ? wav_pause(false) : wav_pause(true);
 
 				// No messages are waiting

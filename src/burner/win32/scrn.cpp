@@ -89,84 +89,6 @@ void SetPauseMode(bool bPause)
 	}
 }
 
-static char* CreateKailleraList()
-{
-	unsigned int nOldDrvSelect = nBurnDrvActive;
-	int nSize = 256 * 1024;
-	char* pList = (char*)malloc(nSize);
-	char* pName = pList;
-
-	if (pList == NULL) {
-		return NULL;
-	}
-
-	// Add chat option to the gamelist
-	pName += sprintf(pName, "* Chat only");
-	pName++;
-
-	if (avOk) {
-		// Add all the driver names to the list
-		for (nBurnDrvActive = 0; nBurnDrvActive < nBurnDrvCount; nBurnDrvActive++) {
-
-			if(BurnDrvGetFlags() & BDF_GAME_WORKING && gameAv[nBurnDrvActive]) {
-				char* szDecoratedName = DecorateGameName(nBurnDrvActive);
-
-				if (pName + strlen(szDecoratedName) >= pList + nSize) {
-					char* pNewList;
-					nSize <<= 1;
-					pNewList = (char*)realloc(pList, nSize);
-					if (pNewList == NULL) {
-						return NULL;
-					}
-					pName -= (INT_PTR)pList;
-					pList = pNewList;
-					pName += (INT_PTR)pList;
-				}
-				pName += sprintf(pName, "%s", szDecoratedName);
-				pName++;
-			}
-		}
-	}
-
-	*pName = '\0';
-	pName++;
-
-	nBurnDrvActive = nOldDrvSelect;
-
-	return pList;
-}
-
-void DeActivateChat()
-{
-	bEditActive = false;
-	DestroyWindow(hwndChat);
-	hwndChat = NULL;
-}
-
-int ActivateChat()
-{
-	RECT rect;
-	GetClientRect(hScrnWnd, &rect);
-
-	DeActivateChat();
-
-	// Create an invisible edit control
-	hwndChat = CreateWindow(
-		_T("EDIT"), NULL,
-		WS_CHILD | ES_LEFT,
-		0, rect.bottom - 32, rect.right, 32,
-		hScrnWnd, (HMENU)ID_NETCHAT, (HINSTANCE)GetWindowLongPtr(hScrnWnd, GWLP_HINSTANCE), NULL);                // pointer not needed
-
-	EditText[0] = 0;
-	bEditTextChanged = true;
-	bEditActive = true;
-
-	SendMessage(hwndChat, EM_LIMITTEXT, MAX_CHAT_SIZE, 0);			// Limit the amount of text
-
-	SetFocus(hwndChat);
-
-	return 0;
-}
 
 static int WINAPI gameCallback(char* game, int player, int numplayers)
 {
@@ -183,8 +105,6 @@ static int WINAPI gameCallback(char* game, int player, int numplayers)
 		}
 	}
 
-
-	kNetGame = 0;
 	hActive = GetActiveWindow();
 
 	bCheatsAllowed = false;								// Disable cheats during netplay
@@ -206,63 +126,6 @@ static int WINAPI gameCallback(char* game, int player, int numplayers)
 	bCheatsAllowed = true;								// reenable cheats netplay has ended
 
 	return 0;
-}
-
-static void WINAPI kChatCallback(char* nick, char* text)
-{
-	TCHAR szTemp[128];
-	_sntprintf(szTemp, 128, _T("%.32hs "), nick);
-	VidSAddChatMsg(szTemp, 0xBFBFFF, ANSIToTCHAR(text, NULL, 0), 0x7F7FFF);
-}
-
-static void WINAPI kDropCallback(char *nick, int playernb)
-{
-	TCHAR szTemp[128];
-	_sntprintf(szTemp, 128, FBALoadStringEx(hAppInst, IDS_NETPLAY_DROP, true), playernb, nick);
-	VidSAddChatMsg(szTemp, 0xFFFFFF, NULL, 0);
-}
-
-static void DoNetGame()
-{
-	kailleraInfos ki;
-	char tmpver[128];
-	char* gameList;
-
-	if(bDrvOkay) {
-		DrvExit();
-		ScrnTitle();
-	}
-	MenuEnableItems();
-
-#ifdef _UNICODE
-	_snprintf(tmpver, 128, APP_TITLE " v%.20ls", szAppBurnVer);
-#else
-	_snprintf(tmpver, 128, APP_TITLE " v%.20s", szAppBurnVer);
-#endif
-
-	gameList = CreateKailleraList();
-
-	ki.appName = tmpver;
-	ki.gameList = gameList;
-	ki.gameCallback = &gameCallback;
-	ki.chatReceivedCallback = &kChatCallback;
-	ki.clientDroppedCallback = &kDropCallback;
-	ki.moreInfosCallback = NULL;
-
-	Kaillera_Set_Infos(&ki);
-	//kailleraSetInfos(&ki);
-
-	Kaillera_Select_Server_Dialog(NULL);
-	//kailleraSelectServerDialog(NULL);
-
-	if (gameList) {
-		free(gameList);
-		gameList = NULL;
-	}
-	
-	End_Network();
-
-	POST_INITIALISE_MESSAGE;
 }
 
 int CreateDatfileWindows(int bIncMegadrive)
@@ -527,7 +390,7 @@ static int OnCreate(HWND hWnd, LPCREATESTRUCT /*lpCreateStruct*/)	// HWND hwnd, 
 
 static void OnActivateApp(HWND hwnd, BOOL fActivate, DWORD /* dwThreadId */)
 {
-	if (!kNetGame && bAutoPause && !bAltPause && hInpdDlg == NULL && hInpCheatDlg == NULL && hInpDIPSWDlg == NULL) {
+	if (bAutoPause && !bAltPause && hInpdDlg == NULL && hInpCheatDlg == NULL && hInpDIPSWDlg == NULL) {
 		bRunPause = fActivate? 0 : 1;
 	}
 	if (fActivate == false && hwnd == hScrnWnd) {
@@ -744,7 +607,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 		case MENU_LOAD: {
 			int nGame;
 
-			if(kNetGame || !UseDialogs() || bLoading) {
+			if(!UseDialogs() || bLoading) {
 				break;
 			}
 
@@ -833,23 +696,6 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			}
 			break;
 
-		case MENU_STARTNET:
-			if (Init_Network()) {
-				MessageBox(hScrnWnd, FBALoadStringEx(hAppInst, IDS_ERR_NO_NETPLAYDLL, true), FBALoadStringEx(hAppInst, IDS_ERR_ERROR, true), MB_OK);
-				break;
-			}
-			if (!kNetGame) {
-				InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
-				AudBlankSound();
-				SplashDestroy(1);
-				StopReplay();
-				DrvExit();
-				DoNetGame();
-				MenuEnableItems();
-				InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
-			}
-			break;
-
 		case MENU_STARTREPLAY:
 			if (UseDialogs()) {
 				InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
@@ -883,13 +729,6 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			if (bDrvOkay) {
 				StopReplay();
 				DrvExit();
-  				if (kNetGame) {
-					kNetGame = 0;
-//					kailleraEndGame();
-					Kaillera_End_Game();
-					DeActivateChat();
-					PostQuitMessage(0);
-				}
 				bCheatsAllowed = true;						// reenable cheats netplay has ended
 
 				ScrnSize();
@@ -904,17 +743,11 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 
 		case MENU_EXIT:
 			StopReplay();
-			if (kNetGame) {
-				kNetGame = 0;
-//				kailleraEndGame();
-				Kaillera_End_Game();
-				DeActivateChat();
-			}
 			PostQuitMessage(0);
 			return;
 
 		case MENU_PAUSE:
-			if (bDrvOkay && !kNetGame) {
+			if (bDrvOkay) {
 				SetPauseMode(!bRunPause);
 			} else {
 				SetPauseMode(0);
@@ -949,7 +782,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			break;
 
 		case MENU_MEMCARD_CREATE:
-			if (bDrvOkay && UseDialogs() && !kNetGame && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
+			if (bDrvOkay && UseDialogs() && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
 				InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
 				AudBlankSound();
 				MemCardEject();
@@ -959,7 +792,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			}
 			break;
 		case MENU_MEMCARD_SELECT:
-			if (bDrvOkay && UseDialogs() && !kNetGame && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
+			if (bDrvOkay && UseDialogs() && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
 				InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
 				AudBlankSound();
 				MemCardEject();
@@ -969,24 +802,24 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			}
 			break;
 		case MENU_MEMCARD_INSERT:
-			if (!kNetGame && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
+			if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
 				MemCardInsert();
 			}
 			break;
 		case MENU_MEMCARD_EJECT:
-			if (!kNetGame && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
+			if ((BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
 				MemCardEject();
 			}
 			break;
 
 		case MENU_MEMCARD_TOGGLE:
-			if (bDrvOkay && !kNetGame && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
+			if (bDrvOkay && (BurnDrvGetHardwareCode() & HARDWARE_PUBLIC_MASK) == HARDWARE_SNK_NEOGEO) {
 				MemCardToggle();
 			}
 			break;
 
 		case MENU_STATE_LOAD_DIALOG:
-			if (UseDialogs() && !kNetGame) {
+			if (UseDialogs()) {
 				InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
 				AudSoundStop();
 				SplashDestroy(1);
@@ -1026,7 +859,7 @@ static void OnCommand(HWND /*hDlg*/, int id, HWND /*hwndCtl*/, UINT codeNotify)
 			break;
 		}
 		case MENU_STATE_LOAD_SLOT:
-			if (bDrvOkay && !kNetGame) {
+			if (bDrvOkay) {
 				if (StatedLoad(nSavestateSlot) == 0) {
 					VidSNewShortMsg(FBALoadStringEx(hAppInst, IDS_STATE_LOADED, true));
 				} else {
@@ -2509,7 +2342,7 @@ static int OnSysCommand(HWND, UINT sysCommand, int, int)
 		}
 		case SC_KEYMENU:
 		case SC_MOUSEMENU: {
-			if (kNetGame && !bModelessMenu) {
+			if ( !bModelessMenu) {
 				return 1;
 			}
 			break;
@@ -2586,10 +2419,7 @@ static void OnEnterIdle(HWND /*hwnd*/, UINT /*source*/, HWND /*hwndSource*/)
 {
 	MSG Message;
 
-    // Modeless dialog is idle
-    while (kNetGame && !PeekMessage(&Message, NULL, 0, 0, PM_NOREMOVE)) {
-		RunIdle();
-	}
+
 }
 
 static void OnEnterMenuLoop(HWND, BOOL)
@@ -2598,7 +2428,7 @@ static void OnEnterMenuLoop(HWND, BOOL)
 		InputSetCooperativeLevel(false, bAlwaysProcessKeyboardInput);
 		AudBlankSound();
 	} else {
-		if (!kNetGame && bAutoPause) {
+		if (bAutoPause) {
 			bRunPause = 1;
 		}
 	}
@@ -2921,9 +2751,6 @@ int ScrnInit()
 // Exit the screen window (destroy it)
 int ScrnExit()
 {
-	// Ensure the window is destroyed
-	DeActivateChat();
-
 	DestroyBurnerMDI(1);
 
 	if (hRebar) {

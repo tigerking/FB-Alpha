@@ -750,9 +750,6 @@ static void VidSExitEdit()
 void VidSExitOSD()
 {
 	VidSExitTinyMsg();
-	if (kNetGame) {
-		VidSExitEdit();
-	}
 	VidSExitChat();
 	VidSExitShortMsg();
 	VidSExitStatus();
@@ -991,11 +988,6 @@ int VidSInitOSD(int nFlags)
 	if (VidSInitChat(nFlags)) {
 		return 1;
 	}
-	if (kNetGame) {
-		if (VidSInitEdit(nFlags)) {
-			return 1;
-		}
-	}
 	if (VidSInitTinyMsg(nFlags)) {
 		return 1;
 	}
@@ -1047,16 +1039,6 @@ int VidSRestoreOSD()
 		}
 	}
 
-	if (kNetGame) {
-		if (pEditSurf) {
-			if (FAILED(pEditSurf->IsLost())) {
-				if (FAILED(pEditSurf->Restore())) {
-					return 1;
-				}
-				VidSClearSurface(pEditSurf, nKeyColour, NULL);
-			}
-		}
-	}
 
 	return 0;
 }
@@ -1145,9 +1127,6 @@ static void VidSDisplayStatus(IDirectDrawSurface7* pSurf, RECT* pRect)
 
 	if (bRunPause) {
 		nStatus |= 1;
-	}
-	if (kNetGame) {
-		nStatus |= 2;
 	}
 	if (nReplayStatus == 1) {
 		nStatus |= 4;
@@ -1487,9 +1466,7 @@ void VidSDisplayOSD(IDirectDrawSurface7* pSurf, RECT* pRect, int nFlags)
 	VidSDisplayTinyMsg(pSurf, pRect);
 	VidSDisplayShortMsg(pSurf, pRect);
 	VidSDisplayChat(pSurf, pRect);
-	if (kNetGame) {
-		VidSDisplayEdit(pSurf, pRect);
-	}
+
 }
 
 int VidSNewTinyMsg(const TCHAR* pText, int nRGB, int nDuration, int nPriority)	// int nRGB = 0, int nDuration = 0, int nPriority = 5

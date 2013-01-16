@@ -1,12 +1,4 @@
-#define _WIN32_WINDOWS 0x0410
-//#define _WIN32_WINNT 0x0400
-#define _WIN32_IE 0x0500
-#if not defined _WIN32_WINNT
- #define _WIN32_WINNT 0x0501
-#endif
-#if not defined WINVER
- #define WINVER 0x0501
-#endif
+
 #define STRICT
 
 #if defined (_UNICODE)
@@ -23,20 +15,12 @@
 #include <mmsystem.h>
 #include <shellapi.h>
 #include <shlwapi.h>
-#include "dwmapi_core.h"
+
 INT32 DSCore_Init();
-INT32 DICore_Init();
+//INT32 DICore_Init();
 INT32 DDCore_Init();
-INT32 Dx9Core_Init();
+//INT32 Dx9Core_Init();
 
-
-// Additions to the Cygwin/MinGW win32 headers
-#ifdef __GNUC__
- #include "mingw_win32.h"
-#else
-
-
-#endif
 
 #include "resource.h"
 #include "resource_string.h"
@@ -203,7 +187,6 @@ int DrvExit();
 extern int bRunPause;
 extern int bAltPause;
 extern int bAlwaysDrawFrames;
-extern int kNetGame;
 int RunIdle();
 int RunMessageLoop();
 int RunReset();
@@ -234,8 +217,7 @@ int ScrnExit();
 int ScrnSize();
 int ScrnTitle();
 void SetPauseMode(bool bPause);
-int ActivateChat();
-void DeActivateChat();
+
 int BurnerLoadDriver(TCHAR *szDriverName);
 
 // menu.cpp
@@ -391,10 +373,6 @@ int SupportDirCreateTab(int nTab, HWND hParentWND);
 
 // res.cpp
 int ResCreate(int);
-
-// fba_kaillera.cpp
-int KailleraInitInput();
-int KailleraGetInput();
 
 // replay.cpp
 extern int nReplayStatus;

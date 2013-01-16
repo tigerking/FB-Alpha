@@ -157,7 +157,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 
 		hInpCheatDlg = hDlg;
 		InpCheatInit();
-		if (!kNetGame && bAutoPause) {
+		if (bAutoPause) {
 			bRunPause = 1;
 		}
 		

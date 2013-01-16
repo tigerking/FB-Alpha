@@ -234,7 +234,7 @@ static INT_PTR CALLBACK DialogProc(HWND hDlg, UINT Msg, WPARAM wParam, LPARAM lP
 
 		hInpDIPSWDlg = hDlg;
 		InpDIPSWInit();
-		if (!kNetGame && bAutoPause) {
+		if (bAutoPause) {
 			bRunPause = 1;
 		}
 		
